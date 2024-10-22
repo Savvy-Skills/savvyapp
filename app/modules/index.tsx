@@ -1,0 +1,27 @@
+import React, { useEffect } from 'react';
+import { FlatList, StyleSheet } from 'react-native';
+import { useModuleStore } from '../../store/moduleStore';
+import ModuleCard from '../../components/ModuleCard';
+
+export default function ModuleList() {
+  const { modules, fetchModules } = useModuleStore();
+
+  useEffect(() => {
+    fetchModules();
+  }, []);
+
+  return (
+    <FlatList
+      data={modules}
+      renderItem={({ item }) => <ModuleCard module={item} />}
+      keyExtractor={(item) => item.id.toString()}
+      contentContainerStyle={styles.container}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
+});
