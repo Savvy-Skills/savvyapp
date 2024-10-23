@@ -37,6 +37,8 @@ export default function ModuleCard({ module }: ModuleCardProps) {
 const styles = StyleSheet.create({
   card: {
     marginBottom: 16,
+	display: 'flex',
+	flexDirection: 'column',
   },
   description: {
     marginBottom: 8,

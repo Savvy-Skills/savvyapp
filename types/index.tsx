@@ -1,7 +1,24 @@
+export interface ModuleInfo {
+  video: string;
+  slides: number;
+  sections: Section[];
+  questions: number;
+  activities: number;
+}
+
+export interface Section {
+  name: string;
+  section_slides: SectionSlide[];
+}
+
+export interface SectionSlide {
+  slide: number;
+  title: string;
+}
 
 export interface Module {
-  id: number;
-  created_at: number;
+  readonly id: number;
+  readonly created_at: number;
   name: string;
   description: string;
   class_id: number;
@@ -9,68 +26,92 @@ export interface Module {
   shared_user_ids: number[];
   savvy_module: boolean;
   content_id?: string;
-  module_info: any;
+  module_info: ModuleInfo;
   slides: BaseSlide[];
 }
 
 export interface ModuleWithSlides {
-  id: number;
+  readonly id: number;
   name: string;
   class_id: number;
   content_id: string;
   slides: Slide[];
   module_content: ContentInfo;
-  timestamp: number;
+  readonly timestamp: number;
   progress: Progress;
 }
+export interface Progress {
+	readonly id: string;
+	readonly created_at: number;
+	user_id: number;
+	module_id: number;
+	slide_n: number;
+	class_id: number;
+  }
 
-export interface BaseSlide {
-  slide_id: number;
+export interface BareSlide {
+  readonly slide_id: number;
   order: number;
 }
 
-export interface Slide extends BaseSlide {
-  created_at: number;
+export interface BaseSlide extends BareSlide {
+  readonly created_at: number;
   published: boolean;
   module_id: number;
-  type: string;
-  question_id: number;
-  content_id?: string;
-  activity_id?: string;
-  question_info?: QuestionInfo;
-  content_info?: ContentInfo;
-  activity_info?: ActivityInfo;
+  type: 'Assessment' | 'Content' | 'Activity';
 }
+
+export interface AssessmentSlide extends BaseSlide {
+  type: 'Assessment';
+  question_id: number;
+  question_info: QuestionInfo;
+}
+
+export interface ContentSlide extends BaseSlide {
+  type: 'Content';
+  content_id: string;
+  content_info: ContentInfo;
+}
+
+export interface ActivitySlide extends BaseSlide {
+  type: 'Activity';
+  activity_id: string;
+  activity_info: ActivityInfo;
+}
+
+export type Slide = AssessmentSlide | ContentSlide | ActivitySlide;
 
 export interface ActivityInfo {
-  created_at: number;
-  type: string;
-  url: string;
-  state: string;
-  title: string;
-  images: any[];
+  readonly created_at: number;
+  name: string;
+  dataset_id: string;
+  steps: number;
 }
+
+type ContentTypes = "Video" | "Image" | "Rich Text";
 
 export interface ContentInfo {
-  created_at: number;
-  type: string;
+  readonly created_at: number;
+  type: ContentTypes;
   url: string;
   state: string;
   title: string;
-  images: any[];
+  image: Image;
 }
 
+type QuestionTypes = "Multiple Choice" | "Single Choice" | "True or False" | "Fill in the Blank" | "Order List" | "Open Ended" | "Numerical" | "Match the Words";
+
 export interface QuestionInfo {
-  created_at: number;
+  readonly created_at: number;
   title: string;
   instruction: string;
   text: string;
-  type: string;
-  AnswerType: string;
-  GradingScale: number;
-  Explanation: string;
-  Dataset?: string;
-  Context: string;
+  type: QuestionTypes;
+  answerType: string;
+  gradingScale: number;
+  explanation: string;
+  dataset?: string;
+  context: string;
   options: Option[];
 }
 
@@ -78,14 +119,10 @@ export interface Option {
   text: string;
   isCorrect: boolean;
   correctOrder: number;
-  Type: string;
+  type: string;
 }
 
-export interface Progress {
-  id: string;
-  created_at: number;
-  user_id: number;
-  module_id: number;
-  slide_n: number;
-  class_id: number;
+export interface Image {
+  url: string;
+  description?: string;
 }

@@ -3,10 +3,13 @@ import {
   View,
   /* @tutinfo Import <CODE>StyleSheet</CODE> to define styles. */ StyleSheet,
 } from "react-native";
+import { ActivitySlide as ActivitySlideType } from "@/types";
 
-import { SlideProps } from "./SlideRenderer";
+type ActivityProps = {
+  slide: ActivitySlideType;
+};
 
-export default function AssessmentSlide({slide}: SlideProps) {
+export default function ActivitySlide({ slide }: ActivityProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>AssessmentSlide</Text>

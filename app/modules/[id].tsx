@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { Button } from 'react-native-paper';
+import { Button, useTheme } from 'react-native-paper';
 import { useModuleStore } from '../../store/moduleStore';
-import SlideRenderer from '../../components/SlideRenderer';
+import SlideRenderer from '../../components/Slides/SlideRenderer';
+import styles from '@/styles/styles';
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
-  const { getModuleById, currentModule } = useModuleStore();
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const { getModuleById, currentModule, currentSlideIndex, setCurrentSlideIndex } = useModuleStore();
+  const theme = useTheme();
 
 	useEffect(() => {
 		getModuleById(Number(id));
@@ -31,8 +32,26 @@ export default function ModuleDetail() {
   };
 
   return (
-    <View style={styles.container}>
-      <SlideRenderer slide={currentModule.slides[currentSlideIndex]} />
+    <View style={[styles.container, { backgroundColor: theme.colors.background}]}>
+      <ScrollView
+        contentContainerStyle={localStyles.slidesContainer} 
+        scrollEnabled={false}
+      >
+        {currentModule.slides.map((slide, index) => (
+          <View 
+            key={slide.slide_id} 
+            style={[
+              localStyles.slideWrapper,
+              { display: index === currentSlideIndex ? 'flex' : 'none' }
+            ]}
+          >
+            <SlideRenderer 
+              slide={slide} 
+              isActive={index === currentSlideIndex} 
+            />
+          </View>
+        ))}
+      </ScrollView>
       <View style={styles.navigation}>
         <Button onPress={handlePreviousSlide} disabled={currentSlideIndex === 0}>
           Previous
@@ -45,14 +64,20 @@ export default function ModuleDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  navigation: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-});
+const localStyles = StyleSheet.create({
+	container: {
+	  flex: 1,
+	  justifyContent: 'space-between',
+	},
+	slidesContainer: {
+	  flexGrow: 1,
+	},
+	slideWrapper: {
+	  flex: 1,
+	},
+	navigation: {
+	  flexDirection: 'row',
+	  justifyContent: 'space-between',
+	  padding: 16,
+	},
+  });

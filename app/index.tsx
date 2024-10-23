@@ -1,10 +1,11 @@
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Button, Title } from 'react-native-paper';
 import { Link } from 'expo-router';
+import styles from '@/styles/styles';
 
 export default function Home() {
   return (
-    <View style={styles.container}>
+    <View style={styles.centeredContainer}>
       <Title style={styles.title}>Welcome to Savvyskills</Title>
       <Link href="./modules" asChild>
         <Button mode="contained">View Modules</Button>
@@ -13,14 +14,3 @@ export default function Home() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  title: {
-    marginBottom: 24,
-  },
-});
