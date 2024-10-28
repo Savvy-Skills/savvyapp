@@ -12,7 +12,7 @@ type ActivityProps = {
 export default function ActivitySlide({ slide }: ActivityProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>AssessmentSlide</Text>
+      <Text style={styles.text}>Activity Slide</Text>
     </View>
   );
 }

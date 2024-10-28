@@ -1,51 +1,70 @@
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
-import { PaperProvider, useTheme } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAudioStore } from "@/store/audioStore";
+import { useAuthStore } from "@/store/authStore";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
-
-  const loadSounds = useAudioStore((state) => state.loadSounds);
-  const soundsLoaded = useAudioStore((state) => state.soundsLoaded);
-
-  useEffect(() => {
-    loadSounds();
-  }, []);
-
-  useEffect(() => {
-    if (loaded && soundsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, soundsLoaded]);
-
-  if (!loaded) {
-    return null;
+	const [loaded] = useFonts({
+	  SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+	});
+  
+	const loadSounds = useAudioStore((state) => state.loadSounds);
+	const soundsLoaded = useAudioStore((state) => state.soundsLoaded);
+	const { token, getUser, isInitialized } = useAuthStore();
+	const segments = useSegments();
+	const router = useRouter();
+  
+	useEffect(() => {
+	  loadSounds();
+	}, []);
+  
+	useEffect(() => {
+	  if (loaded && soundsLoaded) {
+		SplashScreen.hideAsync();
+	  }
+	}, [loaded, soundsLoaded]);
+  
+	useEffect(() => {
+	  if (isInitialized) {
+		const inAuthGroup = segments[0] === ("auth" as string);
+		if (!token && !inAuthGroup) {
+		  router.replace("/auth/login");
+		} else if (token) {
+		  getUser();
+		  if (inAuthGroup) {
+			router.replace("/");
+		  }
+		}
+	  }
+	}, [isInitialized, token, segments]);
+  
+	if (!loaded || !isInitialized) {
+	  return null;
+	}
+  
+	return (
+	  <PaperProvider>
+		<SafeAreaProvider>
+		  <Stack screenOptions={{ headerShown: false }}>
+			<Stack.Screen name="index" options={{ title: "Home" }} />
+			<Stack.Screen name="modules/index" options={{ title: "Modules" }} />
+			<Stack.Screen
+			  name="modules/[id]"
+			  options={{ title: "Module Details" }}
+			/>
+			<Stack.Screen name="auth/login" options={{ title: "Login" }} />
+			<Stack.Screen name="+not-found" />
+		  </Stack>
+		</SafeAreaProvider>
+	  </PaperProvider>
+	);
   }
-
-  return (
-    <PaperProvider>
-      <SafeAreaView style={{ flex: 1 }}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ title: "Home" }} />
-          <Stack.Screen name="modules/index" options={{ title: "Modules" }} />
-          <Stack.Screen
-            name="modules/[id]"
-            options={{ title: "Module Details" }}
-          />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </SafeAreaView>
-    </PaperProvider>
-  );
-}

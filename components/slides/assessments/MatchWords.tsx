@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, Text } from 'react-native-paper';
-import AssessmentWrapper from './AssessmentWrapper';
+import AssessmentWrapper from '../AssessmentWrapper';
+import { QuestionInfo } from '@/types';
 
-export default function MatchWordsAssessment({ question }) {
-  const [selectedWord, setSelectedWord] = useState(null);
-  const [connections, setConnections] = useState({});
+export default function MatchWordsAssessment({ question }: { question: QuestionInfo }) {
+  const [selectedWord, setSelectedWord] = useState<string|null>(null);
+  const [connections, setConnections] = useState<{ [key: string]: string }>({});
   const [isCorrect, setIsCorrect] = useState(false);
 
-  const words = question.Option.map(option => option.OptionText);
-  const matches = question.Option.map(option => option.MatchText);
+  const words = question.options.map(option => option.text);
+  const matches = question.options.map(option => option.match);
 
-  const handleWordPress = (word) => {
+  const handleWordPress = (word: string) => {
     if (isCorrect) return;
     setSelectedWord(word);
   };
 
-  const handleMatchPress = (match) => {
+  const handleMatchPress = (match: string) => {
     if (isCorrect) return;
     if (selectedWord) {
       const newConnections = { ...connections, [selectedWord]: match };
@@ -27,10 +28,7 @@ export default function MatchWordsAssessment({ question }) {
 
   const handleSubmit = () => {
     const correct = Object.entries(connections).length === words.length &&
-      Object.entries(connections).every(([word, match], index) => {
-        const correctMatch = question.Option.find(option => option.OptionText === word).MatchText;
-        return match === correctMatch;
-      });
+      Object.entries(connections).every(([word, match], index) => match === matches[index]);
     setIsCorrect(correct);
     return correct;
   };

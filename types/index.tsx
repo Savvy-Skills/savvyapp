@@ -41,13 +41,13 @@ export interface ModuleWithSlides {
   progress: Progress;
 }
 export interface Progress {
-	readonly id: string;
-	readonly created_at: number;
-	user_id: number;
-	module_id: number;
-	slide_n: number;
-	class_id: number;
-  }
+  readonly id: string;
+  readonly created_at: number;
+  user_id: number;
+  module_id: number;
+  slide_n: number;
+  class_id: number;
+}
 
 export interface BareSlide {
   readonly slide_id: number;
@@ -58,23 +58,23 @@ export interface BaseSlide extends BareSlide {
   readonly created_at: number;
   published: boolean;
   module_id: number;
-  type: 'Assessment' | 'Content' | 'Activity';
+  type: "Assessment" | "Content" | "Activity";
 }
 
 export interface AssessmentSlide extends BaseSlide {
-  type: 'Assessment';
+  type: "Assessment";
   question_id: number;
   question_info: QuestionInfo;
 }
 
 export interface ContentSlide extends BaseSlide {
-  type: 'Content';
+  type: "Content";
   content_id: string;
   content_info: ContentInfo;
 }
 
 export interface ActivitySlide extends BaseSlide {
-  type: 'Activity';
+  type: "Activity";
   activity_id: string;
   activity_info: ActivityInfo;
 }
@@ -99,7 +99,15 @@ export interface ContentInfo {
   image: Image;
 }
 
-type QuestionTypes = "Multiple Choice" | "Single Choice" | "True or False" | "Fill in the Blank" | "Order List" | "Open Ended" | "Numerical" | "Match the Words";
+type QuestionTypes =
+  | "Multiple Choice"
+  | "Single Choice"
+  | "True or False"
+  | "Fill in the Blank"
+  | "Order List"
+  | "Open Ended"
+  | "Numerical"
+  | "Match the Words";
 
 export interface QuestionInfo {
   readonly created_at: number;
@@ -119,10 +127,57 @@ export interface Option {
   text: string;
   isCorrect: boolean;
   correctOrder: number;
-  type: string;
+  match: string;
 }
 
 export interface Image {
   url: string;
   description?: string;
+}
+
+export interface LoginResponse {
+  token: string;
+}
+
+export interface User {
+  id: number;
+  created_at: number;
+  name: string;
+  email: string;
+  districts_id: number;
+  profile_picture: string;
+  birthdate: string;
+  google_oauth: GoogleOauth;
+  schools: School[];
+}
+
+export interface GoogleOauth {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface School {
+  schools_id: number;
+  roles_app_id: number;
+  active: boolean;
+  school_info: SchoolInfo;
+  role_info: RoleInfo;
+}
+
+export interface SchoolInfo {
+  created_at: number;
+  Name: string;
+  Logo?: Logo;
+}
+
+export interface Logo {
+  path: string;
+  name: string;
+  url: string;
+}
+
+export interface RoleInfo {
+  Role_Name: string;
+  Rank_Value: number;
 }

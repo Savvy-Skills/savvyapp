@@ -2,8 +2,9 @@ import { useAudioStore } from "@/store/audioStore";
 import styles from "@/styles/styles";
 import { QuestionInfo } from "@/types";
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Button, Card, useTheme } from "react-native-paper";
+import { View, Text, StyleSheet } from "react-native";
+import { Button, Card } from "react-native-paper";
+import { Platform } from "react-native";
 
 interface AssessmentWrapperProps {
   children: React.ReactNode;
@@ -37,8 +38,10 @@ export default function AssessmentWrapper({
   };
 
   return (
-    <Card style={styles.container}>
-      <Card.Title title={question.text} />
+    <Card style={localStyles.container}>
+      {question.type != "Fill in the Blank" && (
+        <Card.Title title={question.text} />
+      )}
       {showExplanation ? (
         <View style={styles.explanationContainer}>
           <Text>{question.explanation}</Text>
@@ -71,3 +74,13 @@ export default function AssessmentWrapper({
     </Card>
   );
 }
+
+const localStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    maxWidth: 600,
+    marginLeft: "auto",
+    marginRight: "auto",
+  },
+});

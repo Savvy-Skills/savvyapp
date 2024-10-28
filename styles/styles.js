@@ -79,6 +79,30 @@ export default StyleSheet.create({
     backgroundColor: "#e9ecef",
     borderRadius: 4,
   },
+  slideRenderer: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  bottomNavigation: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+	gap: 10,
+    alignItems: "center",
+    backgroundColor: "#4a148c",
+    borderRadius: 15,
+    margin: 10,
+    paddingHorizontal: 10,
+    alignSelf: "center",
+  },
+  navButton: {
+    backgroundColor: "#7c43bd",
+    margin: 0,
+    borderRadius: 15,
+  },
+  checkButton: {
+    backgroundColor: "#81d4fa",
+    borderRadius: 15,
+  },
 });
 
 // You can also export individual style objects or functions
