@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { IconButton, useTheme, ProgressBar } from "react-native-paper";
+import { IconButton, useTheme } from "react-native-paper";
 import { useModuleStore } from "../../store/moduleStore";
 import SlideRenderer from "../../components/slides/SlideRenderer";
 import BottomBarNav from "@/components/navigation/BottomBarNav";
@@ -10,7 +10,7 @@ import ScreenWrapper from "@/components/screens/ScreenWrapper";
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { getModuleById, currentModule, currentSlideIndex, discoveredSlides } =
+  const { getModuleById, currentModule, currentSlideIndex } =
     useModuleStore();
   const theme = useTheme();
 
@@ -31,8 +31,6 @@ export default function ModuleDetail() {
     router.back();
   };
 
-  const progress =
-    discoveredSlides.filter(Boolean).length / currentModule.slides.length;
 
   return (
     <ScreenWrapper>
@@ -42,11 +40,6 @@ export default function ModuleDetail() {
           size={20}
           onPress={handleClose}
           style={styles.closeButton}
-        />
-        <ProgressBar
-          progress={progress}
-          color={theme.colors.primary}
-          style={styles.progressBar}
         />
       </View>
       {currentModule.slides.map((slide, index) => (

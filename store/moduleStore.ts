@@ -12,8 +12,6 @@ interface ModuleStore {
   setCurrentSlideIndex: (index: number) => void;
   nextSlide: () => void;
   previousSlide: () => void;
-  discoveredSlides: boolean[];
-  setDiscoveredSlides: (discoveredSlides: boolean[]) => void;
   submittableStates: boolean[];
   correctnessStates: (boolean | null)[];
   setSubmittableState: (index: number, isSubmittable: boolean) => void;
@@ -25,7 +23,7 @@ interface ModuleStore {
 
 export const useModuleStore = create<ModuleStore>((set, get) => ({
   modules: [],
-  discoveredSlides: [],
+  completedSlides: [],
   submittableStates: [],
   correctnessStates: [],
   submittedAssessments: [],
@@ -71,19 +69,13 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
           slides: module.slides.sort((a, b) => a.order - b.order),
         },
       });
-      set({ discoveredSlides: new Array(module.slides.length).fill(false) });
     } catch {
       console.error("Error fetching module");
     }
   },
   nextSlide: () => {
-    const { currentSlideIndex, currentModule, discoveredSlides } = get();
+    const { currentSlideIndex, currentModule } = get();
     if (currentModule && currentSlideIndex < currentModule.slides.length - 1) {
-      if (!discoveredSlides[currentSlideIndex + 1]) {
-        const newDiscoveredSlides = [...discoveredSlides];
-        newDiscoveredSlides[currentSlideIndex + 1] = true;
-        set({ discoveredSlides: newDiscoveredSlides });
-      }
       set({ currentSlideIndex: currentSlideIndex + 1 });
     }
   },
@@ -92,8 +84,5 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
     if (currentSlideIndex > 0) {
       set({ currentSlideIndex: currentSlideIndex - 1 });
     }
-  },
-  setDiscoveredSlides: (discoveredSlides: boolean[]) => {
-    set({ discoveredSlides });
   },
 }));

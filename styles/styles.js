@@ -86,22 +86,27 @@ export default StyleSheet.create({
   bottomNavigation: {
     flexDirection: "row",
     justifyContent: "space-between",
-	gap: 10,
+    gap: 10,
     alignItems: "center",
     backgroundColor: "#4a148c",
     borderRadius: 15,
     margin: 10,
     paddingHorizontal: 10,
+	paddingVertical: 5,
     alignSelf: "center",
   },
   navButton: {
-    backgroundColor: "#7c43bd",
     margin: 0,
     borderRadius: 15,
   },
   checkButton: {
     backgroundColor: "#81d4fa",
     borderRadius: 15,
+  },
+  verticalSeparator: {
+    width: 1,
+    backgroundColor: "#faf",
+	height: "100%",
   },
 });
 
