@@ -83,6 +83,7 @@ export type Slide = AssessmentSlide | ContentSlide | ActivitySlide;
 
 export interface ActivityInfo {
   readonly created_at: number;
+  readonly id: string;
   name: string;
   dataset_id: string;
   steps: number;
@@ -92,11 +93,18 @@ type ContentTypes = "Video" | "Image" | "Rich Text";
 
 export interface ContentInfo {
   readonly created_at: number;
+  readonly id: string
   type: ContentTypes;
   url: string;
   state: string;
   title: string;
   image: Image;
+}
+
+export interface Submission {
+  question_id: number;
+  correct: boolean;
+  answer?: string[];
 }
 
 type QuestionTypes =
@@ -111,6 +119,7 @@ type QuestionTypes =
 
 export interface QuestionInfo {
   readonly created_at: number;
+  id: number;
   title: string;
   instruction: string;
   text: string;

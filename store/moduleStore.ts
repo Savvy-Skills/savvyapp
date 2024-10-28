@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { fetchModuleById, fetchModules } from "../services/moduleapi";
-import { Module, ModuleWithSlides } from "../types";
+import { Module, ModuleWithSlides, Submission } from "../types";
+
 
 interface ModuleStore {
   modules: Module[];
@@ -18,6 +19,8 @@ interface ModuleStore {
   setSubmittableState: (index: number, isSubmittable: boolean) => void;
   setCorrectnessState: (index: number, isCorrect: boolean | null) => void;
   submitCurrentAssessment: () => void;
+  submittedAssessments: Submission[];
+  setSubmittedAssessments: (submittedAssessments: Submission[]) => void;
 }
 
 export const useModuleStore = create<ModuleStore>((set, get) => ({
@@ -25,6 +28,7 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
   discoveredSlides: [],
   submittableStates: [],
   correctnessStates: [],
+  submittedAssessments: [],
   setSubmittableState: (index, isSubmittable) =>
     set((state) => {
       const newSubmittableStates = [...state.submittableStates];
@@ -41,6 +45,9 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
     const { currentSlideIndex, correctnessStates } = get();
     const isCorrect = correctnessStates[currentSlideIndex];
     console.log(`Assessment submitted. Correct: ${isCorrect}`);
+  },
+  setSubmittedAssessments: (submittedAssessments) => {
+    set({ submittedAssessments });
   },
   currentSlideIndex: 0,
   currentModule: undefined,

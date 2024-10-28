@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Button, Card } from "react-native-paper";
 import { Platform } from "react-native";
+import { useModuleStore } from "@/store/moduleStore";
 
 interface AssessmentWrapperProps {
   children: React.ReactNode;
@@ -18,24 +19,17 @@ export default function AssessmentWrapper({
   onSubmit,
 }: AssessmentWrapperProps) {
   const [showExplanation, setShowExplanation] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const { playSound } = useAudioStore();
-
-  const handleSubmit = () => {
-    setIsSubmitted(true);
-    const correctness = onSubmit();
-    setIsCorrect(correctness);
-    if (correctness) {
-      playSound("success");
-    } else {
-      playSound("failure");
-    }
-  };
+  const { submittedAssessments } = useModuleStore();
 
   const toggleExplanation = () => {
     setShowExplanation(!showExplanation);
   };
+
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+	(submission) => submission.question_id === question.id
+  );
+  const currentSubmission = submittedAssessments[currentSubmissionIndex];
+
 
   return (
     <Card style={localStyles.container}>
@@ -49,23 +43,20 @@ export default function AssessmentWrapper({
       ) : (
         <>{children}</>
       )}
-      {isSubmitted && (
+      {currentSubmission && (
         <View
           style={[
             styles.feedbackContainer,
-            isCorrect ? styles.correctFeedback : styles.incorrectFeedback,
+            currentSubmission.correct ? styles.correctFeedback : styles.incorrectFeedback,
           ]}
         >
           <Text style={styles.feedbackText}>
-            {isCorrect ? "Correct!" : "Incorrect"}
+            {currentSubmission.correct ? "Correct!" : "Incorrect"}
           </Text>
         </View>
       )}
       <View style={styles.assessmentButtonContainer}>
-        <Button mode="contained" onPress={handleSubmit} disabled={isCorrect}>
-          Submit
-        </Button>
-        {isSubmitted && (
+        {currentSubmission && (
           <Button mode="outlined" onPress={toggleExplanation}>
             {showExplanation ? "Hide Explanation" : "Show Explanation"}
           </Button>
