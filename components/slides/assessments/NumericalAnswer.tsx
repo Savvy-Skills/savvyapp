@@ -36,8 +36,16 @@ export default function NumericalAnswerAssessment({
     return correctnessStates[index] || false;
   };
 
-  const isSubmittable = submittableStates[index];
-  const blocked = (correctnessStates[index] && !isSubmittable) || false;
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+	(submission) => submission.question_id === question.id
+  );
+
+  const currentSubmission = currentSubmissionIndex !== -1 ? submittedAssessments[currentSubmissionIndex] : undefined;
+
+//   Rules: If the user has submitted correct answer, the user should not be able to change the answer.
+//   If the user has submitted incorrect answer, the user should be able to change the answer.
+  const blocked = currentSubmission ? currentSubmission.correct : false;
+
 
   return (
     <AssessmentWrapper question={question} onSubmit={handleSubmit}>

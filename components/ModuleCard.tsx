@@ -3,6 +3,8 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, Title, Paragraph, ProgressBar } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { Module } from '../types';
+import ThemedTitle from './themed/ThemedTitle';
+import ThemedParagraph from './themed/ThemedParagraph';
 
 interface ModuleCardProps {
   module: Module;
@@ -19,13 +21,13 @@ export default function ModuleCard({ module }: ModuleCardProps) {
     <TouchableOpacity onPress={handlePress} accessibilityRole="button">
       <Card style={styles.card}>
         <Card.Content>
-          <Title>{module.name}</Title>
-          <Paragraph numberOfLines={2} style={styles.description}>
+          <ThemedTitle>{module.name}</ThemedTitle>
+          <ThemedParagraph numberOfLines={2} style={styles.description}>
             {module.description}
-          </Paragraph>
+          </ThemedParagraph>
           <View style={styles.statsContainer}>
-            <Paragraph>Slides: {module.slides.length}</Paragraph>
-            <Paragraph>Completed: 0/{module.slides.length}</Paragraph>
+            <ThemedParagraph>Slides: {module.slides.length}</ThemedParagraph>
+            <ThemedParagraph>Completed: 0/{module.slides.length}</ThemedParagraph>
           </View>
           <ProgressBar progress={0} style={styles.progressBar} />
         </Card.Content>

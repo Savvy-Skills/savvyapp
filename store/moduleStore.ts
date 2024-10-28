@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { fetchModuleById, fetchModules } from "../services/moduleapi";
-import { Module, ModuleWithSlides, Submission } from "../types";
-
+import { Module, ModuleWithSlides, Slide, Submission } from "../types";
 
 interface ModuleStore {
   modules: Module[];
@@ -19,6 +18,9 @@ interface ModuleStore {
   submitCurrentAssessment: () => void;
   submittedAssessments: Submission[];
   setSubmittedAssessments: (submittedAssessments: Submission[]) => void;
+  completedSlides: boolean[];
+  markSlideAsCompleted: (index: number) => void;
+  checkSlideCompletion: (data?: any) => void;
 }
 
 export const useModuleStore = create<ModuleStore>((set, get) => ({
@@ -83,6 +85,46 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
     const { currentSlideIndex } = get();
     if (currentSlideIndex > 0) {
       set({ currentSlideIndex: currentSlideIndex - 1 });
+    }
+  },
+  markSlideAsCompleted: (index: number) => {
+	console.log("Marking slide as completed");
+	console.log("Slide index: ", index);
+    set((state) => {
+      const newCompletedSlides = [...state.completedSlides];
+      newCompletedSlides[index] = true;
+      return { completedSlides: newCompletedSlides };
+    });
+  },
+
+  checkSlideCompletion: (data: any) => {
+    const { currentSlideIndex, markSlideAsCompleted, currentModule, correctnessStates } = get();
+	const slide = currentModule?.slides[currentSlideIndex];
+
+    switch (slide?.type) {
+      case "Assessment":
+        // We have the submitted and correctness on the store. We can check if the user has submitted and if it's correct
+		if (correctnessStates[currentSlideIndex] !== null) {
+		  markSlideAsCompleted(currentSlideIndex);
+		}
+        break;
+      case "Content":
+        if (slide.content_info.type === "Video") {
+          if (data.progress >= 0.8) {
+            // 80% watched
+            markSlideAsCompleted(currentSlideIndex);
+          }
+        } else {
+          // For images or text, mark as completed when viewed
+          markSlideAsCompleted(currentSlideIndex);
+        }
+        break;
+      case "Activity":
+        // Assume the activity component will call this function with the completion status
+        if (data.completed) {
+          markSlideAsCompleted(currentSlideIndex);
+        }
+        break;
     }
   },
 }));

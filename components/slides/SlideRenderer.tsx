@@ -45,7 +45,7 @@ const SlideComponent = ({
 }
 
 export default function SlideRenderer({ slide, index }: SlideProps) {
-  const { nextSlide, currentSlideIndex, setSubmittableState } = useModuleStore()
+  const { nextSlide, currentSlideIndex, setSubmittableState, checkSlideCompletion } = useModuleStore()
   const isActive = currentSlideIndex === index;
   
   useEffect(() => {
@@ -53,6 +53,12 @@ export default function SlideRenderer({ slide, index }: SlideProps) {
       setSubmittableState(currentSlideIndex, false)
     }
   }, [currentSlideIndex, setSubmittableState])
+
+  useEffect(() => {
+	if (isActive && slide.type === "Content" && slide.content_info.type !== "Video") {
+	  checkSlideCompletion(slide, {viewed: true})
+	}
+  },[currentSlideIndex])
 
   return (
     <View style={styles.slideRenderer}>

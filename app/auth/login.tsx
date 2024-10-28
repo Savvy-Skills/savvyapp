@@ -2,16 +2,13 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  Image,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { TextInput, Button, Text, useTheme } from "react-native-paper";
 import { useAuthStore } from "@/store/authStore";
-import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
-import ThemedLogo from "@/components/ThemedLogo";
+import ThemedLogo from "@/components/themed/ThemedLogo";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");

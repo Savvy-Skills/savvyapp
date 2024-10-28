@@ -6,13 +6,13 @@ import { useModuleStore } from "../../store/moduleStore";
 import SlideRenderer from "../../components/slides/SlideRenderer";
 import BottomBarNav from "@/components/navigation/BottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
+import TopNavBar from "@/components/navigation/TopNavBar";
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { getModuleById, currentModule, currentSlideIndex } =
     useModuleStore();
-  const theme = useTheme();
 
   useEffect(() => {
     getModuleById(Number(id));
@@ -23,12 +23,11 @@ export default function ModuleDetail() {
   }
 
   const handleCheck = () => {
-    // TODO: Implement check functionality
-    console.log("Check button pressed");
+ 
   };
 
   const handleClose = () => {
-    router.back();
+    router.replace("/modules");
   };
 
 
@@ -41,6 +40,7 @@ export default function ModuleDetail() {
           onPress={handleClose}
           style={styles.closeButton}
         />
+		 <TopNavBar />
       </View>
       {currentModule.slides.map((slide, index) => (
         <View

@@ -4,17 +4,31 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
-import { PaperProvider } from "react-native-paper";
+import {
+  PaperProvider,
+  MD3LightTheme,
+  MD3DarkTheme,
+  configureFonts,
+} from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAudioStore } from "@/store/audioStore";
 import { useAuthStore } from "@/store/authStore";
+import { useColorScheme } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+
+const fontConfig = {
+	fontFamily: "Poppins",
+};
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    SpaceMono: require("../assets/fonts/SpaceMonoRegular.ttf"),
+    Poppins: require("../assets/fonts/PoppinsRegular.ttf"),
+    PoppinsBold: require("../assets/fonts/PoppinsBold.ttf"),
+    PoppinsItalic: require("../assets/fonts/PoppinsItalic.ttf"),
   });
 
   const loadSounds = useAudioStore((state) => state.loadSounds);
@@ -23,6 +37,7 @@ export default function RootLayout() {
   const segments = useSegments();
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     loadSounds();
@@ -53,8 +68,13 @@ export default function RootLayout() {
     return null;
   }
 
+  const paperTheme =
+    colorScheme === "dark"
+      ? { ...MD3DarkTheme, fonts: configureFonts({ config: fontConfig }) }
+      : { ...MD3LightTheme, fonts: configureFonts({ config: fontConfig }) };
+
   return (
-    <PaperProvider>
+    <PaperProvider theme={paperTheme}>
       <SafeAreaProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" options={{ title: "Home" }} />

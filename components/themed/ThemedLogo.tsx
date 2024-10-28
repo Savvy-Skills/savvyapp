@@ -1,4 +1,4 @@
-import { Image, View } from "react-native";
+import { Image } from "react-native";
 import { useTheme } from "react-native-paper";
 
 const ThemedLogo = () => {
@@ -12,8 +12,8 @@ const ThemedLogo = () => {
       }}
       source={
         theme.dark
-          ? require("../assets/images/savvyimagotipeawhite.png")
-          : require("../assets/images/savvyimagotipe.png")
+          ? require("../../assets/images/savvyimagotipeawhite.png")
+          : require("../../assets/images/savvyimagotipe.png")
       }
     />
   );
