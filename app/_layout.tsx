@@ -13,7 +13,7 @@ import { useAuthStore } from "@/store/authStore";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
@@ -22,24 +22,22 @@ export default function RootLayout() {
   const { token, getUser, isInitialized } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
+  const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
     loadSounds();
   }, []);
 
   useEffect(() => {
-    if (loaded && soundsLoaded) {
+    if (fontsLoaded && soundsLoaded) {
       SplashScreen.hideAsync();
+      setAppIsReady(true);
     }
-  }, [loaded, soundsLoaded]);
-
-  if (!loaded || !isInitialized) {
-    return null;
-  }
+  }, [fontsLoaded, soundsLoaded]);
 
   useEffect(() => {
-    if (isInitialized) {
-      const inAuthGroup = segments[0] === ("auth" as string);
+    if (isInitialized && appIsReady) {
+      const inAuthGroup = segments[0] === "auth";
       if (!token && !inAuthGroup) {
         router.replace("/auth/login");
       } else if (token) {
@@ -49,7 +47,11 @@ export default function RootLayout() {
         }
       }
     }
-  }, [isInitialized, token, segments]);
+  }, [isInitialized, token, segments, appIsReady]);
+
+  if (!fontsLoaded || !isInitialized || !appIsReady) {
+    return null;
+  }
 
   return (
     <PaperProvider>
