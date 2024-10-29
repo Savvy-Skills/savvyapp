@@ -1,36 +1,67 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Button, Text } from 'react-native-paper';
-import AssessmentWrapper from '../AssessmentWrapper';
-import { QuestionInfo } from '@/types';
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { Button, Text } from "react-native-paper";
+import AssessmentWrapper from "../AssessmentWrapper";
+import { QuestionInfo } from "@/types";
+import { useModuleStore } from "@/store/moduleStore";
 
-export default function MatchWordsAssessment({ question }: { question: QuestionInfo }) {
-  const [selectedWord, setSelectedWord] = useState<string|null>(null);
+export default function MatchWordsAssessment({
+  question,
+  index,
+}: {
+  question: QuestionInfo;
+  index: number;
+}) {
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [connections, setConnections] = useState<{ [key: string]: string }>({});
-  const [isCorrect, setIsCorrect] = useState(false);
+  const {
+    setSubmittableState,
+    correctnessStates,
+    setCorrectnessState,
+    submittedAssessments,
+  } = useModuleStore();
 
-  const words = question.options.map(option => option.text);
-  const matches = question.options.map(option => option.match);
+  const words = question.options.map((option) => option.text);
+  const matches = question.options.map((option) => option.match);
+
+  useEffect(() => {
+    if (Object.keys(connections).length === words.length) {
+      setSubmittableState(index, true);
+	  const correct =
+      Object.entries(connections).length === words.length &&
+      Object.entries(connections).every(
+        ([word, match], index) => match === matches[index]
+      );
+      setCorrectnessState(index, correct);
+    } else {
+	  setSubmittableState(index, false);
+	  setCorrectnessState(index, false);
+	}
+  }, [connections, index, setSubmittableState]);
+
+
+  const handleSubmit = () => {
+    return correctnessStates[index] || false;
+  };
+
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+	(submission) => submission.question_id === question.id
+  );
+  const currentSubmission = currentSubmissionIndex !== -1 ? submittedAssessments[currentSubmissionIndex] : undefined;
+  const blocked = currentSubmission ? currentSubmission.correct : false;
 
   const handleWordPress = (word: string) => {
-    if (isCorrect) return;
+    if (blocked) return;
     setSelectedWord(word);
   };
 
   const handleMatchPress = (match: string) => {
-    if (isCorrect) return;
+    if (blocked) return;
     if (selectedWord) {
       const newConnections = { ...connections, [selectedWord]: match };
       setConnections(newConnections);
       setSelectedWord(null);
     }
-  };
-
-  const handleSubmit = () => {
-    const correct = Object.entries(connections).length === words.length &&
-      Object.entries(connections).every(([word, match], index) => match === matches[index]);
-    setIsCorrect(correct);
-    return correct;
   };
 
   return (
@@ -40,10 +71,13 @@ export default function MatchWordsAssessment({ question }: { question: QuestionI
           {words.map((word, index) => (
             <Button
               key={index}
-              mode={selectedWord === word ? 'contained' : 'outlined'}
+              mode={selectedWord === word ? "contained" : "outlined"}
               onPress={() => handleWordPress(word)}
-              style={[styles.button, connections[word] && styles.connectedButton]}
-              disabled={isCorrect}
+              style={[
+                styles.button,
+                connections[word] && styles.connectedButton,
+              ]}
+              disabled={blocked}
             >
               {word}
             </Button>
@@ -55,10 +89,14 @@ export default function MatchWordsAssessment({ question }: { question: QuestionI
               key={index}
               style={[
                 styles.matchContainer,
-                Object.values(connections).includes(match) && styles.connectedMatch,
+                Object.values(connections).includes(match) &&
+                  styles.connectedMatch,
               ]}
             >
-              <Text onPress={() => handleMatchPress(match)} style={styles.matchText}>
+              <Text
+                onPress={() => handleMatchPress(match)}
+                style={styles.matchText}
+              >
                 {match}
               </Text>
             </View>
@@ -71,8 +109,8 @@ export default function MatchWordsAssessment({ question }: { question: QuestionI
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   column: {
     flex: 1,
@@ -82,19 +120,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   connectedButton: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
   },
   matchContainer: {
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: "#000",
     padding: 8,
     marginBottom: 8,
     borderRadius: 4,
   },
   connectedMatch: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
   },
   matchText: {
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

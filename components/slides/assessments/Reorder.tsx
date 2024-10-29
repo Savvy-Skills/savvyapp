@@ -3,11 +3,14 @@ import { View, StyleSheet } from 'react-native';
 import { List, IconButton } from 'react-native-paper';
 import AssessmentWrapper from '../AssessmentWrapper';
 import { QuestionInfo } from '@/types';
+import { useModuleStore } from '@/store/moduleStore';
 
-export default function ReorderAssessment({ question }: { question: QuestionInfo }) {
+export default function ReorderAssessment({ question, index }: { question: QuestionInfo, index: number }) {
   const [currentOrder, setCurrentOrder] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState(false);
+  const { setSubmittableState, correctnessStates, setCorrectnessState, submittedAssessments } = useModuleStore();
 
+  
   const correctOrder = question.options.sort(
     (a, b) => a.correctOrder - b.correctOrder
   ).map((option) => option.text);
@@ -16,11 +19,11 @@ export default function ReorderAssessment({ question }: { question: QuestionInfo
 
   useEffect(() => {
     setCurrentOrder(items);
+    setSubmittableState(index, true);
   }, []);
 
   const moveItem = (index: number, direction: string) => {
     if (isCorrect) return;
-
     const newOrder = [...currentOrder];
     const item = newOrder[index];
     const newIndex = direction === "up" ? index - 1 : index + 1;
@@ -29,11 +32,20 @@ export default function ReorderAssessment({ question }: { question: QuestionInfo
     setCurrentOrder(newOrder);
   };
 
+  useEffect(() => {
+    let correct: boolean = JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
+	setCorrectnessState(index, correct);
+  }, [currentOrder, index, setSubmittableState]);
+
   const handleSubmit = () => {
-    const correct = JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
-    setIsCorrect(correct);
-    return correct;
+	return correctnessStates[index] || false;
   };
+
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+	(submission) => submission.question_id === question.id
+  );
+  const currentSubmission = currentSubmissionIndex !== -1 ? submittedAssessments[currentSubmissionIndex] : undefined;
+  const blocked = currentSubmission ? currentSubmission.correct : false;
 
   return (
     <AssessmentWrapper question={question} onSubmit={handleSubmit}>
@@ -47,12 +59,12 @@ export default function ReorderAssessment({ question }: { question: QuestionInfo
                 <IconButton
                   icon="arrow-up"
                   onPress={() => moveItem(index, "up")}
-                  disabled={index === 0 || isCorrect}
+                  disabled={index === 0 || blocked}
                 />
                 <IconButton
                   icon="arrow-down"
                   onPress={() => moveItem(index, "down")}
-                  disabled={index === currentOrder.length - 1 || isCorrect}
+                  disabled={index === currentOrder.length - 1 || blocked}
                 />
               </View>
             )}

@@ -1,18 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Checkbox } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { QuestionInfo } from "@/types";
 import { includes } from "@/utils/utilfunctions";
-
+import { useModuleStore } from "@/store/moduleStore";
 
 export default function MultipleChoice({
   question,
+  index,
 }: {
   question: QuestionInfo;
+  index: number;
 }) {
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const {
+    setSubmittableState,
+    correctnessStates,
+    setCorrectnessState,
+    submittedAssessments,
+  } = useModuleStore();
 
   const correctAnswers = question.options
     .filter((option) => option.isCorrect)
@@ -20,22 +27,39 @@ export default function MultipleChoice({
   const options = question.options.map((option) => option.text);
 
   const handleChange = (value: string) => {
-    if (!isCorrect) {
-      const newSelectedValues = includes(selectedValues, value)
-        ? selectedValues.filter((item) => item !== value)
-        : [...selectedValues, value];
-      setSelectedValues(newSelectedValues);
-    }
+    const newSelectedValues = includes(selectedValues, value)
+      ? selectedValues.filter((item) => item !== value)
+      : [...selectedValues, value];
+    setSelectedValues(newSelectedValues);
   };
 
+  useEffect(() => {
+    if (selectedValues.length !== 0) {
+      setSubmittableState(index, true);
+      let correct: boolean =
+        selectedValues.length === correctAnswers.length &&
+        selectedValues.every((val) => correctAnswers.includes(val));
+      setCorrectnessState(index, correct);
+    } else {
+      setSubmittableState(index, false);
+      setCorrectnessState(index, false);
+    }
+  }, [selectedValues, index, setSubmittableState]);
 
   const handleSubmit = () => {
-    const correct =
-      selectedValues.length === correctAnswers.length &&
-      selectedValues.every((val) => correctAnswers.includes(val));
-    setIsCorrect(correct);
-    return correct;
+    return correctnessStates[index] || false;
   };
+
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+    (submission) => submission.question_id === question.id
+  );
+
+  const currentSubmission =
+    currentSubmissionIndex !== -1
+      ? submittedAssessments[currentSubmissionIndex]
+      : undefined;
+
+  const blocked = currentSubmission ? currentSubmission.correct : false;
 
   return (
     <AssessmentWrapper question={question} onSubmit={handleSubmit}>
@@ -45,7 +69,7 @@ export default function MultipleChoice({
           label={option}
           status={selectedValues.includes(option) ? "checked" : "unchecked"}
           onPress={() => handleChange(option)}
-          disabled={isCorrect}
+          disabled={blocked}
         />
       ))}
     </AssessmentWrapper>

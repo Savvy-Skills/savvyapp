@@ -10,7 +10,7 @@ import TopNavBar from "@/components/navigation/TopNavBar";
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
-  const router = useRouter();
+
   const { getModuleById, currentModule, currentSlideIndex } =
     useModuleStore();
 
@@ -22,26 +22,11 @@ export default function ModuleDetail() {
     return null;
   }
 
-  const handleCheck = () => {
- 
-  };
-
-  const handleClose = () => {
-    router.replace("/modules");
-  };
-
 
   return (
     <ScreenWrapper>
-      <View style={styles.topNavigation}>
-        <IconButton
-          icon="close"
-          size={20}
-          onPress={handleClose}
-          style={styles.closeButton}
-        />
 		 <TopNavBar />
-      </View>
+
       {currentModule.slides.map((slide, index) => (
         <View
           key={slide.slide_id}
@@ -66,15 +51,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    height: 40,
-  },
-  closeButton: {
-    marginRight: 8,
-  },
-  progressBar: {
-    flex: 1,
-    height: 4,
   },
   slideWrapper: {
     flex: 1,

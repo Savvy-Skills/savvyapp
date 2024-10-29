@@ -90,7 +90,7 @@ const MobileVideoComponent: React.FC<VideoSlideProps> = ({
         <View
           style={[
             styles.videoWrapper,
-            { width: videoWidth, height: videoHeight },
+            { width: videoWidth, height: "100%"},
           ]}
         >
           <Video

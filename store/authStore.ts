@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types";
-import { login, authme } from "../services/authapi";
+import { login, authme, authAPI } from "../services/authapi";
 import { Platform } from "react-native";
 
 // Create a cross-platform storage object
@@ -82,6 +82,19 @@ export const useAuthStore = create<AuthStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setInitialized();
+		  authAPI.interceptors.request.use(
+			(config) => {
+			  const token = state.token
+			  if (token) {
+				config.headers["Authorization"] = `Bearer ${token}`;
+			  }
+			  config.headers["Content-Type"] = "application/json";
+			  return config;
+			},
+			(error) => {
+			  return Promise.reject(error);
+			}
+		  );
         }
       },
     }

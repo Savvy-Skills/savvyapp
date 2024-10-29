@@ -13,7 +13,7 @@ export default function NumericalAnswerAssessment({
 }) {
   const [value, setValue] = useState("");
   const answer = parseFloat(question.options[0].text);
-  const { setSubmittableState, submittableStates, correctnessStates, setCorrectnessState, submittedAssessments } = useModuleStore();
+  const { setSubmittableState, correctnessStates, setCorrectnessState, submittedAssessments } = useModuleStore();
 
   const handleChange = (event: any) => {
     const { text } = event.nativeEvent;
@@ -42,8 +42,6 @@ export default function NumericalAnswerAssessment({
 
   const currentSubmission = currentSubmissionIndex !== -1 ? submittedAssessments[currentSubmissionIndex] : undefined;
 
-//   Rules: If the user has submitted correct answer, the user should not be able to change the answer.
-//   If the user has submitted incorrect answer, the user should be able to change the answer.
   const blocked = currentSubmission ? currentSubmission.correct : false;
 
 
