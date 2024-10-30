@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, Dimensions, StyleSheet, ActivityIndicator, VirtualizedList } from 'react-native';
+import { View, ScrollView, Dimensions, StyleSheet, ActivityIndicator, VirtualizedList } from 'react-native';
 import { useDataFetch } from '@/hooks/useDataFetch';
+import { Text } from 'react-native-paper';
 
 type DataTableProps = {
   source: string;
@@ -171,5 +172,6 @@ const styles = StyleSheet.create({
   },
   cellText: {
     fontSize: 14,
+	color: '#000000',
   },
 });
