@@ -88,8 +88,6 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
     }
   },
   markSlideAsCompleted: (index: number) => {
-	console.log("Marking slide as completed");
-	console.log("Slide index: ", index);
     set((state) => {
       const newCompletedSlides = [...state.completedSlides];
       newCompletedSlides[index] = true;
@@ -110,7 +108,7 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
         break;
       case "Content":
         if (slide.content_info.type === "Video") {
-          if (data.progress >= 0.8) {
+          if (data.progress >= 80) {
             // 80% watched
             markSlideAsCompleted(currentSlideIndex);
           }

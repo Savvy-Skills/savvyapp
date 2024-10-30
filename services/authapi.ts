@@ -1,4 +1,3 @@
-import { useAuthStore } from "@/store/authStore";
 import { LoginResponse, User } from "@/types";
 import axios from "axios";
 

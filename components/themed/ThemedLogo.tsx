@@ -1,14 +1,21 @@
+import React from "react";
 import { Image } from "react-native";
 import { useTheme } from "react-native-paper";
 
-const ThemedLogo = () => {
+type ThemedLogoProps = {
+	width: number;
+	height: number;
+};
+
+const ThemedLogo = (props: ThemedLogoProps) => {
   const theme = useTheme();
+  const { width, height } = props;
 
   return (
     <Image
       style={{
-        width: 140,
-        height: 140,
+        width,
+        height
       }}
       source={
         theme.dark

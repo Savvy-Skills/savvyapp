@@ -93,7 +93,7 @@ type ContentTypes = "Video" | "Image" | "Rich Text";
 
 export interface ContentInfo {
   readonly created_at: number;
-  readonly id: string
+  readonly id: string;
   type: ContentTypes;
   url: string;
   state: string;
@@ -130,6 +130,24 @@ export interface QuestionInfo {
   dataset?: string;
   context: string;
   options: Option[];
+  dataset_info?: DatasetInfo;
+}
+
+export interface DatasetInfo {
+  id: string;
+  type: string;
+  extension: string;
+  name: string;
+  url: string;
+  metadata: Metadata;
+  about: string;
+  description: string;
+  image_url: string;
+  disabled: boolean;
+}
+export interface Metadata {
+  rows: number;
+  columns: number;
 }
 
 export interface Option {

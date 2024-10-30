@@ -47,6 +47,9 @@ dependencies:
   expo-web-browser:
     specifier: ~13.0.3
     version: 13.0.3(expo@51.0.38)
+  papaparse:
+    specifier: ^5.4.1
+    version: 5.4.1
   react:
     specifier: 18.2.0
     version: 18.2.0
@@ -74,6 +77,9 @@ dependencies:
   react-native-web:
     specifier: ~0.19.10
     version: 0.19.13(react-dom@18.2.0)(react@18.2.0)
+  react-tabulator:
+    specifier: ^0.21.0
+    version: 0.21.0(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
   zustand:
     specifier: ^5.0.0
     version: 5.0.0(@types/react@18.2.79)(react@18.2.0)
@@ -85,6 +91,9 @@ devDependencies:
   '@types/jest':
     specifier: ^29.5.12
     version: 29.5.13
+  '@types/papaparse':
+    specifier: ^5.3.15
+    version: 5.3.15
   '@types/react':
     specifier: ~18.2.45
     version: 18.2.79
@@ -3092,7 +3101,6 @@ packages:
     resolution: {integrity: sha512-r1bzfrm0tomOI8g1SzvCaQHo6Lcv6zu0EA+W2kHrt8dyrHQxGzBBL4kdkzIS+jBMV+EYcMAEAqXqYaLJq5rOZg==}
     dependencies:
       '@babel/types': 7.25.8
-    dev: true
 
   /@types/cookie@0.6.0:
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
@@ -3164,8 +3172,20 @@ packages:
     dependencies:
       undici-types: 6.19.8
 
+  /@types/papaparse@5.3.15:
+    resolution: {integrity: sha512-JHe6vF6x/8Z85nCX4yFdDslN11d+1pr12E526X8WAfhadOeaOTx5AuIkvDKIBopfvlzpzkdMx4YyvSKCM9oqtw==}
+    dependencies:
+      '@types/node': 22.7.7
+    dev: true
+
   /@types/prop-types@15.7.13:
     resolution: {integrity: sha512-hCZTSvwbzWGvhqxp/RqVqwU999pBf2vp7hzIjiYOsl8wqOmUxkQ6ddw1cV3l8811+kdUFus/q4d1Y3E3SyEifA==}
+
+  /@types/react-tag-autocomplete@5.12.6:
+    resolution: {integrity: sha512-7TH9bghG+O3fwiyUrpriUs9wrOs744ilay+omshoH9ZzzDOSrNDoGmE0SfFtsxxOe5si93riFc3KHCptzzNQFQ==}
+    dependencies:
+      '@types/react': 18.2.79
+    dev: false
 
   /@types/react-test-renderer@18.3.0:
     resolution: {integrity: sha512-HW4MuEYxfDbOHQsVlY/XtOvNHftCVEPhJF2pQXXwcUiUF+Oyb0usgp48HSgpK5rt8m9KZb22yqOeZm+rrVG8gw==}
@@ -5414,6 +5434,11 @@ packages:
       lru-cache: 6.0.0
     dev: false
 
+  /html-attributes@1.1.0:
+    resolution: {integrity: sha512-reT/KK6Ju+DZqAbAn3sIkpMH+658kEsaEjpNrej2O5XSUsH5SzVHX7NGZk5RiZcVi7l+RsV+5q3C6TqM5vxsVA==}
+    engines: {node: '>= 0.10.26', npm: '>=1.4.3'}
+    dev: false
+
   /html-encoding-sniffer@3.0.0:
     resolution: {integrity: sha512-oWv4T4yJ52iKrufjnyZPkrN0CH3QnrUqdB6In1g5Fe1mia8GmF36gnfNySxoZtxD5+NmYw1EElVXiBk93UeskA==}
     engines: {node: '>=12'}
@@ -6685,6 +6710,10 @@ packages:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
     dev: false
 
+  /lodash.isplainobject@4.0.6:
+    resolution: {integrity: sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==}
+    dev: false
+
   /lodash.throttle@4.1.1:
     resolution: {integrity: sha512-wIkUCfVKpVsWo3JSZlc+8MB5it+2AN5W8J7YVMST30UrvcQNZ1Okbj+rbVniijTWE6FGYy4XJq/rHkas8qJMLQ==}
     dev: false
@@ -7469,6 +7498,10 @@ packages:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
     dev: false
 
+  /papaparse@5.4.1:
+    resolution: {integrity: sha512-HipMsgJkZu8br23pW15uvo6sib6wne/4woLZPlFf3rpDyMe9ywEXUsuD7+6K9PRkJlVT51j/sCOYDKGGS3ZJrw==}
+    dev: false
+
   /parse-json@4.0.0:
     resolution: {integrity: sha512-aOIos8bujGN93/8Ox/jPLh7RwVnPEysynVFE+fQZyg6jKELEHwzgKdLRFHUgXJL6kylijVSBC4BvN9OmsB48Rw==}
     engines: {node: '>=4'}
@@ -7548,6 +7581,14 @@ packages:
   /path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
+    dev: false
+
+  /pick-react-known-prop@0.1.5:
+    resolution: {integrity: sha512-SnDf64AVdvqoAFpHeZUKT9kdn40Ellj84CPALRxYWqNJ6r6f44eAAT+Jtkb0Suhiw7yg5BdOFAQ25OJnjG+afw==}
+    dependencies:
+      html-attributes: 1.1.0
+      lodash.isplainobject: 4.0.6
+      svg-attributes: 1.0.0
     dev: false
 
   /picocolors@1.1.1:
@@ -7989,6 +8030,36 @@ packages:
       object-assign: 4.1.1
       react: 18.2.0
       react-is: 18.3.1
+
+  /react-tabulator@0.21.0(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-CMsxG3hRDay+sXt1RBdmeslQnXLtrHN8PtM0TiN6I15pJ/xIt+x8Vt9nWPm76BD22hucMuw/RHmaoRaoA2xOMQ==}
+    peerDependencies:
+      react: '>=15.6.2 || ^16.0.0 || ^17.0.0'
+      react-dom: '>=15.6.2 || ^16.0.0 || ^17.0.0'
+    dependencies:
+      '@types/babel__traverse': 7.20.6
+      '@types/react-tag-autocomplete': 5.12.6
+      dotenv: 16.4.5
+      pick-react-known-prop: 0.1.5
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-tag-autocomplete: 5.13.1(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0)
+      tabulator-tables: 5.6.1
+    transitivePeerDependencies:
+      - prop-types
+    dev: false
+
+  /react-tag-autocomplete@5.13.1(prop-types@15.8.1)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-ECcQnizAxw8VnEDUfCKuA2ZDQ0Fyxds3kVtE4NVAhJvBYOMMgkRNAM3UwyEXAQ0h7nnCwmIA+czJiwso07Mrqw==}
+    peerDependencies:
+      prop-types: ^15.0.0
+      react: ^15.0.0 || ^16.0.0
+      react-dom: ^15.0.0 || ^16.0.0
+    dependencies:
+      prop-types: 15.8.1
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+    dev: false
 
   /react-test-renderer@18.2.0(react@18.2.0):
     resolution: {integrity: sha512-JWD+aQ0lh2gvh4NM3bBM42Kx+XybOxCpgYK7F8ugAlpaTSnWsX+39Z4XkOykGZAHrjwwTZT3x3KxswVWxHPUqA==}
@@ -8781,9 +8852,18 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
+  /svg-attributes@1.0.0:
+    resolution: {integrity: sha512-opDCROGf0kXDKJFg0so8Ydg2jewgaWRuF/35Xxuqox54Rg12rR7pLnRaru06NfJ5WCxjUSRjT5AGcikxMmzG6g==}
+    engines: {node: '>= 0.10.26', npm: '>=1.4.3'}
+    dev: false
+
   /symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
     dev: true
+
+  /tabulator-tables@5.6.1:
+    resolution: {integrity: sha512-DsmaZqEmlQS/NL5ZJbVtoaeYjJgofEFp+2er7+uwKerGwd/E2rZbeQgux4+Ab1dxNJcbptiX7oUiTwogOnUdgQ==}
+    dev: false
 
   /tar@6.2.1:
     resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}

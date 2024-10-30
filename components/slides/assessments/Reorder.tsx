@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { List, IconButton } from 'react-native-paper';
 import AssessmentWrapper from '../AssessmentWrapper';
-import { QuestionInfo } from '@/types';
 import { useModuleStore } from '@/store/moduleStore';
+import { AssessmentProps } from './SingleChoice';
 
-export default function ReorderAssessment({ question, index }: { question: QuestionInfo, index: number }) {
+export default function ReorderAssessment({ question, index }: AssessmentProps) {
   const [currentOrder, setCurrentOrder] = useState<string[]>([]);
-  const [isCorrect, setIsCorrect] = useState(false);
   const { setSubmittableState, correctnessStates, setCorrectnessState, submittedAssessments } = useModuleStore();
 
   
@@ -23,7 +22,6 @@ export default function ReorderAssessment({ question, index }: { question: Quest
   }, []);
 
   const moveItem = (index: number, direction: string) => {
-    if (isCorrect) return;
     const newOrder = [...currentOrder];
     const item = newOrder[index];
     const newIndex = direction === "up" ? index - 1 : index + 1;
@@ -37,9 +35,6 @@ export default function ReorderAssessment({ question, index }: { question: Quest
 	setCorrectnessState(index, correct);
   }, [currentOrder, index, setSubmittableState]);
 
-  const handleSubmit = () => {
-	return correctnessStates[index] || false;
-  };
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
 	(submission) => submission.question_id === question.id
@@ -48,7 +43,7 @@ export default function ReorderAssessment({ question, index }: { question: Quest
   const blocked = currentSubmission ? currentSubmission.correct : false;
 
   return (
-    <AssessmentWrapper question={question} onSubmit={handleSubmit}>
+    <AssessmentWrapper question={question}>
       <List.Section>
         {currentOrder.map((item, index) => (
           <List.Item

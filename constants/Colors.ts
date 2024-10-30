@@ -5,6 +5,14 @@
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
+const primaryColor = '#664acc';
+const blueColor = '#1d9dc9';
+const orangeColor = "#ff7b09";
+const lightOrangeColor = "#ffb850";
+
+
+const navigationOrange = "#f4bb62";
+const navigationWhite = "#d9f0fb";
 
 export const Colors = {
   light: {
@@ -14,6 +22,12 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+	primary: primaryColor,
+	blue: blueColor,
+	orange: orangeColor,
+	lightOrange: lightOrangeColor,
+	navigationOrange: navigationOrange,
+	navigationWhite: navigationWhite,
   },
   dark: {
     text: '#ECEDEE',
@@ -22,5 +36,11 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+	primary: primaryColor,
+	blue: blueColor,
+	orange: orangeColor,
+	lightOrange: lightOrangeColor,
+	navigationOrange: navigationOrange,
+	navigationWhite: navigationWhite,
   },
 };

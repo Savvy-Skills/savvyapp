@@ -1,22 +1,18 @@
-import { useAudioStore } from "@/store/audioStore";
 import styles from "@/styles/styles";
 import { QuestionInfo } from "@/types";
 import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Button, Card } from "react-native-paper";
-import { Platform } from "react-native";
+import { View, StyleSheet } from "react-native";
+import { Button, Text, Title } from "react-native-paper";
 import { useModuleStore } from "@/store/moduleStore";
 
 interface AssessmentWrapperProps {
   children: React.ReactNode;
-  onSubmit: () => boolean;
   question: QuestionInfo;
 }
 
 export default function AssessmentWrapper({
   question,
   children,
-  onSubmit,
 }: AssessmentWrapperProps) {
   const [showExplanation, setShowExplanation] = useState(false);
   const { submittedAssessments } = useModuleStore();
@@ -26,16 +22,13 @@ export default function AssessmentWrapper({
   };
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
-	(submission) => submission.question_id === question.id
+    (submission) => submission.question_id === question.id
   );
   const currentSubmission = submittedAssessments[currentSubmissionIndex];
 
-
   return (
-    <Card style={localStyles.container}>
-      {question.type != "Fill in the Blank" && (
-        <Card.Title title={question.text} />
-      )}
+    <View style={localStyles.container}>
+      {question.type != "Fill in the Blank" && <Title>{question.text}</Title>}
       {showExplanation ? (
         <View style={styles.explanationContainer}>
           <Text>{question.explanation}</Text>
@@ -47,7 +40,9 @@ export default function AssessmentWrapper({
         <View
           style={[
             styles.feedbackContainer,
-            currentSubmission.correct ? styles.correctFeedback : styles.incorrectFeedback,
+            currentSubmission.correct
+              ? styles.correctFeedback
+              : styles.incorrectFeedback,
           ]}
         >
           <Text style={styles.feedbackText}>
@@ -55,23 +50,27 @@ export default function AssessmentWrapper({
           </Text>
         </View>
       )}
-      <View style={styles.assessmentButtonContainer}>
-        {currentSubmission && (
+      {currentSubmission && (
+        <View style={styles.assessmentButtonContainer}>
           <Button mode="outlined" onPress={toggleExplanation}>
             {showExplanation ? "Hide Explanation" : "Show Explanation"}
           </Button>
-        )}
-      </View>
-    </Card>
+        </View>
+      )}
+    </View>
   );
 }
 
 const localStyles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    maxWidth: 600,
+    justifyContent: "center",
     marginLeft: "auto",
     marginRight: "auto",
+    gap: 16,
+    backgroundColor: "rgba(228, 221, 253, 0.4)",
+    padding: 16,
+	paddingTop: 24,
+	maxWidth: 600,
   },
 });

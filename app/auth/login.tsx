@@ -32,7 +32,7 @@ export default function LoginScreen() {
         style={[styles.keyboardAvoidingView]}
       >
         <View style={styles.logoContainer}>
-          <ThemedLogo />
+          <ThemedLogo width={140} height={140}/>
         </View>
         <Text style={[styles.title, { color: theme.colors.primary }]}>
           Welcome Back!

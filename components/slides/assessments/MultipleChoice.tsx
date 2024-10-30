@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
 import { Checkbox } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { QuestionInfo } from "@/types";
 import { includes } from "@/utils/utilfunctions";
 import { useModuleStore } from "@/store/moduleStore";
+import { AssessmentProps } from "./SingleChoice";
 
 export default function MultipleChoice({
   question,
   index,
-}: {
-  question: QuestionInfo;
-  index: number;
-}) {
+}: AssessmentProps	) {
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const {
     setSubmittableState,
@@ -62,7 +58,7 @@ export default function MultipleChoice({
   const blocked = currentSubmission ? currentSubmission.correct : false;
 
   return (
-    <AssessmentWrapper question={question} onSubmit={handleSubmit}>
+    <AssessmentWrapper question={question}>
       {options.map((option, index) => (
         <Checkbox.Item
           key={index}

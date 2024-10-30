@@ -5,7 +5,7 @@ import MobileVideoComponent from "../MobileVideoComponent";
 interface VideoSlideProps {
   url: string;
   isActive: boolean;
-  onVideoEnd?: () => void;
+  index: number;
 }
 
 const VideoComponent: React.FC<VideoSlideProps> = (props) => {

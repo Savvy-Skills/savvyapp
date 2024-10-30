@@ -11,8 +11,7 @@ import TopNavBar from "@/components/navigation/TopNavBar";
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
 
-  const { getModuleById, currentModule, currentSlideIndex } =
-    useModuleStore();
+  const { getModuleById, currentModule, currentSlideIndex } = useModuleStore();
 
   useEffect(() => {
     getModuleById(Number(id));
@@ -22,11 +21,9 @@ export default function ModuleDetail() {
     return null;
   }
 
-
   return (
     <ScreenWrapper>
-		 <TopNavBar />
-
+      <TopNavBar />
       {currentModule.slides.map((slide, index) => (
         <View
           key={slide.slide_id}
@@ -44,14 +41,6 @@ export default function ModuleDetail() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  topNavigation: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-  },
   slideWrapper: {
     flex: 1,
   },

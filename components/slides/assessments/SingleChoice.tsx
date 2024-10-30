@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
 import { RadioButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { QuestionInfo } from "@/types";
 import { useModuleStore } from "@/store/moduleStore";
 
-export default function SingleChoice({
-  question,
-  index,
-}: {
+export type AssessmentProps = {
   question: QuestionInfo;
   index: number;
-}) {
+};
+
+export default function SingleChoice({ question, index }: AssessmentProps) {
   const [selectedValue, setSelectedValue] = useState("");
 
   const {
@@ -34,10 +32,6 @@ export default function SingleChoice({
     }
   }, [selectedValue, index, setSubmittableState]);
 
-  const handleSubmit = () => {
-    return correctnessStates[index] || false;
-  };
-
   const currentSubmissionIndex = submittedAssessments.findIndex(
     (submission) => submission.question_id === question.id
   );
@@ -50,7 +44,7 @@ export default function SingleChoice({
   const blocked = currentSubmission ? currentSubmission.correct : false;
 
   return (
-    <AssessmentWrapper question={question} onSubmit={handleSubmit}>
+    <AssessmentWrapper question={question}>
       <RadioButton.Group
         onValueChange={(value) => setSelectedValue(value)}
         value={selectedValue}
@@ -61,6 +55,7 @@ export default function SingleChoice({
             label={option}
             value={option}
             disabled={blocked}
+            style={{ flexDirection: "row-reverse", gap: 16 }}
           />
         ))}
       </RadioButton.Group>

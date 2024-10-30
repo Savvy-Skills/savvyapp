@@ -16,16 +16,12 @@ const TopNavBar = () => {
   if (!currentModule) return null;
 
   const handleClose = () => {
-    router.replace("/modules")
+    router.replace("/modules");
   };
 
   return (
     <View style={styles.container}>
-      <IconButton
-        icon="close"
-        size={20}
-        onPress={handleClose}
-      />
+      <IconButton icon="close" size={20} onPress={handleClose} />
       {currentModule.slides.map((_, index) => (
         <TouchableOpacity
           key={index}
@@ -47,25 +43,27 @@ const TopNavBar = () => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
+	alignSelf: "center",
+	maxWidth: 600,
+	width: "100%",
   },
   slideIndicator: {
-    minWidth: 24,
+    flex: 1,
     height: 4,
     borderRadius: 4,
     backgroundColor: "#ccc",
     marginHorizontal: 2,
+    width: "100%",
   },
   completed: {
     backgroundColor: "#664acc",
   },
   current: {
+    flex: 1.5,
     backgroundColor: "#f4bb62",
     borderWidth: 2,
-    height: 6,
-    width: 30,
+    height: 10,
   },
 });
-
 export default TopNavBar;

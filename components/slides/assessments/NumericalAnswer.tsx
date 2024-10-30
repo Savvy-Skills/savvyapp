@@ -3,14 +3,14 @@ import AssessmentWrapper from "../AssessmentWrapper";
 import { TextInput } from "react-native-paper";
 import { QuestionInfo } from "@/types";
 import { useModuleStore } from "@/store/moduleStore";
+import { AssessmentProps } from "./SingleChoice";
+
+
 
 export default function NumericalAnswerAssessment({
   question,
   index,
-}: {
-  question: QuestionInfo;
-  index: number;
-}) {
+}: AssessmentProps) {
   const [value, setValue] = useState("");
   const answer = parseFloat(question.options[0].text);
   const { setSubmittableState, correctnessStates, setCorrectnessState, submittedAssessments } = useModuleStore();
@@ -46,7 +46,7 @@ export default function NumericalAnswerAssessment({
 
 
   return (
-    <AssessmentWrapper question={question} onSubmit={handleSubmit}>
+    <AssessmentWrapper question={question}>
       <TextInput value={value} onChange={handleChange} disabled={blocked} />
     </AssessmentWrapper>
   );

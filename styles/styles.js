@@ -2,13 +2,6 @@ import { StyleSheet, Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
-const colors = {
-  primary: "#007AFF",
-  secondary: "#5856D6",
-  background: "#F5FCFF",
-  text: "#333333",
-};
-
 const fontSizes = {
   small: 12,
   medium: 16,
@@ -33,12 +26,10 @@ export default StyleSheet.create({
   title: {
     fontSize: fontSizes.large,
     fontWeight: "bold",
-    color: colors.text,
     textAlign: "center",
     margin: 10,
   },
   button: {
-    backgroundColor: colors.primary,
     padding: 10,
     borderRadius: 5,
     width: width * 0.8, // 80% of screen width

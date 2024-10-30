@@ -2,16 +2,13 @@ import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { QuestionInfo } from "@/types";
 import { useModuleStore } from "@/store/moduleStore";
+import { AssessmentProps } from "./SingleChoice";
 
 export default function MatchWordsAssessment({
   question,
   index,
-}: {
-  question: QuestionInfo;
-  index: number;
-}) {
+}: AssessmentProps) {
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [connections, setConnections] = useState<{ [key: string]: string }>({});
   const {
@@ -65,7 +62,7 @@ export default function MatchWordsAssessment({
   };
 
   return (
-    <AssessmentWrapper question={question} onSubmit={handleSubmit}>
+    <AssessmentWrapper question={question}>
       <View style={styles.container}>
         <View style={styles.column}>
           {words.map((word, index) => (

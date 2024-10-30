@@ -15,26 +15,24 @@ export interface SlideProps {
 const SlideComponent = ({
   slide,
   isActive,
-  nextSlide,
   index,
 }: {
   slide: Slide
   isActive: boolean
-  nextSlide: () => void
   index: number
 }) => {
   switch (slide.type) {
     case "Assessment":
       return <AssessmentSlide slide={slide} index={index} />
     case "Activity":
-      return <ActivitySlide slide={slide} />
+      return <ActivitySlide slide={slide} index={index} />
     case "Content":
       if (slide.content_info.type === "Video") {
         return (
           <VideoComponent
             url={slide.content_info.url}
             isActive={isActive}
-            onVideoEnd={nextSlide}
+			index={index}
           />
         )
       }
@@ -45,7 +43,7 @@ const SlideComponent = ({
 }
 
 export default function SlideRenderer({ slide, index }: SlideProps) {
-  const { nextSlide, currentSlideIndex, setSubmittableState, checkSlideCompletion } = useModuleStore()
+  const { currentSlideIndex, setSubmittableState, checkSlideCompletion } = useModuleStore()
   const isActive = currentSlideIndex === index;
   
   useEffect(() => {
@@ -56,7 +54,7 @@ export default function SlideRenderer({ slide, index }: SlideProps) {
 
   useEffect(() => {
 	if (isActive && slide.type === "Content" && slide.content_info.type !== "Video") {
-	  checkSlideCompletion(slide, {viewed: true})
+	  checkSlideCompletion({viewed: true})
 	}
   },[currentSlideIndex])
 
@@ -65,7 +63,6 @@ export default function SlideRenderer({ slide, index }: SlideProps) {
       <SlideComponent 
         slide={slide} 
         isActive={isActive} 
-        nextSlide={nextSlide} 
         index={index} 
       />
     </View>

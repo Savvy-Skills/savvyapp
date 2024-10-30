@@ -5,7 +5,25 @@ import { useModuleStore } from "@/store/moduleStore";
 import { useAudioStore } from "@/store/audioStore";
 import styles from "@/styles/styles";
 import CustomNavMenu from "../CustomNavMenu";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { hexToRgbA } from "@/utils/utilfunctions";
+
+function generateColors(color: string, opacity: number) {
+	// Color can be hex, rgb, or rgba, and opacity is a number between 0 and 1, return object with rgba values of first color with full opacity and second color with specified opacity
+	// Example: generateColors("#FF0000", 0.5) => { color1: "rgba(255, 0, 0, 1)", color2: "rgba(255, 0, 0, 0.5)" }
+	let rgba: string;
+	if(color[0] === "#") {
+		rgba = hexToRgbA(color);
+	} else {
+		rgba = color;
+	}
+	const color1 = rgba.replace(/[^,]+(?=\))/, "1");
+	const color2 = rgba.replace(/[^,]+(?=\))/, opacity.toString());
+
+	return { normal: color1, disabled: color2 };	
+}
+
+const navButtonColors = generateColors("#f4bb62", 0.5);
+const checkButtonColors = generateColors("#d9f0fb", 0.5);
 
 const BottomBarNav = () => {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -123,9 +141,9 @@ const BottomBarNav = () => {
           iconColor="#000"
           theme={{
             colors: {
-              surfaceVariant: "rgb(244, 187, 98)",
-              surfaceDisabled: "rgba(244, 187, 98, 0.3)",
-            },
+				surfaceVariant: navButtonColors.normal,
+				surfaceDisabled: navButtonColors.disabled
+			}
           }}
         />
         <VerticalSeparator />
@@ -148,8 +166,8 @@ const BottomBarNav = () => {
           contentStyle={{ height: 28, margin: 0 }}
           theme={{
             colors: {
-              primary: "rgb(217, 240, 251)",
-              surfaceDisabled: "rgba(217, 240, 251, 0.3)",
+              primary: checkButtonColors.normal,
+              surfaceDisabled: checkButtonColors.disabled,
             },
           }}
         >
@@ -167,8 +185,8 @@ const BottomBarNav = () => {
           mode="contained"
           theme={{
             colors: {
-              surfaceVariant: "rgb(244, 187, 98)",
-              surfaceDisabled: "rgba(244, 187, 98, 0.3)",
+              surfaceVariant: navButtonColors.normal,
+              surfaceDisabled: navButtonColors.disabled,
             },
           }}
         />

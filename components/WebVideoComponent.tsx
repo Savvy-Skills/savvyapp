@@ -1,21 +1,23 @@
+import { useModuleStore } from "@/store/moduleStore";
 import React, { useRef, useEffect, useState } from "react";
 
 interface VideoSlideProps {
   url: string;
   isActive: boolean;
-  onVideoEnd?: () => void;
+  index: number;
 }
 
 const WebVideoComponent: React.FC<VideoSlideProps> = ({
   url,
   isActive,
-  onVideoEnd,
+  index,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [hasPlayed, setHasPlayed] = useState(false);
+  const { nextSlide, completedSlides, checkSlideCompletion } = useModuleStore();
 
   useEffect(() => {
     if (isActive && videoRef.current && !hasPlayed) {
@@ -30,16 +32,17 @@ const WebVideoComponent: React.FC<VideoSlideProps> = ({
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      const progress =
+      const locProgress =
         (videoRef.current.currentTime / videoRef.current.duration) * 100;
-      setProgress(progress);
+      setProgress(locProgress);
+	  if (!completedSlides[index] && locProgress >= 80) {
+		checkSlideCompletion({ progress: locProgress});
+	  }
     }
   };
 
   const handleEnded = () => {
-    if (onVideoEnd) {
-      onVideoEnd();
-    }
+    nextSlide();
   };
 
   const togglePlayPause = () => {

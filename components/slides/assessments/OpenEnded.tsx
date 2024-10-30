@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import AssessmentWrapper from '../AssessmentWrapper';
-import { QuestionInfo } from '@/types';
+import { AssessmentProps } from './SingleChoice';
 
-export default function OpenEnded({ question }: {question: QuestionInfo}) {
+export default function OpenEnded({ question, index }: AssessmentProps) {
   const [answer, setAnswer] = useState('');
 
   const handleSubmit = () => {
@@ -12,7 +12,7 @@ export default function OpenEnded({ question }: {question: QuestionInfo}) {
   };
 
   return (
-    <AssessmentWrapper question={question} onSubmit={handleSubmit}>
+    <AssessmentWrapper question={question}>
 		<View>
 			<TextInput
 				onChangeText={setAnswer}

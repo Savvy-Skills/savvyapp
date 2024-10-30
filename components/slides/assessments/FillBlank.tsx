@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Button } from "react-native-paper";
+import { View, StyleSheet } from "react-native";
+import { Button, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { QuestionInfo } from "@/types";
+import { useModuleStore } from "@/store/moduleStore";
+import { AssessmentProps } from "./SingleChoice";
 
 type blankArray = {
   original: string;
@@ -11,18 +12,46 @@ type blankArray = {
 
 export default function FillBlankAssessment({
   question,
-}: {
-  question: QuestionInfo;
-}) {
+  index,
+}: AssessmentProps) {
   const [blanks, setBlanks] = useState<blankArray[]>([]);
   const [remainingOptions, setRemainingOptions] = useState<string[]>([]);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const {
+    setSubmittableState,
+    correctnessStates,
+    setCorrectnessState,
+    submittedAssessments,
+  } = useModuleStore();
 
   const text = useMemo(() => question.text, [question.text]);
-  const options = useMemo(() => question.options.map((option) => option.text), [question.options]);
+  const options = useMemo(
+    () => question.options.map((option) => option.text),
+    [question.options]
+  );
 
-  const extractedBlanks = useMemo(() => text.match(/\[.*?\]/g) || [], [text]);
-  const blankOptions = useMemo(() => extractedBlanks.map((blank) => blank.replace(/\[|\]/g, "")), [extractedBlanks]);
+  const extractedBlanks = useMemo(() => {
+    const matches = text.match(/\[.*?\]/g) || [];
+    return matches.map((match) => match.replace(/[\[\]]/g, ""));
+  }, [text]);
+  const blankOptions = useMemo(
+    () => extractedBlanks.map((blank) => blank.replace(/\[|\]/g, "")),
+    [extractedBlanks]
+  );
+
+  useEffect(() => {
+    const isSubmittable = blanks.every((blank) => blank.filled !== "");
+    if (isSubmittable) {
+      setSubmittableState(index, isSubmittable);
+      const correct = blanks.every(
+        (blank) => blank.original.toLowerCase() === blank.filled.toLowerCase()
+      );
+      setCorrectnessState(index, correct);
+      console.log("Slide is submittable", blanks);
+    } else {
+      setSubmittableState(index, false);
+      setCorrectnessState(index, false);
+    }
+  }, [blanks, setCorrectnessState, setSubmittableState]);
 
   useEffect(() => {
     const blanksArray = extractedBlanks.map((blank) => ({
@@ -34,8 +63,6 @@ export default function FillBlankAssessment({
   }, [extractedBlanks, options, blankOptions]);
 
   const handleOptionPress = (option: string) => {
-    if (isCorrect) return;
-
     const newBlanks = [...blanks];
     const blankIndex = newBlanks.findIndex((blank) => blank.filled === "");
     if (blankIndex !== -1) {
@@ -46,8 +73,6 @@ export default function FillBlankAssessment({
   };
 
   const handleBlankPress = (index: number) => {
-    if (isCorrect) return;
-
     const newBlanks = [...blanks];
     if (newBlanks[index].filled) {
       setRemainingOptions([...remainingOptions, newBlanks[index].filled]);
@@ -56,13 +81,14 @@ export default function FillBlankAssessment({
     }
   };
 
-  const handleSubmit = () => {
-    const correct = blanks.every(
-      (blank) => blank.filled === blank.original.replace(/\[|\]/g, "")
-    );
-    setIsCorrect(correct);
-    return correct;
-  };
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+    (submission) => submission.question_id === question.id
+  );
+  const currentSubmission =
+    currentSubmissionIndex !== -1
+      ? submittedAssessments[currentSubmissionIndex]
+      : undefined;
+  const blocked = currentSubmission ? currentSubmission.correct : false;
 
   const renderText = () => {
     let result = [];
@@ -74,7 +100,7 @@ export default function FillBlankAssessment({
           key={`blank-${index}`}
           mode="outlined"
           onPress={() => handleBlankPress(index)}
-          disabled={isCorrect}
+          disabled={blocked}
           style={styles.blankButton}
         >
           {blank.filled || "______"}
@@ -90,7 +116,7 @@ export default function FillBlankAssessment({
   };
 
   return (
-    <AssessmentWrapper question={question} onSubmit={handleSubmit}>
+    <AssessmentWrapper question={question}>
       <View style={styles.textContainer}>{renderText()}</View>
       <View style={styles.optionsContainer}>
         {remainingOptions.map((option, index) => (
@@ -98,7 +124,7 @@ export default function FillBlankAssessment({
             key={index}
             mode="contained"
             onPress={() => handleOptionPress(option)}
-            disabled={isCorrect}
+            disabled={blocked}
             style={styles.optionButton}
           >
             {option}
