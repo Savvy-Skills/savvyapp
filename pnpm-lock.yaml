@@ -53,9 +53,9 @@ dependencies:
   papaparse:
     specifier: ^5.4.1
     version: 5.4.1
-  plotly.js-dist:
+  plotly.js:
     specifier: ^2.35.2
-    version: 2.35.2
+    version: 2.35.2(mapbox-gl@1.13.3)(webpack@5.95.0)
   react:
     specifier: 18.2.0
     version: 18.2.0
@@ -8966,10 +8966,6 @@ packages:
       '@xmldom/xmldom': 0.8.10
       base64-js: 1.5.1
       xmlbuilder: 15.1.1
-
-  /plotly.js-dist@2.35.2:
-    resolution: {integrity: sha512-zbKfz7jXGcLGoyPJxjGrKLttPiqvsEjIMHON/dEU/mnOJ+/yYoEctEEQ3qp5zQmvoovw1L47kCsQpq/GTbejBA==}
-    dev: false
 
   /plotly.js@2.35.2(mapbox-gl@1.13.3)(webpack@5.95.0):
     resolution: {integrity: sha512-s0knlWzRvLQXxzf3JQ6qbm8FpwKuMjkr+6r04f8/yCEByAQ+I0jkUzY/hSGRGb+u7iljTh9hgpEiiJP90vjyeQ==}
