@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { View } from "react-native";
 import { AssessmentSlide as AssessmentSlideType } from "@/types";
 import NumericalAnswer from "./assessments/NumericalAnswer";
@@ -8,13 +8,15 @@ import ReorderAssessment from "./assessments/Reorder";
 import FillBlankAssessment from "./assessments/FillBlank";
 import MatchWordsAssessment from "./assessments/MatchWords";
 import OpenEnded from "./assessments/OpenEnded";
-import { Text } from "react-native-paper";
 import DataTable from "../DataTable";
+import { ScrollView } from "react-native-gesture-handler";
 
 type AssessmentProps = {
   slide: AssessmentSlideType;
   index: number;
 };
+
+let PlotComponent = lazy(() => import("../DataPlot"));
 
 function AssessmentComponent({ slide, index }: AssessmentProps) {
   switch (slide.question_info.type) {
@@ -41,15 +43,66 @@ function AssessmentComponent({ slide, index }: AssessmentProps) {
   }
 }
 
+const dataform = [
+  {
+    x: 1,
+    y: 10,
+    z: 16,
+    v: 20,
+    w: 5,
+  },
+  {
+    x: 2,
+    y: 15,
+    z: 5,
+    v: 10,
+    w: 1,
+  },
+  {
+    x: 3,
+    y: 13,
+    z: 11,
+    v: 7,
+    w: 4,
+  },
+  {
+    x: 3,
+    y: 13,
+    z: 11,
+    v: 15,
+    w: 8,
+  },
+  {
+    x: 4,
+    y: 17,
+    z: 9,
+    v: 5,
+    w: 2,
+  },
+];
+
 export default function AssessmentSlide({ slide, index }: AssessmentProps) {
   return (
-    <View style={{gap: 16}}>
+    <ScrollView contentContainerStyle={{gap:16}}>
       {slide.question_info.dataset && slide.question_info.dataset_info && (
-		<DataTable source={slide.question_info.dataset_info.url}  isCSV={slide.question_info.dataset_info.extension.toLocaleLowerCase() === "csv"}/>
+        <DataTable datasetInfo={slide.question_info.dataset_info} />
       )}
+      { index === 2 &&
+        <Suspense fallback={<p>Loading</p>}>
+          <PlotComponent
+            data={dataform}
+            traces={[
+              { x: "x", y: "y", name: "First" },
+              { x: "x", y: "z", name: "Second" },
+              { x: "x", y: "v", name: "Third" },
+              { x: "w", y: "w", name: "Fourth" },
+            ]}
+          />
+        </Suspense>
+      }
       <View style={{ flexDirection: "row" }}>
         <AssessmentComponent slide={slide} index={index} />
       </View>
-    </View>
+    </ScrollView>
   );
 }

@@ -2,7 +2,7 @@ import styles from "@/styles/styles";
 import { QuestionInfo } from "@/types";
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Button, Text, Title } from "react-native-paper";
+import { Button, Text, Title, useTheme } from "react-native-paper";
 import { useModuleStore } from "@/store/moduleStore";
 
 interface AssessmentWrapperProps {
@@ -16,6 +16,7 @@ export default function AssessmentWrapper({
 }: AssessmentWrapperProps) {
   const [showExplanation, setShowExplanation] = useState(false);
   const { submittedAssessments } = useModuleStore();
+  const theme = useTheme();
 
   const toggleExplanation = () => {
     setShowExplanation(!showExplanation);
@@ -27,7 +28,7 @@ export default function AssessmentWrapper({
   const currentSubmission = submittedAssessments[currentSubmissionIndex];
 
   return (
-    <View style={localStyles.container}>
+    <View style={[localStyles.container, {backgroundColor: theme.dark ? "#6c6878" : "#F4F1FE"}]}>
       {question.type != "Fill in the Blank" && <Title>{question.text}</Title>}
       {showExplanation ? (
         <View style={styles.explanationContainer}>
@@ -68,7 +69,6 @@ const localStyles = StyleSheet.create({
     marginLeft: "auto",
     marginRight: "auto",
     gap: 16,
-    backgroundColor: "rgba(228, 221, 253, 0.4)",
     padding: 16,
 	paddingTop: 24,
 	maxWidth: 600,

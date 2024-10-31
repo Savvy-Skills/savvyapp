@@ -14,6 +14,7 @@ export function useDataFetch(source: string, isCSV: boolean = true): DataFetchRe
   const [columns, setColumns] = useState<{ Header: string; accessor: string; width: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [metadata, setMetadata] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {

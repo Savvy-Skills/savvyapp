@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
 	alignSelf: "center",
 	maxWidth: 600,
 	width: "100%",
+	paddingHorizontal: 8,
   },
   slideIndicator: {
     flex: 1,
