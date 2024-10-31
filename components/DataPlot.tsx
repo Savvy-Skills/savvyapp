@@ -3,6 +3,7 @@ import { View, StyleSheet, useWindowDimensions } from "react-native";
 import Plot from "react-plotly.js";
 import { Button, Text, Title } from "react-native-paper";
 import Slider from "@react-native-community/slider";
+import { Data, Layout, Config } from "plotly.js";
 
 type TraceConfig = {
   x: string;
@@ -30,10 +31,11 @@ export default function DataPlot({
   yAxisLabel = "Y AXIS",
   maxZoom = DEFAULT_MAX_ZOOM,
 }: DataPlotProps) {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
     Object.fromEntries(traces.map((trace) => [trace.name, true]))
   );
+  const [isScatterPlot, setIsScatterPlot] = useState(true);
 
   const [xZoom, setXZoom] = useState(0);
   const [yZoom, setYZoom] = useState(0);
@@ -54,7 +56,7 @@ export default function DataPlot({
     };
   }, [data, traces]);
 
-  const plotlyData = useMemo(() => {
+  const plotlyData: Data[] = useMemo(() => {
     return traces
       .map((trace, index) => {
         const traceColor = colors[index % colors.length];
@@ -63,7 +65,7 @@ export default function DataPlot({
           y: data.map((d) => d[trace.y]),
           name: trace.name,
           type: "scatter",
-          mode: "markers",
+          mode: isScatterPlot ? "markers" : "lines+markers",
           visible: visibleTraces[trace.name],
           line: {
             shape: "linear",
@@ -75,10 +77,10 @@ export default function DataPlot({
           },
           hoverinfo: "none",
           showlegend: false,
-        };
+        } as Data;
       })
-      .filter((trace) => trace.visible);
-  }, [data, traces, visibleTraces]);
+      .filter((trace) => trace.name && visibleTraces[trace.name]);
+  }, [data, traces, visibleTraces, isScatterPlot]);
 
   const getAxisRange = (range: { min: number; max: number }, zoom: number) => {
     const mid = (range.max + range.min) / 2;
@@ -88,7 +90,7 @@ export default function DataPlot({
     return [mid - halfSpan, mid + halfSpan];
   };
 
-  const layout = {
+  const layout: Partial<Layout> = {
     showlegend: false,
     xaxis: {
       color: "grey",
@@ -102,7 +104,6 @@ export default function DataPlot({
     },
     yaxis: {
       color: "grey",
-
       showgrid: true,
       zeroline: true,
       gridcolor: "#E4E4E4",
@@ -115,11 +116,12 @@ export default function DataPlot({
     paper_bgcolor: "white",
     margin: { l: 20, r: 20, t: 20, b: 20 },
     hovermode: false,
+    width: Math.min(width - 32, 600),
     height: 200,
     autosize: false,
   };
 
-  const config = {
+  const config: Partial<Config> = {
     displayModeBar: false,
     responsive: false,
     staticPlot: true,
@@ -130,6 +132,10 @@ export default function DataPlot({
       ...prev,
       [traceName]: !prev[traceName],
     }));
+  };
+
+  const togglePlotType = () => {
+    setIsScatterPlot((prev) => !prev);
   };
 
   return (
@@ -146,7 +152,6 @@ export default function DataPlot({
           />
         </View>
         <Title style={styles.title}>{title}</Title>
-
         <View style={styles.yAxisContainer}>
           <Text style={styles.xAxisLabel}>{xAxisLabel}</Text>
           <Slider
@@ -191,6 +196,13 @@ export default function DataPlot({
           </Button>
         ))}
       </View>
+      <Button
+        mode="contained"
+        onPress={togglePlotType}
+        style={styles.plotTypeButton}
+      >
+        {isScatterPlot ? "Show Lines" : "Hide Lines"}
+      </Button>
     </View>
   );
 }
@@ -206,7 +218,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-	paddingHorizontal: 16,
+    paddingHorizontal: 16,
   },
   title: {
     textAlign: "center",
@@ -260,7 +272,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 1.5,
   },
-
   disabledButton: {
     opacity: 0.5,
     backgroundColor: "#F5F5F5",
@@ -274,5 +285,9 @@ const styles = StyleSheet.create({
   activeButton: {
     backgroundColor: "white",
     borderColor: "#E4E4E4",
+  },
+  plotTypeButton: {
+    marginTop: 16,
+    alignSelf: "center",
   },
 });
