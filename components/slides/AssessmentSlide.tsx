@@ -84,10 +84,10 @@ const dataform = [
 export default function AssessmentSlide({ slide, index }: AssessmentProps) {
   return (
     <ScrollView contentContainerStyle={{gap:16, flexGrow: 1, justifyContent: 'center'}}>
-      {/* {slide.question_info.dataset && slide.question_info.dataset_info && (
+      {slide.question_info.dataset && slide.question_info.dataset_info && (
         <DataTable datasetInfo={slide.question_info.dataset_info} />
-      )} */}
-      { index === 3 &&
+      )}
+      { index === 2 &&
         <Suspense fallback={<p>Loading</p>}>
           <DataVisualizer
             dataset={dataform}
@@ -98,7 +98,6 @@ export default function AssessmentSlide({ slide, index }: AssessmentProps) {
               { x: "w", y: "w", name: "Fourth" },
             ]}
 			title="Data Visualizer"
-			zoomLevel={0}
           />
         </Suspense>
       }

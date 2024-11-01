@@ -163,7 +163,7 @@ export interface Image {
 }
 
 export interface LoginResponse {
-  token: string;
+  auth_token: string;
 }
 
 export interface User {

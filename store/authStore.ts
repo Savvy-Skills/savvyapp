@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         try {
           const data = await login(email, password);
-          set({ token: data.token, isLoading: false });
+          set({ token: data.auth_token, isLoading: false });
           await get().getUser();
         } catch (error) {
           console.error("Login error:", error);

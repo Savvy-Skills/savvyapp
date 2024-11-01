@@ -18,9 +18,8 @@ import { useColorScheme } from "react-native";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-
 const fontConfig = {
-	fontFamily: "Poppins",
+  fontFamily: "Poppins",
 };
 
 export default function RootLayout() {
@@ -33,7 +32,7 @@ export default function RootLayout() {
 
   const loadSounds = useAudioStore((state) => state.loadSounds);
   const soundsLoaded = useAudioStore((state) => state.soundsLoaded);
-  const { token, getUser, isInitialized } = useAuthStore();
+  const { token, getUser, isInitialized, user } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
@@ -56,7 +55,9 @@ export default function RootLayout() {
       if (!token && !inAuthGroup) {
         router.replace("/auth/login");
       } else if (token) {
-        getUser();
+        if (!user) {
+          getUser();
+        }
         if (inAuthGroup) {
           router.replace("/");
         }
