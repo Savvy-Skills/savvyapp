@@ -1,8 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import Plot from 'react-plotly.js';
-import { Button, SegmentedButtons, Text } from 'react-native-paper';
-import { Data, Layout, Config, PlotType } from 'plotly.js';
+import React, { useState, useMemo, useEffect } from "react";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  useWindowDimensions,
+} from "react-native";
+import Plot from "react-plotly.js";
+import { Button, SegmentedButtons, Text } from "react-native-paper";
+import { Data, Layout, Config, PlotType } from "plotly.js";
 
 type TraceConfig = {
   x: string;
@@ -19,54 +24,79 @@ type DataVisualizerProps = {
 };
 
 const colors = [
-  '#7B1FA2', '#2196F3', '#FF9800', '#FFC107',
-  '#4CAF50', '#E91E63', '#9C27B0', '#00BCD4',
-  '#FFEB3B', '#FF5722'
+  "#7B1FA2",
+  "#2196F3",
+  "#FF9800",
+  "#FFC107",
+  "#4CAF50",
+  "#E91E63",
+  "#9C27B0",
+  "#00BCD4",
+  "#FFEB3B",
+  "#FF5722",
 ];
 
 export default function DataVisualizer({
-	dataset,
-	traces,
-	title = "Data Visualizer",
-	xAxisLabel = "X AXIS",
-	yAxisLabel = "Y AXIS",
-  }: DataVisualizerProps) {
-	const [activeChartType, setActiveChartType] = useState<PlotType>('scatter');
-	const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
-	  Object.fromEntries(traces.map((trace) => [trace.name, true]))
-	);
-	const [isScatterPlot, setIsScatterPlot] = useState(true);
-	const [pieMode, setPieMode] = useState<'frequency' | 'sum'>('frequency');
-	const [selectedColumn, setSelectedColumn] = useState<string>(Object.keys(dataset[0])[0]);
-	const [histogramColumn, setHistogramColumn] = useState<string>(Object.keys(dataset[0])[0]);
-	const [barPlotColumn, setBarPlotColumn] = useState<string>(Object.keys(dataset[0])[0]);
-  
-	const chartTypeOptions = [
-	  { label: 'Scatter', value: 'scatter' },
-	  { label: 'Bar', value: 'bar' },
-	  { label: 'Histogram', value: 'histogram' },
-	  { label: 'Pie', value: 'pie' },
-	];
-  
-	const pieModeOptions = [
-	  { label: 'Frequency', value: 'frequency' },
-	  { label: 'Sum', value: 'sum' },
-	];
+  dataset,
+  traces,
+  title = "Data Visualizer",
+  xAxisLabel = "X AXIS",
+  yAxisLabel = "Y AXIS",
+}: DataVisualizerProps) {
+  const [activeChartType, setActiveChartType] = useState<PlotType>("scatter");
+  const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
+    Object.fromEntries(traces.map((trace) => [trace.name, true]))
+  );
+  const [isScatterPlot, setIsScatterPlot] = useState(true);
+  const [pieMode, setPieMode] = useState<"frequency" | "sum">("frequency");
+  const [selectedColumn, setSelectedColumn] = useState<string>(
+    Object.keys(dataset[0])[0]
+  );
+  const [histogramColumn, setHistogramColumn] = useState<string>(
+    Object.keys(dataset[0])[0]
+  );
+  const [barPlotColumn, setBarPlotColumn] = useState<string>(
+    Object.keys(dataset[0])[0]
+  );
+  const { width } = useWindowDimensions();
+
+  const buttonContainerStyle: {
+    justifyContent: "center" | "flex-start";
+    flex: number;
+  } = {
+    justifyContent: "center",
+    flex: 1,
+  };
+
+  if (width < 600) {
+    buttonContainerStyle.justifyContent = "flex-start";
+  }
+  const chartTypeOptions = [
+    { label: "Scatter", value: "scatter" },
+    { label: "Bar", value: "bar" },
+    { label: "Histogram", value: "histogram" },
+    { label: "Pie", value: "pie" },
+  ];
+
+  const pieModeOptions = [
+    { label: "Frequency", value: "frequency" },
+    { label: "Sum", value: "sum" },
+  ];
 
   const ranges = useMemo(() => {
-    if (['pie', 'bar', 'histogram'].includes(activeChartType)) return null;
-    
+    if (["pie", "bar", "histogram"].includes(activeChartType)) return null;
+
     const xValues = dataset.flatMap((d) => traces.map((t) => d[t.x]));
     const yValues = dataset.flatMap((d) => traces.map((t) => d[t.y]));
-    
+
     const xMin = Math.min(...xValues);
     const xMax = Math.max(...xValues);
     const yMin = Math.min(...yValues);
     const yMax = Math.max(...yValues);
-    
+
     const xPadding = (xMax - xMin) * 0.2;
     const yPadding = (yMax - yMin) * 0.2;
-    
+
     return {
       x: [xMin - xPadding, xMax + xPadding],
       y: [yMin - yPadding, yMax + yPadding],
@@ -75,73 +105,81 @@ export default function DataVisualizer({
 
   const plotlyData: Data[] = useMemo(() => {
     switch (activeChartType) {
-      case 'pie':
-        if (pieMode === 'frequency') {
+      case "pie":
+        if (pieMode === "frequency") {
           const frequencies: Record<string, number> = {};
           dataset.forEach((item) => {
             const value = String(item[selectedColumn]);
             frequencies[value] = (frequencies[value] || 0) + 1;
           });
-          
-          return [{
-            type: 'pie',
-            labels: Object.keys(frequencies),
-            values: Object.values(frequencies),
-            textinfo: 'label+percent',
-            hoverinfo: 'none',
-            showlegend: false,
-            marker: {
-              colors: colors,
-            },
-          } as Data];
+
+          return [
+            {
+              type: "pie",
+              labels: Object.keys(frequencies),
+              values: Object.values(frequencies),
+              textinfo: "label+percent",
+              hoverinfo: "none",
+              showlegend: false,
+              marker: {
+                colors: colors,
+              },
+            } as Data,
+          ];
         } else {
           const sums: Record<string, number> = {};
           dataset.forEach((item) => {
             Object.entries(item).forEach(([key, value]) => {
-              if (typeof value === 'number') {
+              if (typeof value === "number") {
                 sums[key] = (sums[key] || 0) + value;
               }
             });
           });
-          
-          return [{
-            type: 'pie',
-            labels: Object.keys(sums),
-            values: Object.values(sums),
-            textinfo: 'label+percent',
-            hoverinfo: 'none',
-            showlegend: false,
-            marker: {
-              colors: colors,
-            },
-          } as Data];
+
+          return [
+            {
+              type: "pie",
+              labels: Object.keys(sums),
+              values: Object.values(sums),
+              textinfo: "label+percent",
+              hoverinfo: "none",
+              showlegend: false,
+              marker: {
+                colors: colors,
+              },
+            } as Data,
+          ];
         }
-      
-      case 'bar':
+
+      case "bar":
         const barData: Record<string, number> = {};
         dataset.forEach((item) => {
           const value = String(item[barPlotColumn]);
           barData[value] = (barData[value] || 0) + 1;
         });
-        
-        return [{
-          type: 'bar',
-          x: Object.keys(barData),
-          y: Object.values(barData),
-          marker: {
-            color: colors,
-          },
-        } as Data];
-      
-      case 'histogram':
-        return [{
-          type: 'histogram',
-          x: dataset.map(item => item[histogramColumn]),
-          marker: {
-            color: colors[0],
-          },
-        } as Data];
-      
+
+        return [
+          {
+            type: "bar",
+            x: Object.keys(barData),
+            y: Object.values(barData),
+            marker: {
+              color: colors,
+            },
+          } as Data,
+        ];
+
+      case "histogram":
+        return [
+          {
+            type: "histogram",
+            x: dataset.map((item) => item[histogramColumn]),
+            marker: {
+              color: colors[0],
+            },
+          } as Data,
+        ];
+
       default:
         return traces
           .map((trace, index) => {
@@ -150,52 +188,66 @@ export default function DataVisualizer({
               x: dataset.map((d) => d[trace.x]),
               y: dataset.map((d) => d[trace.y]),
               name: trace.name,
-              type: 'scatter',
-              mode: isScatterPlot ? 'markers' : 'lines+markers',
+              type: "scatter",
+              mode: isScatterPlot ? "markers" : "lines+markers",
               visible: visibleTraces[trace.name],
               line: {
-                shape: 'linear',
+                shape: "linear",
                 color: traceColor,
               },
               marker: {
                 size: 6,
                 color: traceColor,
               },
-              hoverinfo: 'none',
+              hoverinfo: "none",
               showlegend: false,
             } as Data;
           })
           .filter((trace) => (trace as any).visible);
     }
-  }, [dataset, traces, activeChartType, visibleTraces, isScatterPlot, pieMode, selectedColumn, barPlotColumn, histogramColumn]);
+  }, [
+    dataset,
+    traces,
+    activeChartType,
+    visibleTraces,
+    isScatterPlot,
+    pieMode,
+    selectedColumn,
+    barPlotColumn,
+    histogramColumn,
+  ]);
 
   const layout: Partial<Layout> = {
     showlegend: false,
-    xaxis: ['pie'].includes(activeChartType) ? { visible: false } : {
-      color: 'grey',
-      showgrid: true,
-      zeroline: true,
-      gridcolor: '#E4E4E4',
-      gridwidth: 1,
-      hoverformat: ' ',
-      range: ranges?.x,
-      title: {
-        text: activeChartType === 'histogram' ? histogramColumn : '',
-      },
-    },
-    yaxis: ['pie'].includes(activeChartType) ? { visible: false } : {
-      color: 'grey',
-      showgrid: true,
-      zeroline: true,
-      gridcolor: '#E4E4E4',
-      gridwidth: 1,
-      hoverformat: ' ',
-      range: ranges?.y,
-      title: {
-        text: activeChartType === 'bar' ? 'Frequency' : '',
-      },
-    },
-    margin: ['pie'].includes(activeChartType)
+    xaxis: ["pie"].includes(activeChartType)
+      ? { visible: false }
+      : {
+          color: "grey",
+          showgrid: true,
+          zeroline: true,
+          gridcolor: "#E4E4E4",
+          gridwidth: 1,
+          hoverformat: " ",
+          range: ranges?.x,
+          title: {
+            text: activeChartType === "histogram" ? histogramColumn : "",
+          },
+        },
+    yaxis: ["pie"].includes(activeChartType)
+      ? { visible: false }
+      : {
+          color: "grey",
+          showgrid: true,
+          zeroline: true,
+          gridcolor: "#E4E4E4",
+          gridwidth: 1,
+          hoverformat: " ",
+          range: ranges?.y,
+          title: {
+            text: activeChartType === "bar" ? "Frequency" : "",
+          },
+        },
+    margin: ["pie"].includes(activeChartType)
       ? { l: 10, r: 10, t: 10, b: 10 }
       : { l: 50, r: 30, t: 20, b: 50 },
     hovermode: false,
@@ -226,18 +278,18 @@ export default function DataVisualizer({
         value={activeChartType}
         onValueChange={(value) => setActiveChartType(value as PlotType)}
         buttons={chartTypeOptions}
-        style={{marginBottom: 16}}
+        style={{ marginBottom: 16 }}
       />
-      {activeChartType === 'pie' && (
+      {activeChartType === "pie" && (
         <SegmentedButtons
           value={pieMode}
-          onValueChange={(value) => setPieMode(value as 'frequency' | 'sum')}
+          onValueChange={(value) => setPieMode(value as "frequency" | "sum")}
           buttons={pieModeOptions}
-          style={{marginBottom: 16}}
+          style={{ marginBottom: 16 }}
         />
       )}
       <View style={styles.plotWrapper}>
-        {!['pie'].includes(activeChartType) && (
+        {!["pie"].includes(activeChartType) && (
           <>
             <View style={styles.yAxisLabelContainer}>
               <Text style={styles.axisLabel}>{yAxisLabel}</Text>
@@ -256,8 +308,13 @@ export default function DataVisualizer({
           />
         </View>
       </View>
-      <ScrollView horizontal contentContainerStyle={styles.buttonContainer}>
-        {activeChartType === 'pie' && pieMode === 'frequency' && (
+      <ScrollView
+        horizontal
+        contentContainerStyle={buttonContainerStyle}
+        showsVerticalScrollIndicator={false}
+      >
+        {activeChartType === "pie" &&
+          pieMode === "frequency" &&
           Object.keys(dataset[0]).map((columnName, index) => (
             <Button
               key={columnName}
@@ -278,9 +335,8 @@ export default function DataVisualizer({
             >
               {columnName}
             </Button>
-          ))
-        )}
-        {activeChartType === 'bar' && (
+          ))}
+        {activeChartType === "bar" &&
           Object.keys(dataset[0]).map((columnName, index) => (
             <Button
               key={columnName}
@@ -301,9 +357,8 @@ export default function DataVisualizer({
             >
               {columnName}
             </Button>
-          ))
-        )}
-        {activeChartType === 'histogram' && (
+          ))}
+        {activeChartType === "histogram" &&
           Object.keys(dataset[0]).map((columnName, index) => (
             <Button
               key={columnName}
@@ -324,9 +379,8 @@ export default function DataVisualizer({
             >
               {columnName}
             </Button>
-          ))
-        )}
-        {activeChartType === 'scatter' && (
+          ))}
+        {activeChartType === "scatter" &&
           traces.map((trace, index) => (
             <Button
               key={trace.name}
@@ -347,10 +401,9 @@ export default function DataVisualizer({
             >
               {trace.name}
             </Button>
-          ))
-        )}
+          ))}
       </ScrollView>
-      {activeChartType === 'scatter' && (
+      {activeChartType === "scatter" && (
         <Button
           mode="contained"
           onPress={togglePlotType}
@@ -411,13 +464,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 1,
   },
-  buttonContainer: {
-	flex:1,
-	justifyContent: "center",
-  },
   chartTypeButtons: {
-	flex: 1,
-	justifyContent	: "center",
+    flex: 1,
+    justifyContent: "center",
   },
   pieModeButtons: {
     flexDirection: "row",
