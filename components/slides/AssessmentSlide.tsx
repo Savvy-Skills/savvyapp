@@ -16,7 +16,7 @@ type AssessmentProps = {
   index: number;
 };
 
-let PlotComponent = lazy(() => import("../DataPlot"));
+let DataVisualizer = lazy(() => import("../DataVisualizer"));
 
 function AssessmentComponent({ slide, index }: AssessmentProps) {
   switch (slide.question_info.type) {
@@ -83,20 +83,22 @@ const dataform = [
 
 export default function AssessmentSlide({ slide, index }: AssessmentProps) {
   return (
-    <ScrollView contentContainerStyle={{gap:16}}>
-      {slide.question_info.dataset && slide.question_info.dataset_info && (
+    <ScrollView contentContainerStyle={{gap:16, flexGrow: 1, justifyContent: 'center'}}>
+      {/* {slide.question_info.dataset && slide.question_info.dataset_info && (
         <DataTable datasetInfo={slide.question_info.dataset_info} />
-      )}
-      { index === 2 &&
+      )} */}
+      { index === 3 &&
         <Suspense fallback={<p>Loading</p>}>
-          <PlotComponent
-            data={dataform}
+          <DataVisualizer
+            dataset={dataform}
             traces={[
               { x: "x", y: "y", name: "First" },
               { x: "x", y: "z", name: "Second" },
               { x: "x", y: "v", name: "Third" },
               { x: "w", y: "w", name: "Fourth" },
             ]}
+			title="Data Visualizer"
+			zoomLevel={0}
           />
         </Suspense>
       }

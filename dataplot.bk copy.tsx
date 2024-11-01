@@ -116,14 +116,12 @@ export default function DataPlot({
     paper_bgcolor: "white",
     margin: { l: 20, r: 20, t: 20, b: 20 },
     hovermode: false,
-    width: Math.min(width - 32, 600),
-    height: 200,
     autosize: false,
   };
 
   const config: Partial<Config> = {
     displayModeBar: false,
-    responsive: false,
+    responsive: true,
     staticPlot: true,
   };
 

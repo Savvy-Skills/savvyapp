@@ -1,21 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { IconButton, useTheme } from "react-native-paper";
+import { useLocalSearchParams } from "expo-router";
 import { useModuleStore } from "../../store/moduleStore";
 import SlideRenderer from "../../components/slides/SlideRenderer";
 import BottomBarNav from "@/components/navigation/BottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
+import AnimatedSlide from "@/components/slides/AnimatedSlide";
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
-
   const { getModuleById, currentModule, currentSlideIndex } = useModuleStore();
+  const [direction, setDirection] = useState<'forward' | 'backward' | null>(null);
+  const prevIndexRef = useRef(currentSlideIndex);
+  const [isInitialRender, setIsInitialRender] = useState(true);
 
   useEffect(() => {
     getModuleById(Number(id));
   }, [id]);
+
+  useEffect(() => {
+    if (currentSlideIndex !== prevIndexRef.current) {
+      setDirection(currentSlideIndex > prevIndexRef.current ? 'forward' : 'backward');
+      prevIndexRef.current = currentSlideIndex;
+      setIsInitialRender(false);
+    }
+  }, [currentSlideIndex]);
 
   if (!currentModule) {
     return null;
@@ -24,24 +34,26 @@ export default function ModuleDetail() {
   return (
     <ScreenWrapper>
       <TopNavBar />
-      {currentModule.slides.map((slide, index) => (
-        <View
-          key={slide.slide_id}
-          style={[
-            styles.slideWrapper,
-            { display: index === currentSlideIndex ? "flex" : "none" },
-          ]}
-        >
-          <SlideRenderer slide={slide} index={index} />
-        </View>
-      ))}
+      <View style={styles.slidesContainer}>
+        {currentModule.slides.map((slide, index) => (
+          <AnimatedSlide
+            key={slide.slide_id}
+            isActive={index === currentSlideIndex}
+            direction={index === currentSlideIndex ? direction : null}
+            isInitialRender={isInitialRender && index === currentSlideIndex}
+          >
+            <SlideRenderer slide={slide} index={index} />
+          </AnimatedSlide>
+        ))}
+      </View>
       <BottomBarNav />
     </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  slideWrapper: {
+  slidesContainer: {
     flex: 1,
+    position: 'relative',
   },
 });

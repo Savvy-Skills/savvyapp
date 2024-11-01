@@ -38,20 +38,6 @@ export default function AssessmentWrapper({
         <>{children}</>
       )}
       {currentSubmission && (
-        <View
-          style={[
-            styles.feedbackContainer,
-            currentSubmission.correct
-              ? styles.correctFeedback
-              : styles.incorrectFeedback,
-          ]}
-        >
-          <Text style={styles.feedbackText}>
-            {currentSubmission.correct ? "Correct!" : "Incorrect"}
-          </Text>
-        </View>
-      )}
-      {currentSubmission && (
         <View style={styles.assessmentButtonContainer}>
           <Button mode="outlined" onPress={toggleExplanation}>
             {showExplanation ? "Hide Explanation" : "Show Explanation"}

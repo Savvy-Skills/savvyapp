@@ -45,8 +45,6 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
 
 const styles = StyleSheet.create({
   overlay: {
-    position: "absolute",
-    bottom: 0, // Adjust this value based on your bottom bar height
     alignItems: "center",
     alignSelf: "center",
   },
