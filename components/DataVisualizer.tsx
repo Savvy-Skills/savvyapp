@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import Plot from 'react-plotly.js';
-import { Button, Text } from 'react-native-paper';
+import { Button, SegmentedButtons, Text } from 'react-native-paper';
 import { Data, Layout, Config, PlotType } from 'plotly.js';
 
 type TraceConfig = {
@@ -25,21 +25,33 @@ const colors = [
 ];
 
 export default function DataVisualizer({
-  dataset,
-  traces,
-  title = "Data Visualizer",
-  xAxisLabel = "X AXIS",
-  yAxisLabel = "Y AXIS",
-}: DataVisualizerProps) {
-  const [activeChartType, setActiveChartType] = useState<PlotType>('scatter');
-  const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
-    Object.fromEntries(traces.map((trace) => [trace.name, true]))
-  );
-  const [isScatterPlot, setIsScatterPlot] = useState(true);
-  const [pieMode, setPieMode] = useState<'frequency' | 'sum'>('frequency');
-  const [selectedColumn, setSelectedColumn] = useState<string>(Object.keys(dataset[0])[0]);
-  const [histogramColumn, setHistogramColumn] = useState<string>(Object.keys(dataset[0])[0]);
-  const [barPlotColumn, setBarPlotColumn] = useState<string>(Object.keys(dataset[0])[0]);
+	dataset,
+	traces,
+	title = "Data Visualizer",
+	xAxisLabel = "X AXIS",
+	yAxisLabel = "Y AXIS",
+  }: DataVisualizerProps) {
+	const [activeChartType, setActiveChartType] = useState<PlotType>('scatter');
+	const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
+	  Object.fromEntries(traces.map((trace) => [trace.name, true]))
+	);
+	const [isScatterPlot, setIsScatterPlot] = useState(true);
+	const [pieMode, setPieMode] = useState<'frequency' | 'sum'>('frequency');
+	const [selectedColumn, setSelectedColumn] = useState<string>(Object.keys(dataset[0])[0]);
+	const [histogramColumn, setHistogramColumn] = useState<string>(Object.keys(dataset[0])[0]);
+	const [barPlotColumn, setBarPlotColumn] = useState<string>(Object.keys(dataset[0])[0]);
+  
+	const chartTypeOptions = [
+	  { label: 'Scatter', value: 'scatter' },
+	  { label: 'Bar', value: 'bar' },
+	  { label: 'Histogram', value: 'histogram' },
+	  { label: 'Pie', value: 'pie' },
+	];
+  
+	const pieModeOptions = [
+	  { label: 'Frequency', value: 'frequency' },
+	  { label: 'Sum', value: 'sum' },
+	];
 
   const ranges = useMemo(() => {
     if (['pie', 'bar', 'histogram'].includes(activeChartType)) return null;
@@ -210,15 +222,28 @@ export default function DataVisualizer({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title} accessibilityRole="header">{title}</Text>
+      <SegmentedButtons
+        value={activeChartType}
+        onValueChange={(value) => setActiveChartType(value as PlotType)}
+        buttons={chartTypeOptions}
+        style={{marginBottom: 16}}
+      />
+      {activeChartType === 'pie' && (
+        <SegmentedButtons
+          value={pieMode}
+          onValueChange={(value) => setPieMode(value as 'frequency' | 'sum')}
+          buttons={pieModeOptions}
+          style={{marginBottom: 16}}
+        />
+      )}
       <View style={styles.plotWrapper}>
         {!['pie'].includes(activeChartType) && (
           <>
             <View style={styles.yAxisLabelContainer}>
-              <Text style={styles.axisLabel} accessibilityRole="text">{yAxisLabel}</Text>
+              <Text style={styles.axisLabel}>{yAxisLabel}</Text>
             </View>
             <View style={styles.xAxisLabelContainer}>
-              <Text style={styles.axisLabel} accessibilityRole="text">{xAxisLabel}</Text>
+              <Text style={styles.axisLabel}>{xAxisLabel}</Text>
             </View>
           </>
         )}
@@ -231,54 +256,6 @@ export default function DataVisualizer({
           />
         </View>
       </View>
-      <ScrollView horizontal contentContainerStyle={styles.chartTypeButtons}>
-        <Button
-          mode={activeChartType === 'scatter' ? 'contained' : 'outlined'}
-          onPress={() => setActiveChartType('scatter')}
-          style={styles.button}
-        >
-          Scatter
-        </Button>
-        <Button
-          mode={activeChartType === 'pie' ? 'contained' : 'outlined'}
-          onPress={() => setActiveChartType('pie')}
-          style={styles.button}
-        >
-          Pie
-        </Button>
-        <Button
-          mode={activeChartType === 'bar' ? 'contained' : 'outlined'}
-          onPress={() => setActiveChartType('bar')}
-          style={styles.button}
-        >
-          Bar
-        </Button>
-        <Button
-          mode={activeChartType === 'histogram' ? 'contained' : 'outlined'}
-          onPress={() => setActiveChartType('histogram')}
-          style={styles.button}
-        >
-          Histogram
-        </Button>
-      </ScrollView>
-      {activeChartType === 'pie' && (
-        <View style={styles.pieModeButtons}>
-          <Button
-            mode={pieMode === 'frequency' ? 'contained' : 'outlined'}
-            onPress={() => setPieMode('frequency')}
-            style={styles.button}
-          >
-            Frequency
-          </Button>
-          <Button
-            mode={pieMode === 'sum' ? 'contained' : 'outlined'}
-            onPress={() => setPieMode('sum')}
-            style={styles.button}
-          >
-            Sum
-          </Button>
-        </View>
-      )}
       <ScrollView horizontal contentContainerStyle={styles.buttonContainer}>
         {activeChartType === 'pie' && pieMode === 'frequency' && (
           Object.keys(dataset[0]).map((columnName, index) => (
