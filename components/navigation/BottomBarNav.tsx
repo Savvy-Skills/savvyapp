@@ -79,7 +79,7 @@ const BottomBarNav = () => {
 
     setSubmittedAssessments(newSubmissions);
 
-    playSound(isCurrentSlideCorrect ? "success" : "failure");
+    playSound(isCurrentSlideCorrect ? "success" : "failVariant", 0.6);
     setCorrectness(isCurrentSlideCorrect);
     onToggleSnackBar();
     if (isCurrentSlideCorrect) {
