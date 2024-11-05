@@ -14,6 +14,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAudioStore } from "@/store/audioStore";
 import { useAuthStore } from "@/store/authStore";
 import { useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -75,19 +76,23 @@ export default function RootLayout() {
       : { ...MD3LightTheme, fonts: configureFonts({ config: fontConfig }) };
 
   return (
-    <PaperProvider theme={paperTheme}>
-      <SafeAreaProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ title: "Home" }} />
-          <Stack.Screen name="modules/index" options={{ title: "Modules" }} />
-          <Stack.Screen
-            name="modules/[id]"
-            options={{ title: "Module Details" }}
-          />
-          <Stack.Screen name="auth/login" options={{ title: "Login" }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </SafeAreaProvider>
-    </PaperProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PaperProvider theme={paperTheme}>
+        <SafeAreaProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" options={{ title: "Home" }} />
+            <Stack.Screen name="modules/index" options={{ title: "Modules" }} />
+            <Stack.Screen
+              name="modules/[id]"
+              options={{ title: "Module Details" }}
+            />
+            <Stack.Screen name="auth/login" options={{ title: "Login" }} />
+
+            <Stack.Screen name="debug/index" options={{ title: "Debug" }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </SafeAreaProvider>
+      </PaperProvider>
+    </GestureHandlerRootView>
   );
 }

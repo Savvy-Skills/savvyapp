@@ -71,8 +71,8 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
           slides: module.slides.sort((a, b) => a.order - b.order),
         },
       });
-    } catch {
-      console.error("Error fetching module");
+    } catch (e){
+      console.error("Error fetching module:", {e});
     }
   },
   nextSlide: () => {

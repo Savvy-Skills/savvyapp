@@ -1,10 +1,9 @@
-import axios from "axios";
 import { Module, ModuleWithSlides } from "../types";
 import { useAuthStore } from "@/store/authStore";
 import { createAPI } from "./apiConfig";
 
 const baseURL = "https://xfpf-pye0-4nzu.n7d.xano.io/api:edObfuQW";
-const module_api = createAPI(baseURL);
+export const module_api = createAPI(baseURL);
 
 export const fetchModules = async (): Promise<Module[]> => {
   try {
@@ -32,10 +31,6 @@ export const fetchModuleById = async (
 
 module_api.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
     config.headers["Content-Type"] = "multipart/form-data";
     return config;
   },

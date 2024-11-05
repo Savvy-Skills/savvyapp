@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from "react";
-import { View } from "react-native";
+import React from "react";
+import { Platform, View } from "react-native";
 import { AssessmentSlide as AssessmentSlideType } from "@/types";
 import NumericalAnswer from "./assessments/NumericalAnswer";
 import SingleChoice from "./assessments/SingleChoice";
@@ -16,7 +16,7 @@ type AssessmentProps = {
   index: number;
 };
 
-let DataVisualizer = lazy(() => import("../DataVisualizer"));
+// const DataVisualizer = require("@/components/DataVisualizer").default;
 
 function AssessmentComponent({ slide, index }: AssessmentProps) {
   switch (slide.question_info.type) {
@@ -83,24 +83,24 @@ const dataform = [
 
 export default function AssessmentSlide({ slide, index }: AssessmentProps) {
   return (
-    <ScrollView contentContainerStyle={{gap:16, flexGrow: 1, justifyContent: 'center'}}>
+    <ScrollView
+      contentContainerStyle={{ gap: 16, flexGrow: 1, justifyContent: "center" }}
+    >
       {slide.question_info.dataset && slide.question_info.dataset_info && (
         <DataTable datasetInfo={slide.question_info.dataset_info} />
       )}
-      { index === 2 &&
-        <Suspense fallback={<p>Loading</p>}>
-          <DataVisualizer
-            dataset={dataform}
-            traces={[
-              { x: "x", y: "y", name: "First" },
-              { x: "x", y: "z", name: "Second" },
-              { x: "x", y: "v", name: "Third" },
-              { x: "w", y: "w", name: "Fourth" },
-            ]}
-			title="Data Visualizer"
-          />
-        </Suspense>
-      }
+      {/* {index === 2 && Platform.OS === "web" && (
+        <DataVisualizer
+          dataset={dataform}
+          traces={[
+            { x: "x", y: "y", name: "First" },
+            { x: "x", y: "z", name: "Second" },
+            { x: "x", y: "v", name: "Third" },
+            { x: "w", y: "w", name: "Fourth" },
+          ]}
+          title="Data Visualizer"
+        />
+      )} */}
       <View style={{ flexDirection: "row" }}>
         <AssessmentComponent slide={slide} index={index} />
       </View>

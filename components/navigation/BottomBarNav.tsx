@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { IconButton, Button, Text } from "react-native-paper";
+import { IconButton, Button, Text, Snackbar, Icon } from "react-native-paper";
 import { useModuleStore } from "@/store/moduleStore";
 import { useAudioStore } from "@/store/audioStore";
 import styles from "@/styles/styles";
@@ -27,6 +27,13 @@ const checkButtonColors = generateColors("#d9f0fb", 0.5);
 
 const BottomBarNav = () => {
   const [menuVisible, setMenuVisible] = useState(false);
+
+  const [snackVisible, setSnackVisible] = useState(false);
+  const [correctness, setCorrectness] = useState(false);
+
+  const onToggleSnackBar = () => setSnackVisible(!snackVisible);
+  const onDismissSnackBar = () => setSnackVisible(false);
+
   const menuRef = useRef(null as any);
 
   const {
@@ -42,26 +49,6 @@ const BottomBarNav = () => {
   } = useModuleStore();
 
   const { playSound } = useAudioStore();
-
-  useEffect(() => {
-    const handleOutsideClick = (event: any) => {
-      if (
-        menuVisible &&
-        menuRef.current &&
-        !menuRef.current.contains(event.target)
-      ) {
-        setMenuVisible(false);
-      }
-    };
-
-    if (menuVisible) {
-      document.addEventListener("click", handleOutsideClick);
-    }
-
-    return () => {
-      document.removeEventListener("click", handleOutsideClick);
-    };
-  }, [menuVisible]);
 
   const isLastSlide =
     currentModule && currentSlideIndex === currentModule.slides.length - 1;
@@ -93,6 +80,8 @@ const BottomBarNav = () => {
     setSubmittedAssessments(newSubmissions);
 
     playSound(isCurrentSlideCorrect ? "success" : "failure");
+    setCorrectness(isCurrentSlideCorrect);
+    onToggleSnackBar();
     if (isCurrentSlideCorrect) {
       checkSlideCompletion();
     }
@@ -119,6 +108,12 @@ const BottomBarNav = () => {
     handleDismissMenu();
   };
 
+  useEffect(() => {
+    if (snackVisible) {
+      onDismissSnackBar();
+    }
+  }, [currentSlideIndex]);
+
   const isCurrentSlideAssessment =
     currentModule?.slides[currentSlideIndex].type === "Assessment";
   const showFeedback = isCurrentSlideAssessment && submission;
@@ -134,29 +129,21 @@ const BottomBarNav = () => {
           onExplanation={handleExplanation}
           onReportProblem={handleReportProblem}
         />
-        {showFeedback && (
-          <View
-            style={[
-              localStyles.feedbackContainer,
-              isCurrentSubmissionCorrect
-                ? localStyles.correctContainer
-                : localStyles.incorrectContainer,
-            ]}
-          >
-            <Text
-              style={[
-                localStyles.feedbackText,
-                isCurrentSubmissionCorrect
-                  ? localStyles.correctFeedback
-                  : localStyles.incorrectFeedback,
-              ]}
-            >
-              {isCurrentSubmissionCorrect
-                ? "Correct!"
-                : "Incorrect. Try again!"}
-            </Text>
-          </View>
-        )}
+        <Snackbar
+          visible={snackVisible}
+          onDismiss={onDismissSnackBar}
+          duration={2000}
+          onIconPress={() => {
+            onDismissSnackBar();
+          }}
+          style={[
+            correctness
+              ? localStyles.correctContainer
+              : localStyles.incorrectContainer,
+          ]}
+        >
+          {correctness ? "Correct!" : "Incorrect. Try again!"}
+        </Snackbar>
       </View>
       <View style={styles.bottomNavigation}>
         <IconButton
@@ -238,16 +225,15 @@ const localStyles = StyleSheet.create({
   },
   menusContainer: {
     position: "absolute",
-	width: "100%",
+    width: "100%",
     bottom: 70,
     gap: 16,
-	maxWidth: 280,
-	left: "50%",
-	transform: "translateX(-50%)",
+    maxWidth: 280,
+    alignSelf: "center",
   },
   feedbackContainer: {
-	flex: 1,
-	maxWidth: 280, // Limit width to 600px
+    flex: 1,
+    maxWidth: 280, // Limit width to 600px
     alignItems: "center",
     paddingVertical: 8,
     borderRadius: 4,
@@ -256,10 +242,12 @@ const localStyles = StyleSheet.create({
   correctContainer: {
     backgroundColor: "#C8E6C9",
     borderColor: "#4CAF50",
+    borderWidth: 1,
   },
   incorrectContainer: {
-    backgroundColor: "#FFEBEE",
     borderColor: "#F44336",
+    backgroundColor: "#FFEBEE",
+    borderWidth: 1,
   },
   correctFeedback: {
     color: "#4CAF50",

@@ -5,7 +5,7 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import Plot from "react-plotly.js";
+import Plotly from 'react-native-plotly'
 import { Button, SegmentedButtons, Text } from "react-native-paper";
 import { Data, Layout, Config, PlotType } from "plotly.js";
 
@@ -36,13 +36,13 @@ const colors = [
   "#FF5722",
 ];
 
-export default function DataVisualizer({
+const DataVisualizer: React.FC<DataVisualizerProps> =({
   dataset,
   traces,
   title = "Data Visualizer",
   xAxisLabel = "X AXIS",
   yAxisLabel = "Y AXIS",
-}: DataVisualizerProps) {
+}) => {
   const [activeChartType, setActiveChartType] = useState<PlotType>("scatter");
   const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
     Object.fromEntries(traces.map((trace) => [trace.name, true]))
@@ -300,7 +300,7 @@ export default function DataVisualizer({
           </>
         )}
         <View style={styles.plotContainer}>
-          <Plot
+          <Plotly
             data={plotlyData}
             layout={layout}
             config={config}
@@ -415,6 +415,8 @@ export default function DataVisualizer({
     </View>
   );
 }
+
+export default DataVisualizer;
 
 const styles = StyleSheet.create({
   container: {

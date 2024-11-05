@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types";
 import { login, authme, authAPI } from "../services/authapi";
+import { module_api } from "@/services/moduleapi";
 import { Platform } from "react-native";
 
 // Create a cross-platform storage object
@@ -52,6 +53,8 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         try {
           const data = await login(email, password);
+          await setInterceptors(authAPI, data.auth_token);
+          await setInterceptors(module_api, data.auth_token);
           set({ token: data.auth_token, isLoading: false });
           await get().getUser();
         } catch (error) {
@@ -82,21 +85,42 @@ export const useAuthStore = create<AuthStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setInitialized();
-		  authAPI.interceptors.request.use(
-			(config) => {
-			  const token = state.token
-			  if (token) {
-				config.headers["Authorization"] = `Bearer ${token}`;
-			  }
-			  config.headers["Content-Type"] = "application/json";
-			  return config;
-			},
-			(error) => {
-			  return Promise.reject(error);
-			}
-		  );
+          const token = state.token;
+          if (token) {
+            setInterceptors(authAPI, token);
+            setInterceptors(module_api, token);
+          }
         }
       },
     }
   )
 );
+
+async function setInterceptors(api: any, token: string) {
+  // Clear existing interceptors
+  api.interceptors.request.eject(api.interceptors.request.handlers[0]);
+  api.interceptors.response.eject(api.interceptors.response.handlers[0]);
+
+  api.interceptors.request.use(
+    (config: any) => {
+      if (token) {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error: any) => {
+      return Promise.reject(error);
+    }
+  );
+  api.interceptors.response.use(
+    (response: any) => {
+      return response;
+    },
+    (error: any) => {
+      if (error.response.status === 401) {
+        useAuthStore.getState().logout();
+      }
+      return Promise.reject(error);
+    }
+  );
+}
