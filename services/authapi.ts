@@ -21,8 +21,9 @@ export const login = async (
   }
 };
 
-export const authme = async (): Promise<User> => {
+export const authme = async (token: string): Promise<User> => {
   try {
+	authAPI.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     const response = await authAPI.get<User>("/auth/me");
     return response.data;
   } catch (error) {

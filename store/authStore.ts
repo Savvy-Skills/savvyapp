@@ -53,8 +53,6 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         try {
           const data = await login(email, password);
-          await setInterceptors(authAPI, data.auth_token);
-          await setInterceptors(module_api, data.auth_token);
           set({ token: data.auth_token, isLoading: false });
           await get().getUser();
         } catch (error) {
@@ -68,13 +66,17 @@ export const useAuthStore = create<AuthStore>()(
       },
       getUser: async () => {
         set({ isLoading: true });
-        try {
-          const data = await authme();
-          set({ user: data, isLoading: false });
-        } catch (error) {
-          console.error("Get user error:", error);
-          set({ isLoading: false });
-          throw error;
+        const token = get().token;
+        if (token) {
+          try {
+            const data = await authme(token);
+			setInterceptors(module_api, token);
+            set({ user: data, isLoading: false });
+          } catch (error) {
+            console.error("Get user error:", error);
+            set({ isLoading: false });
+            throw error;
+          }
         }
       },
       setInitialized: () => set({ isInitialized: true }),
@@ -97,10 +99,6 @@ export const useAuthStore = create<AuthStore>()(
 );
 
 async function setInterceptors(api: any, token: string) {
-  // Clear existing interceptors
-  api.interceptors.request.eject(api.interceptors.request.handlers[0]);
-  api.interceptors.response.eject(api.interceptors.response.handlers[0]);
-
   api.interceptors.request.use(
     (config: any) => {
       if (token) {
