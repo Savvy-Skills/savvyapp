@@ -141,6 +141,12 @@ const BottomBarNav = () => {
               ? localStyles.correctContainer
               : localStyles.incorrectContainer,
           ]}
+          theme={{
+            colors: {
+              inverseOnSurface: correctness ? "#4CAF50" : "#F44336",
+			  onSurface: correctness ? "#4CAF50" : "#F44336"
+            },
+          }}
         >
           {correctness ? "Correct!" : "Incorrect. Try again!"}
         </Snackbar>
@@ -240,7 +246,7 @@ const localStyles = StyleSheet.create({
     backgroundColor: "#FFEBEE",
   },
   correctContainer: {
-    backgroundColor: "#C8E6C9",
+    backgroundColor: "#e8fce9",
     borderColor: "#4CAF50",
     borderWidth: 1,
   },

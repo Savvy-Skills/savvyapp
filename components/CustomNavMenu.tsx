@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 interface CustomMenuProps {
   visible: boolean;
@@ -26,10 +27,7 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
       activeOpacity={1}
     >
       <View style={styles.menuContainer}>
-        <TouchableOpacity style={styles.menuItem} onPress={onShowCaptions}>
-          <MaterialCommunityIcons name="account" size={24} color="white" />
-          <Text style={styles.menuText}>Show captions</Text>
-        </TouchableOpacity>
+        <ThemeSwitcher />
         <TouchableOpacity style={styles.menuItem} onPress={onExplanation}>
           <MaterialCommunityIcons name="account" size={24} color="white" />
           <Text style={styles.menuText}>Explanation</Text>

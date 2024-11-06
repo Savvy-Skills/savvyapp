@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Text, Title, useTheme } from "react-native-paper";
 import { useModuleStore } from "@/store/moduleStore";
+import ThemedTitle from "../themed/ThemedTitle";
 
 interface AssessmentWrapperProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ export default function AssessmentWrapper({
 
   return (
     <View style={[localStyles.container, {backgroundColor: theme.dark ? "#6c6878" : "#F4F1FE"}]}>
-      {question.type != "Fill in the Blank" && <Title>{question.text}</Title>}
+      {question.type != "Fill in the Blank" && <ThemedTitle>{question.text}</ThemedTitle>}
       {showExplanation ? (
         <View style={styles.explanationContainer}>
           <Text>{question.explanation}</Text>

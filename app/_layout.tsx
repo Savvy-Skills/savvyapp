@@ -4,17 +4,12 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
-import {
-  PaperProvider,
-  MD3LightTheme,
-  MD3DarkTheme,
-  configureFonts,
-} from "react-native-paper";
+import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAudioStore } from "@/store/audioStore";
 import { useAuthStore } from "@/store/authStore";
-import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useThemeManager } from "@/hooks/useThemeManager";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -37,10 +32,12 @@ export default function RootLayout() {
   const segments = useSegments();
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
-  const colorScheme = useColorScheme();
+  const { theme, initialize } = useThemeManager();
+
 
   useEffect(() => {
     loadSounds();
+	initialize();
   }, []);
 
   useEffect(() => {
@@ -70,14 +67,9 @@ export default function RootLayout() {
     return null;
   }
 
-  const paperTheme =
-    colorScheme === "dark"
-      ? { ...MD3DarkTheme, fonts: configureFonts({ config: fontConfig }) }
-      : { ...MD3LightTheme, fonts: configureFonts({ config: fontConfig }) };
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PaperProvider theme={paperTheme}>
+      <PaperProvider theme={theme}>
         <SafeAreaProvider>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" options={{ title: "Home" }} />

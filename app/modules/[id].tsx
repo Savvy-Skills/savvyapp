@@ -7,11 +7,14 @@ import BottomBarNav from "@/components/navigation/BottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import AnimatedSlide from "@/components/slides/AnimatedSlide";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
   const { getModuleById, currentModule, currentSlideIndex } = useModuleStore();
-  const [direction, setDirection] = useState<'forward' | 'backward' | null>(null);
+  const [direction, setDirection] = useState<"forward" | "backward" | null>(
+    null
+  );
   const prevIndexRef = useRef(currentSlideIndex);
   const [isInitialRender, setIsInitialRender] = useState(true);
 
@@ -21,7 +24,9 @@ export default function ModuleDetail() {
 
   useEffect(() => {
     if (currentSlideIndex !== prevIndexRef.current) {
-      setDirection(currentSlideIndex > prevIndexRef.current ? 'forward' : 'backward');
+      setDirection(
+        currentSlideIndex > prevIndexRef.current ? "forward" : "backward"
+      );
       prevIndexRef.current = currentSlideIndex;
       setIsInitialRender(false);
     }
@@ -54,6 +59,6 @@ export default function ModuleDetail() {
 const styles = StyleSheet.create({
   slidesContainer: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
   },
 });

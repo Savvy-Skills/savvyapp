@@ -10,6 +10,8 @@ import MatchWordsAssessment from "./assessments/MatchWords";
 import OpenEnded from "./assessments/OpenEnded";
 import DataTable from "../DataTable";
 import { ScrollView } from "react-native-gesture-handler";
+import DataVisualizer from "../DataVisualizerPlotly";
+import DataVisualizerPlotly from "../DataVisualizerPlotly";
 
 type AssessmentProps = {
   slide: AssessmentSlideType;
@@ -89,8 +91,8 @@ export default function AssessmentSlide({ slide, index }: AssessmentProps) {
       {slide.question_info.dataset && slide.question_info.dataset_info && (
         <DataTable datasetInfo={slide.question_info.dataset_info} />
       )}
-      {/* {index === 2 && Platform.OS === "web" && (
-        <DataVisualizer
+      {index === 2 && Platform.OS === "web" && (
+        <DataVisualizerPlotly
           dataset={dataform}
           traces={[
             { x: "x", y: "y", name: "First" },
@@ -100,7 +102,7 @@ export default function AssessmentSlide({ slide, index }: AssessmentProps) {
           ]}
           title="Data Visualizer"
         />
-      )} */}
+      )}
       <View style={{ flexDirection: "row" }}>
         <AssessmentComponent slide={slide} index={index} />
       </View>
