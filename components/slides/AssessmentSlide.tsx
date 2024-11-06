@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Platform, View } from "react-native";
 import { AssessmentSlide as AssessmentSlideType } from "@/types";
 import NumericalAnswer from "./assessments/NumericalAnswer";
@@ -10,15 +10,13 @@ import MatchWordsAssessment from "./assessments/MatchWords";
 import OpenEnded from "./assessments/OpenEnded";
 import DataTable from "../DataTable";
 import { ScrollView } from "react-native-gesture-handler";
-import DataVisualizer from "../DataVisualizerPlotly";
-import DataVisualizerPlotly from "../DataVisualizerPlotly";
 
 type AssessmentProps = {
   slide: AssessmentSlideType;
   index: number;
 };
 
-// const DataVisualizer = require("@/components/DataVisualizer").default;
+let DataVisualizerPlotly = lazy(() => import("../DataVisualizerPlotly"));
 
 function AssessmentComponent({ slide, index }: AssessmentProps) {
   switch (slide.question_info.type) {
@@ -92,16 +90,18 @@ export default function AssessmentSlide({ slide, index }: AssessmentProps) {
         <DataTable datasetInfo={slide.question_info.dataset_info} />
       )}
       {index === 2 && Platform.OS === "web" && (
-        <DataVisualizerPlotly
-          dataset={dataform}
-          traces={[
-            { x: "x", y: "y", name: "First" },
-            { x: "x", y: "z", name: "Second" },
-            { x: "x", y: "v", name: "Third" },
-            { x: "w", y: "w", name: "Fourth" },
-          ]}
-          title="Data Visualizer"
-        />
+        <Suspense fallback={<View />}>
+          <DataVisualizerPlotly
+            dataset={dataform}
+            traces={[
+              { x: "x", y: "y", name: "First" },
+              { x: "x", y: "z", name: "Second" },
+              { x: "x", y: "v", name: "Third" },
+              { x: "w", y: "w", name: "Fourth" },
+            ]}
+            title="Data Visualizer"
+          />
+        </Suspense>
       )}
       <View style={{ flexDirection: "row" }}>
         <AssessmentComponent slide={slide} index={index} />
