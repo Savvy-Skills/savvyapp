@@ -8,18 +8,14 @@ import {
 } from "react-native";
 
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
+import { useModuleStore } from "@/store/moduleStore";
 
 interface VideoSlideProps {
   url: string;
-  isActive: boolean;
-  onVideoEnd?: () => void;
+  index: number;
 }
 
-const MobileVideoComponent: React.FC<VideoSlideProps> = ({
-  url,
-  isActive,
-  onVideoEnd,
-}) => {
+const MobileVideoComponent: React.FC<VideoSlideProps> = ({ url, index }) => {
   const videoRef = useRef<Video>(null);
   const [status, setStatus] = useState<AVPlaybackStatus>(
     {} as AVPlaybackStatus
@@ -28,10 +24,17 @@ const MobileVideoComponent: React.FC<VideoSlideProps> = ({
   const [hasPlayed, setHasPlayed] = useState(false);
   const progressAnim = useRef(new Animated.Value(0)).current;
   const hasEndedRef = useRef(false);
+  const {
+    nextSlide,
+    completedSlides,
+    checkSlideCompletion,
+    currentSlideIndex,
+  } = useModuleStore();
 
   const screenHeight = Dimensions.get("window").height;
   const videoHeight = screenHeight;
   const videoWidth = (videoHeight * 9) / 16;
+  const isActive = index === currentSlideIndex;
 
   useEffect(() => {
     if (isActive && videoRef.current && !hasPlayed) {
@@ -51,17 +54,22 @@ const MobileVideoComponent: React.FC<VideoSlideProps> = ({
         const progress = newStatus.positionMillis / newStatus.durationMillis;
         progressAnim.setValue(progress);
 
+        if (isActive) {
+          const locProgress = progress * 100;
+          if (!completedSlides[index] && locProgress >= 80) {
+            checkSlideCompletion({ progress: locProgress });
+          }
+        }
+
         if (newStatus.didJustFinish && !hasEndedRef.current) {
           hasEndedRef.current = true;
-          if (onVideoEnd) {
-            onVideoEnd();
-          }
+          nextSlide();
         } else if (!newStatus.didJustFinish) {
           hasEndedRef.current = false;
         }
       }
     },
-    [onVideoEnd, progressAnim]
+    [progressAnim, isActive]
   );
 
   const togglePlayPause = () => {
@@ -88,10 +96,7 @@ const MobileVideoComponent: React.FC<VideoSlideProps> = ({
     <View style={styles.container}>
       <TouchableWithoutFeedback onPress={togglePlayPause}>
         <View
-          style={[
-            styles.videoWrapper,
-            { width: videoWidth, height: "100%"},
-          ]}
+          style={[styles.videoWrapper, { width: videoWidth, height: "100%" }]}
         >
           <Video
             ref={videoRef}
@@ -123,26 +128,26 @@ const MobileVideoComponent: React.FC<VideoSlideProps> = ({
 };
 
 const styles = StyleSheet.create({
-	container: {
-	  flex: 1,
-	  justifyContent: "center",
-	  alignItems: "center",
-	  backgroundColor: "black",
-	},
-	videoWrapper: {
-	  aspectRatio: 9 / 16,
-	},
-	video: {
-	  flex: 1,
-	},
-	progressBarContainer: {
-	  height: 5,
-	  backgroundColor: "rgba(255, 255, 255, 0.3)",
-	},
-	progressBar: {
-	  height: "100%",
-	  backgroundColor: "white",
-	},
-  });
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
+  },
+  videoWrapper: {
+    aspectRatio: 9 / 16,
+  },
+  video: {
+    flex: 1,
+  },
+  progressBarContainer: {
+    height: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "white",
+  },
+});
 
 export default MobileVideoComponent;

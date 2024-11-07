@@ -4,6 +4,7 @@ import {
   /* @tutinfo Import <CODE>StyleSheet</CODE> to define styles. */ StyleSheet,
 } from "react-native";
 import { ActivitySlide as ActivitySlideType } from "@/types";
+import FaceRecognitionActivity from "../activities/FaceRecognitionActivity";
 
 type ActivityProps = {
   slide: ActivitySlideType;
@@ -13,7 +14,7 @@ type ActivityProps = {
 export default function ActivitySlide({ slide, index }: ActivityProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Activity Slide</Text>
+      <FaceRecognitionActivity systemRecognitionTime={5000} />
     </View>
   );
 }
@@ -21,9 +22,6 @@ export default function ActivitySlide({ slide, index }: ActivityProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#25292e",
-    alignItems: "center",
-    justifyContent: "center",
   },
   text: {
     color: "#fff",

@@ -1,12 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
-import { StyleSheet, Text, View, Dimensions, Platform } from "react-native";
-import { Camera, CameraView } from "expo-camera";
+import {
+  StyleSheet,
+  View,
+  Dimensions,
+  Platform,
+  Image as ImageComp,
+  ScrollView,
+} from "react-native";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import * as tf from "@tensorflow/tfjs";
 import * as posedetection from "@tensorflow-models/pose-detection";
 import * as ScreenOrientation from "expo-screen-orientation";
 import { cameraWithTensors } from "@tensorflow/tfjs-react-native";
 import Svg, { Circle } from "react-native-svg";
 import { ExpoWebGLRenderingContext } from "expo-gl";
+import { Button, Text } from "react-native-paper";
 
 const TensorCamera = cameraWithTensors(CameraView);
 
@@ -21,8 +29,10 @@ const OUTPUT_TENSOR_WIDTH = 180;
 const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 const AUTO_RENDER = false;
 
+type CameraStatus = "running" | "error" | "loading" | "paused" | "predicting";
+
 export default function TensorFlowPoseDetection() {
-  const cameraRef = useRef(null);
+  const cameraRef = useRef<CameraView | null>(null);
   const [tfReady, setTfReady] = useState(false);
   const [model, setModel] = useState<posedetection.PoseDetector | null>(null);
   const [poses, setPoses] = useState<posedetection.Pose[]>([]);
@@ -31,6 +41,9 @@ export default function TensorFlowPoseDetection() {
     useState<ScreenOrientation.Orientation>();
   const [cameraType, setCameraType] = useState<"front" | "back">("front");
   const rafId = useRef<number | null>(null);
+  const [cameraStatus, setCameraStatus] = useState<CameraStatus>("loading");
+  const [permission, requestPermission] = useCameraPermissions();
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   useEffect(() => {
     async function prepare() {
@@ -43,7 +56,7 @@ export default function TensorFlowPoseDetection() {
         setOrientation(event.orientationInfo.orientation);
       });
 
-      await Camera.requestCameraPermissionsAsync();
+      await requestPermission();
       await tf.ready();
 
       const movenetModelConfig: posedetection.MoveNetModelConfig = {
@@ -69,41 +82,44 @@ export default function TensorFlowPoseDetection() {
     };
   }, []);
 
-  const handleCameraStream = async (
-    images: IterableIterator<tf.Tensor3D>,
-    updatePreview: () => void,
-    gl: ExpoWebGLRenderingContext
-  ) => {
-    console.log("Looping");
-    const loop = async () => {
-      const imageTensor = images.next().value as tf.Tensor3D;
+  const handleCameraStream = async () => {
+    setCameraStatus("running");
+  };
 
-      if (model) {
-        const startTs = Date.now();
-        const poses = await model.estimatePoses(
-          imageTensor,
-          undefined,
-          Date.now()
-        );
-        const latency = Date.now() - startTs;
-        setFps(Math.floor(1000 / latency));
-        setPoses(poses);
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    if (cameraStatus === "predicting") {
+      intervalId = setInterval(handlePoseEstimation, 500);
+    } else if (intervalId) {
+      clearInterval(intervalId);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
       }
-      tf.dispose([imageTensor]);
-
-      if (rafId.current === 0) {
-        return;
-      }
-
-      if (!AUTO_RENDER) {
-        updatePreview();
-        gl.endFrameEXP();
-      }
-
-      rafId.current = requestAnimationFrame(loop);
     };
+  }, [cameraStatus]);
 
-    loop();
+  const handlePoseEstimation = async () => {
+    if (cameraStatus === "predicting") {
+      if (!cameraRef.current || !model) return;
+      const image = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.3,
+      });
+      if (!image) return;
+      setCapturedImage(`data:image/jpeg;base64,${image.base64}`);
+      const img = new Image();
+      img.src = `data:image/jpeg;base64,${image.base64}`;
+      img.width = image.width;
+      img.height = image.height;
+      img.onload = async () => {
+        const poses = await model.estimatePoses(img, undefined, Date.now());
+        setPoses(poses);
+      };
+    }
   };
 
   const renderPose = () => {
@@ -180,47 +196,49 @@ export default function TensorFlowPoseDetection() {
     );
   }
 
+  async function startPoseEstimation() {
+    setCameraStatus((state) =>
+      state === "predicting" ? "running" : "predicting"
+    );
+  }
+
   return (
-    <View
-      style={
-        Platform.OS === "web"
-          ? styles.webContainer
-          : isPortrait()
-          ? styles.containerPortrait
-          : styles.containerLandscape
-      }
+    <ScrollView
+      contentContainerStyle={{
+		flexGrow: 1,
+        gap: 16,
+		justifyContent: "center",
+      }}
     >
-      <TensorCamera
-        ref={cameraRef}
-        style={styles.camera}
-        autorender={AUTO_RENDER}
-        facing={cameraType}
-        resizeWidth={getOutputTensorWidth()}
-        resizeHeight={getOutputTensorHeight()}
-        resizeDepth={3}
-        rotation={getTextureRotationAngleInDegrees()}
-        onReady={handleCameraStream}
-        useCustomShadersToResize={false}
-        cameraTextureWidth={0}
-        cameraTextureHeight={0}
-      />
-      {renderPose()}
-      <View style={styles.fpsContainer}>
-        <Text>FPS: {fps}</Text>
-      </View>
-      {Platform.OS !== "web" && (
-        <View
-          style={styles.cameraTypeSwitcher}
-          onTouchEnd={() =>
-            setCameraType(cameraType === "front" ? "back" : "front")
-          }
-        >
-          <Text>
-            Switch to {cameraType === "front" ? "back" : "front"} camera
-          </Text>
+      <View style={{ flex: 1 }}>
+        <CameraView ref={cameraRef} style={styles.camera} facing={cameraType} />
+        {renderPose()}
+        <View style={styles.fpsContainer}>
+          <Text>FPS: {fps}</Text>
         </View>
-      )}
-    </View>
+        {Platform.OS !== "web" && (
+          <View
+            style={styles.cameraTypeSwitcher}
+            onTouchEnd={() =>
+              setCameraType(cameraType === "front" ? "back" : "front")
+            }
+          >
+            <Text>
+              Switch to {cameraType === "front" ? "back" : "front"} camera
+            </Text>
+          </View>
+        )}
+      </View>
+      <View>
+        <Text>{cameraStatus}</Text>
+        <Button mode="text" onPress={startPoseEstimation}>
+          Start Pose Estimation
+        </Button>
+        {poses.length > 0 && (
+			<Text>{JSON.stringify(poses)}</Text>
+		)}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -235,7 +253,6 @@ const styles = StyleSheet.create({
     position: "relative",
     width: CAM_PREVIEW_WIDTH,
     height: CAM_PREVIEW_HEIGHT,
-    marginTop: Dimensions.get("window").height / 2 - CAM_PREVIEW_HEIGHT / 2,
   },
   containerLandscape: {
     position: "relative",
@@ -282,5 +299,10 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     padding: 8,
     zIndex: 20,
+  },
+  capturedImage: {
+    width: CAM_PREVIEW_WIDTH,
+    height: CAM_PREVIEW_HEIGHT,
+    marginTop: 10,
   },
 });

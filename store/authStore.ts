@@ -5,6 +5,7 @@ import { User } from "../types";
 import { login, authme, authAPI } from "../services/authapi";
 import { module_api } from "@/services/moduleapi";
 import { Platform } from "react-native";
+import { router } from "expo-router";
 
 // Create a cross-platform storage object
 const crossPlatformStorage = {
@@ -53,8 +54,11 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         try {
           const data = await login(email, password);
-          set({ token: data.auth_token, isLoading: false });
+          setTokenInterceptors(authAPI, data.auth_token);
+          setTokenInterceptors(module_api, data.auth_token);
+          set({ token: data.auth_token });
           await get().getUser();
+          //   router.replace("/");
         } catch (error) {
           console.error("Login error:", error);
           set({ isLoading: false });
@@ -70,7 +74,6 @@ export const useAuthStore = create<AuthStore>()(
         if (token) {
           try {
             const data = await authme(token);
-			setInterceptors(module_api, token);
             set({ user: data, isLoading: false });
           } catch (error) {
             console.error("Get user error:", error);
@@ -79,7 +82,11 @@ export const useAuthStore = create<AuthStore>()(
           }
         }
       },
-      setInitialized: () => set({ isInitialized: true }),
+      setInitialized: () => {
+        setUnauthorizedInterceptor(authAPI);
+        setUnauthorizedInterceptor(module_api);
+        set({ isInitialized: true });
+      },
     }),
     {
       name: "auth-storage",
@@ -89,8 +96,8 @@ export const useAuthStore = create<AuthStore>()(
           state.setInitialized();
           const token = state.token;
           if (token) {
-            setInterceptors(authAPI, token);
-            setInterceptors(module_api, token);
+            setTokenInterceptors(authAPI, token);
+            setTokenInterceptors(module_api, token);
           }
         }
       },
@@ -98,27 +105,33 @@ export const useAuthStore = create<AuthStore>()(
   )
 );
 
-async function setInterceptors(api: any, token: string) {
-  api.interceptors.request.use(
-    (config: any) => {
-      if (token) {
-        config.headers["Authorization"] = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error: any) => {
-      return Promise.reject(error);
+function setTokenInterceptors(api: any, token: string) {
+  // Clean previous interceptors
+  api.interceptors.request.handlers = [];
+
+  function addAuthorization(config: any) {
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
-  );
-  api.interceptors.response.use(
-    (response: any) => {
-      return response;
-    },
-    (error: any) => {
-      if (error.response.status === 401) {
-        useAuthStore.getState().logout();
-      }
-      return Promise.reject(error);
+    return config;
+  }
+
+  function handleError(error: any) {
+    return Promise.reject(error);
+  }
+
+  api.interceptors.request.use(addAuthorization, handleError);
+}
+
+function setUnauthorizedInterceptor(api: any) {
+  function onError(error: any) {
+    if (error.response.status === 401) {
+      useAuthStore.getState().logout();
     }
-  );
+    return Promise.reject(error);
+  }
+
+  api.interceptors.response.use((response: any) => {
+    return response;
+  }, onError);
 }

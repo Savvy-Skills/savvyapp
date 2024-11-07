@@ -4,7 +4,6 @@ import MobileVideoComponent from "../MobileVideoComponent";
 
 interface VideoSlideProps {
   url: string;
-  isActive: boolean;
   index: number;
 }
 

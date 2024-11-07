@@ -14,7 +14,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading, token, user } = useAuthStore();
   const theme = useTheme();
 
   const handleLogin = async () => {
@@ -24,6 +24,10 @@ export default function LoginScreen() {
       setError("Invalid email or password");
     }
   };
+
+  const handlePress = () => {
+	console.log({token, user})
+  }
 
   return (
     <ScreenWrapper>
@@ -66,9 +70,7 @@ export default function LoginScreen() {
         </Button>
         <Button
           mode="text"
-          onPress={() => {
-            /* Handle forgot password */
-          }}
+          onPress={handlePress}
           style={styles.forgotPassword}
         >
           Forgot Password?

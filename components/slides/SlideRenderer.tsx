@@ -31,7 +31,6 @@ const SlideComponent = ({
         return (
           <VideoComponent
             url={slide.content_info.url}
-            isActive={isActive}
 			index={index}
           />
         )

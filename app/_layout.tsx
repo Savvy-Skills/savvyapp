@@ -34,10 +34,9 @@ export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
   const { theme, initialize } = useThemeManager();
 
-
   useEffect(() => {
     loadSounds();
-	initialize();
+    initialize();
   }, []);
 
   useEffect(() => {
@@ -55,9 +54,10 @@ export default function RootLayout() {
       } else if (token) {
         if (!user) {
           getUser();
-        }
-        if (inAuthGroup) {
-          router.replace("/");
+        } else {
+          if (inAuthGroup) {
+            router.replace("/");
+          }
         }
       }
     }

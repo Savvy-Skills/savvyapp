@@ -3,13 +3,11 @@ import React, { useRef, useEffect, useState } from "react";
 
 interface VideoSlideProps {
   url: string;
-  isActive: boolean;
   index: number;
 }
 
 const WebVideoComponent: React.FC<VideoSlideProps> = ({
   url,
-  isActive,
   index,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -17,7 +15,8 @@ const WebVideoComponent: React.FC<VideoSlideProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [hasPlayed, setHasPlayed] = useState(false);
-  const { nextSlide, completedSlides, checkSlideCompletion } = useModuleStore();
+  const { nextSlide, completedSlides, checkSlideCompletion, currentSlideIndex } = useModuleStore();
+  const isActive = index === currentSlideIndex;
 
   useEffect(() => {
     if (isActive && videoRef.current && !hasPlayed) {
