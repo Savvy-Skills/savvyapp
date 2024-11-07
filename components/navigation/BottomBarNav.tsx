@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import { IconButton, Button, Text, Snackbar, Icon } from "react-native-paper";
 import { useModuleStore } from "@/store/moduleStore";
 import { useAudioStore } from "@/store/audioStore";
@@ -190,7 +190,6 @@ const BottomBarNav = () => {
           }}
           style={[styles.checkButton]}
           dark={false}
-          contentStyle={{ height: 28, margin: 0 }}
           theme={{
             colors: {
               primary: checkButtonColors.normal,
@@ -231,11 +230,11 @@ const localStyles = StyleSheet.create({
   },
   menusContainer: {
     position: "absolute",
-    width: "100%",
-    bottom: 70,
+    bottom: 80,
     gap: 16,
-    maxWidth: 280,
+    maxWidth: 300,
     alignSelf: "center",
+	zIndex:2
   },
   feedbackContainer: {
     flex: 1,

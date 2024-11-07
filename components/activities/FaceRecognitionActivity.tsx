@@ -144,11 +144,12 @@ const EmployeeImages: React.FC<{ employee: Employee }> = ({ employee }) => {
 
 const DecisionButtons: React.FC<{
   onDecision: (grantAccess: boolean) => void;
-}> = ({ onDecision }) => (
-  <View style={styles.buttonContainer}>
+  isTransitioning: boolean;
+}> = ({ onDecision, isTransitioning }) => (
+  <View style={[styles.buttonContainer, isTransitioning && { opacity: 0.7 }]}>
     <Button
       mode="contained"
-      onPress={() => onDecision(true)}
+      onPress={() => !isTransitioning && onDecision(true)}
       style={[styles.button, styles.grantButton]}
       labelStyle={styles.buttonLabel}
     >
@@ -156,7 +157,7 @@ const DecisionButtons: React.FC<{
     </Button>
     <Button
       mode="contained"
-      onPress={() => onDecision(false)}
+      onPress={() => !isTransitioning && onDecision(false)}
       style={[styles.button, styles.denyButton]}
       labelStyle={styles.buttonLabel}
     >
@@ -164,8 +165,6 @@ const DecisionButtons: React.FC<{
     </Button>
   </View>
 );
-
-const timeLimit = 50
 
 const Results: React.FC<{
   studentTime: number;
@@ -183,7 +182,7 @@ const Results: React.FC<{
   const [showIntroduction, setShowIntroduction] = useState(false);
   const accuracy = (correctDecisions / totalEmployees) * 100;
   const timeDifference = Math.abs(studentTime - systemRecognitionTime) / 1000;
-  const isSuccessful = accuracy >= 80 && timeDifference <= timeLimit;
+  const isSuccessful = accuracy >= 80 && timeDifference <= 60;
 
   return (
     <View style={styles.container}>
@@ -209,9 +208,9 @@ const Results: React.FC<{
           : "Try to improve your accuracy to at least 80%."}
       </Text>
       <Text style={styles.comparisonText}>
-        {timeDifference <= timeLimit
+        {timeDifference <= 60
           ? "Your timing was excellent!"
-          : `Try to complete the challenge within ${timeLimit} seconds of the system's time.`}
+          : "Try to complete the challenge within 60 seconds of the system's time."}
       </Text>
       <View style={styles.checkboxContainer}>
         <Checkbox
@@ -243,7 +242,9 @@ export default function FaceRecognitionActivity({
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isIntroductionComplete, setIsIntroductionComplete] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const { checkSlideCompletion } = useModuleStore();
+  const timeLimit = 60000;
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -256,6 +257,9 @@ export default function FaceRecognitionActivity({
   }, [startTime, isActivityComplete]);
 
   const handleDecision = (grantAccess: boolean) => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+
     if (startTime === null) {
       setStartTime(Date.now());
     }
@@ -277,6 +281,7 @@ export default function FaceRecognitionActivity({
       setTimeout(() => {
         setCurrentEmployeeIndex(currentEmployeeIndex + 1);
         setShowFeedback(false);
+        setIsTransitioning(false);
       }, 2000);
     } else {
       setTimeout(() => {
@@ -286,7 +291,8 @@ export default function FaceRecognitionActivity({
         const studentTime = Date.now() - (startTime || 0);
         const timeDifference =
           Math.abs(studentTime - systemRecognitionTime) / 1000;
-        const isSuccessful = accuracy >= 80 && timeDifference <= 60;
+        const isSuccessful =
+          accuracy >= 80 && timeDifference <= timeLimit / 1000;
         checkSlideCompletion({ completed: isSuccessful });
       }, 2000);
     }
@@ -301,6 +307,7 @@ export default function FaceRecognitionActivity({
     setShowFeedback(false);
     setElapsedTime(0);
     setIsIntroductionComplete(!showIntroduction);
+    setIsTransitioning(false); // Reset the transitioning state
   };
 
   const startActivity = () => {
@@ -339,7 +346,10 @@ export default function FaceRecognitionActivity({
       <Text style={styles.question}>
         Should this employee be granted access?
       </Text>
-      <DecisionButtons onDecision={handleDecision} />
+      <DecisionButtons
+        onDecision={handleDecision}
+        isTransitioning={isTransitioning}
+      />
       <Snackbar
         visible={showFeedback}
         onDismiss={() => setShowFeedback(false)}
