@@ -189,6 +189,7 @@ const BottomBarNav = () => {
             handleDismissMenu();
           }}
           style={[styles.checkButton]}
+		  contentStyle={{ height: Platform.OS === "web" ? 28 : undefined}}
           dark={false}
           theme={{
             colors: {
