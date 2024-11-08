@@ -129,28 +129,29 @@ const BottomBarNav = () => {
           onExplanation={handleExplanation}
           onReportProblem={handleReportProblem}
         />
-        <Snackbar
-          visible={snackVisible}
-          onDismiss={onDismissSnackBar}
-          duration={2000}
-          onIconPress={() => {
-            onDismissSnackBar();
-          }}
-          style={[
-            correctness
-              ? localStyles.correctContainer
-              : localStyles.incorrectContainer,
-          ]}
-          theme={{
-            colors: {
-              inverseOnSurface: correctness ? "#4CAF50" : "#F44336",
-			  onSurface: correctness ? "#4CAF50" : "#F44336"
-            },
-          }}
-        >
-          {correctness ? "Correct!" : "Incorrect. Try again!"}
-        </Snackbar>
       </View>
+      <Snackbar
+        visible={snackVisible}
+        onDismiss={onDismissSnackBar}
+        duration={2000}
+        onIconPress={() => {
+          onDismissSnackBar();
+        }}
+        style={[
+          correctness
+            ? localStyles.correctContainer
+            : localStyles.incorrectContainer,
+          localStyles.feedbackContainer,
+        ]}
+        theme={{
+          colors: {
+            inverseOnSurface: correctness ? "#4CAF50" : "#F44336",
+            onSurface: correctness ? "#4CAF50" : "#F44336",
+          },
+        }}
+      >
+        {correctness ? "Correct!" : "Incorrect. Try again!"}
+      </Snackbar>
       <View style={styles.bottomNavigation}>
         <IconButton
           icon="chevron-left"
@@ -189,7 +190,8 @@ const BottomBarNav = () => {
             handleDismissMenu();
           }}
           style={[styles.checkButton]}
-		  contentStyle={{ height: Platform.OS === "web" ? 28 : undefined}}
+          contentStyle={{ height: 28 }}
+		  labelStyle={{fontSize:14, lineHeight:14 }}
           dark={false}
           theme={{
             colors: {
@@ -235,15 +237,17 @@ const localStyles = StyleSheet.create({
     gap: 16,
     maxWidth: 300,
     alignSelf: "center",
-	zIndex:2
+    zIndex: 2,
   },
   feedbackContainer: {
     flex: 1,
-    maxWidth: 280, // Limit width to 600px
-    alignItems: "center",
+    maxWidth: 280,
+	width:"100%",
     paddingVertical: 8,
     borderRadius: 4,
     backgroundColor: "#FFEBEE",
+	marginHorizontal: "auto",
+	bottom: 60
   },
   correctContainer: {
     backgroundColor: "#e8fce9",
