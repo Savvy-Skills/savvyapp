@@ -83,13 +83,13 @@ export default StyleSheet.create({
     borderRadius: 10,
     margin: 10,
     paddingHorizontal: 10,
-	paddingVertical: 10,
+    paddingVertical: 10,
     alignSelf: "center",
   },
   navButton: {
     margin: 0,
     borderRadius: 5,
-	height: 28,
+    height: 28,
   },
   checkButton: {
     borderRadius: 5,
@@ -97,7 +97,42 @@ export default StyleSheet.create({
   verticalSeparator: {
     width: 1,
     backgroundColor: "#faf",
-	height: "100%",
+    height: "100%",
+  },
+  iconContainer: {
+    position: "absolute",
+    right: -10,
+    top: -10,
+  },
+  optionContainer: {
+    flex: 1,
+    marginVertical: 4,
+    borderRadius: 4,
+  },
+  option: {
+    flexDirection: "row-reverse",
+    gap: 16,
+    borderRadius: 4,
+    flex: 1,
+  },
+  selectedOption: {
+    borderWidth: 1,
+    borderColor: "#a197f9",
+  },
+  correctOption: {
+    borderWidth: 1,
+    borderColor: "#23b5ec",
+    backgroundColor: "rgba(35, 181, 236, 0.1)",
+  },
+  incorrectOption: {
+    borderWidth: 1,
+    borderColor: "#ff7b09",
+    backgroundColor: "rgba(255, 123, 9, 0.1)",
+  },
+  revealedOption: {
+    borderWidth: 1,
+    borderColor: "#9E9E9E",
+    backgroundColor: "rgba(158, 158, 158, 0.1)",
   },
 });
 

@@ -1,11 +1,10 @@
 import styles from "@/styles/styles";
 import { QuestionInfo } from "@/types";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Text, Title, useTheme, Icon } from "react-native-paper";
 import { useModuleStore } from "@/store/moduleStore";
 import ThemedTitle from "../themed/ThemedTitle";
-// import { Sparkles, AlertTriangle, Check } from "lucide-react"
 
 interface AssessmentWrapperProps {
   children: React.ReactNode;
@@ -108,7 +107,7 @@ export default function AssessmentWrapper({
   // Remove this line:
   // const [showFeedback, setShowFeedback] = useState(true)
   const [revealedAnswer, setRevealedAnswer] = useState(false);
-  const { submittedAssessments } = useModuleStore();
+  const { submittedAssessments, scrollToEnd } = useModuleStore();
   const theme = useTheme();
 
   const toggleExplanation = () => {
@@ -130,6 +129,14 @@ export default function AssessmentWrapper({
     if (onRevealAnswer) onRevealAnswer();
     setRevealedAnswer(true);
   };
+
+//   useEffect(() => {
+//     console.log("Current", { currentSubmission, showFeedback, scrollToEnd });
+//     if (currentSubmission && showFeedback && scrollToEnd) {
+//       console.log("Scrolling to end");
+//       scrollToEnd();
+//     }
+//   }, [currentSubmission, showFeedback, scrollToEnd]);
 
   return (
     <View

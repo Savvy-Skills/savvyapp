@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect, useRef } from "react";
 import { Platform, View } from "react-native";
 import { AssessmentSlide as AssessmentSlideType } from "@/types";
 import NumericalAnswer from "./assessments/NumericalAnswer";
@@ -10,6 +10,7 @@ import MatchWordsAssessment from "./assessments/MatchWords";
 import OpenEnded from "./assessments/OpenEnded";
 import DataTable from "../DataTable";
 import { ScrollView } from "react-native-gesture-handler";
+import { useModuleStore } from "@/store/moduleStore";
 
 type AssessmentProps = {
   slide: AssessmentSlideType;
@@ -82,6 +83,17 @@ const dataform = [
 ];
 
 export default function AssessmentSlide({ slide, index }: AssessmentProps) {
+  const scrollViewRef = useRef<ScrollView>(null);
+  const { setScrollToEnd } = useModuleStore();
+
+//   useEffect(() => {
+//     if (scrollViewRef.current) {
+//       setScrollToEnd(() =>
+//         scrollViewRef.current?.scrollToEnd({ animated: false })
+//       );
+//     }
+//   }, [setScrollToEnd]);
+
   return (
     <ScrollView
       contentContainerStyle={{ gap: 16, flexGrow: 1, justifyContent: "center" }}

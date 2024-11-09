@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthStore>()(
           setTokenInterceptors(module_api, data.auth_token);
           set({ token: data.auth_token });
           await get().getUser();
-          //   router.replace("/");
+          router.replace("/");
         } catch (error) {
           console.error("Login error:", error);
           set({ isLoading: false });

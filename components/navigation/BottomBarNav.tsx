@@ -28,12 +28,6 @@ const checkButtonColors = generateColors("#d9f0fb", 0.5);
 const BottomBarNav = () => {
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const [snackVisible, setSnackVisible] = useState(false);
-  const [correctness, setCorrectness] = useState(false);
-
-  const onToggleSnackBar = () => setSnackVisible(!snackVisible);
-  const onDismissSnackBar = () => setSnackVisible(false);
-
   const menuRef = useRef(null as any);
 
   const {
@@ -46,6 +40,7 @@ const BottomBarNav = () => {
     submittedAssessments,
     setSubmittedAssessments,
     checkSlideCompletion,
+	setSubmittableState
   } = useModuleStore();
 
   const { playSound } = useAudioStore();
@@ -80,11 +75,11 @@ const BottomBarNav = () => {
     setSubmittedAssessments(newSubmissions);
 
     playSound(isCurrentSlideCorrect ? "success" : "failVariant", 0.6);
-    setCorrectness(isCurrentSlideCorrect);
-    onToggleSnackBar();
     if (isCurrentSlideCorrect) {
       checkSlideCompletion();
     }
+	// Make unsubmittable 
+	setSubmittableState(currentSlideIndex, false)
   };
 
   const toggleMenu = () => setMenuVisible(!menuVisible);
@@ -108,12 +103,6 @@ const BottomBarNav = () => {
     handleDismissMenu();
   };
 
-  useEffect(() => {
-    if (snackVisible) {
-      onDismissSnackBar();
-    }
-  }, [currentSlideIndex]);
-
   const isCurrentSlideAssessment =
     currentModule?.slides[currentSlideIndex].type === "Assessment";
   const showFeedback = isCurrentSlideAssessment && submission;
@@ -130,28 +119,6 @@ const BottomBarNav = () => {
           onReportProblem={handleReportProblem}
         />
       </View>
-      <Snackbar
-        visible={snackVisible}
-        onDismiss={onDismissSnackBar}
-        duration={2000}
-        onIconPress={() => {
-          onDismissSnackBar();
-        }}
-        style={[
-          correctness
-            ? localStyles.correctContainer
-            : localStyles.incorrectContainer,
-          localStyles.feedbackContainer,
-        ]}
-        theme={{
-          colors: {
-            inverseOnSurface: correctness ? "#4CAF50" : "#F44336",
-            onSurface: correctness ? "#4CAF50" : "#F44336",
-          },
-        }}
-      >
-        {correctness ? "Correct!" : "Incorrect. Try again!"}
-      </Snackbar>
       <View style={styles.bottomNavigation}>
         <IconButton
           icon="chevron-left"
@@ -191,7 +158,7 @@ const BottomBarNav = () => {
           }}
           style={[styles.checkButton]}
           contentStyle={{ height: 28 }}
-		  labelStyle={{fontSize:14, lineHeight:14 }}
+          labelStyle={{ fontSize: 14, lineHeight: 14 }}
           dark={false}
           theme={{
             colors: {
@@ -242,12 +209,12 @@ const localStyles = StyleSheet.create({
   feedbackContainer: {
     flex: 1,
     maxWidth: 280,
-	width:"100%",
+    width: "100%",
     paddingVertical: 8,
     borderRadius: 4,
     backgroundColor: "#FFEBEE",
-	marginHorizontal: "auto",
-	bottom: 60
+    marginHorizontal: "auto",
+    bottom: 60,
   },
   correctContainer: {
     backgroundColor: "#e8fce9",

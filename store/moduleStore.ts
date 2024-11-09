@@ -21,6 +21,8 @@ interface ModuleStore {
   completedSlides: boolean[];
   markSlideAsCompleted: (index: number) => void;
   checkSlideCompletion: (data?: any) => void;
+  scrollToEnd: (() => void) | null;
+  setScrollToEnd: (scrollFn: () => void) => void;
 }
 
 export const useModuleStore = create<ModuleStore>((set, get) => ({
@@ -71,8 +73,8 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
           slides: module.slides.sort((a, b) => a.order - b.order),
         },
       });
-    } catch (e){
-      console.error("Error fetching module:", {e});
+    } catch (e) {
+      console.error("Error fetching module:", { e });
     }
   },
   nextSlide: () => {
@@ -96,15 +98,20 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
   },
 
   checkSlideCompletion: (data: any) => {
-    const { currentSlideIndex, markSlideAsCompleted, currentModule, correctnessStates } = get();
-	const slide = currentModule?.slides[currentSlideIndex];
+    const {
+      currentSlideIndex,
+      markSlideAsCompleted,
+      currentModule,
+      correctnessStates,
+    } = get();
+    const slide = currentModule?.slides[currentSlideIndex];
 
     switch (slide?.type) {
       case "Assessment":
         // We have the submitted and correctness on the store. We can check if the user has submitted and if it's correct
-		if (correctnessStates[currentSlideIndex] !== null) {
-		  markSlideAsCompleted(currentSlideIndex);
-		}
+        if (correctnessStates[currentSlideIndex] !== null) {
+          markSlideAsCompleted(currentSlideIndex);
+        }
         break;
       case "Content":
         if (slide.content_info.type === "Video") {
@@ -125,4 +132,6 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
         break;
     }
   },
+  scrollToEnd: null,
+  setScrollToEnd: (scrollFn) => set({ scrollToEnd: scrollFn }),
 }));

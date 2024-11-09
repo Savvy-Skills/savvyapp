@@ -118,11 +118,18 @@ type QuestionTypes =
   | "Numerical"
   | "Match the Words";
 
+export type NumericOperator = "gt" | "gte" | "lt" | "lte" | "eq" | "neq";
+
+interface ExtrasInfo {
+  text?: string;
+  text2?: string;
+  operator: NumericOperator;
+}
+
 export interface QuestionInfo {
   readonly created_at: number;
   id: number;
   title: string;
-  instruction: string;
   text: string;
   type: QuestionTypes;
   answerType: string;
@@ -132,6 +139,7 @@ export interface QuestionInfo {
   context: string;
   options: Option[];
   dataset_info?: DatasetInfo;
+  extras?: ExtrasInfo;
 }
 
 export interface DatasetInfo {
