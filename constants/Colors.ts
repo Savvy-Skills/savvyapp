@@ -14,6 +14,10 @@ const lightOrangeColor = "#ffb850";
 const navigationOrange = "#f4bb62";
 const navigationWhite = "#d9f0fb";
 
+const assessmentLight = "#F4F1FE"
+const assessmentDark = "#6c6878"
+
+
 export const Colors = {
   light: {
     text: '#11181C',
@@ -28,6 +32,7 @@ export const Colors = {
 	lightOrange: lightOrangeColor,
 	navigationOrange: navigationOrange,
 	navigationWhite: navigationWhite,
+	assessment: assessmentLight
   },
   dark: {
     text: '#ECEDEE',
@@ -42,5 +47,6 @@ export const Colors = {
 	lightOrange: lightOrangeColor,
 	navigationOrange: navigationOrange,
 	navigationWhite: navigationWhite,
+	assessment: assessmentDark
   },
 };

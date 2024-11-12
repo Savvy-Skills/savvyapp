@@ -13,6 +13,7 @@ interface AssessmentWrapperProps {
   onRevealAnswer?: () => void;
   showFeedback: boolean;
   setShowFeedback: (show: boolean) => void;
+  quizMode: boolean;
 }
 
 function FeedbackComponent({
@@ -21,12 +22,14 @@ function FeedbackComponent({
   onTryAgain,
   onRevealAnswer,
   onShowExplanation,
+  quizMode,
 }: {
   correctness: boolean;
   revealed: boolean;
   onTryAgain: () => void;
   onRevealAnswer: () => void;
   onShowExplanation: () => void;
+  quizMode: boolean;
 }) {
   if (revealed) {
     return (
@@ -40,7 +43,13 @@ function FeedbackComponent({
           </Text>
         </View>
         <View style={localStyles.buttonContainer}>
-          <Button mode="text" onPress={onShowExplanation} textColor="#666666">
+          <Button
+            mode="text"
+            onPress={onShowExplanation}
+            textColor="#321A5F"
+            buttonColor="#E5E3FF"
+            labelStyle={{ fontWeight: 600 }}
+          >
             See explanation
           </Button>
         </View>
@@ -60,7 +69,13 @@ function FeedbackComponent({
           </Text>
         </View>
         <View style={localStyles.buttonContainer}>
-          <Button mode="text" onPress={onShowExplanation} textColor="#3bc2f5">
+          <Button
+            mode="text"
+            onPress={onShowExplanation}
+            textColor="#321A5F"
+            buttonColor="#E5E3FF"
+            labelStyle={{ fontWeight: 600 }}
+          >
             See explanation
           </Button>
         </View>
@@ -78,19 +93,28 @@ function FeedbackComponent({
           Negative feedback text
         </Text>
       </View>
-      <View style={localStyles.buttonContainer}>
-        <Button
-          mode="contained"
-          onPress={onTryAgain}
-          buttonColor="#1a1523"
-          textColor="white"
-        >
-          Try again
-        </Button>
-        <Button mode="text" onPress={onRevealAnswer} textColor="#ff861d">
-          See answer
-        </Button>
-      </View>
+      {!quizMode && (
+        <View style={localStyles.buttonContainer}>
+          <Button
+            mode="contained"
+            onPress={onTryAgain}
+            buttonColor="#321A5F"
+            textColor="white"
+            labelStyle={{ fontWeight: 600 }}
+          >
+            Try again
+          </Button>
+          <Button
+            mode="text"
+            onPress={onRevealAnswer}
+            textColor="#321A5F"
+            buttonColor="#E5E3FF"
+            labelStyle={{ fontWeight: 600 }}
+          >
+            See answer
+          </Button>
+        </View>
+      )}
     </View>
   );
 }
@@ -102,10 +126,9 @@ export default function AssessmentWrapper({
   onRevealAnswer,
   showFeedback,
   setShowFeedback,
+  quizMode,
 }: AssessmentWrapperProps) {
   const [showExplanation, setShowExplanation] = useState(false);
-  // Remove this line:
-  // const [showFeedback, setShowFeedback] = useState(true)
   const [revealedAnswer, setRevealedAnswer] = useState(false);
   const { submittedAssessments, scrollToEnd } = useModuleStore();
   const theme = useTheme();
@@ -130,13 +153,13 @@ export default function AssessmentWrapper({
     setRevealedAnswer(true);
   };
 
-//   useEffect(() => {
-//     console.log("Current", { currentSubmission, showFeedback, scrollToEnd });
-//     if (currentSubmission && showFeedback && scrollToEnd) {
-//       console.log("Scrolling to end");
-//       scrollToEnd();
-//     }
-//   }, [currentSubmission, showFeedback, scrollToEnd]);
+  //   useEffect(() => {
+  //     console.log("Current", { currentSubmission, showFeedback, scrollToEnd });
+  //     if (currentSubmission && showFeedback && scrollToEnd) {
+  //       console.log("Scrolling to end");
+  //       scrollToEnd();
+  //     }
+  //   }, [currentSubmission, showFeedback, scrollToEnd]);
 
   return (
     <View
@@ -147,7 +170,11 @@ export default function AssessmentWrapper({
     >
       <View style={localStyles.container}>
         {question.type !== "Fill in the Blank" && (
-          <ThemedTitle>{question.text}</ThemedTitle>
+          <ThemedTitle
+            style={{ fontSize: 18, lineHeight: 27, fontWeight: 600 }}
+          >
+            {question.text}
+          </ThemedTitle>
         )}
         {showExplanation ? (
           <View style={styles.explanationContainer}>
@@ -164,6 +191,7 @@ export default function AssessmentWrapper({
           onTryAgain={handleTryAgain}
           onRevealAnswer={handleRevealAnswer}
           onShowExplanation={toggleExplanation}
+          quizMode={quizMode}
         />
       )}
     </View>
@@ -181,27 +209,27 @@ const localStyles = StyleSheet.create({
   container: {
     flex: 1,
     gap: 16,
-    padding: 16,
-    paddingTop: 24,
+    padding: 30,
+    paddingTop: 16,
   },
   feedbackContainer: {
     padding: 16,
     borderWidth: 1,
+    gap: 10,
   },
   feedbackHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginBottom: 8,
   },
   feedbackTitle: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   buttonContainer: {
     flexDirection: "row",
     gap: 16,
-    marginTop: 8,
+    padding: 10,
   },
   correctFeedback: {
     backgroundColor: "#daedf5",

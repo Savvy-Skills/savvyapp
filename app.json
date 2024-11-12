@@ -19,7 +19,12 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.samuel9808.savvyskills"
     },
     "web": {
       "bundler": "metro",
@@ -28,17 +33,27 @@
     },
     "plugins": [
       "expo-router",
-	  [
-		"expo-camera",
-		{
-			"cameraPermission": "Allow SavvySkills to access your camera",
-			"microphonePermission": "Allow SavvySkills to access your microphone",
-			"recordAudioAndroid": true
-		}
-	  ]
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow SavvySkills to access your camera",
+          "microphonePermission": "Allow SavvySkills to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      ["expo-build-properties"]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "c5de28e4-b1fe-4c2d-9c9d-723f2733e2fe"
+      }
+    },
+    "owner": "samuel9808"
   }
 }

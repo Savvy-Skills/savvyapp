@@ -106,14 +106,15 @@ export default StyleSheet.create({
   },
   optionContainer: {
     flex: 1,
-    marginVertical: 4,
     borderRadius: 4,
   },
   option: {
-    flexDirection: "row-reverse",
-    gap: 16,
+    flexDirection: "row",
+    gap: 10,
     borderRadius: 4,
     flex: 1,
+    paddingHorizontal: 5,
+    paddingVertical: 10,
   },
   selectedOption: {
     borderWidth: 1,
@@ -133,6 +134,9 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: "#9E9E9E",
     backgroundColor: "rgba(158, 158, 158, 0.1)",
+  },
+  disabledOption: {
+
   },
 });
 

@@ -1,14 +1,15 @@
 import { Title, useTheme } from "react-native-paper";
-import { Text } from "react-native";
+import { StyleProp, Text, TextStyle } from "react-native";
 
 export type Props = React.ComponentProps<typeof Text> & {
   children: React.ReactNode;
+  style?: StyleProp<TextStyle>;
 };
 
-const ThemedTitle = ({ children }: Props) => {
+const ThemedTitle = ({ children, style, ...props }: Props) => {
   const theme = useTheme();
   return (
-    <Title style={{ fontFamily: theme.fonts.default.fontFamily }}>
+    <Title  {...props} style={[{ fontFamily: theme.fonts.default.fontFamily }, style]}>
       {children}
     </Title>
   );

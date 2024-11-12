@@ -118,6 +118,8 @@ type QuestionTypes =
   | "Numerical"
   | "Match the Words";
 
+type QuestionSubtypes = "Text" | "Image";
+
 export type NumericOperator = "gt" | "gte" | "lt" | "lte" | "eq" | "neq";
 
 interface ExtrasInfo {
@@ -140,6 +142,7 @@ export interface QuestionInfo {
   options: Option[];
   dataset_info?: DatasetInfo;
   extras?: ExtrasInfo;
+  subtype?: QuestionSubtypes;
 }
 
 export interface DatasetInfo {

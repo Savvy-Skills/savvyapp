@@ -6,13 +6,15 @@ import { QuestionInfo } from "@/types"
 import { useModuleStore } from "@/store/moduleStore"
 import StatusIcon from "@/components/StatusIcon"
 import styles from "@/styles/styles"
+import CustomRadioButton from "@/components/SavvyRadioButton"
 
 export type AssessmentProps = {
   question: QuestionInfo
   index: number
+  quizMode?: boolean
 }
 
-export default function SingleChoice({ question, index }: AssessmentProps) {
+export default function SingleChoice({ question, index, quizMode = false }: AssessmentProps) {
   const [selectedValue, setSelectedValue] = useState("")
   const [showAnswer, setShowAnswer] = useState(false)
   const [isWrong, setIsWrong] = useState(false)
@@ -52,14 +54,27 @@ export default function SingleChoice({ question, index }: AssessmentProps) {
     if (currentSubmission) {
       if (!currentSubmission.correct) {
         setIsWrong(true)
+        if (quizMode) {
+          setShowAnswer(true)
+        }
       }
       setShowFeedback(true)
     }
-  }, [submittedAssessments, currentSubmission])
+  }, [submittedAssessments, currentSubmission, quizMode])
 
-  const blocked = currentSubmission?.correct || showAnswer
+  const blocked = currentSubmission?.correct || showAnswer || (quizMode && isWrong)
 
   const getOptionStyles = (option: string) => {
+    if (quizMode && isWrong) {
+      if (option === correctAnswer) {
+        return [styles.option, styles.correctOption]
+      }
+      if (option === selectedValue) {
+        return [styles.option, styles.incorrectOption]
+      }
+      return [styles.option, styles.disabledOption]
+    }
+
     if (option === selectedValue) {
       if (currentSubmission?.correct) {
         return [styles.option, styles.correctOption]
@@ -74,6 +89,9 @@ export default function SingleChoice({ question, index }: AssessmentProps) {
   }
 
   const handleChoiceSelection = (value: string) => {
+    if (quizMode && (isWrong || currentSubmission?.correct)) {
+      return
+    }
     setSelectedValue(value)
     setIsWrong(false)
     setShowAnswer(false)
@@ -88,23 +106,51 @@ export default function SingleChoice({ question, index }: AssessmentProps) {
   }
 
   const handleTryAgain = () => {
-    resetStates()
+    if (!quizMode) {
+      resetStates()
+    }
   }
 
   const handleRevealAnswer = () => {
-    setSelectedValue(correctAnswer)
-    setShowAnswer(true)
-    setIsWrong(false)
-    setShowFeedback(true)
+    if (!quizMode) {
+      setSelectedValue(correctAnswer)
+      setShowAnswer(true)
+      setIsWrong(false)
+      setShowFeedback(true)
+    }
+  }
+
+  const renderStatusIcon = (option: string) => {
+    if (quizMode && isWrong) {
+      if (option === correctAnswer) {
+        return <StatusIcon isCorrect={true} isWrong={false} showAnswer={false} />
+      }
+      if (option === selectedValue) {
+        return <StatusIcon isCorrect={false} isWrong={true} showAnswer={false} />
+      }
+      return null
+    }
+
+    if (option === selectedValue) {
+      return (
+        <StatusIcon
+          isCorrect={currentSubmission?.correct || false}
+          isWrong={isWrong}
+          showAnswer={showAnswer}
+        />
+      )
+    }
+    return null
   }
 
   return (
     <AssessmentWrapper
       question={question}
-      onTryAgain={handleTryAgain}
-      onRevealAnswer={handleRevealAnswer}
+      onTryAgain={quizMode ? undefined : handleTryAgain}
+      onRevealAnswer={quizMode ? undefined : handleRevealAnswer}
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
+	  quizMode={quizMode}
     >
       <RadioButton.Group
         onValueChange={handleChoiceSelection}
@@ -112,22 +158,16 @@ export default function SingleChoice({ question, index }: AssessmentProps) {
       >
         {options.map((option, index) => (
           <View key={index} style={styles.optionContainer}>
-            <RadioButton.Item
+            <CustomRadioButton
               label={option}
               value={option}
+              status={selectedValue === option ? "checked" : "unchecked"}
+              onPress={() => handleChoiceSelection(option)}
               disabled={blocked}
               style={getOptionStyles(option)}
-              uncheckedColor="#a197f9"
-              color="#a197f9"
             />
             <View style={styles.iconContainer}>
-              {option === selectedValue && (
-                <StatusIcon
-                  isCorrect={currentSubmission?.correct || false}
-                  isWrong={isWrong}
-                  showAnswer={showAnswer}
-                />
-              )}
+              {renderStatusIcon(option)}
             </View>
           </View>
         ))}
