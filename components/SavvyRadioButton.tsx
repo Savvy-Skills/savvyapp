@@ -10,6 +10,7 @@ interface CustomRadioButtonProps {
   status: "checked" | "unchecked";
   onPress: () => void;
   disabled?: boolean;
+  disabledTouchable?: boolean;
   style?: any;
 }
 
@@ -19,11 +20,12 @@ const CustomRadioButton: React.FC<CustomRadioButtonProps> = ({
   status,
   onPress,
   disabled,
+  disabledTouchable,
   style,
 }) => {
 	const {isDarkMode} = useThemeStore();
   return (
-    <TouchableRipple onPress={onPress} disabled={disabled}>
+    <TouchableRipple onPress={onPress} disabled={disabled||disabledTouchable} >
       <View style={[styles.container, style]}>
         <View
           style={[

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Platform } from "react-native";
-import { IconButton, Button, Text, Snackbar, Icon } from "react-native-paper";
+import React, { useState, useCallback } from "react";
+import { View, StyleSheet } from "react-native";
+import { IconButton, Button } from "react-native-paper";
 import { useModuleStore } from "@/store/moduleStore";
 import { useAudioStore } from "@/store/audioStore";
 import styles from "@/styles/styles";
@@ -8,17 +8,9 @@ import CustomNavMenu from "../CustomNavMenu";
 import { hexToRgbA } from "@/utils/utilfunctions";
 
 function generateColors(color: string, opacity: number) {
-  // Color can be hex, rgb, or rgba, and opacity is a number between 0 and 1, return object with rgba values of first color with full opacity and second color with specified opacity
-  // Example: generateColors("#FF0000", 0.5) => { color1: "rgba(255, 0, 0, 1)", color2: "rgba(255, 0, 0, 0.5)" }
-  let rgba: string;
-  if (color[0] === "#") {
-    rgba = hexToRgbA(color);
-  } else {
-    rgba = color;
-  }
+  let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
   const color1 = rgba.replace(/[^,]+(?=\))/, "1");
   const color2 = rgba.replace(/[^,]+(?=\))/, opacity.toString());
-
   return { normal: color1, disabled: color2 };
 }
 
@@ -28,89 +20,58 @@ const checkButtonColors = generateColors("#d9f0fb", 0.5);
 const BottomBarNav = () => {
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const menuRef = useRef(null as any);
-
   const {
     previousSlide,
     currentModule,
     currentSlideIndex,
     nextSlide,
-    submittableStates,
-    correctnessStates,
-    submittedAssessments,
-    setSubmittedAssessments,
-    checkSlideCompletion,
-	setSubmittableState
+    submitAssessment,
+    isCurrentSlideSubmittable,
   } = useModuleStore();
 
   const { playSound } = useAudioStore();
 
-  const isLastSlide =
-    currentModule && currentSlideIndex === currentModule.slides.length - 1;
-  const isCurrentSlideCorrect = correctnessStates[currentSlideIndex] || false;
-  const currentAssessmentID =
-    currentModule?.slides[currentSlideIndex].type === "Assessment"
-      ? currentModule.slides[currentSlideIndex].question_id
-      : -1;
-  const submission = submittedAssessments.find(
-    (submission) => submission.question_id === currentAssessmentID
-  );
-  const isCurrentSlideSubmittable =
-    submittableStates[currentSlideIndex] &&
-    (!submission || !submission.correct);
+  const isLastSlide = currentModule && currentSlideIndex === currentModule.slides.length - 1;
+  const currentAssessmentID = currentModule?.slides[currentSlideIndex].question_id;
 
-  const handleCheck = () => {
-    const newSubmission = {
-      question_id: currentAssessmentID,
-      correct: isCurrentSlideCorrect,
-      answers: [],
-    };
-
-    const newSubmissions = submission
-      ? submittedAssessments.map((sub) =>
-          sub.question_id === currentAssessmentID ? newSubmission : sub
-        )
-      : [...submittedAssessments, newSubmission];
-
-    setSubmittedAssessments(newSubmissions);
-
-    playSound(isCurrentSlideCorrect ? "success" : "failVariant", 0.6);
-    if (isCurrentSlideCorrect) {
-      checkSlideCompletion();
+  const handleCheck = useCallback(() => {
+    if (currentAssessmentID !== undefined) {
+      submitAssessment(currentAssessmentID);
     }
-	// Make unsubmittable 
-	setSubmittableState(currentSlideIndex, false)
-  };
+  }, [currentAssessmentID, submitAssessment]);
 
-  const toggleMenu = () => setMenuVisible(!menuVisible);
+  const toggleMenu = useCallback(() => setMenuVisible((prev) => !prev), []);
 
-  const handleDismissMenu = () => {
-    setMenuVisible(false);
-  };
+  const handleDismissMenu = useCallback(() => setMenuVisible(false), []);
 
-  const handleShowCaptions = () => {
+  const handleShowCaptions = useCallback(() => {
     // Implement show captions functionality
     handleDismissMenu();
-  };
+  }, [handleDismissMenu]);
 
-  const handleExplanation = () => {
+  const handleExplanation = useCallback(() => {
     // Implement explanation functionality
     handleDismissMenu();
-  };
+  }, [handleDismissMenu]);
 
-  const handleReportProblem = () => {
+  const handleReportProblem = useCallback(() => {
     // Implement report problem functionality
     handleDismissMenu();
-  };
+  }, [handleDismissMenu]);
 
-  const isCurrentSlideAssessment =
-    currentModule?.slides[currentSlideIndex].type === "Assessment";
-  const showFeedback = isCurrentSlideAssessment && submission;
-  const isCurrentSubmissionCorrect = submission?.correct || false;
+  const handlePreviousSlide = useCallback(() => {
+    previousSlide();
+    handleDismissMenu();
+  }, [previousSlide, handleDismissMenu]);
+
+  const handleNextSlide = useCallback(() => {
+    nextSlide();
+    handleDismissMenu();
+  }, [nextSlide, handleDismissMenu]);
 
   return (
     <View style={localStyles.container}>
-      <View ref={menuRef} style={localStyles.menusContainer}>
+      <View style={localStyles.menusContainer}>
         <CustomNavMenu
           visible={menuVisible}
           onDismiss={handleDismissMenu}
@@ -123,10 +84,7 @@ const BottomBarNav = () => {
         <IconButton
           icon="chevron-left"
           size={18}
-          onPress={() => {
-            previousSlide();
-            handleDismissMenu();
-          }}
+          onPress={handlePreviousSlide}
           disabled={currentSlideIndex === 0}
           style={styles.navButton}
           mode="contained"
@@ -151,11 +109,8 @@ const BottomBarNav = () => {
         <Button
           icon="check"
           mode="contained"
-          disabled={!isCurrentSlideSubmittable}
-          onPress={() => {
-            handleCheck();
-            handleDismissMenu();
-          }}
+          disabled={!isCurrentSlideSubmittable()}
+          onPress={handleCheck}
           style={[styles.checkButton]}
           contentStyle={{ height: 28 }}
           labelStyle={{ fontSize: 14, lineHeight: 14 }}
@@ -170,14 +125,10 @@ const BottomBarNav = () => {
           Check
         </Button>
         <VerticalSeparator />
-
         <IconButton
           icon="chevron-right"
           size={18}
-          onPress={() => {
-            nextSlide();
-            handleDismissMenu();
-          }}
+          onPress={handleNextSlide}
           disabled={isLastSlide}
           style={styles.navButton}
           iconColor="#000"
@@ -205,35 +156,6 @@ const localStyles = StyleSheet.create({
     maxWidth: 300,
     alignSelf: "center",
     zIndex: 2,
-  },
-  feedbackContainer: {
-    flex: 1,
-    maxWidth: 280,
-    width: "100%",
-    paddingVertical: 8,
-    borderRadius: 4,
-    backgroundColor: "#FFEBEE",
-    marginHorizontal: "auto",
-    bottom: 60,
-  },
-  correctContainer: {
-    backgroundColor: "#e8fce9",
-    borderColor: "#4CAF50",
-    borderWidth: 1,
-  },
-  incorrectContainer: {
-    borderColor: "#F44336",
-    backgroundColor: "#FFEBEE",
-    borderWidth: 1,
-  },
-  correctFeedback: {
-    color: "#4CAF50",
-  },
-  incorrectFeedback: {
-    color: "#F44336",
-  },
-  feedbackText: {
-    fontWeight: "bold",
   },
 });
 

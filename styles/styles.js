@@ -115,8 +115,11 @@ export default StyleSheet.create({
     flex: 1,
     paddingHorizontal: 5,
     paddingVertical: 10,
+	borderWidth:2,
+	borderColor: "rgba(108, 92, 231, 0)"
   },
   selectedOption: {
+	borderRadius:4,
     borderWidth: 2,
 	borderColor: '#6c5ce7',
     backgroundColor: 'rgba(108, 92, 231, 0.1)',

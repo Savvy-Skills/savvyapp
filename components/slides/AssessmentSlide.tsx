@@ -24,7 +24,7 @@ function AssessmentComponent({ slide, index }: AssessmentProps) {
     case "Numerical":
       return <NumericalAnswer question={slide.question_info} index={index} />;
     case "Single Choice":
-      return <SingleChoice question={slide.question_info} index={index} />;
+      return <SingleChoice question={slide.question_info} index={index} quizMode={slide.quizMode}/>;
     case "Multiple Choice":
       return <MultipleChoice question={slide.question_info} index={index} />;
     case "Order List":

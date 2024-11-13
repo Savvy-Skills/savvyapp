@@ -12,6 +12,7 @@ import OperatorRenderer from "@/components/OperatorRenderer";
 export default function NumericalAnswerAssessment({
   question,
   index,
+  quizMode
 }: AssessmentProps) {
   const [value, setValue] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
@@ -19,7 +20,7 @@ export default function NumericalAnswerAssessment({
   const [showAnswer, setShowAnswer] = useState(false);
 
   const answer = parseFloat(question.options[0].text);
-  const { setSubmittableState, setCorrectnessState, submittedAssessments } =
+  const { setSubmittableState, setCorrectnessState, submittedAssessments, submitAssessment } =
     useModuleStore();
 
   const handleChange = (text: string) => {
@@ -73,10 +74,14 @@ export default function NumericalAnswerAssessment({
   };
 
   const handleRevealAnswer = () => {
-    setValue(answer.toString());
-    setShowAnswer(true);
-    setIsWrong(false);
-    setShowFeedback(true);
+	if (!quizMode) {
+		setValue(answer.toString())
+		setShowAnswer(true)
+		setIsWrong(false)
+		setShowFeedback(true)
+		setCorrectnessState(index, true)
+		submitAssessment(question.id)
+	  }
   };
 
   return (

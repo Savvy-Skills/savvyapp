@@ -7,7 +7,6 @@ import BottomBarNav from "@/components/navigation/BottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import AnimatedSlide from "@/components/slides/AnimatedSlide";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
@@ -42,7 +41,7 @@ export default function ModuleDetail() {
       <View style={styles.slidesContainer}>
         {currentModule.slides.map((slide, index) => (
           <AnimatedSlide
-            key={slide.slide_id}
+            key={`${slide.slide_id}-${index}`}
             isActive={index === currentSlideIndex}
             direction={index === currentSlideIndex ? direction : null}
             isInitialRender={isInitialRender && index === currentSlideIndex}

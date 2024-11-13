@@ -7,7 +7,8 @@ export const useThemeManager = () => {
   const { theme, isDarkMode, setIsDarkMode } = useThemeStore();
 
   const initialize = () => {
-	setIsDarkMode(colorScheme === "dark");
+	// setIsDarkMode(colorScheme === "dark");
+	setIsDarkMode(false)
   };
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);

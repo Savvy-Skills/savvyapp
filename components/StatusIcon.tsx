@@ -15,7 +15,7 @@ export default function StatusIcon({
   showAnswer,
   size = 24,
 }: StatusIconProps) {
-  if (isCorrect) {
+  if (isCorrect && !showAnswer) {
     return (
       <FilledIcon
         source="check-circle"

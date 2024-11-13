@@ -1,8 +1,15 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  useWindowDimensions,
+} from "react-native";
 import { useModuleStore } from "@/store/moduleStore";
 import { IconButton, useTheme } from "react-native-paper";
 import { router } from "expo-router";
+import { Colors } from "@/constants/Colors";
+import ThemedLogo from "../themed/ThemedLogo";
 
 const TopNavBar = () => {
   const {
@@ -12,6 +19,7 @@ const TopNavBar = () => {
     setCurrentSlideIndex,
   } = useModuleStore();
   const theme = useTheme();
+  const { width } = useWindowDimensions();
 
   if (!currentModule) return null;
 
@@ -19,35 +27,53 @@ const TopNavBar = () => {
     router.replace("/modules");
   };
 
+  const wideScreen = width > 1024;
+
   return (
-    <View style={styles.container}>
-      <IconButton icon="close" size={20} onPress={handleClose} />
-      {currentModule.slides.map((_, index) => (
-        <TouchableOpacity
-          key={index}
-          style={[
-            styles.slideIndicator,
-            completedSlides[index] && styles.completed,
-            currentSlideIndex === index && [
-              styles.current,
-              { borderColor: theme.dark ? "#fff" : "#000" },
-            ],
-          ]}
-          onPress={() => setCurrentSlideIndex(index)}
-        />
-      ))}
+    <View style={[styles.navHeader, wideScreen && styles.webNav]}>
+      <View style={styles.navContainer}>
+        <IconButton icon="close" size={20} onPress={handleClose} />
+        {currentModule.slides.map((_, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[
+              styles.slideIndicator,
+              completedSlides[index] && styles.completed,
+              currentSlideIndex === index && [
+                styles.current,
+                { borderColor: theme.dark ? "#fff" : "#000" },
+              ],
+            ]}
+            onPress={() => setCurrentSlideIndex(index)}
+          />
+        ))}
+      </View>
+      {wideScreen && (
+        <View style={{position:"absolute", right: 20, top: 10}}>
+          <ThemedLogo height={32} width={32} />
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  navHeader: {
+    flexDirection: "row",
+    justifyContent: "center",
+	zIndex:2
+  },
+  webNav: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#cccccc",
+  },
+  navContainer: {
     flexDirection: "row",
     alignItems: "center",
-	alignSelf: "center",
-	maxWidth: 600,
-	width: "100%",
-	paddingHorizontal: 8,
+    alignSelf: "center",
+    maxWidth: 600,
+    width: "100%",
+    paddingHorizontal: 8,
   },
   slideIndicator: {
     flex: 1,

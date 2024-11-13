@@ -24,7 +24,7 @@ const MAX_COLUMN_WIDTH = 150;
 
 export default function DataTable({
   datasetInfo,
-  headerColors = ["#7B1FA2", "#2196F3", "#FF9800", "#FFC107"],
+  headerColors = ["rgba(123, 31, 162, 0.2)", "rgba(33, 150, 243, 0.2)", "rgba(255, 152, 0, 0.2)", "rgba(255, 193, 7, 0.2)"],
 }: DataTableProps) {
   const { url, name, extension } = datasetInfo;
   const { data, columns, isLoading, error } = useDataFetch(url, extension.toLocaleLowerCase() === "csv");
@@ -141,7 +141,7 @@ export default function DataTable({
   return (
     <View style={styles.container}>
       <View style={[styles.tableContainer, { width: tableWidth }]}>
-        <ThemedTitle style={[styles.boldText]}>{name}</ThemedTitle>
+        <ThemedTitle style={[styles.boldText, styles.title]}>{name}</ThemedTitle>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={true}
@@ -190,6 +190,9 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
+  title:{
+	alignSelf: "center"
+  },
   boldText: {
     fontWeight: "bold",
   },
@@ -198,6 +201,7 @@ const styles = StyleSheet.create({
   },
   tableContainer: {
     alignSelf: "center",
+	paddingHorizontal: 8,
     gap: 8,
   },
   scrollViewContent: {
@@ -224,7 +228,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontWeight: "bold",
     fontSize: 14,
-    color: "#FFFFFF",
+    color: "#000",
     flexShrink: 1,
   },
   tableBody: {

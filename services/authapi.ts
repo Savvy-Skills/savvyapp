@@ -1,7 +1,7 @@
 import { LoginResponse, User } from "@/types";
 import { createAPI } from "./apiConfig";
 
-const baseURL = "https://xfpf-pye0-4nzu.n7d.xano.io/api:_diHubFn";
+const baseURL = "https://api.savvyskills.io/api:_diHubFn";
 export const authAPI = createAPI(baseURL);
 
 export const login = async (

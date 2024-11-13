@@ -23,6 +23,7 @@ function FeedbackComponent({
   onRevealAnswer,
   onShowExplanation,
   quizMode,
+  showExplanation,
 }: {
   correctness: boolean;
   revealed: boolean;
@@ -30,6 +31,7 @@ function FeedbackComponent({
   onRevealAnswer: () => void;
   onShowExplanation: () => void;
   quizMode: boolean;
+  showExplanation: boolean;
 }) {
   if (revealed) {
     return (
@@ -50,7 +52,7 @@ function FeedbackComponent({
             buttonColor="#E5E3FF"
             labelStyle={{ fontWeight: 600 }}
           >
-            See explanation
+            {showExplanation ? "Go back to question" : "See explanation"}
           </Button>
         </View>
       </View>
@@ -76,7 +78,7 @@ function FeedbackComponent({
             buttonColor="#E5E3FF"
             labelStyle={{ fontWeight: 600 }}
           >
-            See explanation
+            {showExplanation ? "Go back to question" : "See explanation"}
           </Button>
         </View>
       </View>
@@ -191,6 +193,7 @@ export default function AssessmentWrapper({
           onTryAgain={handleTryAgain}
           onRevealAnswer={handleRevealAnswer}
           onShowExplanation={toggleExplanation}
+          showExplanation={showExplanation}
           quizMode={quizMode}
         />
       )}

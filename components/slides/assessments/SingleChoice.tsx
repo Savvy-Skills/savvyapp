@@ -20,7 +20,7 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
   const [isWrong, setIsWrong] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
 
-  const { setSubmittableState, setCorrectnessState, submittedAssessments } =
+  const { setSubmittableState, setCorrectnessState, submittedAssessments, submitAssessment } =
     useModuleStore()
 
   const options = question.options.map((option) => option.text)
@@ -29,6 +29,7 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
 
   useEffect(() => {
     if (selectedValue) {
+		console.log("Setting submittable", index)
       setSubmittableState(index, true)
       let correct: boolean = selectedValue === correctAnswer
       setCorrectnessState(index, correct)
@@ -69,6 +70,10 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
       ? [localStyles.imageOption]
       : [styles.option]
 
+    if (showAnswer && option === correctAnswer) {
+      return [...baseStyles, styles.revealedOption]
+    }
+
     if (quizMode && isWrong) {
       if (option === correctAnswer) {
         return [...baseStyles, styles.correctOption]
@@ -87,9 +92,9 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
       } else if (showAnswer) {
         return [...baseStyles, styles.revealedOption]
       }
-	  if (question.subtype === "Image"){
-		return [...baseStyles, localStyles.selectedImage]
-	  } 
+      if (question.subtype === "Image"){
+        return [...baseStyles, localStyles.selectedImage]
+      } 
       return [...baseStyles, styles.selectedOption]
     }
     return baseStyles
@@ -99,10 +104,13 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
     if (quizMode && (isWrong || currentSubmission?.correct)) {
       return
     }
-    setSelectedValue(value)
-    setIsWrong(false)
-    setShowAnswer(false)
-    setShowFeedback(false)
+    // Prevent reselection of the same option
+    if (value !== selectedValue) {
+      setSelectedValue(value)
+      setIsWrong(false)
+      setShowAnswer(false)
+      setShowFeedback(false)
+    }
   }
 
   const resetStates = () => {
@@ -124,6 +132,8 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
       setShowAnswer(true)
       setIsWrong(false)
       setShowFeedback(true)
+	  setCorrectnessState(index, true)
+	  submitAssessment(question.id)
     }
   }
 
@@ -181,6 +191,7 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
         onPress={() => handleChoiceSelection(option)}
         disabled={blocked}
         style={getOptionStyles(option)}
+		disabledTouchable={selectedValue === option}
       />
       <View style={styles.iconContainer}>
         {renderStatusIcon(option)}
@@ -229,18 +240,19 @@ const localStyles = StyleSheet.create({
     height: '100%',
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#a197f9',
+    borderColor: '#cccccc',
     overflow: 'hidden',
     position: 'relative',
-	padding: 10
+    padding: 10
   },
   image: {
     width: '100%',
     height: '100%',
   },
   selectedImage: {
-	borderWidth: 3,
-	backgroundColor: 'rgba(108, 92, 231, 0.1)',
+    borderWidth: 3,
+    backgroundColor: 'rgba(108, 92, 231, 0.1)',
+    borderColor: '#a197f9'
   },
   imageIconContainer: {
     position: 'absolute',

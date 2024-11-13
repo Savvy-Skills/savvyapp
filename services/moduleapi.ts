@@ -1,8 +1,7 @@
 import { Module, ModuleWithSlides } from "../types";
-import { useAuthStore } from "@/store/authStore";
 import { createAPI } from "./apiConfig";
 
-const baseURL = "https://xfpf-pye0-4nzu.n7d.xano.io/api:edObfuQW";
+const baseURL = "https://api.savvyskills.io/api:edObfuQW";
 export const module_api = createAPI(baseURL);
 
 export const fetchModules = async (): Promise<Module[]> => {

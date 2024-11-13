@@ -3,8 +3,8 @@ import { Image } from "react-native";
 import { useTheme } from "react-native-paper";
 
 type ThemedLogoProps = {
-	width: number;
-	height: number;
+  width: number;
+  height: number;
 };
 
 const ThemedLogo = (props: ThemedLogoProps) => {
@@ -15,13 +15,10 @@ const ThemedLogo = (props: ThemedLogoProps) => {
     <Image
       style={{
         width,
-        height
+        height,
       }}
-      source={
-        theme.dark
-          ? require("../../assets/images/savvyimagotipeawhite.png")
-          : require("../../assets/images/savvyimagotipe.png")
-      }
+      tintColor={theme.dark ? "white" : "black"}
+      source={require("../../assets/images/savvyimagotipe.svg")}
     />
   );
 };
