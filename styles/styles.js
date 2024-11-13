@@ -117,26 +117,28 @@ export default StyleSheet.create({
     paddingVertical: 10,
   },
   selectedOption: {
-    borderWidth: 1,
-    borderColor: "#a197f9",
+    borderWidth: 2,
+	borderColor: '#6c5ce7',
+    backgroundColor: 'rgba(108, 92, 231, 0.1)',
   },
   correctOption: {
-    borderWidth: 1,
-    borderColor: "#23b5ec",
-    backgroundColor: "rgba(35, 181, 236, 0.1)",
+    borderWidth: 2,
+	borderColor: '#23b5ec',
+    backgroundColor: 'rgba(35, 181, 236, 0.1)',
   },
   incorrectOption: {
-    borderWidth: 1,
-    borderColor: "#ff7b09",
-    backgroundColor: "rgba(255, 123, 9, 0.1)",
+    borderWidth: 2,
+    borderColor: '#ff7b09',
+    backgroundColor: 'rgba(255, 123, 9, 0.1)',
   },
   revealedOption: {
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: "#9E9E9E",
     backgroundColor: "rgba(158, 158, 158, 0.1)",
   },
-  disabledOption: {
 
+  disabledOption: {
+    opacity: 0.5,
   },
 });
 

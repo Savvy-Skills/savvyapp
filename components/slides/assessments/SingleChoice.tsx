@@ -71,23 +71,26 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
 
     if (quizMode && isWrong) {
       if (option === correctAnswer) {
-        return [...baseStyles, localStyles.correctOption]
+        return [...baseStyles, styles.correctOption]
       }
       if (option === selectedValue) {
-        return [...baseStyles, localStyles.incorrectOption]
+        return [...baseStyles, styles.incorrectOption]
       }
-      return [...baseStyles, localStyles.disabledOption]
+      return [...baseStyles, styles.disabledOption]
     }
 
     if (option === selectedValue) {
       if (currentSubmission?.correct) {
-        return [...baseStyles, localStyles.correctOption]
+        return [...baseStyles, styles.correctOption]
       } else if (isWrong) {
-        return [...baseStyles, localStyles.incorrectOption]
+        return [...baseStyles, styles.incorrectOption]
       } else if (showAnswer) {
-        return [...baseStyles, localStyles.revealedOption]
+        return [...baseStyles, styles.revealedOption]
       }
-      return [...baseStyles, localStyles.selectedOption]
+	  if (question.subtype === "Image"){
+		return [...baseStyles, localStyles.selectedImage]
+	  } 
+      return [...baseStyles, styles.selectedOption]
     }
     return baseStyles
   }
@@ -235,28 +238,9 @@ const localStyles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  selectedOption: {
-    borderColor: '#6c5ce7',
-    borderWidth: 3,
-    backgroundColor: 'rgba(108, 92, 231, 0.1)',
-  },
-  correctOption: {
-    borderColor: '#23b5ec',
-    borderWidth: 3,
-    backgroundColor: 'rgba(35, 181, 236, 0.1)',
-  },
-  incorrectOption: {
-    borderColor: '#ff7b09',
-    borderWidth: 3,
-    backgroundColor: 'rgba(255, 123, 9, 0.1)',
-  },
-  revealedOption: {
-    borderColor: '#9E9E9E',
-    borderWidth: 3,
-    backgroundColor: 'rgba(158, 158, 158, 0.1)',
-  },
-  disabledOption: {
-    opacity: 0.5,
+  selectedImage: {
+	borderWidth: 3,
+	backgroundColor: 'rgba(108, 92, 231, 0.1)',
   },
   imageIconContainer: {
     position: 'absolute',
