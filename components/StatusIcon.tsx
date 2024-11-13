@@ -27,7 +27,7 @@ export default function StatusIcon({
   } else if (isWrong) {
     return (
       <FilledIcon
-        source="circle"
+        source="close-circle"
         size={size}
         color="#ff7b09"
         fillColor="white"

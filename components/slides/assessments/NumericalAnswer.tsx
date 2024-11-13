@@ -86,6 +86,7 @@ export default function NumericalAnswerAssessment({
       onRevealAnswer={handleRevealAnswer}
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
+	  quizMode={false}
     >
       <View style={localStyles.container}>
         {!!question.extras?.text && (
@@ -99,6 +100,7 @@ export default function NumericalAnswerAssessment({
             value={value}
             onChangeText={handleChange}
             disabled={blocked}
+			textColor="black"
             style={[
               localStyles.input,
               currentSubmission?.correct && localStyles.correctInput,
@@ -151,6 +153,11 @@ const localStyles = StyleSheet.create({
   input: {
     height: 40,
     textAlign: "center",
+	backgroundColor: "white",
+	borderRadius: 4,
+	color: "black",
+	borderWidth: 1,
+	borderColor:"grey"
   },
   correctInput: {
     borderColor: "#23b5ec",

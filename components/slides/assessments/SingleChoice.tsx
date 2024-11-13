@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { StyleSheet, View } from "react-native"
+import { StyleSheet, View, Image, TouchableOpacity } from "react-native"
 import { RadioButton } from "react-native-paper"
 import AssessmentWrapper from "../AssessmentWrapper"
 import { QuestionInfo } from "@/types"
@@ -65,27 +65,31 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
   const blocked = currentSubmission?.correct || showAnswer || (quizMode && isWrong)
 
   const getOptionStyles = (option: string) => {
+    const baseStyles = question.subtype === 'Image' 
+      ? [localStyles.imageOption]
+      : [styles.option]
+
     if (quizMode && isWrong) {
       if (option === correctAnswer) {
-        return [styles.option, styles.correctOption]
+        return [...baseStyles, localStyles.correctOption]
       }
       if (option === selectedValue) {
-        return [styles.option, styles.incorrectOption]
+        return [...baseStyles, localStyles.incorrectOption]
       }
-      return [styles.option, styles.disabledOption]
+      return [...baseStyles, localStyles.disabledOption]
     }
 
     if (option === selectedValue) {
       if (currentSubmission?.correct) {
-        return [styles.option, styles.correctOption]
+        return [...baseStyles, localStyles.correctOption]
       } else if (isWrong) {
-        return [styles.option, styles.incorrectOption]
+        return [...baseStyles, localStyles.incorrectOption]
       } else if (showAnswer) {
-        return [styles.option, styles.revealedOption]
+        return [...baseStyles, localStyles.revealedOption]
       }
-      return [styles.option, styles.selectedOption]
+      return [...baseStyles, localStyles.selectedOption]
     }
-    return [styles.option]
+    return baseStyles
   }
 
   const handleChoiceSelection = (value: string) => {
@@ -143,6 +147,44 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
     return null
   }
 
+  const renderImageOption = (option: string, index: number) => (
+    <TouchableOpacity
+      key={index}
+      style={localStyles.imageContainer}
+      onPress={() => handleChoiceSelection(option)}
+      disabled={blocked}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: selectedValue === option }}
+    >
+      <View style={getOptionStyles(option)}>
+        <Image
+          source={{ uri: option }}
+          style={localStyles.image}
+          resizeMode="contain"
+        />
+        <View style={localStyles.imageIconContainer}>
+          {renderStatusIcon(option)}
+        </View>
+      </View>
+    </TouchableOpacity>
+  )
+
+  const renderTextOption = (option: string, index: number) => (
+    <View key={index} style={styles.optionContainer}>
+      <CustomRadioButton
+        label={option}
+        value={option}
+        status={selectedValue === option ? "checked" : "unchecked"}
+        onPress={() => handleChoiceSelection(option)}
+        disabled={blocked}
+        style={getOptionStyles(option)}
+      />
+      <View style={styles.iconContainer}>
+        {renderStatusIcon(option)}
+      </View>
+    </View>
+  )
+
   return (
     <AssessmentWrapper
       question={question}
@@ -150,28 +192,76 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
       onRevealAnswer={quizMode ? undefined : handleRevealAnswer}
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
-	  quizMode={quizMode}
+      quizMode={quizMode}
     >
-      <RadioButton.Group
-        onValueChange={handleChoiceSelection}
-        value={selectedValue}
-      >
-        {options.map((option, index) => (
-          <View key={index} style={styles.optionContainer}>
-            <CustomRadioButton
-              label={option}
-              value={option}
-              status={selectedValue === option ? "checked" : "unchecked"}
-              onPress={() => handleChoiceSelection(option)}
-              disabled={blocked}
-              style={getOptionStyles(option)}
-            />
-            <View style={styles.iconContainer}>
-              {renderStatusIcon(option)}
-            </View>
-          </View>
-        ))}
-      </RadioButton.Group>
+      {question.subtype === 'Image' ? (
+        <View style={localStyles.imageGrid}>
+          {options.map((option, index) => renderImageOption(option, index))}
+        </View>
+      ) : (
+        <RadioButton.Group
+          onValueChange={handleChoiceSelection}
+          value={selectedValue}
+        >
+          {options.map((option, index) => renderTextOption(option, index))}
+        </RadioButton.Group>
+      )}
     </AssessmentWrapper>
   )
 }
+
+const localStyles = StyleSheet.create({
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    justifyContent: 'center',
+  },
+  imageContainer: {
+    width: '45%',
+    aspectRatio: 1,
+  },
+  imageOption: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#a197f9',
+    overflow: 'hidden',
+    position: 'relative',
+	padding: 10
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  selectedOption: {
+    borderColor: '#6c5ce7',
+    borderWidth: 3,
+    backgroundColor: 'rgba(108, 92, 231, 0.1)',
+  },
+  correctOption: {
+    borderColor: '#23b5ec',
+    borderWidth: 3,
+    backgroundColor: 'rgba(35, 181, 236, 0.1)',
+  },
+  incorrectOption: {
+    borderColor: '#ff7b09',
+    borderWidth: 3,
+    backgroundColor: 'rgba(255, 123, 9, 0.1)',
+  },
+  revealedOption: {
+    borderColor: '#9E9E9E',
+    borderWidth: 3,
+    backgroundColor: 'rgba(158, 158, 158, 0.1)',
+  },
+  disabledOption: {
+    opacity: 0.5,
+  },
+  imageIconContainer: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 1,
+  },
+})
