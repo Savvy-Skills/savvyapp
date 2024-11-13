@@ -18,7 +18,7 @@ const navButtonColors = generateColors("#f4bb62", 0.5);
 const checkButtonColors = generateColors("#d9f0fb", 0.5);
 
 const BottomBarNav = () => {
-  const [menuVisible, setMenuVisible] = useState(false);
+
 
   const {
     previousSlide,
@@ -27,6 +27,8 @@ const BottomBarNav = () => {
     nextSlide,
     submitAssessment,
     isCurrentSlideSubmittable,
+    isNavMenuVisible,
+    setNavMenuVisible,
   } = useModuleStore();
 
   const { playSound } = useAudioStore();
@@ -40,9 +42,9 @@ const BottomBarNav = () => {
     }
   }, [currentAssessmentID, submitAssessment]);
 
-  const toggleMenu = useCallback(() => setMenuVisible((prev) => !prev), []);
+  const toggleMenu = useCallback(() => setNavMenuVisible(!isNavMenuVisible), [isNavMenuVisible, setNavMenuVisible]);
 
-  const handleDismissMenu = useCallback(() => setMenuVisible(false), []);
+  const handleDismissMenu = useCallback(() => setNavMenuVisible(false), [setNavMenuVisible]);
 
   const handleShowCaptions = useCallback(() => {
     // Implement show captions functionality
@@ -73,7 +75,7 @@ const BottomBarNav = () => {
     <View style={localStyles.container}>
       <View style={localStyles.menusContainer}>
         <CustomNavMenu
-          visible={menuVisible}
+          visible={isNavMenuVisible}
           onDismiss={handleDismissMenu}
           onShowCaptions={handleShowCaptions}
           onExplanation={handleExplanation}

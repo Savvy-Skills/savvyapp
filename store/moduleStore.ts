@@ -25,6 +25,9 @@ interface ModuleStore {
   checkSlideCompletion: (data?: any) => void;
   setScrollToEnd: (scrollFn: () => void) => void;
   isCurrentSlideSubmittable: () => boolean;
+
+  isNavMenuVisible: boolean;
+  setNavMenuVisible: (isVisible: boolean) => void;
 }
 
 export const useModuleStore = create<ModuleStore>((set, get) => ({
@@ -181,4 +184,6 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
     );
     return submittableStates[currentSlideIndex] && (!submission || !submission.correct);
   },
+  isNavMenuVisible: false,
+  setNavMenuVisible: (isVisible) => set({ isNavMenuVisible: isVisible }),
 }));
