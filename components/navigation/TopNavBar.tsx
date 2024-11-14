@@ -49,8 +49,8 @@ const TopNavBar = () => {
         ))}
       </View>
       {wideScreen && (
-        <View style={{position:"absolute", right: 20, top: 10}}>
-          <ThemedLogo height={32} width={32} />
+        <View style={{position:"absolute", right: 20, top: 12}}>
+          <ThemedLogo height={32} width={32} logo="filled" />
         </View>
       )}
     </View>
@@ -61,11 +61,18 @@ const styles = StyleSheet.create({
   navHeader: {
     flexDirection: "row",
     justifyContent: "center",
-	zIndex:2
+	zIndex:2,
+	paddingVertical: 4
   },
   webNav: {
     borderBottomWidth: 1,
     borderBottomColor: "#cccccc",
+	shadowColor: "#cccccc",
+	shadowOffset: {
+		width:0,
+		height:1
+	},
+	shadowRadius: 4
   },
   navContainer: {
     flexDirection: "row",

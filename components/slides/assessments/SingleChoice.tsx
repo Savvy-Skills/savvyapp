@@ -205,9 +205,9 @@ export default function SingleChoice({
         value={option}
         status={selectedValue === option ? "checked" : "unchecked"}
         onPress={() => handleChoiceSelection(option)}
-        disabled={blocked}
+        disabled={blocked&&option!==correctAnswer}
         style={getOptionStyles(option)}
-        disabledTouchable={selectedValue === option}
+        disabledTouchable={selectedValue === option || blocked}
       />
       <View style={styles.iconContainer}>{renderStatusIcon(option)}</View>
     </View>

@@ -95,28 +95,41 @@ function FeedbackComponent({
           Negative feedback text
         </Text>
       </View>
-      {!quizMode && (
-        <View style={localStyles.buttonContainer}>
-          <Button
-            mode="contained"
-            onPress={onTryAgain}
-            buttonColor="#321A5F"
-            textColor="white"
-            labelStyle={{ fontWeight: 600 }}
-          >
-            Try again
-          </Button>
+      <View style={localStyles.buttonContainer}>
+        {!quizMode ? (
+          <>
+            <Button
+              mode="contained"
+              onPress={onTryAgain}
+              buttonColor="#321A5F"
+              textColor="white"
+              labelStyle={{ fontWeight: 600 }}
+            >
+              Try again
+            </Button>
+
+            <Button
+              mode="text"
+              onPress={onRevealAnswer}
+              textColor="#321A5F"
+              buttonColor="#E5E3FF"
+              labelStyle={{ fontWeight: 600 }}
+            >
+              See answer
+            </Button>
+          </>
+        ) : (
           <Button
             mode="text"
-            onPress={onRevealAnswer}
+            onPress={onShowExplanation}
             textColor="#321A5F"
             buttonColor="#E5E3FF"
             labelStyle={{ fontWeight: 600 }}
           >
-            See answer
+            {showExplanation ? "Go back to question" : "See explanation"}
           </Button>
-        </View>
-      )}
+        )}
+      </View>
     </View>
   );
 }
