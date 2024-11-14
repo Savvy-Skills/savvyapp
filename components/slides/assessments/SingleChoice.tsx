@@ -1,38 +1,46 @@
-import React, { useEffect, useState } from "react"
-import { StyleSheet, View, Image, TouchableOpacity } from "react-native"
-import { RadioButton } from "react-native-paper"
-import AssessmentWrapper from "../AssessmentWrapper"
-import { QuestionInfo } from "@/types"
-import { useModuleStore } from "@/store/moduleStore"
-import StatusIcon from "@/components/StatusIcon"
-import styles from "@/styles/styles"
-import CustomRadioButton from "@/components/SavvyRadioButton"
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
+import { RadioButton } from "react-native-paper";
+import AssessmentWrapper from "../AssessmentWrapper";
+import { QuestionInfo } from "@/types";
+import { useModuleStore } from "@/store/moduleStore";
+import StatusIcon from "@/components/StatusIcon";
+import styles from "@/styles/styles";
+import CustomRadioButton from "@/components/SavvyRadioButton";
 
 export type AssessmentProps = {
-  question: QuestionInfo
-  index: number
-  quizMode?: boolean
-}
+  question: QuestionInfo;
+  index: number;
+  quizMode?: boolean;
+};
 
-export default function SingleChoice({ question, index, quizMode = false }: AssessmentProps) {
-  const [selectedValue, setSelectedValue] = useState("")
-  const [showAnswer, setShowAnswer] = useState(false)
-  const [isWrong, setIsWrong] = useState(false)
-  const [showFeedback, setShowFeedback] = useState(false)
+export default function SingleChoice({
+  question,
+  index,
+  quizMode = false,
+}: AssessmentProps) {
+  const [selectedValue, setSelectedValue] = useState("");
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [isWrong, setIsWrong] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
-  const { setSubmittableState, setCorrectnessState, submittedAssessments, submitAssessment } =
-    useModuleStore()
+  const {
+    setSubmittableState,
+    setCorrectnessState,
+    submittedAssessments,
+    submitAssessment,
+  } = useModuleStore();
 
-  const options = question.options.map((option) => option.text)
+  const options = question.options.map((option) => option.text);
   const correctAnswer =
-    question.options.find((option) => option.isCorrect)?.text || ""
+    question.options.find((option) => option.isCorrect)?.text || "";
 
   useEffect(() => {
     if (selectedValue) {
-		console.log("Setting submittable", index)
-      setSubmittableState(index, true)
-      let correct: boolean = selectedValue === correctAnswer
-      setCorrectnessState(index, correct)
+      console.log("Setting submittable", index);
+      setSubmittableState(index, true);
+      let correct: boolean = selectedValue === correctAnswer;
+      setCorrectnessState(index, correct);
     }
   }, [
     selectedValue,
@@ -40,112 +48,120 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
     setSubmittableState,
     correctAnswer,
     setCorrectnessState,
-  ])
+  ]);
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
     (submission) => submission.question_id === question.id
-  )
+  );
 
   const currentSubmission =
     currentSubmissionIndex !== -1
       ? submittedAssessments[currentSubmissionIndex]
-      : undefined
+      : undefined;
 
   useEffect(() => {
     if (currentSubmission) {
       if (!currentSubmission.correct) {
-        setIsWrong(true)
+        setIsWrong(true);
         if (quizMode) {
-          setShowAnswer(true)
+          setShowAnswer(true);
         }
       }
-      setShowFeedback(true)
+      setShowFeedback(true);
     }
-  }, [submittedAssessments, currentSubmission, quizMode])
+  }, [submittedAssessments, currentSubmission, quizMode]);
 
-  const blocked = currentSubmission?.correct || showAnswer || (quizMode && isWrong)
+  const blocked =
+    currentSubmission?.correct || showAnswer || (quizMode && isWrong);
 
   const getOptionStyles = (option: string) => {
-    const baseStyles = question.subtype === 'Image' 
-      ? [localStyles.imageOption]
-      : [styles.option]
+    const baseStyles =
+      question.subtype === "Image"
+        ? [localStyles.imageOption]
+        : [styles.option];
 
     if (showAnswer && option === correctAnswer) {
-      return [...baseStyles, styles.revealedOption]
+      if (!quizMode) {
+        return [...baseStyles, styles.revealedOption];
+      }
     }
 
     if (quizMode && isWrong) {
       if (option === correctAnswer) {
-        return [...baseStyles, styles.correctOption]
+        return [...baseStyles, styles.correctOption];
       }
       if (option === selectedValue) {
-        return [...baseStyles, styles.incorrectOption]
+        return [...baseStyles, styles.incorrectOption];
       }
-      return [...baseStyles, styles.disabledOption]
+      return [...baseStyles, styles.disabledOption];
     }
 
     if (option === selectedValue) {
       if (currentSubmission?.correct) {
-        return [...baseStyles, styles.correctOption]
+        return [...baseStyles, styles.correctOption];
       } else if (isWrong) {
-        return [...baseStyles, styles.incorrectOption]
+        return [...baseStyles, styles.incorrectOption];
       } else if (showAnswer) {
-        return [...baseStyles, styles.revealedOption]
+        return [...baseStyles, styles.revealedOption];
       }
-      if (question.subtype === "Image"){
-        return [...baseStyles, localStyles.selectedImage]
-      } 
-      return [...baseStyles, styles.selectedOption]
+      if (question.subtype === "Image") {
+        return [...baseStyles, localStyles.selectedImage];
+      }
+      return [...baseStyles, styles.selectedOption];
     }
-    return baseStyles
-  }
+    return baseStyles;
+  };
 
   const handleChoiceSelection = (value: string) => {
     if (quizMode && (isWrong || currentSubmission?.correct)) {
-      return
+      return;
     }
     // Prevent reselection of the same option
     if (value !== selectedValue) {
-      setSelectedValue(value)
-      setIsWrong(false)
-      setShowAnswer(false)
-      setShowFeedback(false)
+      setSelectedValue(value);
+      setIsWrong(false);
+      setShowAnswer(false);
+      setShowFeedback(false);
     }
-  }
+  };
 
   const resetStates = () => {
-    setSelectedValue("")
-    setShowAnswer(false)
-    setIsWrong(false)
-    setShowFeedback(false)
-  }
+    setSelectedValue("");
+    setShowAnswer(false);
+    setIsWrong(false);
+    setShowFeedback(false);
+  };
 
   const handleTryAgain = () => {
     if (!quizMode) {
-      resetStates()
+      resetStates();
     }
-  }
+  };
 
   const handleRevealAnswer = () => {
     if (!quizMode) {
-      setSelectedValue(correctAnswer)
-      setShowAnswer(true)
-      setIsWrong(false)
-      setShowFeedback(true)
-	  setCorrectnessState(index, true)
-	  submitAssessment(question.id)
+      setSelectedValue(correctAnswer);
+      setShowAnswer(true);
+      setIsWrong(false);
+      setShowFeedback(true);
+      setCorrectnessState(index, true);
+      submitAssessment(question.id);
     }
-  }
+  };
 
   const renderStatusIcon = (option: string) => {
     if (quizMode && isWrong) {
       if (option === correctAnswer) {
-        return <StatusIcon isCorrect={true} isWrong={false} showAnswer={false} />
+        return (
+          <StatusIcon isCorrect={true} isWrong={false} showAnswer={false} />
+        );
       }
       if (option === selectedValue) {
-        return <StatusIcon isCorrect={false} isWrong={true} showAnswer={false} />
+        return (
+          <StatusIcon isCorrect={false} isWrong={true} showAnswer={false} />
+        );
       }
-      return null
+      return null;
     }
 
     if (option === selectedValue) {
@@ -155,10 +171,10 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
           isWrong={isWrong}
           showAnswer={showAnswer}
         />
-      )
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   const renderImageOption = (option: string, index: number) => (
     <TouchableOpacity
@@ -180,7 +196,7 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
         </View>
       </View>
     </TouchableOpacity>
-  )
+  );
 
   const renderTextOption = (option: string, index: number) => (
     <View key={index} style={styles.optionContainer}>
@@ -191,13 +207,11 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
         onPress={() => handleChoiceSelection(option)}
         disabled={blocked}
         style={getOptionStyles(option)}
-		disabledTouchable={selectedValue === option}
+        disabledTouchable={selectedValue === option}
       />
-      <View style={styles.iconContainer}>
-        {renderStatusIcon(option)}
-      </View>
+      <View style={styles.iconContainer}>{renderStatusIcon(option)}</View>
     </View>
-  )
+  );
 
   return (
     <AssessmentWrapper
@@ -208,7 +222,7 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
     >
-      {question.subtype === 'Image' ? (
+      {question.subtype === "Image" ? (
         <View style={localStyles.imageGrid}>
           {options.map((option, index) => renderImageOption(option, index))}
         </View>
@@ -221,43 +235,43 @@ export default function SingleChoice({ question, index, quizMode = false }: Asse
         </RadioButton.Group>
       )}
     </AssessmentWrapper>
-  )
+  );
 }
 
 const localStyles = StyleSheet.create({
   imageGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 16,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   imageContainer: {
-    width: '45%',
+    width: "45%",
     aspectRatio: 1,
   },
   imageOption: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#cccccc',
-    overflow: 'hidden',
-    position: 'relative',
-    padding: 10
+    borderColor: "#cccccc",
+    overflow: "hidden",
+    position: "relative",
+    padding: 10,
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   selectedImage: {
     borderWidth: 3,
-    backgroundColor: 'rgba(108, 92, 231, 0.1)',
-    borderColor: '#a197f9'
+    backgroundColor: "rgba(108, 92, 231, 0.1)",
+    borderColor: "#a197f9",
   },
   imageIconContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 8,
     right: 8,
     zIndex: 1,
   },
-})
+});

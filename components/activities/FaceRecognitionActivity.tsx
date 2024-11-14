@@ -11,6 +11,7 @@ import {
 import { useModuleStore } from "@/store/moduleStore";
 import { useThemeStore } from "@/store/themeStore";
 import ThemedTitle from "../themed/ThemedTitle";
+import { useAudioStore } from "@/store/audioStore";
 
 const employeeImages = {
   employee1: require("@/assets/images/activities/facerecognition/employee1.png"),
@@ -244,6 +245,7 @@ export default function FaceRecognitionActivity({
   const [isIntroductionComplete, setIsIntroductionComplete] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const { checkSlideCompletion } = useModuleStore();
+  const {playSound} = useAudioStore()
   const timeLimit = 60000;
 
   useEffect(() => {
@@ -276,6 +278,7 @@ export default function FaceRecognitionActivity({
       );
     }
     setShowFeedback(true);
+	playSound(isCorrect?"success":"failVariant", 0.6)
 
     if (currentEmployeeIndex < employees.length - 1) {
       setTimeout(() => {
