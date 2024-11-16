@@ -33,6 +33,7 @@
     "expo-dev-client": "~4.0.29",
     "expo-font": "~12.0.9",
     "expo-gl": "^14.0.2",
+    "expo-linear-gradient": "~13.0.2",
     "expo-linking": "~6.3.1",
     "expo-router": "~3.5.24",
     "expo-screen-orientation": "^7.0.5",

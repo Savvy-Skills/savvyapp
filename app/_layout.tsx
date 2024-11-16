@@ -24,6 +24,8 @@ export default function RootLayout() {
     Poppins: require("../assets/fonts/PoppinsRegular.ttf"),
     PoppinsBold: require("../assets/fonts/PoppinsBold.ttf"),
     PoppinsItalic: require("../assets/fonts/PoppinsItalic.ttf"),
+    PoppinsBlack: require("../assets/fonts/PoppinsBlack.ttf"),
+    PoppinsExtraBold: require("../assets/fonts/PoppinsExtraBold.ttf"),
   });
 
   const loadSounds = useAudioStore((state) => state.loadSounds);
@@ -49,7 +51,9 @@ export default function RootLayout() {
   useEffect(() => {
     if (isInitialized && appIsReady) {
       const inAuthGroup = segments[0] === "auth";
-      if (!token && !inAuthGroup) {
+	  const notInRoot = segments.length > 0;
+
+      if (!token && !inAuthGroup && notInRoot ) {
         router.replace("/auth/login");
       } else if (token) {
         if (!user) {
@@ -63,7 +67,7 @@ export default function RootLayout() {
     }
   }, [isInitialized, token, segments, appIsReady]);
 
-  if (!fontsLoaded || !isInitialized || !appIsReady) {
+  if (!isInitialized || !appIsReady) {
     return null;
   }
 

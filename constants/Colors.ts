@@ -6,6 +6,7 @@
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 const primaryColor = '#664acc';
+const primaryLighter= '#a197f9'
 const blueColor = '#1d9dc9';
 const orangeColor = "#ff7b09";
 const lightOrangeColor = "#ffb850";
@@ -32,7 +33,8 @@ export const Colors = {
 	lightOrange: lightOrangeColor,
 	navigationOrange: navigationOrange,
 	navigationWhite: navigationWhite,
-	assessment: assessmentLight
+	assessment: assessmentLight,
+	primaryLighter: primaryLighter
   },
   dark: {
     text: '#ECEDEE',
@@ -47,6 +49,8 @@ export const Colors = {
 	lightOrange: lightOrangeColor,
 	navigationOrange: navigationOrange,
 	navigationWhite: navigationWhite,
-	assessment: assessmentDark
+	assessment: assessmentDark,
+	primaryLighter: primaryLighter
+
   },
 };
