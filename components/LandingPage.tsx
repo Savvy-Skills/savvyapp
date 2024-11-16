@@ -70,7 +70,7 @@ const LandingPage = () => {
       marginBottom: 24,
     },
     title: {
-      fontSize: width <= DEVICES_WIDTH.tablet ? 20 : 36,
+      fontSize: width <= DEVICES_WIDTH.tablet ? 36 : 48,
       fontFamily: "PoppinsBold",
       textAlign: "center",
       marginBottom: 16,
