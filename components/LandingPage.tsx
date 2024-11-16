@@ -101,6 +101,8 @@ const LandingPage = () => {
       marginTop: 16,
       gap: 40,
       alignSelf: "center",
+	  flexWrap: "wrap",
+	  justifyContent: "center",
     },
     button: {
       borderRadius: 4,
