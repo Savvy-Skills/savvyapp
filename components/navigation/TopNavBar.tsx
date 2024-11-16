@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   useWindowDimensions,
+  Image,
 } from "react-native";
 import { useModuleStore } from "@/store/moduleStore";
 import { IconButton, useTheme } from "react-native-paper";
@@ -49,8 +50,14 @@ const TopNavBar = () => {
         ))}
       </View>
       {wideScreen && (
-        <View style={{position:"absolute", right: 20, top: 12}}>
-          <ThemedLogo height={32} width={32} logo="filled" />
+        <View style={{ position: "absolute", right: 20, top: 12 }}>
+          <Image
+            source={require("@/assets/images/savvylogo.svg")}
+            style={{
+              height: 32,
+              width: 32,
+            }}
+          />
         </View>
       )}
     </View>
@@ -61,18 +68,18 @@ const styles = StyleSheet.create({
   navHeader: {
     flexDirection: "row",
     justifyContent: "center",
-	zIndex:2,
-	paddingVertical: 4
+    zIndex: 2,
+    paddingVertical: 4,
   },
   webNav: {
     borderBottomWidth: 1,
     borderBottomColor: "#cccccc",
-	shadowColor: "#cccccc",
-	shadowOffset: {
-		width:0,
-		height:1
-	},
-	shadowRadius: 4
+    shadowColor: "#cccccc",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowRadius: 4,
   },
   navContainer: {
     flexDirection: "row",

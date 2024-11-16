@@ -10,14 +10,16 @@ import AnimatedSlide from "@/components/slides/AnimatedSlide";
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
-  const { 
-    getModuleById, 
-    currentModule, 
-    currentSlideIndex, 
-    isNavMenuVisible, 
-    setNavMenuVisible 
+  const {
+    getModuleById,
+    currentModule,
+    currentSlideIndex,
+    isNavMenuVisible,
+    setNavMenuVisible,
   } = useModuleStore();
-  const [direction, setDirection] = useState<"forward" | "backward" | null>(null);
+  const [direction, setDirection] = useState<"forward" | "backward" | null>(
+    null
+  );
   const prevIndexRef = useRef(currentSlideIndex);
   const [isInitialRender, setIsInitialRender] = useState(true);
 
@@ -61,8 +63,8 @@ export default function ModuleDetail() {
             </AnimatedSlide>
           ))}
         </View>
+        <BottomBarNav />
       </Pressable>
-      <BottomBarNav />
     </ScreenWrapper>
   );
 }
@@ -70,7 +72,7 @@ export default function ModuleDetail() {
 const styles = StyleSheet.create({
   pressableArea: {
     flex: 1,
-	cursor: "auto",
+    cursor: "auto",
   },
   slidesContainer: {
     flex: 1,

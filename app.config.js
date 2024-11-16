@@ -69,6 +69,18 @@ export default {
       },
     ],
     ["expo-build-properties"],
+    [
+      "expo-font",
+      {
+        fonts: [
+          "./assets/fonts/PoppinsRegular.ttf",
+          "./assets/fonts/PoppinsBold.ttf",
+          "./assets/fonts/PoppinsSemiBold.ttf",
+          "./assets/fonts/PoppinsBlack.ttf",
+          "./assets/fonts/PoppinsExtraBold.ttf",
+        ],
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
