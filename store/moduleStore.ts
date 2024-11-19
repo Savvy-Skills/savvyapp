@@ -86,6 +86,9 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
           ...module,
           slides: sorted,
         },
+        // submittableStates: {},
+        // correctnessStates: {},
+        // completedSlides: [],
       });
     } catch (error) {
       console.error("Error fetching module:", error);

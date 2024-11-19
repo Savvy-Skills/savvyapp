@@ -25,7 +25,8 @@ const TopNavBar = () => {
   if (!currentModule) return null;
 
   const handleClose = () => {
-    router.replace("/modules");
+	setCurrentSlideIndex(0)
+    router.push("/modules");
   };
 
   const wideScreen = width > 1024;
