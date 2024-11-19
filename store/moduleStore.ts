@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { fetchModuleById, fetchModules } from "../services/moduleapi";
-import { Module, ModuleWithSlides, Slide, Submission } from "../types";
+import {
+  CustomSlide,
+  Module,
+  ModuleWithSlides,
+  Slide,
+  Submission,
+} from "../types";
 import { useAudioStore } from "./audioStore";
 
 interface ModuleStore {
@@ -52,10 +58,33 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
   getModuleById: async (id: number) => {
     try {
       const module = await fetchModuleById(id);
+      const sorted = module.slides.toSorted((a, b) => a.order - b.order);
+      const firstSlide: CustomSlide = {
+        order: 0,
+        slide_id: 0,
+        quizMode: false,
+        created_at: 1711977124397,
+        published: true,
+        module_id: id,
+        type: "Custom",
+        subtype: "first",
+      };
+      const lastSlide: CustomSlide = {
+        order: 999,
+        slide_id: 999999,
+        quizMode: false,
+        created_at: 1711977124397,
+        published: true,
+        module_id: id,
+        type: "Custom",
+        subtype: "last",
+      };
+      sorted.unshift(firstSlide);
+      sorted.push(lastSlide);
       set({
         currentModule: {
           ...module,
-          slides: module.slides.sort((a, b) => a.order - b.order),
+          slides: sorted,
         },
       });
     } catch (error) {
@@ -85,7 +114,10 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
         return state; // Return the current state if there's no change
       }
       return {
-        submittableStates: { ...state.submittableStates, [index]: isSubmittable },
+        submittableStates: {
+          ...state.submittableStates,
+          [index]: isSubmittable,
+        },
       };
     }),
 
@@ -146,7 +178,12 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
     }),
 
   checkSlideCompletion: (data: any) => {
-    const { currentSlideIndex, markSlideAsCompleted, currentModule, correctnessStates } = get();
+    const {
+      currentSlideIndex,
+      markSlideAsCompleted,
+      currentModule,
+      correctnessStates,
+    } = get();
     const slide = currentModule?.slides[currentSlideIndex];
 
     if (!slide) return;
@@ -171,18 +208,37 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
           markSlideAsCompleted(currentSlideIndex);
         }
         break;
+
+      default:
+        if (data?.viewed) {
+          markSlideAsCompleted(currentSlideIndex);
+        }
+        break;
     }
   },
 
   setScrollToEnd: (scrollFn) => set({ scrollToEnd: scrollFn }),
 
   isCurrentSlideSubmittable: () => {
-    const { currentSlideIndex, submittableStates, submittedAssessments, currentModule } = get();
-    const currentAssessmentID = currentModule?.slides[currentSlideIndex].question_id;
-    const submission = submittedAssessments.find(
-      (submission) => submission.question_id === currentAssessmentID
-    );
-    return submittableStates[currentSlideIndex] && (!submission || !submission.correct);
+    const {
+      currentSlideIndex,
+      submittableStates,
+      submittedAssessments,
+      currentModule,
+    } = get();
+    if (currentModule?.slides[currentSlideIndex].type === "Assessment") {
+      const currentAssessmentID =
+        currentModule?.slides[currentSlideIndex].question_id;
+      const submission = submittedAssessments.find(
+        (submission) => submission.question_id === currentAssessmentID
+      );
+      return (
+        submittableStates[currentSlideIndex] &&
+        (!submission || !submission.correct)
+      );
+    } else {
+      return false;
+    }
   },
   isNavMenuVisible: false,
   setNavMenuVisible: (isVisible) => set({ isNavMenuVisible: isVisible }),

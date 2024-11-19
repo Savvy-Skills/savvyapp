@@ -7,6 +7,7 @@ import BottomBarNav from "@/components/navigation/BottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import AnimatedSlide from "@/components/slides/AnimatedSlide";
+import { CustomSlide } from "@/types";
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
@@ -36,6 +37,7 @@ export default function ModuleDetail() {
       setIsInitialRender(false);
     }
   }, [currentSlideIndex]);
+
 
   const handlePressOutside = () => {
     if (isNavMenuVisible) {

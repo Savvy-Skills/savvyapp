@@ -1,5 +1,5 @@
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Href, Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
@@ -10,13 +10,10 @@ import { useAudioStore } from "@/store/audioStore";
 import { useAuthStore } from "@/store/authStore";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useThemeManager } from "@/hooks/useThemeManager";
+import { useNavStore } from "@/store/navStore";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
-const fontConfig = {
-  fontFamily: "Poppins",
-};
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -35,6 +32,7 @@ export default function RootLayout() {
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
   const { theme, initialize } = useThemeManager();
+  const { redirectedFrom, setRedirectedFrom } = useNavStore();
 
   useEffect(() => {
     loadSounds();
@@ -48,25 +46,32 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, soundsLoaded]);
 
-  useEffect(() => {
+useEffect(() => {
     if (isInitialized && appIsReady) {
       const inAuthGroup = segments[0] === "auth";
-	  const notInRoot = segments.length > 0;
+      const notInRoot = segments.length > 0;
 
-      if (!token && !inAuthGroup && notInRoot ) {
+      if (!token && !inAuthGroup && notInRoot) {
+        const routeString = segments.join("/");
+		setRedirectedFrom(routeString);
         router.replace("/auth/login");
       } else if (token) {
         if (!user) {
           getUser();
         } else {
           if (inAuthGroup) {
-            router.replace("/");
+			  console.log("Redirecting...", {redirectedFrom})
+            if (redirectedFrom) {
+              router.replace(`/${redirectedFrom}` as Href<`/${string}`>);
+			  setRedirectedFrom(null)
+            } else {
+              router.replace("/");
+            }
           }
         }
       }
     }
   }, [isInitialized, token, segments, appIsReady]);
-
   if (!isInitialized || !appIsReady) {
     return null;
   }

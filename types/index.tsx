@@ -59,7 +59,7 @@ export interface BaseSlide extends BareSlide {
   readonly created_at: number;
   published: boolean;
   module_id: number;
-  type: "Assessment" | "Content" | "Activity";
+  type: "Assessment" | "Content" | "Activity" | "Custom";
 }
 
 export interface AssessmentSlide extends BaseSlide {
@@ -79,8 +79,16 @@ export interface ActivitySlide extends BaseSlide {
   activity_id: string;
   activity_info: ActivityInfo;
 }
+export interface CustomSlide extends BaseSlide {
+  type: "Custom";
+  subtype: "first" | "last";
+}
 
-export type Slide = AssessmentSlide | ContentSlide | ActivitySlide;
+export type Slide =
+  | AssessmentSlide
+  | ContentSlide
+  | ActivitySlide
+  | CustomSlide;
 
 export interface ActivityInfo {
   readonly created_at: number;

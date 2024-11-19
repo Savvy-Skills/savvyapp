@@ -5,7 +5,8 @@ import { User } from "../types";
 import { login, authme, authAPI } from "../services/authapi";
 import { module_api } from "@/services/moduleapi";
 import { Platform } from "react-native";
-import { router } from "expo-router";
+import { Href, router } from "expo-router";
+import { useNavStore } from "./navStore";
 
 // Create a cross-platform storage object
 const crossPlatformStorage = {
@@ -58,7 +59,8 @@ export const useAuthStore = create<AuthStore>()(
           setTokenInterceptors(module_api, data.auth_token);
           set({ token: data.auth_token });
           await get().getUser();
-          router.replace("/");
+		  const redirectedFrom = useNavStore.getState().redirectedFrom;
+          router.replace(redirectedFrom as Href);
         } catch (error) {
           console.error("Login error:", error);
           set({ isLoading: false });
