@@ -67,6 +67,10 @@ export default function RootLayout() {
       const inAuthGroup = segments[0] === "auth";
       const notInRoot = segments.length > 0;
 
+      if (user && !notInRoot) {
+        router.replace("/home");
+      }
+
       if (!token && !inAuthGroup && notInRoot) {
         router.replace("/auth/login");
       } else if (token) {
