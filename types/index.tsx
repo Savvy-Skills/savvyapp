@@ -1,4 +1,25 @@
-export interface ModuleInfo {
+export interface Course {
+  readonly id: number;
+  readonly created_at: number;
+  name: string;
+  description: string;
+  image: Image;
+  grade_level: string;
+  tags: string[];
+  type: "Savvy" | "Own";
+  duration: number;
+  modules: number[];
+}
+
+export interface Module {
+  readonly id: number;
+  readonly created_at: number;
+  name: string;
+  description: string;
+  lessons: Lesson[];
+}
+
+export interface LessonInfo {
   video: string;
   slides: number;
   sections: Section[];
@@ -16,7 +37,7 @@ export interface SectionSlide {
   title: string;
 }
 
-export interface Module {
+export interface Lesson {
   readonly id: number;
   readonly created_at: number;
   name: string;
@@ -24,19 +45,19 @@ export interface Module {
   class_id: number;
   owner_id: number;
   shared_user_ids: number[];
-  savvy_module: boolean;
+  savvy_lesson: boolean;
   content_id?: string;
-  module_info: ModuleInfo;
+  lesson_info: LessonInfo;
   slides: BaseSlide[];
 }
 
-export interface ModuleWithSlides {
+export interface LessonWithSlides {
   readonly id: number;
   name: string;
   class_id: number;
   content_id: string;
   slides: Slide[];
-  module_content: ContentInfo;
+  lesson_content: ContentInfo;
   readonly timestamp: number;
   progress: Progress;
 }
@@ -44,7 +65,7 @@ export interface Progress {
   readonly id: string;
   readonly created_at: number;
   user_id: number;
-  module_id: number;
+  lesson_id: number;
   slide_n: number;
   class_id: number;
 }

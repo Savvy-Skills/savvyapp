@@ -5,7 +5,7 @@ import ActivitySlide from "./ActivitySlide";
 import { Slide } from "../../types";
 import VideoComponent from "./VideoComponent";
 import styles from "@/styles/styles";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import FirstSlide from "./FirstSlide";
 import LastSlide from "./LastSlide";
 
@@ -49,7 +49,7 @@ const SlideComponent = ({
 
 export default function SlideRenderer({ slide, index }: SlideProps) {
   const { currentSlideIndex, setSubmittableState, checkSlideCompletion } =
-    useModuleStore();
+    useCourseStore();
   const isActive = currentSlideIndex === index;
 
   useEffect(() => {

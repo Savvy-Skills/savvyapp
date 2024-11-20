@@ -1,5 +1,5 @@
 import { Button, Title } from "react-native-paper";
-import { Link } from "expo-router";
+import { Link, Redirect } from "expo-router";
 import styles from "@/styles/styles";
 import "@/styles/styles.css";
 import { useAuthStore } from "@/store/authStore";
@@ -9,6 +9,9 @@ import LandingPage from "@/components/LandingPage";
 
 export default function Home() {
   const { user, logout } = useAuthStore();
+  if (user){
+	return <Redirect href={"/home"} />
+  }
   return (
     // <ScreenWrapper style={[styles.centeredContainer, {gap:10}]}>
     //   <ThemedTitle>Welcome to Savvyskills</ThemedTitle>

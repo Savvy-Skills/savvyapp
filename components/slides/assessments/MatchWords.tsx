@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet, View, TouchableOpacity, Animated } from "react-native";
 import { Text, IconButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 
@@ -35,7 +35,7 @@ export default function MatchWordsAssessment({
   const shakeAnims = useRef<Animated.Value[]>([]).current;
 
   const { setCorrectnessState, submittedAssessments, submitAssessment } =
-    useModuleStore();
+    useCourseStore();
 
   useEffect(() => {
     initializeCards();

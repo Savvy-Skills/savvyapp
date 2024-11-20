@@ -1,8 +1,9 @@
 import { LoginResponse, User } from "@/types";
 import { createAPI } from "./apiConfig";
 
-const baseURL = "https://api.savvyskills.io/api:_diHubFn";
-export const authAPI = createAPI(baseURL);
+export const authAPI = createAPI("auth");
+
+console.log({authAPI})
 
 export const login = async (
   email: string,

@@ -3,7 +3,7 @@ import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import { RadioButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { QuestionInfo } from "@/types";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
 import CustomRadioButton from "@/components/SavvyRadioButton";
@@ -29,7 +29,7 @@ export default function SingleChoice({
     setCorrectnessState,
     submittedAssessments,
     submitAssessment,
-  } = useModuleStore();
+  } = useCourseStore();
 
   const options = question.options.map((option) => option.text);
   const correctAnswer =

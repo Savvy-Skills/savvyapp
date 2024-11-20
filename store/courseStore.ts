@@ -1,26 +1,31 @@
 import { create } from "zustand";
-import { fetchModuleById, fetchModules } from "../services/moduleapi";
+import { getLessonsByID, getModuleLessons } from "../services/coursesApi";
 import {
   CustomSlide,
   Module,
-  ModuleWithSlides,
+  Lesson,
+  LessonWithSlides,
   Slide,
   Submission,
 } from "../types";
 import { useAudioStore } from "./audioStore";
 
-interface ModuleStore {
-  modules: Module[];
+interface CourseStore {
+  lessons: Lesson[];
   currentSlideIndex: number;
-  currentModule: ModuleWithSlides | undefined;
+  prevSlideIndex: number;
+  currentLesson: LessonWithSlides | undefined;
   submittableStates: Record<number, boolean>;
   correctnessStates: Record<number, boolean | null>;
   submittedAssessments: Submission[];
   completedSlides: boolean[];
   scrollToEnd: (() => void) | null;
 
-  fetchModules: () => Promise<void>;
-  getModuleById: (id: number) => Promise<void>;
+  error: string|null;
+  isLoading: boolean;
+
+  fetchModuleLessons: (module_id: number) => Promise<void>;
+  getLessonById: (id: number) => Promise<void>;
   setCurrentSlideIndex: (index: number) => void;
   nextSlide: () => void;
   previousSlide: () => void;
@@ -34,31 +39,36 @@ interface ModuleStore {
 
   isNavMenuVisible: boolean;
   setNavMenuVisible: (isVisible: boolean) => void;
+  clearCurrentLesson: () => void;
 }
 
-export const useModuleStore = create<ModuleStore>((set, get) => ({
-  modules: [],
+export const useCourseStore = create<CourseStore>((set, get) => ({
+  lessons: [],
   currentSlideIndex: 0,
-  currentModule: undefined,
+  prevSlideIndex:0,
+  currentLesson: undefined,
   submittableStates: {},
   correctnessStates: {},
   submittedAssessments: [],
   completedSlides: [],
   scrollToEnd: null,
+  isLoading: false,
+  error: null,
 
-  fetchModules: async () => {
+  fetchModuleLessons: async (module_id: number) => {
     try {
-      const modules = await fetchModules();
-      set({ modules });
+      const lessons = await getModuleLessons(module_id);
+      set({ lessons });
     } catch (error) {
-      console.error("Error fetching modules:", error);
+      console.error("Error fetching lessons:", error);
     }
   },
 
-  getModuleById: async (id: number) => {
+  getLessonById: async (id: number) => {
     try {
-      const module = await fetchModuleById(id);
-      const sorted = module.slides.toSorted((a, b) => a.order - b.order);
+      set({ isLoading: true });
+      const lesson = await getLessonsByID(id);
+      const sorted = lesson.slides.toSorted((a, b) => a.order - b.order);
       const firstSlide: CustomSlide = {
         order: 0,
         slide_id: 0,
@@ -82,32 +92,30 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
       sorted.unshift(firstSlide);
       sorted.push(lastSlide);
       set({
-        currentModule: {
-          ...module,
+        currentLesson: {
+          ...lesson,
           slides: sorted,
         },
-        // submittableStates: {},
-        // correctnessStates: {},
-        // completedSlides: [],
+        isLoading: false,
       });
     } catch (error) {
       console.error("Error fetching module:", error);
     }
   },
 
-  setCurrentSlideIndex: (index: number) => set({ currentSlideIndex: index }),
+  setCurrentSlideIndex: (index: number) => set((state)=> ({ prevSlideIndex: state.currentSlideIndex, currentSlideIndex: index  })),
 
   nextSlide: () => {
-    const { currentSlideIndex, currentModule } = get();
-    if (currentModule && currentSlideIndex < currentModule.slides.length - 1) {
-      set({ currentSlideIndex: currentSlideIndex + 1 });
+    const { currentSlideIndex, currentLesson } = get();
+    if (currentLesson && currentSlideIndex < currentLesson.slides.length - 1) {
+		set((state)=> ({ prevSlideIndex: state.currentSlideIndex, currentSlideIndex: currentSlideIndex+1  }));
     }
   },
 
   previousSlide: () => {
     const { currentSlideIndex } = get();
     if (currentSlideIndex > 0) {
-      set({ currentSlideIndex: currentSlideIndex - 1 });
+      set((state)=>({prevSlideIndex: state.currentSlideIndex, currentSlideIndex: currentSlideIndex - 1 }));
     }
   },
 
@@ -141,10 +149,10 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
       submittedAssessments,
       checkSlideCompletion,
       setSubmittableState,
-      currentModule,
+      currentLesson,
     } = get();
 
-    const quizMode = currentModule?.slides[currentSlideIndex].quizMode || false;
+    const quizMode = currentLesson?.slides[currentSlideIndex].quizMode || false;
     const isCorrect = correctnessStates[currentSlideIndex] || false;
 
     useAudioStore
@@ -184,10 +192,10 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
     const {
       currentSlideIndex,
       markSlideAsCompleted,
-      currentModule,
+      currentLesson,
       correctnessStates,
     } = get();
-    const slide = currentModule?.slides[currentSlideIndex];
+    const slide = currentLesson?.slides[currentSlideIndex];
 
     if (!slide) return;
 
@@ -227,11 +235,11 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
       currentSlideIndex,
       submittableStates,
       submittedAssessments,
-      currentModule,
+      currentLesson,
     } = get();
-    if (currentModule?.slides[currentSlideIndex].type === "Assessment") {
+    if (currentLesson?.slides[currentSlideIndex].type === "Assessment") {
       const currentAssessmentID =
-        currentModule?.slides[currentSlideIndex].question_id;
+        currentLesson?.slides[currentSlideIndex].question_id;
       const submission = submittedAssessments.find(
         (submission) => submission.question_id === currentAssessmentID
       );
@@ -245,4 +253,6 @@ export const useModuleStore = create<ModuleStore>((set, get) => ({
   },
   isNavMenuVisible: false,
   setNavMenuVisible: (isVisible) => set({ isNavMenuVisible: isVisible }),
+  clearCurrentLesson: () =>
+    set({ currentLesson: undefined, currentSlideIndex: 0 }),
 }));

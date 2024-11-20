@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import CanvasProgressBar from "./CanvasProgressBar";
 
 interface VideoSlideProps {
@@ -19,7 +19,7 @@ const WebVideoComponent: React.FC<VideoSlideProps> = ({ url, index }) => {
     completedSlides,
     checkSlideCompletion,
     currentSlideIndex,
-  } = useModuleStore();
+  } = useCourseStore();
   const isActive = index === currentSlideIndex;
   const firstTime = useRef<boolean>(false);
   const hasAutoplayed = useRef<boolean>(false);
@@ -56,7 +56,7 @@ const WebVideoComponent: React.FC<VideoSlideProps> = ({ url, index }) => {
 
   const handleEnded = useCallback(() => {
     if (!firstTime.current) {
-      nextSlide();
+    //   nextSlide();
       firstTime.current = true;
     }
   }, [nextSlide]);
@@ -69,6 +69,7 @@ const WebVideoComponent: React.FC<VideoSlideProps> = ({ url, index }) => {
         videoRef.current.play().catch(error => console.error("Error playing video:", error));
       }
       setIsPlaying(!isPlaying);
+	  console.log("Vid", {isPlaying});
     }
   }, [isPlaying]);
 
@@ -80,6 +81,8 @@ const WebVideoComponent: React.FC<VideoSlideProps> = ({ url, index }) => {
       setCurrentTime(newTime);
     }
   }, []);
+
+
 
   return (
     <div className="video-container">

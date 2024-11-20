@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { List, IconButton } from 'react-native-paper';
 import AssessmentWrapper from '../AssessmentWrapper';
-import { useModuleStore } from '@/store/moduleStore';
+import { useCourseStore } from '@/store/courseStore';
 import { AssessmentProps } from './SingleChoice';
 
 export default function ReorderAssessment({ question, index }: AssessmentProps) {
   const [currentOrder, setCurrentOrder] = useState<string[]>([]);
-  const { setSubmittableState, correctnessStates, setCorrectnessState, submittedAssessments } = useModuleStore();
+  const { setSubmittableState, correctnessStates, setCorrectnessState, submittedAssessments } = useCourseStore();
 
   
   const correctOrder = question.options.sort(

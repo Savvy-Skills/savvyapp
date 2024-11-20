@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { IconButton, Button } from "react-native-paper";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import { useAudioStore } from "@/store/audioStore";
 import styles from "@/styles/styles";
 import CustomNavMenu from "../CustomNavMenu";
@@ -20,23 +20,23 @@ const checkButtonColors = generateColors("#d9f0fb", 0.5);
 const BottomBarNav = () => {
   const {
     previousSlide,
-    currentModule,
+    currentLesson,
     currentSlideIndex,
     nextSlide,
     submitAssessment,
     isCurrentSlideSubmittable,
     isNavMenuVisible,
     setNavMenuVisible,
-  } = useModuleStore();
+  } = useCourseStore();
 
   const { playSound } = useAudioStore();
 
   let currentAssessmentID = undefined;
 
   const isLastSlide =
-    currentModule && currentSlideIndex === currentModule.slides.length - 1;
-  if (currentModule?.slides[currentSlideIndex].type === "Assessment") {
-    currentAssessmentID = currentModule?.slides[currentSlideIndex].question_id;
+    currentLesson && currentSlideIndex === currentLesson.slides.length - 1;
+  if (currentLesson?.slides[currentSlideIndex].type === "Assessment") {
+    currentAssessmentID = currentLesson?.slides[currentSlideIndex].question_id;
   }
 
   const handleCheck = useCallback(() => {

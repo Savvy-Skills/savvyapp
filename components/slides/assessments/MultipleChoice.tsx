@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Checkbox } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { includes } from "@/utils/utilfunctions";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 
 export default function MultipleChoice({
@@ -15,7 +15,7 @@ export default function MultipleChoice({
     correctnessStates,
     setCorrectnessState,
     submittedAssessments,
-  } = useModuleStore();
+  } = useCourseStore();
 
   const correctAnswers = question.options
     .filter((option) => option.isCorrect)

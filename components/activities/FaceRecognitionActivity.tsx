@@ -8,7 +8,7 @@ import {
   Icon,
   Checkbox,
 } from "react-native-paper";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import { useThemeStore } from "@/store/themeStore";
 import ThemedTitle from "../themed/ThemedTitle";
 import { useAudioStore } from "@/store/audioStore";
@@ -244,7 +244,7 @@ export default function FaceRecognitionActivity({
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isIntroductionComplete, setIsIntroductionComplete] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const { checkSlideCompletion } = useModuleStore();
+  const { checkSlideCompletion } = useCourseStore();
   const {playSound} = useAudioStore()
   const timeLimit = 60000;
 

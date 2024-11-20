@@ -1,12 +1,19 @@
 import axios from "axios";
+import { apiConstants } from "@/constants/API";
 
-export const createAPI = (baseURL: string) => {
+type API = "auth" | "courses";
+
+export const createAPI = (API: API) => {
+  const url =
+    apiConstants.BASE_URL + apiConstants[API];
   const api = axios.create({
-    baseURL,
+    baseURL: url,
     headers: {
       "Content-Type": "application/json",
     },
   });
+
+  console.log({api})
 
   api.interceptors.response.use(
     (response) => response,

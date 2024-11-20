@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 
 interface VideoSlideProps {
   url: string;
@@ -29,7 +29,7 @@ const MobileVideoComponent: React.FC<VideoSlideProps> = ({ url, index }) => {
     completedSlides,
     checkSlideCompletion,
     currentSlideIndex,
-  } = useModuleStore();
+  } = useCourseStore();
 
   const screenHeight = Dimensions.get("window").height;
   const videoHeight = screenHeight;
