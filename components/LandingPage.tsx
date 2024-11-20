@@ -151,7 +151,7 @@ const LandingPage = () => {
   };
 
   const handleStart = () => {
-    router.replace("/modules");
+    router.replace("/home");
   };
 
   return (

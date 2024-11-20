@@ -3,7 +3,7 @@ import { QuestionInfo } from "@/types";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Text, Title, useTheme, Icon } from "react-native-paper";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import ThemedTitle from "../themed/ThemedTitle";
 
 interface AssessmentWrapperProps {
@@ -145,7 +145,7 @@ export default function AssessmentWrapper({
 }: AssessmentWrapperProps) {
   const [showExplanation, setShowExplanation] = useState(false);
   const [revealedAnswer, setRevealedAnswer] = useState(false);
-  const { submittedAssessments, scrollToEnd } = useModuleStore();
+  const { submittedAssessments, scrollToEnd } = useCourseStore();
   const theme = useTheme();
 
   const toggleExplanation = () => {

@@ -10,7 +10,7 @@ import MatchWordsAssessment from "./assessments/MatchWords";
 import OpenEnded from "./assessments/OpenEnded";
 import DataTable from "../DataTable";
 import { ScrollView } from "react-native-gesture-handler";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 
 type AssessmentProps = {
   slide: AssessmentSlideType;
@@ -84,7 +84,7 @@ const dataform = [
 
 export default function AssessmentSlide({ slide, index }: AssessmentProps) {
   const scrollViewRef = useRef<ScrollView>(null);
-  const { setScrollToEnd } = useModuleStore();
+  const { setScrollToEnd } = useCourseStore();
 
 //   useEffect(() => {
 //     if (scrollViewRef.current) {

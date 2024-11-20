@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { QuestionInfo } from "@/types";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
@@ -21,7 +20,7 @@ export default function NumericalAnswerAssessment({
 
   const answer = parseFloat(question.options[0].text);
   const { setSubmittableState, setCorrectnessState, submittedAssessments, submitAssessment } =
-    useModuleStore();
+    useCourseStore();
 
   const handleChange = (text: string) => {
     const sanitizedText = text.replace(/[^0-9.]/g, "");

@@ -3,9 +3,10 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types";
 import { login, authme, authAPI } from "../services/authapi";
-import { module_api } from "@/services/moduleapi";
+import { courses_api } from "@/services/coursesApi";
 import { Platform } from "react-native";
-import { router } from "expo-router";
+import { Href, router } from "expo-router";
+import { useNavStore } from "./navStore";
 
 // Create a cross-platform storage object
 const crossPlatformStorage = {
@@ -55,10 +56,11 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const data = await login(email, password);
           setTokenInterceptors(authAPI, data.auth_token);
-          setTokenInterceptors(module_api, data.auth_token);
+          setTokenInterceptors(courses_api, data.auth_token);
           set({ token: data.auth_token });
           await get().getUser();
-          router.replace("/");
+		  const redirectedFrom = useNavStore.getState().redirectedFrom;
+          router.replace(redirectedFrom as Href);
         } catch (error) {
           console.error("Login error:", error);
           set({ isLoading: false });
@@ -84,7 +86,7 @@ export const useAuthStore = create<AuthStore>()(
       },
       setInitialized: () => {
         setUnauthorizedInterceptor(authAPI);
-        setUnauthorizedInterceptor(module_api);
+        setUnauthorizedInterceptor(courses_api);
         set({ isInitialized: true });
       },
     }),
@@ -97,7 +99,7 @@ export const useAuthStore = create<AuthStore>()(
           const token = state.token;
           if (token) {
             setTokenInterceptors(authAPI, token);
-            setTokenInterceptors(module_api, token);
+            setTokenInterceptors(courses_api, token);
           }
         }
       },

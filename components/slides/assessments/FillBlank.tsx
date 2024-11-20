@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { useModuleStore } from "@/store/moduleStore";
+import { useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 
 type blankArray = {
@@ -21,7 +21,7 @@ export default function FillBlankAssessment({
     correctnessStates,
     setCorrectnessState,
     submittedAssessments,
-  } = useModuleStore();
+  } = useCourseStore();
 
   const text = useMemo(() => question.text, [question.text]);
   const options = useMemo(

@@ -1,16 +1,16 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Card, Title, Paragraph, ProgressBar } from 'react-native-paper';
-import { useRouter } from 'expo-router';
-import { Module } from '../types';
-import ThemedTitle from './themed/ThemedTitle';
-import ThemedParagraph from './themed/ThemedParagraph';
+import React from "react";
+import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { Text } from "react-native-paper";
+import { useRouter } from "expo-router";
+import { Course, Module } from "../types";
+import { Colors } from "@/constants/Colors";
+import ThemedTitle from "./themed/ThemedTitle";
 
 interface ModuleCardProps {
   module: Module;
 }
 
-export default function ModuleCard({ module }: ModuleCardProps) {
+export default function CourseCard({ module }: ModuleCardProps) {
   const router = useRouter();
 
   const handlePress = () => {
@@ -18,40 +18,67 @@ export default function ModuleCard({ module }: ModuleCardProps) {
   };
 
   return (
-    <TouchableOpacity onPress={handlePress} accessibilityRole="button">
-      <Card style={styles.card}>
-        <Card.Content>
-          <ThemedTitle>{module.name}</ThemedTitle>
-          <ThemedParagraph numberOfLines={2} style={styles.description}>
-            {module.description}
-          </ThemedParagraph>
-          <View style={styles.statsContainer}>
-            <ThemedParagraph>Slides: {module.slides.length}</ThemedParagraph>
-            <ThemedParagraph>Completed: 0/{module.slides.length}</ThemedParagraph>
-          </View>
-          <ProgressBar progress={0} style={styles.progressBar} />
-        </Card.Content>
-      </Card>
+    <TouchableOpacity
+      onPress={handlePress}
+      accessibilityRole="button"
+      style={styles.container}
+    >
+      <View style={styles.card}>
+        <Image
+          source={require("../assets/images/placeholder.png")}
+          style={styles.backgroundPattern}
+        />
+        <ThemedTitle style={styles.title} numberOfLines={2}>
+          {module.name}
+        </ThemedTitle>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    marginRight: 16,
+  },
   card: {
-    marginBottom: 16,
-	display: 'flex',
-	flexDirection: 'column',
+    backgroundColor: "white",
+    width: 320,
+    borderRadius: 8,
+    overflow: "hidden",
+    padding: 10,
+    marginBottom: 6,
+    gap: 10,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowRadius: 4,
+    shadowColor: "grey",
   },
-  description: {
-    marginBottom: 8,
+  backgroundPattern: {
+    width: "100%",
+    height: 120,
+    resizeMode: "cover",
+    borderRadius: 8,
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+  content: {
+    flex: 1,
   },
-  progressBar: {
-    height: 8,
-    borderRadius: 4,
+  tagContainer: {
+    backgroundColor: "rgba(102, 74, 204, 0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+    alignSelf: "flex-start",
+  },
+  tag: {
+    fontSize: 12,
+    fontFamily: "PoppinsBold",
+    color: Colors.light.primary,
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: "Poppins",
+    fontWeight: "bold",
   },
 });

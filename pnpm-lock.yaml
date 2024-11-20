@@ -23,6 +23,9 @@ importers:
       '@shopify/react-native-skia':
         specifier: ^1.2.3
         version: 1.2.3(react-native-reanimated@3.10.1(@babel/core@7.25.8)(react-native@0.74.5(@babel/core@7.25.8)(@babel/preset-env@7.25.8(@babel/core@7.25.8))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0))(react-native@0.74.5(@babel/core@7.25.8)(@babel/preset-env@7.25.8(@babel/core@7.25.8))(@types/react@18.2.79)(react@18.2.0))(react@18.2.0)
+      '@tanstack/react-query':
+        specifier: ^5.60.6
+        version: 5.60.6(react@18.2.0)
       '@tensorflow-models/pose-detection':
         specifier: ^2.1.3
         version: 2.1.3(@mediapipe/pose@0.5.1675469404)(@tensorflow/tfjs-backend-wasm@4.22.0(@tensorflow/tfjs-core@4.22.0))(@tensorflow/tfjs-backend-webgl@4.22.0(@tensorflow/tfjs-core@4.22.0))(@tensorflow/tfjs-backend-webgpu@4.22.0(@tensorflow/tfjs-core@4.22.0))(@tensorflow/tfjs-converter@4.22.0(@tensorflow/tfjs-core@4.22.0))(@tensorflow/tfjs-core@4.22.0)
@@ -1490,6 +1493,14 @@ packages:
 
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
+
+  '@tanstack/query-core@5.60.6':
+    resolution: {integrity: sha512-tI+k0KyCo1EBJ54vxK1kY24LWj673ujTydCZmzEZKAew4NqZzTaVQJEuaG1qKj2M03kUHN46rchLRd+TxVq/zQ==}
+
+  '@tanstack/react-query@5.60.6':
+    resolution: {integrity: sha512-FUzSDaiPkuZCmuGqrixfRRXJV9u+nrUh9lAlA5Q3ZFrOw1Js1VeBfxi1NIcJO3ZWJdKceBqKeBJdNcWStCYZnw==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@tensorflow-models/pose-detection@2.1.3':
     resolution: {integrity: sha512-SEq4K8fmkVVh9U2VemS2kKuT6DDZf3mO+fcid6F2/DSYMtVrGU13kWo0Q+GAwLznIPaNhlOxVVUgWiDXKUPlzA==}
@@ -8560,6 +8571,13 @@ snapshots:
   '@sinonjs/fake-timers@10.3.0':
     dependencies:
       '@sinonjs/commons': 3.0.1
+
+  '@tanstack/query-core@5.60.6': {}
+
+  '@tanstack/react-query@5.60.6(react@18.2.0)':
+    dependencies:
+      '@tanstack/query-core': 5.60.6
+      react: 18.2.0
 
   '@tensorflow-models/pose-detection@2.1.3(@mediapipe/pose@0.5.1675469404)(@tensorflow/tfjs-backend-wasm@4.22.0(@tensorflow/tfjs-core@4.22.0))(@tensorflow/tfjs-backend-webgl@4.22.0(@tensorflow/tfjs-core@4.22.0))(@tensorflow/tfjs-backend-webgpu@4.22.0(@tensorflow/tfjs-core@4.22.0))(@tensorflow/tfjs-converter@4.22.0(@tensorflow/tfjs-core@4.22.0))(@tensorflow/tfjs-core@4.22.0)':
     dependencies:
