@@ -14,6 +14,18 @@ export default StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  sectionTitle: {
+    fontSize: 28,
+    fontFamily: "PoppinsBold",
+    marginBottom: 16,
+  },
+  innerSection: {
+    paddingHorizontal: 20,
+	maxWidth: 1080,
+	width: "100%",
+	alignSelf: "center",
+	flex:1,
+  },
   customContainer: {
     justifyContent: "center",
   },
@@ -115,24 +127,24 @@ export default StyleSheet.create({
     flex: 1,
     paddingHorizontal: 5,
     paddingVertical: 10,
-	borderWidth:2,
-	borderColor: "rgba(108, 92, 231, 0)"
+    borderWidth: 2,
+    borderColor: "rgba(108, 92, 231, 0)",
   },
   selectedOption: {
-	borderRadius:4,
+    borderRadius: 4,
     borderWidth: 2,
-	borderColor: '#6c5ce7',
-    backgroundColor: 'rgba(108, 92, 231, 0.1)',
+    borderColor: "#6c5ce7",
+    backgroundColor: "rgba(108, 92, 231, 0.1)",
   },
   correctOption: {
     borderWidth: 2,
-	borderColor: '#23b5ec',
-    backgroundColor: 'rgba(35, 181, 236, 0.1)',
+    borderColor: "#23b5ec",
+    backgroundColor: "rgba(35, 181, 236, 0.1)",
   },
   incorrectOption: {
     borderWidth: 2,
-    borderColor: '#ff7b09',
-    backgroundColor: 'rgba(255, 123, 9, 0.1)',
+    borderColor: "#ff7b09",
+    backgroundColor: "rgba(255, 123, 9, 0.1)",
   },
   revealedOption: {
     borderWidth: 2,

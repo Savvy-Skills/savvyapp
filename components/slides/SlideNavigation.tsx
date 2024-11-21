@@ -21,7 +21,8 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
 
   const handleClose = () => {
     setCurrentSlideIndex(0);
-    router.navigate("/home");
+	const currentModule = currentLesson.module_id;
+    router.navigate(`/modules/${currentModule}`);
   };
 
   return (

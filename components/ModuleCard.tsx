@@ -17,6 +17,9 @@ export default function CourseCard({ module }: ModuleCardProps) {
     router.push(`/modules/${module.id}`);
   };
 
+  const quizLessons = module.lessons.filter((l) => l.quiz).length;
+  const normalLessons = module.lessons.length - quizLessons;
+
   return (
     <TouchableOpacity
       onPress={handlePress}
@@ -31,6 +34,14 @@ export default function CourseCard({ module }: ModuleCardProps) {
         <ThemedTitle style={styles.title} numberOfLines={2}>
           {module.name}
         </ThemedTitle>
+        <View style={styles.infoContainer}>
+          <Text style={styles.info}>
+            {normalLessons} {normalLessons !== 1 ? "Lessons" : "Lesson"}
+          </Text>
+          <Text style={styles.info}>
+            {quizLessons} {quizLessons !== 1 ? "Quizes" : "Quiz"}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -39,6 +50,13 @@ export default function CourseCard({ module }: ModuleCardProps) {
 const styles = StyleSheet.create({
   container: {
     marginRight: 16,
+  },
+  infoContainer: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  info: {
+    paddingHorizontal: 10,
   },
   card: {
     backgroundColor: "white",

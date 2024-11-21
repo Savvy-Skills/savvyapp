@@ -59,8 +59,6 @@ export const useAuthStore = create<AuthStore>()(
           setTokenInterceptors(courses_api, data.auth_token);
           set({ token: data.auth_token });
           await get().getUser();
-		  const redirectedFrom = useNavStore.getState().redirectedFrom;
-          router.replace(redirectedFrom as Href);
         } catch (error) {
           console.error("Login error:", error);
           set({ isLoading: false });

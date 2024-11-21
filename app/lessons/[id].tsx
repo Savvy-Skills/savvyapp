@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import SlideRenderer from "../../components/slides/SlideRenderer";
-import BottomBarNav from "@/components/navigation/BottomBarNav";
+import BottomBarNav from "@/components/navigation/SlidesBottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import AnimatedSlide from "@/components/slides/AnimatedSlide";
