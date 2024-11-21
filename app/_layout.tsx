@@ -83,7 +83,7 @@ export default function RootLayout() {
         }
       }
     }
-  }, [isInitialized, token, segments, appIsReady]);
+  }, [isInitialized, token, segments, appIsReady, user]);
   if (!isInitialized || !appIsReady) {
     return null;
   }
@@ -113,6 +113,7 @@ export default function RootLayout() {
               <Stack.Screen
                 name="modules/[id]"
                 options={{ title: "Module Details" }}
+				
               />
               <Stack.Screen
                 name="lessons/[id]"

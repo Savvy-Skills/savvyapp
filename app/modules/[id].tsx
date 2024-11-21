@@ -1,33 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { FlatList, ScrollView, StyleSheet } from "react-native";
 import ModuleCard from "../../components/ModuleCard";
 import styles from "@/styles/styles";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
-import { Lesson } from "@/types";
+import { Lesson, Module } from "@/types";
 import { getModuleLessons } from "@/services/coursesApi";
 import { useLocalSearchParams } from "expo-router";
 import LessonCard from "@/components/LessonCard";
 import TopNavBar from "@/components/navigation/TopNavBar";
+import ThemedTitle from "@/components/themed/ThemedTitle";
 
 export default function ModulesList() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [module, setModule] = useState<Module>({} as Module);
   const { id } = useLocalSearchParams();
 
   useEffect(() => {
     getModuleLessons(Number(id)).then((data) => {
-      setLessons(data);
+      setLessons(data.lessons);
+      setModule(data.module);
     });
   }, []);
 
   return (
     <ScreenWrapper>
-      <TopNavBar />
-      <FlatList
-        data={lessons}
-        renderItem={({ item }) => <LessonCard lesson={item} />}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.container}
-      />
+      <TopNavBar module={module} />
+      <ScrollView contentContainerStyle={styles.innerSection}>
+        <ThemedTitle style={styles.sectionTitle}>Lessons</ThemedTitle>
+        <FlatList
+          data={lessons}
+          renderItem={({ item }) => <LessonCard lesson={item} />}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.container}
+        />
+      </ScrollView>
     </ScreenWrapper>
   );
 }

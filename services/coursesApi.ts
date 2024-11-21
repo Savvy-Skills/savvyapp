@@ -27,29 +27,40 @@ export const getModules = async (): Promise<Module[]> => {
     return [];
   }
 };
-export const getCourseModules = async (course_id: number): Promise<Module[]> => {
+
+interface CourseModules {
+	modules: Module[];
+	course_info: Course;
+}
+
+export const getCourseModules = async (course_id: number): Promise<CourseModules> => {
   try {
-    const response = await courses_api.get<Module[]>(
+    const response = await courses_api.get<CourseModules>(
       `/courses/${course_id}/modules`
     );
     return response.data;
   } catch (error) {
     console.error("Error fetching modules", error);
-    return [];
+    return {} as CourseModules;
   }
 };
 
+interface ModuleLessons {
+	lessons: Lesson[];
+	module: Module;
+}
+
 export const getModuleLessons = async (
   module_id: number
-): Promise<Lesson[]> => {
+): Promise<ModuleLessons> => {
   try {
-    const response = await courses_api.get<Lesson[]>(
+    const response = await courses_api.get<ModuleLessons>(
       `/modules/${module_id}/lessons`
     );
     return response.data;
   } catch (error) {
     console.error("Error fetching lessons", error);
-    return [];
+    return {} as ModuleLessons;
   }
 };
 

@@ -5,6 +5,7 @@ import AssessmentWrapper from "../AssessmentWrapper";
 import { useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
+import { Colors } from "@/constants/Colors";
 
 type Card = {
   id: string;
@@ -227,6 +228,7 @@ export default function MatchWordsAssessment({
           card.type === "option" ? styles.optionCard : styles.matchCard,
           selectedCard?.id === card.id && styles.selectedCard,
           card.showFeedback && !card.isCorrect && styles.incorrectCard,
+          card.showFeedback && card.isCorrect && styles.correctCard,
         ]}
         disabled={card.isMatched || allMatched || isOriginal}
       >
@@ -305,6 +307,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   selectedCard: {
+    borderWidth: 2,
+    borderColor: Colors.light.primary,
+  },
+  correctCard: {
     borderWidth: 2,
     borderColor: "#2196F3",
   },

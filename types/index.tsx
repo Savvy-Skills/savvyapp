@@ -8,7 +8,6 @@ export interface Course {
   tags: string[];
   type: "Savvy" | "Own";
   duration: number;
-  modules: number[];
 }
 
 export interface Module {
@@ -16,25 +15,16 @@ export interface Module {
   readonly created_at: number;
   name: string;
   description: string;
+  course_id: number;
+  course_info: Course;
   lessons: Lesson[];
 }
 
 export interface LessonInfo {
   video: string;
   slides: number;
-  sections: Section[];
   questions: number;
   activities: number;
-}
-
-export interface Section {
-  name: string;
-  section_slides: SectionSlide[];
-}
-
-export interface SectionSlide {
-  slide: number;
-  title: string;
 }
 
 export interface Lesson {
@@ -48,6 +38,8 @@ export interface Lesson {
   savvy_lesson: boolean;
   content_id?: string;
   lesson_info: LessonInfo;
+  module_id: number;
+  quiz: boolean;
   slides: BaseSlide[];
 }
 
@@ -58,8 +50,10 @@ export interface LessonWithSlides {
   content_id: string;
   slides: Slide[];
   lesson_content: ContentInfo;
-  readonly timestamp: number;
+  module_id: number;
   progress: Progress;
+  quiz: boolean;
+  readonly timestamp: number;
 }
 export interface Progress {
   readonly id: string;

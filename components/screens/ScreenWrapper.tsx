@@ -12,7 +12,7 @@ export default function ScreenWrapper({ children, style }: ScreenWrapperProps) {
   const theme = useTheme();
 
   return (
-    <SafeAreaView style={[{ backgroundColor: theme.colors.background, flex: 1 }, style]}>
+    <SafeAreaView style={[{ backgroundColor: theme.colors.background, flex: 1, gap: 32 }, style]}>
       {children}
     </SafeAreaView>
   );
