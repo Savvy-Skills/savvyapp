@@ -11,6 +11,7 @@ import OpenEnded from "./assessments/OpenEnded";
 import DataTable from "../DataTable";
 import { ScrollView } from "react-native-gesture-handler";
 import { useCourseStore } from "@/store/courseStore";
+import DragAndDropAssessment from "./assessments/DragDrop";
 
 type AssessmentProps = {
   slide: AssessmentSlideType;
@@ -24,7 +25,13 @@ function AssessmentComponent({ slide, index }: AssessmentProps) {
     case "Numerical":
       return <NumericalAnswer question={slide.question_info} index={index} />;
     case "Single Choice":
-      return <SingleChoice question={slide.question_info} index={index} quizMode={slide.quizMode}/>;
+      return (
+        <SingleChoice
+          question={slide.question_info}
+          index={index}
+          quizMode={slide.quizMode}
+        />
+      );
     case "Multiple Choice":
       return <MultipleChoice question={slide.question_info} index={index} />;
     case "Order List":
@@ -39,6 +46,8 @@ function AssessmentComponent({ slide, index }: AssessmentProps) {
       );
     case "Open Ended":
       return <OpenEnded question={slide.question_info} index={index} />;
+    case "Drag and Drop":
+      return <DragAndDropAssessment question={slide.question_info} index={index} />;
     default:
       return <View />;
   }
@@ -86,13 +95,13 @@ export default function AssessmentSlide({ slide, index }: AssessmentProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const { setScrollToEnd } = useCourseStore();
 
-//   useEffect(() => {
-//     if (scrollViewRef.current) {
-//       setScrollToEnd(() =>
-//         scrollViewRef.current?.scrollToEnd({ animated: false })
-//       );
-//     }
-//   }, [setScrollToEnd]);
+  //   useEffect(() => {
+  //     if (scrollViewRef.current) {
+  //       setScrollToEnd(() =>
+  //         scrollViewRef.current?.scrollToEnd({ animated: false })
+  //       );
+  //     }
+  //   }, [setScrollToEnd]);
 
   return (
     <ScrollView
@@ -101,7 +110,7 @@ export default function AssessmentSlide({ slide, index }: AssessmentProps) {
       {slide.question_info.dataset && slide.question_info.dataset_info && (
         <DataTable datasetInfo={slide.question_info.dataset_info} />
       )}
-      {index === 2 && Platform.OS === "web" && (
+      {index === 3 && (
         <Suspense fallback={<View />}>
           <DataVisualizerPlotly
             dataset={dataform}

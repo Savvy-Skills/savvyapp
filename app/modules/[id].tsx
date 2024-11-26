@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FlatList, ScrollView, StyleSheet } from "react-native";
+import { FlatList, ScrollView, StyleSheet, View } from "react-native";
 import ModuleCard from "../../components/ModuleCard";
 import styles from "@/styles/styles";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
@@ -25,15 +25,15 @@ export default function ModulesList() {
   return (
     <ScreenWrapper>
       <TopNavBar module={module} />
-      <ScrollView contentContainerStyle={styles.innerSection}>
+      <View style={styles.innerSection}>
         <ThemedTitle style={styles.sectionTitle}>Lessons</ThemedTitle>
         <FlatList
           data={lessons}
           renderItem={({ item }) => <LessonCard lesson={item} />}
           keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.container}
+          contentContainerStyle={styles.listContainer}
         />
-      </ScrollView>
+      </View>
     </ScreenWrapper>
   );
 }

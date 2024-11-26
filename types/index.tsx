@@ -139,7 +139,8 @@ type QuestionTypes =
   | "Order List"
   | "Open Ended"
   | "Numerical"
-  | "Match the Words";
+  | "Match the Words"
+  | "Drag and Drop";
 
 type QuestionSubtypes = "Text" | "Image";
 
