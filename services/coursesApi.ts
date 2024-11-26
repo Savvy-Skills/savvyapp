@@ -64,7 +64,7 @@ export const getModuleLessons = async (
   }
 };
 
-export const getLessonsByID = async (id: number): Promise<LessonWithSlides> => {
+export const getLessonByID = async (id: number): Promise<LessonWithSlides> => {
   try {
     const response = await courses_api.get<LessonWithSlides[]>(
       `/lessons/${id}`

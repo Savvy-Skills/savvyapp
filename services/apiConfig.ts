@@ -13,8 +13,6 @@ export const createAPI = (API: API) => {
     },
   });
 
-  console.log({api})
-
   api.interceptors.response.use(
     (response) => response,
     (error) => {

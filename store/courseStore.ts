@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getLessonsByID, getModuleLessons } from "../services/coursesApi";
+import { getLessonByID, getModuleLessons } from "../services/coursesApi";
 import {
   CustomSlide,
   Module,
@@ -21,7 +21,7 @@ interface CourseStore {
   completedSlides: boolean[];
   scrollToEnd: (() => void) | null;
 
-  error: string|null;
+  error: string | null;
   isLoading: boolean;
 
   fetchModuleLessons: (module_id: number) => Promise<void>;
@@ -45,7 +45,7 @@ interface CourseStore {
 export const useCourseStore = create<CourseStore>((set, get) => ({
   lessons: [],
   currentSlideIndex: 0,
-  prevSlideIndex:0,
+  prevSlideIndex: 0,
   currentLesson: undefined,
   submittableStates: {},
   correctnessStates: {},
@@ -57,8 +57,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
   fetchModuleLessons: async (module_id: number) => {
     try {
-      const lessons = await getModuleLessons(module_id);
-      set({ lessons });
+      const moduleResponse = await getModuleLessons(module_id);
+      set({ lessons: moduleResponse.lessons });
     } catch (error) {
       console.error("Error fetching lessons:", error);
     }
@@ -67,8 +67,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
   getLessonById: async (id: number) => {
     try {
       set({ isLoading: true });
-      const lesson = await getLessonsByID(id);
-      const sorted = lesson.slides.toSorted((a, b) => a.order - b.order);
+      const lesson = await getLessonByID(id);
+      const sorted = lesson.slides.sort((a, b) => a.order - b.order);
       const firstSlide: CustomSlide = {
         order: 0,
         slide_id: 0,
@@ -99,23 +99,34 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
+      console.log("error");
       console.error("Error fetching module:", error);
     }
   },
 
-  setCurrentSlideIndex: (index: number) => set((state)=> ({ prevSlideIndex: state.currentSlideIndex, currentSlideIndex: index  })),
+  setCurrentSlideIndex: (index: number) =>
+    set((state) => ({
+      prevSlideIndex: state.currentSlideIndex,
+      currentSlideIndex: index,
+    })),
 
   nextSlide: () => {
     const { currentSlideIndex, currentLesson } = get();
     if (currentLesson && currentSlideIndex < currentLesson.slides.length - 1) {
-		set((state)=> ({ prevSlideIndex: state.currentSlideIndex, currentSlideIndex: currentSlideIndex+1  }));
+      set((state) => ({
+        prevSlideIndex: state.currentSlideIndex,
+        currentSlideIndex: currentSlideIndex + 1,
+      }));
     }
   },
 
   previousSlide: () => {
     const { currentSlideIndex } = get();
     if (currentSlideIndex > 0) {
-      set((state)=>({prevSlideIndex: state.currentSlideIndex, currentSlideIndex: currentSlideIndex - 1 }));
+      set((state) => ({
+        prevSlideIndex: state.currentSlideIndex,
+        currentSlideIndex: currentSlideIndex - 1,
+      }));
     }
   },
 

@@ -1,0 +1,106 @@
+.container {
+  background-color: #f8f5ff;
+  padding: 2rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.drop-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-height: 100px;
+  background-color: white;
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+.drop-zone.hover {
+  background-color: #941fb105;
+  border-color: #941fb1;
+}
+.status-icon-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+}
+
+.drop-zone.correct {
+  border-color: #1890ff;
+  border-style: solid;
+}
+
+.drop-zone.wrong {
+  border-color: #ff4d4f;
+  border-style: solid;
+}
+
+.drop-zone-title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.dropped-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.draggable-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.item {
+  background-color: #f3f3f3;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: move;
+  user-select: none;
+}
+
+.item.dragging {
+  opacity: 0.5;
+}
+
+.custom-drag-layer {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  height: 100%;
+}
+
+.drag-preview {
+  background-color: #f3f3f3;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+@media (hover: none) {
+  .item {
+    cursor: default;
+  }
+}

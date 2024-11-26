@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Text } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { Course, Module } from "../types";
 import { Colors } from "@/constants/Colors";
 import ThemedTitle from "./themed/ThemedTitle";
@@ -14,18 +14,17 @@ export default function CourseCard({ module }: ModuleCardProps) {
   const router = useRouter();
 
   const handlePress = () => {
-    router.push(`/modules/${module.id}`);
+    router.navigate({
+		pathname: "/modules/[id]",
+		params: { id: module.id },
+	});
   };
 
   const quizLessons = module.lessons.filter((l) => l.quiz).length;
   const normalLessons = module.lessons.length - quizLessons;
 
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      accessibilityRole="button"
-      style={styles.container}
-    >
+    <TouchableOpacity onPress={handlePress} accessibilityRole="button" style={styles.container}>
       <View style={styles.card}>
         <Image
           source={require("../assets/images/placeholder.png")}

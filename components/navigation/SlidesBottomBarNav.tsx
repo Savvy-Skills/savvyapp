@@ -93,7 +93,7 @@ const BottomBarNav = () => {
       </View>
       <View style={styles.bottomNavigation}>
         <IconButton
-          icon="chevron-left"
+          icon="arrow-left"
           size={18}
           onPress={handlePreviousSlide}
           disabled={currentSlideIndex === 0}
@@ -137,7 +137,7 @@ const BottomBarNav = () => {
         </Button>
         <VerticalSeparator />
         <IconButton
-          icon="chevron-right"
+          icon="arrow-right"
           size={18}
           onPress={handleNextSlide}
           disabled={isLastSlide}

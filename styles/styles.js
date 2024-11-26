@@ -14,6 +14,21 @@ export default StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  listContainer: {
+    padding: 8,
+    flexGrow: 1,
+  },
+  topNavBarInner: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  navBarInfo: {
+    flex: 1,
+    alignItems: "center",
+    marginRight: 68,
+  },
   sectionTitle: {
     fontSize: 28,
     fontFamily: "PoppinsBold",
@@ -21,10 +36,11 @@ export default StyleSheet.create({
   },
   innerSection: {
     paddingHorizontal: 20,
-	maxWidth: 1080,
-	width: "100%",
-	alignSelf: "center",
-	flex:1,
+    gap: 32,
+    maxWidth: 1080,
+    width: "100%",
+    alignSelf: "center",
+    flex: 1,
   },
   customContainer: {
     justifyContent: "center",

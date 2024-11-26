@@ -1,3 +1,4 @@
+import ReactComponent from "@/components/ReactComponent";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TfjsComponent from "@/components/TfjsComponent";
 import TfjsRegression from "@/components/TFJSRegression";
@@ -8,7 +9,8 @@ export default function DebugScreen() {
   return (
     <ScreenWrapper style={{ flex: 1 }}>
         {/* <TfjsRegression></TfjsRegression> */}
-        <TfjsComponent></TfjsComponent>
+        {/* <TfjsComponent></TfjsComponent> */}
+		<ReactComponent />
     </ScreenWrapper>
   );
 }

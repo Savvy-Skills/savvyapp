@@ -28,6 +28,7 @@ export default function ModulesList() {
           data={modules}
           renderItem={({ item }) => <ModuleCard module={item} />}
           keyExtractor={(item) => item.id.toString()}
+		  horizontal
         />
       </ScrollView>
     </ScreenWrapper>

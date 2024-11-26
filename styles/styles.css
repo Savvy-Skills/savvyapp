@@ -52,3 +52,11 @@
 .progress-indicator.dragging {
   cursor: grabbing;
 }
+
+.plotly-container {
+  width: "100%";
+  max-width: 600;
+  align-self: "center";
+  background-color: "white";
+  padding: 16;
+}
