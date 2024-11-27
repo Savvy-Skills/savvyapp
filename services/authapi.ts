@@ -3,7 +3,6 @@ import { createAPI } from "./apiConfig";
 
 export const authAPI = createAPI("auth");
 
-console.log({authAPI})
 
 export const login = async (
   email: string,

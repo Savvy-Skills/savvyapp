@@ -35,6 +35,10 @@
   height: 8px;
 }
 
+.chip-nonclick {
+	cursor: default;
+}
+
 .progress-bar {
   height: 100%;
   background-color: white;

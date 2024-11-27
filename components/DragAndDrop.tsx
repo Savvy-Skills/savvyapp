@@ -1,4 +1,4 @@
-"use client";
+"use dom";
 
 import React, { useState, useCallback, useEffect } from "react";
 import { DndProvider } from "react-dnd";
@@ -7,10 +7,10 @@ import { TouchBackend } from "react-dnd-touch-backend";
 import { DraggableItem } from "./react/DraggableItem";
 import { DropZone } from "./react/DropZone";
 import { CustomDragLayer } from "./react/CustomDragLayer";
-import StatusIcon from "@/components/StatusIcon";
 import "./drag-and-drop.css";
 import { create } from "zustand";
 import { useCourseStore } from "@/store/courseStore";
+import useDragDropStore from "@/store/dragDropStore";
 
 interface Item {
   text: string;
@@ -26,27 +26,9 @@ interface DragAndDropProps {
   showAnswer: boolean;
   isSubmitted: boolean;
   isCorrect: boolean;
+  droppedItems: Record<string, string[]>;
+  setDroppedItems: (items: Record<string, string[]>) => void;
 }
-
-interface DropStore {
-  droppedItemsState: Record<number, Record<string, string[]>>;
-  setDroppedItemsState: (
-    questionId: number,
-    items: Record<string, string[]>
-  ) => void;
-}
-
-// Create a store slice for drag and drop state
-const useDragDropStore = create<DropStore>((set) => ({
-  droppedItemsState: {},
-  setDroppedItemsState: (questionId: number, items: Record<string, string[]>) =>
-    set((state) => ({
-      droppedItemsState: {
-        ...state.droppedItemsState,
-        [questionId]: items,
-      },
-    })),
-}));
 
 export default function DragAndDrop({
   items,
@@ -57,67 +39,59 @@ export default function DragAndDrop({
   showAnswer,
   isSubmitted,
   isCorrect,
+  droppedItems,
+  setDroppedItems,
 }: DragAndDropProps) {
-  const { droppedItemsState, setDroppedItemsState } = useDragDropStore();
-  const [droppedItems, setDroppedItems] = useState<Record<string, string[]>>(
-    () => {
-      // Initialize from store or create new state
-      return (
-        droppedItemsState[questionId] ||
-        (() => {
-          const zones = [...new Set(items.map((item) => item.match))];
-          return zones.reduce((acc, zone) => ({ ...acc, [zone]: [] }), {});
-        })()
-      );
-    }
-  );
-
-  const { setSubmittableState, setCorrectnessState, submittedAssessments } =
-    useCourseStore();
+  const { setSubmittableState, setCorrectnessState } = useCourseStore();
 
   const isTouchDevice =
     "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
+  useEffect(() => {
+    console.log("Mounting component", { droppedItems });
+
+    return () => {
+      console.log("Umounting", { droppedItems });
+    };
+  }, []);
+
   // Update store when droppedItems changes
   useEffect(() => {
-    setDroppedItemsState(questionId, droppedItems);
-  }, [droppedItems, questionId, setDroppedItemsState]);
-
-  useEffect(() => {
+    // console.log("Dropped items changed", {droppedItems, droppedItemsState})
     const allItemsDropped = items.every((item) =>
       Object.values(droppedItems).some((zoneItems) =>
         zoneItems.includes(item.text)
       )
     );
-    setSubmittableState(index, allItemsDropped);
     if (allItemsDropped) {
+      setSubmittableState(index, allItemsDropped);
       const correct = items.every((item) =>
         droppedItems[item.match]?.includes(item.text)
       );
       setCorrectnessState(index, correct);
     }
-  }, [droppedItems, index, items, setSubmittableState, setCorrectnessState]);
+  }, [droppedItems, questionId, setSubmittableState, setCorrectnessState]);
 
   const handleDrop = useCallback(
     (itemText: string, targetZone: string | null) => {
       if (isSubmitted && isCorrect) return;
-      setDroppedItems((prev) => {
-        const newDroppedItems = { ...prev };
-        Object.keys(newDroppedItems).forEach((zone) => {
-          newDroppedItems[zone] = newDroppedItems[zone].filter(
-            (text) => text !== itemText
-          );
-        });
-        if (targetZone) {
-          newDroppedItems[targetZone] = [
-            ...newDroppedItems[targetZone],
-            itemText,
-          ];
-        }
-        return newDroppedItems;
+      const newDroppedItems = { ...droppedItems };
+      Object.keys(newDroppedItems).forEach((zone) => {
+        newDroppedItems[zone] = newDroppedItems[zone].filter(
+          (text) => text !== itemText
+        );
       });
+      if (targetZone) {
+        newDroppedItems[targetZone] = [
+          ...newDroppedItems[targetZone],
+          itemText,
+        ];
+      }
+      console.log("Dropped items", { droppedItems, newDroppedItems });
+
+      setDroppedItems(newDroppedItems);
     },
-    [isSubmitted, isCorrect]
+    [isSubmitted, isCorrect, droppedItems]
   );
 
   const getUndropedItems = () => {
@@ -131,11 +105,12 @@ export default function DragAndDrop({
       return zones.reduce((acc, zone) => ({ ...acc, [zone]: [] }), {});
     })();
     setDroppedItems(newState);
-    setDroppedItemsState(questionId, newState);
   };
 
   useEffect(() => {
-    resetStates();
+    if (tryAgain) {
+      resetStates();
+    }
   }, [tryAgain]);
 
   useEffect(() => {
@@ -154,7 +129,6 @@ export default function DragAndDrop({
         return acc;
       }, {} as Record<string, string[]>);
       setDroppedItems(correctDroppedItems);
-      setDroppedItemsState(questionId, correctDroppedItems);
     }
   };
 

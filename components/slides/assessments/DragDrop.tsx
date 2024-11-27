@@ -3,6 +3,8 @@ import { QuestionInfo } from "@/types";
 import { useCourseStore } from "@/store/courseStore";
 import AssessmentWrapper from "../AssessmentWrapper";
 import DragAndDrop from "@/components/DragAndDrop";
+import useDragDropStore from "@/store/dragDropStore";
+import { Button } from "react-native-paper";
 
 export type DragAndDropAssessmentProps = {
   question: QuestionInfo;
@@ -33,6 +35,23 @@ export default function DragAndDropAssessment({
     (submission) => submission.question_id === question.id
   );
 
+  const [droppedItems, setDroppedItems] = useState<Record<string, string[]>>(
+    () => {
+      return (() => {
+        const zones = [...new Set(items.map((item) => item.match))];
+        return zones.reduce((acc, zone) => ({ ...acc, [zone]: [] }), {});
+      })();
+    }
+  );
+
+  //   Make correct zones, which should be a droppedItems object with all items in the correct zone
+  const correctZones = items.reduce<Record<string, string[]>>((acc, item) => {
+    return {
+      ...acc,
+      [item.match]: [...(acc[item.match] || []), item.text],
+    };
+  }, {});
+
   useEffect(() => {
     if (currentSubmission) {
       setIsSubmitted(true);
@@ -41,6 +60,8 @@ export default function DragAndDropAssessment({
         if (quizMode) {
           setShowAnswer(true);
         }
+      } else {
+        setDroppedItems(correctZones);
       }
       setShowFeedback(true);
     }
@@ -66,11 +87,6 @@ export default function DragAndDropAssessment({
     }
   }, [quizMode, index, setCorrectnessState, submitAssessment, question.id]);
 
-  const [droppedItems, setDroppedItems] = useState<Record<string, string[]>>(() => {
-    const zones = [...new Set(items.map(item => item.match))]
-    return zones.reduce((acc, zone) => ({ ...acc, [zone]: [] }), {})
-  })
-
   return (
     <AssessmentWrapper
       question={question}
@@ -89,7 +105,10 @@ export default function DragAndDropAssessment({
         showAnswer={showAnswer}
         tryAgain={tryAgain.current}
         isCorrect={currentSubmission ? currentSubmission.correct : false}
+        droppedItems={droppedItems}
+        setDroppedItems={setDroppedItems}
       />
+
     </AssessmentWrapper>
   );
 }
