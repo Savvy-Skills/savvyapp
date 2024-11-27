@@ -1,5 +1,6 @@
 import ReactComponent from "@/components/ReactComponent";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
+import NeuralNetworkVisualizer from "@/components/SimpleNN";
 import TfjsComponent from "@/components/TfjsComponent";
 import TfjsRegression from "@/components/TFJSRegression";
 import React from "react";
@@ -10,7 +11,8 @@ export default function DebugScreen() {
     <ScreenWrapper style={{ flex: 1 }}>
         {/* <TfjsRegression></TfjsRegression> */}
         {/* <TfjsComponent></TfjsComponent> */}
-		<ReactComponent />
+		{/* <ReactComponent /> */}
+		<NeuralNetworkVisualizer />
     </ScreenWrapper>
   );
 }
