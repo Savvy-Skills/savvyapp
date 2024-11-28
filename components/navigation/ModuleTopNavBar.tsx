@@ -12,7 +12,9 @@ interface ModuleProps {
 const ModuleTopNavBar = (props: ModuleProps) => {
   const handleBack = () => {
     const course = props.module.course_id;
-    router.navigate(`/courses/${course}`);
+    if (course) {
+      router.navigate(`/courses/${course}`);
+    }
   };
   return (
     <View style={styles.topNavBarInner}>
@@ -23,10 +25,17 @@ const ModuleTopNavBar = (props: ModuleProps) => {
         onPress={handleBack}
       />
       <View style={styles.navBarInfo}>
-        <Text style={{ fontWeight: "bold", fontSize: 12, textAlign:"center" }}>
+        <Text style={{ fontWeight: "bold", fontSize: 12, textAlign: "center" }}>
           {props.module?.course_info?.name}
         </Text>
-        <Text style={{ color: Colors.light.primary, fontWeight: "bold", fontSize:16, textAlign:"center" }}>
+        <Text
+          style={{
+            color: Colors.light.primary,
+            fontWeight: "bold",
+            fontSize: 16,
+            textAlign: "center",
+          }}
+        >
           {props.module?.name}
         </Text>
       </View>

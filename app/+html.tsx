@@ -11,7 +11,7 @@ export default function Root({ children }: PropsWithChildren) {
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
 
         {/*
           Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
@@ -29,11 +29,13 @@ export default function Root({ children }: PropsWithChildren) {
 }
 
 const responsiveBackground = `
+html {
+height: 100%;
+}
 body {
   background-color: #fff;
   font-family: 'Poppins', sans-serif;
-  margin: 0;
-  height: 100vh; 
+  height: 100%;
 }
 
 @media (prefers-color-scheme: dark) {

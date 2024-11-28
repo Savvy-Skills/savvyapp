@@ -8,10 +8,10 @@ import ReorderAssessment from "./assessments/Reorder";
 import FillBlankAssessment from "./assessments/FillBlank";
 import MatchWordsAssessment from "./assessments/MatchWords";
 import OpenEnded from "./assessments/OpenEnded";
-import DataTable from "../DataTable";
 import { ScrollView } from "react-native-gesture-handler";
 import { useCourseStore } from "@/store/courseStore";
 import DragAndDropAssessment from "./assessments/DragDrop";
+import DataTableContainer from "../DataTableContainer";
 
 type AssessmentProps = {
   slide: AssessmentSlideType;
@@ -108,17 +108,14 @@ export default function AssessmentSlide({ slide, index }: AssessmentProps) {
       contentContainerStyle={{ gap: 16, flexGrow: 1, justifyContent: "center" }}
     >
       {slide.question_info.dataset && slide.question_info.dataset_info && (
-        <DataTable datasetInfo={slide.question_info.dataset_info} />
+        <DataTableContainer datasetInfo={slide.question_info.dataset_info} />
       )}
       {index === 3 && (
         <Suspense fallback={<View />}>
           <DataVisualizerPlotly
             dataset={dataform}
             traces={[
-              { x: "x", y: "y", name: "First" },
-              { x: "x", y: "z", name: "Second" },
-              { x: "x", y: "v", name: "Third" },
-              { x: "w", y: "w", name: "Fourth" },
+              { x: "x", y: "y", name: "First", type: "bar" },
             ]}
             title="Data Visualizer"
           />
