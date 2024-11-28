@@ -285,10 +285,12 @@ export default function Filter({
 
 const styles = StyleSheet.create({
   container: {
-    width: 600,
+    maxWidth: 600,
     alignSelf: "center",
     gap: 8,
     padding: 8,
+	width: "100%"
+	
   },
   titleContainer: {
     flexDirection: "row",
