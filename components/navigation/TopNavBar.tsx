@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
     paddingVertical: 4,
 	maxHeight: 56,
+	marginBottom: 8
   },
   webNav: {
     borderBottomWidth: 1,

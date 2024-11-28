@@ -1,4 +1,4 @@
-'use dom';
+"use dom";
 
 import React, { useState, useMemo, useEffect } from "react";
 import {
@@ -7,14 +7,15 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import Plot from "react-plotly.js";
 import { Button, SegmentedButtons, Text } from "react-native-paper";
 import { Data, Layout, Config, PlotType } from "plotly.js";
+import DataPlotter from "./DataPlotter";
 
 type TraceConfig = {
   x: string;
   y: string;
   name: string;
+  type: "scatter" | "bar" | "histogram";
 };
 
 type DataVisualizerProps = {
@@ -289,7 +290,7 @@ export default function DataVisualizerPlotly({
           </>
         )}
         <View style={styles.plotContainer}>
-          <Plot
+          <DataPlotter
             data={plotlyData}
             layout={layout}
             config={config}

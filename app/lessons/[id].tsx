@@ -48,7 +48,7 @@ export default function ModuleDetail() {
   }
 
   return (
-    <ScreenWrapper style={{height:"100%", overflowY: "hidden"}}>
+    <ScreenWrapper style={{overflow: "hidden"}}>
       <Pressable style={styles.pressableArea} onPress={handlePressOutside}>
         <TopNavBar />
         <View style={styles.slidesContainer}>

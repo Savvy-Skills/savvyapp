@@ -11,22 +11,22 @@ export default function ModulesList() {
 
 	return <Redirect href={"/home"}/>
 
-  const [modules, setModules] = useState<Module[]>([]);
-  const { id } = useLocalSearchParams();
-  useEffect(() => {
-    getModules(Number(id)).then((data) => {
-      setModules(data);
-    });
-  }, []);
+//   const [modules, setModules] = useState<Module[]>([]);
+//   const { id } = useLocalSearchParams();
+//   useEffect(() => {
+//     getModules(Number(id)).then((data) => {
+//       setModules(data);
+//     });
+//   }, []);
 
-  return (
-    <ScreenWrapper>
-      <FlatList
-        data={modules}
-        renderItem={({ item }) => <ModuleCard module={item} />}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.container}
-      />
-    </ScreenWrapper>
-  );
+//   return (
+//     <ScreenWrapper>
+//       <FlatList
+//         data={modules}
+//         renderItem={({ item }) => <ModuleCard module={item} />}
+//         keyExtractor={(item) => item.id.toString()}
+//         contentContainerStyle={styles.container}
+//       />
+//     </ScreenWrapper>
+//   );
 }
