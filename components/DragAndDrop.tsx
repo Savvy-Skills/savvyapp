@@ -47,17 +47,9 @@ export default function DragAndDrop({
   const isTouchDevice =
     "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-  useEffect(() => {
-    console.log("Mounting component", { droppedItems });
-
-    return () => {
-      console.log("Umounting", { droppedItems });
-    };
-  }, []);
 
   // Update store when droppedItems changes
   useEffect(() => {
-    // console.log("Dropped items changed", {droppedItems, droppedItemsState})
     const allItemsDropped = items.every((item) =>
       Object.values(droppedItems).some((zoneItems) =>
         zoneItems.includes(item.text)
@@ -87,7 +79,6 @@ export default function DragAndDrop({
           itemText,
         ];
       }
-      console.log("Dropped items", { droppedItems, newDroppedItems });
 
       setDroppedItems(newDroppedItems);
     },

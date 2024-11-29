@@ -78,6 +78,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
         module_id: id,
         type: "Custom",
         subtype: "first",
+		image: `${lesson.lesson_info.intro_image}`,
       };
       const lastSlide: CustomSlide = {
         order: 999,
@@ -218,7 +219,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
         break;
       case "Content":
         if (slide.content_info.type === "Video") {
-          if (data?.progress >= 80) {
+          if (data?.completed) {
             markSlideAsCompleted(currentSlideIndex);
           }
         } else {

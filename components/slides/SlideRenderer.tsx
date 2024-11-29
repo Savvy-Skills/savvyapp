@@ -3,11 +3,11 @@ import { View } from "react-native";
 import AssessmentSlide from "./AssessmentSlide";
 import ActivitySlide from "./ActivitySlide";
 import { Slide } from "../../types";
-import VideoComponent from "./VideoComponent";
 import styles from "@/styles/styles";
 import { useCourseStore } from "@/store/courseStore";
-import FirstSlide from "./FirstSlide";
 import LastSlide from "./LastSlide";
+import VideoSlide from "./content/VideoSlide";
+import ImageSlide from "./content/ImageSlide";
 
 export interface SlideProps {
   slide: Slide;
@@ -30,13 +30,15 @@ const SlideComponent = ({
       return <ActivitySlide slide={slide} index={index} />;
     case "Content":
       if (slide.content_info.type === "Video") {
-        return <VideoComponent url={slide.content_info.url} index={index} />;
+        return <VideoSlide url={slide.content_info.url} index={index} />;
+      } else if (slide.content_info.type === "Image") {
+        return <ImageSlide url={slide.content_info.url} index={index} />;
       }
       return <View />;
 
     case "Custom":
       if (slide.subtype === "first") {
-        return <FirstSlide />;
+        return <ImageSlide url={slide.image} index={index} />;
       } else if (slide.subtype === "last") {
         return <LastSlide />;
       }
