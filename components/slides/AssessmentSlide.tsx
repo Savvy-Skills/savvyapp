@@ -16,38 +16,77 @@ import DataTableContainer from "../DataTableContainer";
 type AssessmentProps = {
   slide: AssessmentSlideType;
   index: number;
+  quizMode: boolean;
 };
 
 let DataVisualizerPlotly = lazy(() => import("../DataVisualizerPlotly"));
 
-function AssessmentComponent({ slide, index }: AssessmentProps) {
+function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
   switch (slide.question_info.type) {
     case "Numerical":
-      return <NumericalAnswer question={slide.question_info} index={index} />;
+      return (
+        <NumericalAnswer
+          question={slide.question_info}
+          index={index}
+          quizMode={quizMode}
+        />
+      );
     case "Single Choice":
       return (
         <SingleChoice
           question={slide.question_info}
           index={index}
-          quizMode={slide.quizMode}
+          quizMode={quizMode}
         />
       );
     case "Multiple Choice":
-      return <MultipleChoice question={slide.question_info} index={index} />;
+      return (
+        <MultipleChoice
+          question={slide.question_info}
+          index={index}
+          quizMode={quizMode}
+        />
+      );
     case "Order List":
-      return <ReorderAssessment question={slide.question_info} index={index} />;
+      return (
+        <ReorderAssessment
+          question={slide.question_info}
+          index={index}
+          quizMode={quizMode}
+        />
+      );
     case "Fill in the Blank":
       return (
-        <FillBlankAssessment question={slide.question_info} index={index} />
+        <FillBlankAssessment
+          question={slide.question_info}
+          index={index}
+          quizMode={quizMode}
+        />
       );
     case "Match the Words":
       return (
-        <MatchWordsAssessment question={slide.question_info} index={index} />
+        <MatchWordsAssessment
+          question={slide.question_info}
+          index={index}
+          quizMode={quizMode}
+        />
       );
     case "Open Ended":
-      return <OpenEnded question={slide.question_info} index={index} />;
+      return (
+        <OpenEnded
+          question={slide.question_info}
+          index={index}
+          quizMode={quizMode}
+        />
+      );
     case "Drag and Drop":
-      return <DragAndDropAssessment question={slide.question_info} index={index} />;
+      return (
+        <DragAndDropAssessment
+          question={slide.question_info}
+          index={index}
+          quizMode={quizMode}
+        />
+      );
     default:
       return <View />;
   }
@@ -91,7 +130,11 @@ const dataform = [
   },
 ];
 
-export default function AssessmentSlide({ slide, index }: AssessmentProps) {
+export default function AssessmentSlide({
+  slide,
+  index,
+  quizMode,
+}: AssessmentProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const { setScrollToEnd } = useCourseStore();
 
@@ -114,15 +157,13 @@ export default function AssessmentSlide({ slide, index }: AssessmentProps) {
         <Suspense fallback={<View />}>
           <DataVisualizerPlotly
             dataset={dataform}
-            traces={[
-              { x: "x", y: "y", name: "First", type: "bar" },
-            ]}
+            traces={[{ x: "x", y: "y", name: "First", type: "bar" }]}
             title="Data Visualizer"
           />
         </Suspense>
       )}
       <View style={{ flexDirection: "row" }}>
-        <AssessmentComponent slide={slide} index={index} />
+        <AssessmentComponent slide={slide} index={index} quizMode={quizMode} />
       </View>
     </ScrollView>
   );

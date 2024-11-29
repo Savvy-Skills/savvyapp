@@ -78,7 +78,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
         module_id: id,
         type: "Custom",
         subtype: "first",
-		image: `${lesson.lesson_info.intro_image}`,
+        image: `${lesson.lesson_info.intro_image}`,
       };
       const lastSlide: CustomSlide = {
         order: 999,
@@ -266,5 +266,12 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
   isNavMenuVisible: false,
   setNavMenuVisible: (isVisible) => set({ isNavMenuVisible: isVisible }),
   clearCurrentLesson: () =>
-    set({ currentLesson: undefined, currentSlideIndex: 0 }),
+    set({
+      currentLesson: undefined,
+      currentSlideIndex: 0,
+      completedSlides: [],
+      submittableStates: {},
+      correctnessStates: {},
+      submittedAssessments: [],
+    }),
 }));

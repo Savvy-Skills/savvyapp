@@ -16,6 +16,7 @@ export default function ModuleDetail() {
     currentSlideIndex,
     isNavMenuVisible,
     setNavMenuVisible,
+	clearCurrentLesson
   } = useCourseStore();
   const [direction, setDirection] = useState<"forward" | "backward" | null>(
     null
@@ -24,6 +25,7 @@ export default function ModuleDetail() {
   const [isInitialRender, setIsInitialRender] = useState(true);
 
   useEffect(() => {
+	clearCurrentLesson();
     getLessonById(Number(id));
   }, [id]);
 
@@ -59,7 +61,7 @@ export default function ModuleDetail() {
               direction={index === currentSlideIndex ? direction : null}
               isInitialRender={isInitialRender && index === currentSlideIndex}
             >
-              <SlideRenderer slide={slide} index={index} />
+              <SlideRenderer slide={slide} index={index} quizMode={currentLesson.quiz} />
             </AnimatedSlide>
           ))}
         </View>

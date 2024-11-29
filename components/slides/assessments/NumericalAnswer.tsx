@@ -11,7 +11,7 @@ import OperatorRenderer from "@/components/OperatorRenderer";
 export default function NumericalAnswerAssessment({
   question,
   index,
-  quizMode
+  quizMode,
 }: AssessmentProps) {
   const [value, setValue] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
@@ -19,8 +19,14 @@ export default function NumericalAnswerAssessment({
   const [showAnswer, setShowAnswer] = useState(false);
 
   const answer = parseFloat(question.options[0].text);
-  const { setSubmittableState, setCorrectnessState, submittedAssessments, submitAssessment } =
-    useCourseStore();
+  const {
+    setSubmittableState,
+    setCorrectnessState,
+    submittedAssessments,
+    submitAssessment,
+    completedSlides,
+    checkSlideCompletion,
+  } = useCourseStore();
 
   const handleChange = (text: string) => {
     const sanitizedText = text.replace(/[^0-9.]/g, "");
@@ -58,10 +64,17 @@ export default function NumericalAnswerAssessment({
     if (currentSubmission) {
       if (!currentSubmission.correct) {
         setIsWrong(true);
+        if (quizMode) {
+          setValue(answer.toString());
+          setShowAnswer(true);
+        }
+      }
+      if (quizMode && !completedSlides[index]) {
+        checkSlideCompletion();
       }
       setShowFeedback(true);
     }
-  }, [submittedAssessments, currentSubmission]);
+  }, [submittedAssessments, currentSubmission, quizMode]);
 
   const blocked = currentSubmission?.correct || showAnswer;
 
@@ -73,14 +86,14 @@ export default function NumericalAnswerAssessment({
   };
 
   const handleRevealAnswer = () => {
-	if (!quizMode) {
-		setValue(answer.toString())
-		setShowAnswer(true)
-		setIsWrong(false)
-		setShowFeedback(true)
-		setCorrectnessState(index, true)
-		submitAssessment(question.id)
-	  }
+    if (!quizMode) {
+      setValue(answer.toString());
+      setShowAnswer(true);
+      setIsWrong(false);
+      setShowFeedback(true);
+      setCorrectnessState(index, true);
+      submitAssessment(question.id);
+    }
   };
 
   return (
@@ -90,21 +103,21 @@ export default function NumericalAnswerAssessment({
       onRevealAnswer={handleRevealAnswer}
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
-	  quizMode={false}
+      quizMode={quizMode}
     >
       <View style={localStyles.container}>
         {!!question.extras?.text && (
           <Text style={localStyles.text}>{question.extras.text}</Text>
         )}
         {!!question.extras?.operator && (
-           <OperatorRenderer operator={question.extras.operator} />
+          <OperatorRenderer operator={question.extras.operator} />
         )}
         <View style={localStyles.inputContainer}>
           <TextInput
             value={value}
             onChangeText={handleChange}
             disabled={blocked}
-			textColor="black"
+            textColor="black"
             style={[
               localStyles.input,
               currentSubmission?.correct && localStyles.correctInput,
@@ -157,11 +170,11 @@ const localStyles = StyleSheet.create({
   input: {
     height: 40,
     textAlign: "center",
-	backgroundColor: "white",
-	borderRadius: 4,
-	color: "black",
-	borderWidth: 1,
-	borderColor:"grey"
+    backgroundColor: "white",
+    borderRadius: 4,
+    color: "black",
+    borderWidth: 1,
+    borderColor: "grey",
   },
   correctInput: {
     borderColor: "#23b5ec",
