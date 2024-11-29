@@ -289,8 +289,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     gap: 8,
     padding: 8,
-	width: "100%"
-	
+	width: "100%",
+	flex:1	
   },
   titleContainer: {
     flexDirection: "row",

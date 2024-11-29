@@ -25,6 +25,7 @@ export interface LessonInfo {
   slides: number;
   questions: number;
   activities: number;
+  intro_image: string;
 }
 
 export interface Lesson {
@@ -45,6 +46,7 @@ export interface Lesson {
 
 export interface LessonWithSlides {
   readonly id: number;
+  lesson_info: LessonInfo;
   name: string;
   class_id: number;
   content_id: string;
@@ -97,6 +99,7 @@ export interface ActivitySlide extends BaseSlide {
 export interface CustomSlide extends BaseSlide {
   type: "Custom";
   subtype: "first" | "last";
+  image?: string;
 }
 
 export type Slide =

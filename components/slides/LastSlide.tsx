@@ -1,5 +1,5 @@
 import { useCourseStore } from "@/store/courseStore";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import {
   Text,
   ProgressBar,
@@ -42,89 +42,93 @@ export default function LastSlide() {
     completedActivities.length / (activities.length || 1);
 
   return (
-    <Surface style={styles.container} elevation={0}>
-      <Card style={styles.card}>
-        <Card.Title
-          title="Your Progress Stats"
-          subtitle="Keep up the great work!"
-          left={(props) => (
-            <IconButton
-              {...props}
-              icon="chart-bar"
-              size={30}
-              iconColor={theme.colors.primary}
-            />
-          )}
-        />
-        <Card.Content style={styles.statsContainer}>
-          {/* Slides Progress */}
-          <View style={styles.statItem}>
-            <View style={styles.statHeader}>
-              <IconButton icon="book-open-variant" size={24} />
-              <Text variant="titleMedium">Slides Progress</Text>
+    <ScrollView>
+      <Surface style={styles.container} elevation={0}>
+        <Card style={styles.card}>
+          <Card.Title
+            title="Your Progress Stats"
+            subtitle="Keep up the great work!"
+            left={(props) => (
+              <IconButton
+                {...props}
+                icon="chart-bar"
+                size={30}
+                iconColor={theme.colors.primary}
+              />
+            )}
+          />
+          <Card.Content style={styles.statsContainer}>
+            {/* Slides Progress */}
+            <View style={styles.statItem}>
+              <View style={styles.statHeader}>
+                <IconButton icon="book-open-variant" size={24} />
+                <Text variant="titleMedium">Slides Progress</Text>
+              </View>
+              <Text variant="bodyMedium" style={styles.statText}>
+                {totalCompletedSlides}/{totalSlides} slides completed
+              </Text>
+              <ProgressBar
+                progress={slideProgress}
+                style={styles.progressBar}
+                color={theme.colors.primary}
+              />
             </View>
-            <Text variant="bodyMedium" style={styles.statText}>
-              {totalCompletedSlides}/{totalSlides} slides completed
-            </Text>
-            <ProgressBar
-              progress={slideProgress}
-              style={styles.progressBar}
-              color={theme.colors.primary}
-            />
-          </View>
 
-          {/* Assessments Progress */}
-          <View style={styles.statItem}>
-            <View style={styles.statHeader}>
-              <IconButton icon="pencil-box-multiple" size={24} />
-              <Text variant="titleMedium">Assessments</Text>
+            {/* Assessments Progress */}
+            <View style={styles.statItem}>
+              <View style={styles.statHeader}>
+                <IconButton icon="pencil-box-multiple" size={24} />
+                <Text variant="titleMedium">Assessments</Text>
+              </View>
+              <Text variant="bodyMedium" style={styles.statText}>
+                {correctSubmissions}/{totalAssessments} correct answers
+              </Text>
+              <ProgressBar
+                progress={assessmentProgress}
+                style={styles.progressBar}
+                color={theme.colors.secondary}
+              />
             </View>
-            <Text variant="bodyMedium" style={styles.statText}>
-              {correctSubmissions}/{totalAssessments} correct answers
-            </Text>
-            <ProgressBar
-              progress={assessmentProgress}
-              style={styles.progressBar}
-              color={theme.colors.secondary}
-            />
-          </View>
 
-          {/* Activities Progress */}
-          <View style={styles.statItem}>
-            <View style={styles.statHeader}>
-              <IconButton icon="puzzle" size={24} />
-              <Text variant="titleMedium">Activities</Text>
+            {/* Activities Progress */}
+            <View style={styles.statItem}>
+              <View style={styles.statHeader}>
+                <IconButton icon="puzzle" size={24} />
+                <Text variant="titleMedium">Activities</Text>
+              </View>
+              <Text variant="bodyMedium" style={styles.statText}>
+                {completedActivities.length}/{activities.length} activities
+                completed
+              </Text>
+              <ProgressBar
+                progress={activityProgress}
+                style={styles.progressBar}
+                color={theme.colors.tertiary}
+              />
             </View>
-            <Text variant="bodyMedium" style={styles.statText}>
-              {completedActivities.length}/{activities.length} activities
-              completed
-            </Text>
-            <ProgressBar
-              progress={activityProgress}
-              style={styles.progressBar}
-              color={theme.colors.tertiary}
-            />
-          </View>
-        </Card.Content>
-      </Card>
+          </Card.Content>
+        </Card>
 
-      {/* Motivational message based on progress */}
-      <Card style={[styles.messageCard, styles.marginTop]}>
-        <Card.Content>
-          <Text variant="titleMedium" style={styles.messageText}>
-            {slideProgress === 1
-              ? "🎉 Amazing! You've completed all slides!"
-              : "Keep going! You're making great progress! 💪"}
-          </Text>
-        </Card.Content>
-      </Card>
-    </Surface>
+        {/* Motivational message based on progress */}
+        <Card style={[styles.messageCard, styles.marginTop]}>
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.messageText}>
+              {slideProgress === 1
+                ? "🎉 Amazing! You've completed all slides!"
+                : "Keep going! You're making great progress! 💪"}
+            </Text>
+          </Card.Content>
+        </Card>
+      </Surface>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    maxWidth: 700,
+    maxHeight: "100%",
+    maxWidth: 600,
+	width: "100%",
     flex: 1,
     padding: 16,
     justifyContent: "center",
@@ -134,7 +138,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   card: {
-	paddingVertical: 16,
+    paddingVertical: 16,
     marginBottom: 16,
   },
   statsContainer: {
