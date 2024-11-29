@@ -15,12 +15,22 @@ export default function ModulesList() {
   const [module, setModule] = useState<Module>({} as Module);
   const { id } = useLocalSearchParams();
 
+
+
   useEffect(() => {
     getModuleLessons(Number(id)).then((data) => {
       setLessons(data.lessons);
       setModule(data.module);
     });
   }, []);
+  useEffect(() => {
+    getModuleLessons(Number(id)).then((data) => {
+      setLessons(data.lessons);
+      setModule(data.module);
+    });
+  }, []);
+
+  
 
   return (
     <ScreenWrapper>

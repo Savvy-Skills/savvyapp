@@ -11,7 +11,7 @@ import CustomRadioButton from "@/components/SavvyRadioButton";
 export type AssessmentProps = {
   question: QuestionInfo;
   index: number;
-  quizMode?: boolean;
+  quizMode: boolean;
 };
 
 export default function SingleChoice({
@@ -29,6 +29,8 @@ export default function SingleChoice({
     setCorrectnessState,
     submittedAssessments,
     submitAssessment,
+	completedSlides,
+	checkSlideCompletion
   } = useCourseStore();
 
   const options = question.options.map((option) => option.text);
@@ -37,7 +39,6 @@ export default function SingleChoice({
 
   useEffect(() => {
     if (selectedValue) {
-      console.log("Setting submittable", index);
       setSubmittableState(index, true);
       let correct: boolean = selectedValue === correctAnswer;
       setCorrectnessState(index, correct);
@@ -67,6 +68,9 @@ export default function SingleChoice({
           setShowAnswer(true);
         }
       }
+	  if (quizMode&&!completedSlides[index]){
+		checkSlideCompletion()
+	  }
       setShowFeedback(true);
     }
   }, [submittedAssessments, currentSubmission, quizMode]);

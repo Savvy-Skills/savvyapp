@@ -12,20 +12,22 @@ import ImageSlide from "./content/ImageSlide";
 export interface SlideProps {
   slide: Slide;
   index: number;
+  quizMode?: boolean;
 }
 
 const SlideComponent = ({
   slide,
-  isActive,
   index,
+  quizMode
 }: {
   slide: Slide;
   isActive: boolean;
   index: number;
+  quizMode:boolean
 }) => {
   switch (slide.type) {
     case "Assessment":
-      return <AssessmentSlide slide={slide} index={index} />;
+      return <AssessmentSlide slide={slide} index={index} quizMode={quizMode}/>;
     case "Activity":
       return <ActivitySlide slide={slide} index={index} />;
     case "Content":
@@ -49,7 +51,7 @@ const SlideComponent = ({
   }
 };
 
-export default function SlideRenderer({ slide, index }: SlideProps) {
+export default function SlideRenderer({ slide, index, quizMode=false }: SlideProps) {
   const { currentSlideIndex, setSubmittableState, checkSlideCompletion } =
     useCourseStore();
   const isActive = currentSlideIndex === index;
@@ -73,7 +75,7 @@ export default function SlideRenderer({ slide, index }: SlideProps) {
 
   return (
     <View style={styles.slideRenderer}>
-      <SlideComponent slide={slide} isActive={isActive} index={index} />
+      <SlideComponent slide={slide} isActive={isActive} index={index} quizMode={quizMode} />
     </View>
   );
 }
