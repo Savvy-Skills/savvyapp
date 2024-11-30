@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
+import StatusIcon from "@/components/StatusIcon";
+import styles from "@/styles/styles";
 
-type blankArray = {
+type BlankItem = {
   original: string;
   filled: string;
 };
@@ -13,14 +15,22 @@ type blankArray = {
 export default function FillBlankAssessment({
   question,
   index,
+  quizMode = false,
 }: AssessmentProps) {
-  const [blanks, setBlanks] = useState<blankArray[]>([]);
+  const [blanks, setBlanks] = useState<BlankItem[]>([]);
   const [remainingOptions, setRemainingOptions] = useState<string[]>([]);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [isWrong, setIsWrong] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+
   const {
     setSubmittableState,
-    correctnessStates,
     setCorrectnessState,
     submittedAssessments,
+    submitAssessment,
+    completedSlides,
+    checkSlideCompletion,
+    submittableStates,
   } = useCourseStore();
 
   const text = useMemo(() => question.text, [question.text]);
@@ -33,25 +43,11 @@ export default function FillBlankAssessment({
     const matches = text.match(/\[.*?\]/g) || [];
     return matches.map((match) => match.replace(/[\[\]]/g, ""));
   }, [text]);
+
   const blankOptions = useMemo(
     () => extractedBlanks.map((blank) => blank.replace(/\[|\]/g, "")),
     [extractedBlanks]
   );
-
-  useEffect(() => {
-    const isSubmittable = blanks.every((blank) => blank.filled !== "");
-    if (isSubmittable) {
-      setSubmittableState(index, isSubmittable);
-      const correct = blanks.every(
-        (blank) => blank.original.toLowerCase() === blank.filled.toLowerCase()
-      );
-      setCorrectnessState(index, correct);
-      console.log("Slide is submittable", blanks);
-    } else {
-      setSubmittableState(index, false);
-      setCorrectnessState(index, false);
-    }
-  }, [blanks, setCorrectnessState, setSubmittableState]);
 
   useEffect(() => {
     const blanksArray = extractedBlanks.map((blank) => ({
@@ -62,24 +58,22 @@ export default function FillBlankAssessment({
     setRemainingOptions([...options, ...blankOptions]);
   }, [extractedBlanks, options, blankOptions]);
 
-  const handleOptionPress = (option: string) => {
-    const newBlanks = [...blanks];
-    const blankIndex = newBlanks.findIndex((blank) => blank.filled === "");
-    if (blankIndex !== -1) {
-      newBlanks[blankIndex].filled = option;
-      setBlanks(newBlanks);
-      setRemainingOptions(remainingOptions.filter((opt) => opt !== option));
-    }
-  };
+  const checkCorrectness = useCallback(() => {
+    return blanks.every(
+      (blank) => blank.original.toLowerCase() === blank.filled.toLowerCase()
+    );
+  }, [blanks]);
 
-  const handleBlankPress = (index: number) => {
-    const newBlanks = [...blanks];
-    if (newBlanks[index].filled) {
-      setRemainingOptions([...remainingOptions, newBlanks[index].filled]);
-      newBlanks[index].filled = "";
-      setBlanks(newBlanks);
-    }
-  };
+  useEffect(() => {
+    const correct = checkCorrectness();
+    setCorrectnessState(index, correct);
+  }, [
+    blanks,
+    setCorrectnessState,
+    setSubmittableState,
+    index,
+    checkCorrectness,
+  ]);
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
     (submission) => submission.question_id === question.id
@@ -88,9 +82,135 @@ export default function FillBlankAssessment({
     currentSubmissionIndex !== -1
       ? submittedAssessments[currentSubmissionIndex]
       : undefined;
-  const blocked = currentSubmission ? currentSubmission.correct : false;
 
-  const renderText = () => {
+  useEffect(() => {
+    if (currentSubmission) {
+      if (!currentSubmission.correct) {
+        setIsWrong(true);
+        if (quizMode) {
+          setShowAnswer(true);
+        }
+      }
+      if (quizMode && !completedSlides[index]) {
+        checkSlideCompletion();
+      }
+      setShowFeedback(true);
+    }
+  }, [
+    submittedAssessments,
+    currentSubmission,
+    quizMode,
+    completedSlides,
+    index,
+    checkSlideCompletion,
+  ]);
+
+  const blocked =
+    currentSubmission?.correct || showAnswer || (quizMode && isWrong);
+
+  const handleOptionPress = useCallback(
+    (option: string) => {
+      if (blocked) return;
+
+      setBlanks((prevBlanks) => {
+        const newBlanks = [...prevBlanks];
+        const blankIndex = newBlanks.findIndex((blank) => blank.filled === "");
+
+        if (blankIndex !== -1) {
+          // If there is an empty blank, fill it with the option
+          newBlanks[blankIndex].filled = option;
+        } else {
+          // If all blanks are filled, pop the last blank and fill it with the new option
+          const lastBlank = newBlanks.pop();
+          if (lastBlank) {
+            newBlanks.push({ ...lastBlank, filled: option });
+            setRemainingOptions((prevOptions) => [
+              ...prevOptions,
+              lastBlank.filled,
+            ]);
+          }
+        }
+        const isSubmittable = newBlanks.every((blank) => blank.filled !== "");
+        if (submittableStates[index] !== isSubmittable) {
+          setSubmittableState(index, isSubmittable);
+        }
+
+        return newBlanks;
+      });
+
+      setRemainingOptions((prevOptions) =>
+        prevOptions.filter((opt) => opt !== option)
+      );
+      setIsWrong(false);
+      setShowAnswer(false);
+      setShowFeedback(false);
+    },
+    [
+      blocked,
+      setBlanks,
+      setRemainingOptions,
+      setIsWrong,
+      setShowAnswer,
+      setShowFeedback,
+      setSubmittableState,
+      submittableStates,
+    ]
+  );
+
+  const handleBlankPress = useCallback(
+    (blankIndex: number) => {
+      if (blocked) return;
+	  if(blanks[blankIndex].filled === "") return;
+      setBlanks((prevBlanks) => {
+        const newBlanks = [...prevBlanks];
+        if (newBlanks[blankIndex].filled) {
+          setRemainingOptions((prevOptions) => [
+            ...prevOptions,
+            newBlanks[blankIndex].filled,
+          ]);
+          newBlanks[blankIndex].filled = "";
+        }
+        return newBlanks;
+      });
+	  setSubmittableState(index, false);
+      setIsWrong(false);
+      setShowAnswer(false);
+      setShowFeedback(false);
+    },
+    [blocked, setBlanks, setRemainingOptions, setIsWrong, setShowAnswer, setShowFeedback, blanks, setSubmittableState]
+  );
+
+  const resetStates = useCallback(() => {
+    setBlanks((prevBlanks) =>
+      prevBlanks.map((blank) => ({ ...blank, filled: "" }))
+    );
+    setRemainingOptions([...options, ...blankOptions]);
+    setShowAnswer(false);
+    setIsWrong(false);
+    setShowFeedback(false);
+  }, [options, blankOptions]);
+
+  const handleTryAgain = useCallback(() => {
+    if (!quizMode) {
+      resetStates();
+    }
+  }, [quizMode, resetStates]);
+
+  const handleRevealAnswer = useCallback(() => {
+    if (!quizMode) {
+      setBlanks((prevBlanks) =>
+        prevBlanks.map((blank) => ({ ...blank, filled: blank.original }))
+      );
+      setRemainingOptions([]);
+      setShowAnswer(true);
+      setIsWrong(false);
+      setShowFeedback(true);
+      setCorrectnessState(index, true);
+      submitAssessment(question.id);
+    }
+  }, [quizMode, index, setCorrectnessState, submitAssessment, question.id]);
+
+  const renderText = useMemo(() => {
     let result = [];
     let textParts = text.split(/\[.*?\]/);
     blanks.forEach((blank, index) => {
@@ -101,7 +221,19 @@ export default function FillBlankAssessment({
           mode="outlined"
           onPress={() => handleBlankPress(index)}
           disabled={blocked}
-          style={styles.blankButton}
+          style={[
+            localStyles.blankButton,
+            showAnswer && styles.revealedOption,
+            quizMode &&
+              isWrong &&
+              blank.original.toLowerCase() === blank.filled.toLowerCase() &&
+              styles.correctOption,
+            quizMode &&
+              isWrong &&
+              blank.original.toLowerCase() !== blank.filled.toLowerCase() &&
+              styles.incorrectOption,
+            blocked && styles.disabledOption,
+          ]}
         >
           {blank.filled || "______"}
         </Button>
@@ -113,29 +245,74 @@ export default function FillBlankAssessment({
       </Text>
     );
     return result;
-  };
+  }, [text, blanks, handleBlankPress, blocked, showAnswer, quizMode, isWrong]);
+
+  const renderStatusIcon = useCallback(
+    (blank: BlankItem) => {
+      if (quizMode && isWrong) {
+        return (
+          <StatusIcon
+            isCorrect={
+              blank.original.toLowerCase() === blank.filled.toLowerCase()
+            }
+            isWrong={
+              blank.original.toLowerCase() !== blank.filled.toLowerCase()
+            }
+            showAnswer={false}
+          />
+        );
+      }
+
+      if (showAnswer || currentSubmission?.correct) {
+        return (
+          <StatusIcon
+            isCorrect={
+              blank.original.toLowerCase() === blank.filled.toLowerCase()
+            }
+            isWrong={false}
+            showAnswer={showAnswer}
+          />
+        );
+      }
+
+      return null;
+    },
+    [quizMode, isWrong, showAnswer, currentSubmission]
+  );
 
   return (
-    <AssessmentWrapper question={question}>
-      <View style={styles.textContainer}>{renderText()}</View>
-      <View style={styles.optionsContainer}>
+    <AssessmentWrapper
+      question={question}
+      onTryAgain={quizMode ? undefined : handleTryAgain}
+      onRevealAnswer={quizMode ? undefined : handleRevealAnswer}
+      showFeedback={showFeedback}
+      setShowFeedback={setShowFeedback}
+      quizMode={quizMode}
+    >
+      <View style={localStyles.textContainer}>{renderText}</View>
+      <View style={localStyles.optionsContainer}>
         {remainingOptions.map((option, index) => (
           <Button
             key={index}
             mode="contained"
             onPress={() => handleOptionPress(option)}
             disabled={blocked}
-            style={styles.optionButton}
+            style={[localStyles.optionButton, blocked && styles.disabledOption]}
           >
             {option}
           </Button>
         ))}
       </View>
+      {blanks.map((blank, index) => (
+        <View key={index} style={styles.iconContainer}>
+          {renderStatusIcon(blank)}
+        </View>
+      ))}
     </AssessmentWrapper>
   );
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   textContainer: {
     flexDirection: "row",
     flexWrap: "wrap",

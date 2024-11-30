@@ -169,7 +169,6 @@ export default StyleSheet.create({
   },
 
   disabledOption: {
-    opacity: 0.5,
   },
 });
 

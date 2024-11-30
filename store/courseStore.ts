@@ -29,7 +29,11 @@ interface CourseStore {
   setCurrentSlideIndex: (index: number) => void;
   nextSlide: () => void;
   previousSlide: () => void;
-  setSubmittableState: (index: number, isSubmittable: boolean) => void;
+  setSubmittableState: (
+    index: number,
+    isSubmittable: boolean,
+    source?: string
+  ) => void;
   setCorrectnessState: (index: number, isCorrect: boolean | null) => void;
   submitAssessment: (question_id: number) => void;
   markSlideAsCompleted: (index: number) => void;
@@ -131,8 +135,14 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
     }
   },
 
-  setSubmittableState: (index, isSubmittable) =>
+  setSubmittableState: (index, isSubmittable, source) => {
     set((state) => {
+      console.log("Received", {
+        index,
+        isSubmittable,
+		source
+      });
+
       if (state.submittableStates[index] === isSubmittable) {
         return state; // Return the current state if there's no change
       }
@@ -142,7 +152,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
           [index]: isSubmittable,
         },
       };
-    }),
+    });
+  },
 
   setCorrectnessState: (index, isCorrect) =>
     set((state) => {
@@ -182,7 +193,6 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
           )
         : [...state.submittedAssessments, { question_id, correct: isCorrect }],
     }));
-
     setSubmittableState(currentSlideIndex, false);
 
     if (isCorrect || quizMode) {

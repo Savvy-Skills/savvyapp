@@ -29,8 +29,8 @@ export default function SingleChoice({
     setCorrectnessState,
     submittedAssessments,
     submitAssessment,
-	completedSlides,
-	checkSlideCompletion
+    completedSlides,
+    checkSlideCompletion,
   } = useCourseStore();
 
   const options = question.options.map((option) => option.text);
@@ -62,15 +62,15 @@ export default function SingleChoice({
 
   useEffect(() => {
     if (currentSubmission) {
+      if (quizMode) {
+        setShowAnswer(true);
+      }
       if (!currentSubmission.correct) {
         setIsWrong(true);
-        if (quizMode) {
-          setShowAnswer(true);
-        }
       }
-	  if (quizMode&&!completedSlides[index]){
-		checkSlideCompletion()
-	  }
+      if (!completedSlides[index]) {
+        checkSlideCompletion();
+      }
       setShowFeedback(true);
     }
   }, [submittedAssessments, currentSubmission, quizMode]);
@@ -209,7 +209,7 @@ export default function SingleChoice({
         value={option}
         status={selectedValue === option ? "checked" : "unchecked"}
         onPress={() => handleChoiceSelection(option)}
-        disabled={blocked&&option!==correctAnswer}
+        disabled={blocked && option !== correctAnswer}
         style={getOptionStyles(option)}
         disabledTouchable={selectedValue === option || blocked}
       />
