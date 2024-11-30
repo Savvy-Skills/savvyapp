@@ -3,8 +3,6 @@ import { QuestionInfo } from "@/types";
 import { useCourseStore } from "@/store/courseStore";
 import AssessmentWrapper from "../AssessmentWrapper";
 import DragAndDrop from "@/components/DragAndDrop";
-import useDragDropStore from "@/store/dragDropStore";
-import { Button } from "react-native-paper";
 
 export type DragAndDropAssessmentProps = {
   question: QuestionInfo;
@@ -23,7 +21,7 @@ export default function DragAndDropAssessment({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const tryAgain = useRef(false);
 
-  const { setCorrectnessState, submitAssessment, submittedAssessments } =
+  const { setCorrectnessState, submitAssessment, submittedAssessments, completedSlides, checkSlideCompletion } =
     useCourseStore();
 
   const items = question.options.map((option) => ({
@@ -55,11 +53,14 @@ export default function DragAndDropAssessment({
   useEffect(() => {
     if (currentSubmission) {
       setIsSubmitted(true);
+      if (quizMode) {
+        setShowAnswer(true);
+        if (!completedSlides[index]) {
+          checkSlideCompletion();
+        }
+      }
       if (!currentSubmission.correct) {
         setIsWrong(true);
-        if (quizMode) {
-          setShowAnswer(true);
-        }
       } else {
         setDroppedItems(correctZones);
       }
@@ -108,7 +109,6 @@ export default function DragAndDropAssessment({
         droppedItems={droppedItems}
         setDroppedItems={setDroppedItems}
       />
-
     </AssessmentWrapper>
   );
 }

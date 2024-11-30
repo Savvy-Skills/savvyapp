@@ -18,16 +18,18 @@ export interface SlideProps {
 const SlideComponent = ({
   slide,
   index,
-  quizMode
+  quizMode,
 }: {
   slide: Slide;
   isActive: boolean;
   index: number;
-  quizMode:boolean
+  quizMode: boolean;
 }) => {
   switch (slide.type) {
     case "Assessment":
-      return <AssessmentSlide slide={slide} index={index} quizMode={quizMode}/>;
+      return (
+        <AssessmentSlide slide={slide} index={index} quizMode={quizMode} />
+      );
     case "Activity":
       return <ActivitySlide slide={slide} index={index} />;
     case "Content":
@@ -51,14 +53,26 @@ const SlideComponent = ({
   }
 };
 
-export default function SlideRenderer({ slide, index, quizMode=false }: SlideProps) {
-  const { currentSlideIndex, setSubmittableState, checkSlideCompletion } =
-    useCourseStore();
+export default function SlideRenderer({
+  slide,
+  index,
+  quizMode = false,
+}: SlideProps) {
+  const {
+    currentSlideIndex,
+    setSubmittableState,
+    checkSlideCompletion,
+    submittableStates,
+  } = useCourseStore();
   const isActive = currentSlideIndex === index;
 
   useEffect(() => {
-    if (isActive && slide.type !== "Assessment") {
-      setSubmittableState(currentSlideIndex, false);
+    if (
+      isActive &&
+      slide.type !== "Assessment" &&
+      submittableStates[currentSlideIndex]
+    ) {
+      setSubmittableState(currentSlideIndex, false, "Slide Renderer");
     }
   }, [currentSlideIndex, setSubmittableState]);
 
@@ -75,7 +89,12 @@ export default function SlideRenderer({ slide, index, quizMode=false }: SlidePro
 
   return (
     <View style={styles.slideRenderer}>
-      <SlideComponent slide={slide} isActive={isActive} index={index} quizMode={quizMode} />
+      <SlideComponent
+        slide={slide}
+        isActive={isActive}
+        index={index}
+        quizMode={quizMode}
+      />
     </View>
   );
 }

@@ -1,6 +1,6 @@
 "use dom";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
@@ -8,9 +8,7 @@ import { DraggableItem } from "./react/DraggableItem";
 import { DropZone } from "./react/DropZone";
 import { CustomDragLayer } from "./react/CustomDragLayer";
 import "./drag-and-drop.css";
-import { create } from "zustand";
 import { useCourseStore } from "@/store/courseStore";
-import useDragDropStore from "@/store/dragDropStore";
 
 interface Item {
   text: string;
@@ -47,7 +45,6 @@ export default function DragAndDrop({
   const isTouchDevice =
     "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-
   // Update store when droppedItems changes
   useEffect(() => {
     const allItemsDropped = items.every((item) =>
@@ -56,7 +53,6 @@ export default function DragAndDrop({
       )
     );
     if (allItemsDropped) {
-      setSubmittableState(index, allItemsDropped);
       const correct = items.every((item) =>
         droppedItems[item.match]?.includes(item.text)
       );
@@ -79,7 +75,12 @@ export default function DragAndDrop({
           itemText,
         ];
       }
-
+      const allItemsDropped = items.every((item) =>
+        Object.values(newDroppedItems).some((zoneItems) =>
+          zoneItems.includes(item.text)
+        )
+      );
+      setSubmittableState(index, allItemsDropped);
       setDroppedItems(newDroppedItems);
     },
     [isSubmitted, isCorrect, droppedItems]
@@ -149,7 +150,7 @@ export default function DragAndDrop({
                     <div key={item.text} className="dropped-item">
                       <DraggableItem
                         item={item}
-                        isDisabled={isSubmitted && isCorrect}
+                        isDisabled={isSubmitted && (isCorrect||quizMode)}
                       />
                     </div>
                   );
@@ -162,7 +163,7 @@ export default function DragAndDrop({
               <DraggableItem
                 key={item.text}
                 item={item}
-                isDisabled={isSubmitted && isCorrect}
+                isDisabled={isSubmitted && (isCorrect||quizMode)}
               />
             ))}
           </div>
@@ -184,7 +185,7 @@ export default function DragAndDrop({
                     <div key={item.text} className="dropped-item">
                       <DraggableItem
                         item={item}
-                        isDisabled={isSubmitted && isCorrect}
+                        isDisabled={isSubmitted && (isCorrect||quizMode)}
                       />
                     </div>
                   );

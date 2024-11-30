@@ -62,14 +62,14 @@ export default function NumericalAnswerAssessment({
 
   useEffect(() => {
     if (currentSubmission) {
+      if (quizMode) {
+        setValue(answer.toString());
+        setShowAnswer(true);
+      }
       if (!currentSubmission.correct) {
         setIsWrong(true);
-        if (quizMode) {
-          setValue(answer.toString());
-          setShowAnswer(true);
-        }
       }
-      if (quizMode && !completedSlides[index]) {
+      if (!completedSlides[index]) {
         checkSlideCompletion();
       }
       setShowFeedback(true);
