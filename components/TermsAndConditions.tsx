@@ -25,6 +25,7 @@ export const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 	  maxWidth: 1080,
 	  width: "100%",
 	  alignSelf: "center",
+	  paddingHorizontal: 16,
     },
     section: {
       marginBottom: 16,

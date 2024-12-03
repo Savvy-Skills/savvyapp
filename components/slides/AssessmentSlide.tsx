@@ -12,6 +12,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { useCourseStore } from "@/store/courseStore";
 import DragAndDropAssessment from "./assessments/DragDrop";
 import DataTableContainer from "../DataTableContainer";
+import TrueFalseQuestion from "./assessments/TrueFalse";
 
 type AssessmentProps = {
   slide: AssessmentSlideType;
@@ -87,6 +88,14 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
           quizMode={quizMode}
         />
       );
+	case "True or False":
+		return (
+			<TrueFalseQuestion
+				question={slide.question_info}
+				index={index}
+				quizMode={quizMode}
+			/>
+		)
     default:
       return <View />;
   }

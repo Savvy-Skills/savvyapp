@@ -29,8 +29,9 @@ export default function Home() {
 
   return (
     <ScreenWrapper>
-        <TopNavBar />
-        <ScrollView contentContainerStyle={styles.innerSection}>
+      <TopNavBar />
+      <ScrollView contentContainerStyle={{gap: 32}}>
+        <View style={styles.innerSection}>
           <Link href="/debug">Debug</Link>
           <View>
             <Text style={styles.sectionTitle}>Courses</Text>
@@ -62,8 +63,9 @@ export default function Home() {
               />
             )}
           </View>
-        </ScrollView>
-		<Footer />
+        </View>
+        <Footer />
+      </ScrollView>
     </ScreenWrapper>
   );
 }

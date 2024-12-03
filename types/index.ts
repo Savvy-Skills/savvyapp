@@ -143,7 +143,8 @@ type QuestionTypes =
   | "Open Ended"
   | "Numerical"
   | "Match the Words"
-  | "Drag and Drop";
+  | "Drag and Drop"
+  | "True or False";
 
 type QuestionSubtypes = "Text" | "Image";
 

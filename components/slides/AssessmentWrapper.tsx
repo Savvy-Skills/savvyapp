@@ -51,6 +51,7 @@ export default function AssessmentWrapper({
     setRevealedAnswer(true);
   };
 
+  const untitledAssessments = ["Fill in the Blank", "True or False"];
 
   return (
     <View
@@ -60,7 +61,8 @@ export default function AssessmentWrapper({
       ]}
     >
       <View style={localStyles.container}>
-        {question.type !== "Fill in the Blank" && (
+		{/* Show title except for untitled assessments */}
+        {!untitledAssessments.includes(question.type) && (
           <ThemedTitle
             style={{ fontSize: 18, lineHeight: 27, fontWeight: 600 }}
           >

@@ -2,47 +2,55 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { Link } from 'expo-router';
+import styles from '@/styles/styles';
 
 export const Footer: React.FC = () => {
   const theme = useTheme();
 
-  const styles = StyleSheet.create({
+  const localStyles = StyleSheet.create({
     footer: {
-      backgroundColor: theme.colors.surface,
-      paddingVertical: 16,
-      paddingHorizontal: 24,
-      borderTopWidth: 1,
-      borderTopColor: theme.colors.outline,
+      backgroundColor: theme.colors.surfaceVariant,
+      paddingVertical: 24,
+      paddingHorizontal: 16,
+      marginTop: 'auto',
     },
     content: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+	  alignSelf: "center",
+
     },
     linkContainer: {
-      flexDirection: 'row',
+      flexDirection: 'column',
       gap: 16,
+      marginBottom: 16,
     },
     link: {
       color: theme.colors.primary,
+      fontSize: 16,
     },
     copyright: {
       color: theme.colors.onSurfaceVariant,
+      fontSize: 14,
+	  alignSelf: "flex-end",
     },
   });
 
   return (
-    <View style={styles.footer}>
-      <View style={styles.content}>
-        <View style={styles.linkContainer}>
+    <View style={localStyles.footer}>
+      <View style={[localStyles.content, styles.centeredMaxWidth, {maxWidth: 1080}]}>
+        <View style={localStyles.linkContainer}>
           <Link href="/terms" asChild>
-            <Text style={styles.link}>Terms & Conditions</Text>
+            <Text style={localStyles.link}>Terms & Conditions</Text>
           </Link>
-          <Link href="/home" asChild>
-            <Text style={styles.link}>Contact Us</Text>
+          <Link href="./#" asChild>
+            <Text style={localStyles.link}>Privacy Policy</Text>
+          </Link>
+          <Link href="./#" asChild>
+            <Text style={localStyles.link}>Contact Us</Text>
           </Link>
         </View>
-        <Text style={styles.copyright}>&copy; 2023 Savvyapp</Text>
+        <Text style={localStyles.copyright}>&copy; 2023 Savvyapp</Text>
       </View>
     </View>
   );
