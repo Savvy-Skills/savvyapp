@@ -137,11 +137,11 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
   setSubmittableState: (index, isSubmittable, source) => {
     set((state) => {
-      console.log("Received", {
-        index,
-        isSubmittable,
-		source
-      });
+    //   console.log("Received", {
+    //     index,
+    //     isSubmittable,
+	// 	source
+    //   });
 
       if (state.submittableStates[index] === isSubmittable) {
         return state; // Return the current state if there's no change
@@ -223,7 +223,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
     switch (slide.type) {
       case "Assessment":
-        if (correctnessStates[currentSlideIndex] !== null) {
+        if (correctnessStates[currentSlideIndex]) {
           markSlideAsCompleted(currentSlideIndex);
         }
         break;

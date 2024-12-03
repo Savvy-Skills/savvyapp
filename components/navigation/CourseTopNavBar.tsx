@@ -13,6 +13,7 @@ const CourseTopNavBar = (props: CourseProps) => {
   const handleBack = () => {
     router.navigate("/home");
   };
+  
   return (
     <View style={styles.topNavBarInner}>
       <IconButton

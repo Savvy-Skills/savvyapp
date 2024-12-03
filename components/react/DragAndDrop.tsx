@@ -4,11 +4,13 @@ import React, { useCallback, useEffect } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
-import { DraggableItem } from "./react/DraggableItem";
-import { DropZone } from "./react/DropZone";
-import { CustomDragLayer } from "./react/CustomDragLayer";
+import { DraggableItem } from "./DraggableItem";
+import { DropZone } from "./DropZone";
+import { CustomDragLayer } from "./CustomDragLayer";
 import "./drag-and-drop.css";
 import { useCourseStore } from "@/store/courseStore";
+import { Icon } from "react-native-paper";
+import { Colors } from "@/constants/Colors";
 
 interface Item {
   text: string;
@@ -26,6 +28,7 @@ interface DragAndDropProps {
   isCorrect: boolean;
   droppedItems: Record<string, string[]>;
   setDroppedItems: (items: Record<string, string[]>) => void;
+  isMobile: boolean;
 }
 
 export default function DragAndDrop({
@@ -39,6 +42,7 @@ export default function DragAndDrop({
   isCorrect,
   droppedItems,
   setDroppedItems,
+  isMobile,
 }: DragAndDropProps) {
   const { setSubmittableState, setCorrectnessState } = useCourseStore();
 
@@ -150,7 +154,7 @@ export default function DragAndDrop({
                     <div key={item.text} className="dropped-item">
                       <DraggableItem
                         item={item}
-                        isDisabled={isSubmitted && (isCorrect||quizMode)}
+                        isDisabled={isSubmitted && (isCorrect || quizMode)}
                       />
                     </div>
                   );
@@ -158,14 +162,28 @@ export default function DragAndDrop({
               </div>
             </DropZone>
           ))}
+          <div className="centered-icon">
+            <Icon
+              source="chevron-double-up"
+              size={24}
+              color={Colors.light.primary}
+            />
+          </div>
           <div className="draggable-items">
             {getUndropedItems().map((item) => (
               <DraggableItem
                 key={item.text}
                 item={item}
-                isDisabled={isSubmitted && (isCorrect||quizMode)}
+                isDisabled={isSubmitted && (isCorrect || quizMode)}
               />
             ))}
+          </div>
+		  <div className="centered-icon">
+            <Icon
+              source="chevron-double-down"
+              size={24}
+              color={Colors.light.primary}
+            />
           </div>
           {secondHalf.map((zone) => (
             <DropZone
@@ -185,7 +203,7 @@ export default function DragAndDrop({
                     <div key={item.text} className="dropped-item">
                       <DraggableItem
                         item={item}
-                        isDisabled={isSubmitted && (isCorrect||quizMode)}
+                        isDisabled={isSubmitted && (isCorrect || quizMode)}
                       />
                     </div>
                   );
@@ -195,7 +213,7 @@ export default function DragAndDrop({
           ))}
         </div>
 
-        <CustomDragLayer />
+        {isMobile && <CustomDragLayer />}
       </div>
     </DndProvider>
   );

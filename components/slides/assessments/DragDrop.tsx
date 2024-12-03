@@ -2,7 +2,8 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import { QuestionInfo } from "@/types";
 import { useCourseStore } from "@/store/courseStore";
 import AssessmentWrapper from "../AssessmentWrapper";
-import DragAndDrop from "@/components/DragAndDrop";
+import DragAndDrop from "@/components/react/DragAndDrop";
+import { Platform, useWindowDimensions } from "react-native";
 
 export type DragAndDropAssessmentProps = {
   question: QuestionInfo;
@@ -20,6 +21,7 @@ export default function DragAndDropAssessment({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const tryAgain = useRef(false);
+  const {width} = useWindowDimensions();
 
   const { setCorrectnessState, submitAssessment, submittedAssessments, completedSlides, checkSlideCompletion } =
     useCourseStore();
@@ -88,6 +90,8 @@ export default function DragAndDropAssessment({
     }
   }, [quizMode, index, setCorrectnessState, submitAssessment, question.id]);
 
+  const isMobile = Platform.OS !== "web" || width < 768;
+
   return (
     <AssessmentWrapper
       question={question}
@@ -108,6 +112,7 @@ export default function DragAndDropAssessment({
         isCorrect={currentSubmission ? currentSubmission.correct : false}
         droppedItems={droppedItems}
         setDroppedItems={setDroppedItems}
+		isMobile={isMobile}
       />
     </AssessmentWrapper>
   );

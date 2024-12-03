@@ -27,6 +27,7 @@ const BottomBarNav = () => {
     isCurrentSlideSubmittable,
     isNavMenuVisible,
     setNavMenuVisible,
+    completedSlides,
   } = useCourseStore();
 
   const { playSound } = useAudioStore();
@@ -80,6 +81,8 @@ const BottomBarNav = () => {
     handleDismissMenu();
   }, [nextSlide, handleDismissMenu]);
 
+  const isCurrentSlideCompleted = completedSlides[currentSlideIndex];
+
   return (
     <View style={localStyles.container}>
       <View style={localStyles.menusContainer}>
@@ -88,7 +91,6 @@ const BottomBarNav = () => {
           onDismiss={handleDismissMenu}
           onShowCaptions={handleShowCaptions}
           onExplanation={handleExplanation}
-          onReportProblem={handleReportProblem}
         />
       </View>
       <View style={styles.bottomNavigation}>
@@ -117,24 +119,45 @@ const BottomBarNav = () => {
           containerColor="rgb(244, 187, 98)"
           style={styles.navButton}
         />
-        <Button
-          icon="check"
-          mode="contained"
-          disabled={!isCurrentSlideSubmittable()}
-          onPress={handleCheck}
-          style={[styles.checkButton]}
-          contentStyle={{ height: 28 }}
-          labelStyle={{ fontSize: 14, lineHeight: 14 }}
-          dark={false}
-          theme={{
-            colors: {
-              primary: checkButtonColors.normal,
-              surfaceDisabled: checkButtonColors.disabled,
-            },
-          }}
-        >
-          Check
-        </Button>
+        {isCurrentSlideCompleted ? (
+          <Button
+            icon="arrow-right"
+            mode="contained"
+            disabled={isLastSlide}
+            onPress={handleNextSlide}
+            style={[styles.checkButton]}
+            contentStyle={{ height: 28, flexDirection: "row-reverse" }}
+            labelStyle={{ fontSize: 14, lineHeight: 14 }}
+            dark={false}
+            theme={{
+              colors: {
+                primary: checkButtonColors.normal,
+                surfaceDisabled: checkButtonColors.disabled,
+              },
+            }}
+          >
+            Next
+          </Button>
+        ) : (
+          <Button
+            icon="check"
+            mode="contained"
+            disabled={!isCurrentSlideSubmittable()}
+            onPress={handleCheck}
+            style={[styles.checkButton]}
+            contentStyle={{ height: 28 }}
+            labelStyle={{ fontSize: 14, lineHeight: 14 }}
+            dark={false}
+            theme={{
+              colors: {
+                primary: checkButtonColors.normal,
+                surfaceDisabled: checkButtonColors.disabled,
+              },
+            }}
+          >
+            Check
+          </Button>
+        )}
         <VerticalSeparator />
         <IconButton
           icon="arrow-right"

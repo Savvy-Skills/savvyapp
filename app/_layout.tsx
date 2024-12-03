@@ -16,8 +16,9 @@ import { useAudioStore } from "@/store/audioStore";
 import { useAuthStore } from "@/store/authStore";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useThemeManager } from "@/hooks/useThemeManager";
-import { useNavStore } from "@/store/navStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SnackbarProvider } from "@/components/providers/SnackBarProvider";
+import { View } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -84,6 +85,7 @@ export default function RootLayout() {
       }
     }
   }, [isInitialized, token, segments, appIsReady, user]);
+
   if (!isInitialized || !appIsReady) {
     return null;
   }
@@ -91,42 +93,47 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PaperProvider theme={theme}>
-        <QueryClientProvider client={queryClient}>
-          <SafeAreaProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" options={{ title: "Landing Page" }} />
-              <Stack.Screen name="home/index" options={{ title: "Home" }} />
-
-              <Stack.Screen
-                name="courses/index"
-                options={{ title: "Courses" }}
-              />
-              <Stack.Screen
-                name="courses/[id]"
-                options={{ title: "Course Details" }}
-              />
-
-              <Stack.Screen
-                name="modules/index"
-                options={{ title: "Modules" }}
-              />
-              <Stack.Screen
-                name="modules/[id]"
-                options={{ title: "Module Details" }}
-				
-              />
-              <Stack.Screen
-                name="lessons/[id]"
-                options={{ title: "Lesson Details" }}
-              />
-              <Stack.Screen name="auth/login" options={{ title: "Login" }} />
-
-              <Stack.Screen name="debug/index" options={{ title: "Debug" }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </SafeAreaProvider>
-        </QueryClientProvider>
+        <SnackbarProvider>
+          <QueryClientProvider client={queryClient}>
+            <SafeAreaProvider>
+              <View style={{ flex: 1 }}>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen
+                    name="index"
+                    options={{ title: "Landing Page" }}
+                  />
+                  <Stack.Screen name="home/index" options={{ title: "Home" }} />
+                  <Stack.Screen
+                    name="courses/index"
+                    options={{ title: "Courses" }}
+                  />
+                  <Stack.Screen
+                    name="courses/[id]"
+                    options={{ title: "Course Details" }}
+                  />
+                  <Stack.Screen
+                    name="modules/index"
+                    options={{ title: "Modules" }}
+                  />
+                  <Stack.Screen
+                    name="modules/[id]"
+                    options={{ title: "Module Details" }}
+                  />
+                  <Stack.Screen
+                    name="lessons/[id]"
+                    options={{ title: "Lesson Details" }}
+                  />
+                  <Stack.Screen name="auth/login" options={{ title: "Login" }} />
+                  <Stack.Screen name="terms/index" options={{ title: "Terms" }} />
+                  <Stack.Screen name="debug/index" options={{ title: "Debug" }} />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
+              </View>
+            </SafeAreaProvider>
+          </QueryClientProvider>
+        </SnackbarProvider>
       </PaperProvider>
     </GestureHandlerRootView>
   );
 }
+

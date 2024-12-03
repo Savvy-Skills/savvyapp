@@ -51,6 +51,10 @@ export default StyleSheet.create({
     alignItems: "center",
     padding: 16,
   },
+  centeredMaxWidth: {
+	alignSelf: "center",
+	width: "100%",
+  },
   title: {
     fontSize: fontSizes.large,
     fontWeight: "bold",

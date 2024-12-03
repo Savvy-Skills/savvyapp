@@ -1,4 +1,4 @@
-import { useSegments } from "expo-router";
+import { router, useSegments } from "expo-router";
 import React from "react";
 import { View, StyleSheet, Image, useWindowDimensions } from "react-native";
 import SlideNavigation from "../slides/SlideNavigation";
@@ -6,10 +6,11 @@ import HomeTopNavBar from "./HomeTopNavBar";
 import CourseTopNavBar from "./CourseTopNavBar";
 import { Course, Module } from "@/types";
 import ModuleTopNavBar from "./ModuleTopNavBar";
+import { IconButton } from "react-native-paper";
 
 interface NavBarProps {
-	course?: Course;
-	module?: Module;
+  course?: Course;
+  module?: Module;
 }
 
 const TopNavBar = (props: NavBarProps) => {
@@ -17,17 +18,17 @@ const TopNavBar = (props: NavBarProps) => {
   const segments = useSegments();
   const wideScreen = width > 1024;
 
-  const isCourse = segments[0] === "courses" ;
+  const isCourse = segments[0] === "courses";
   const isModule = segments[0] === "modules";
   const isLesson = segments[0] === "lessons";
-  const isHome = segments[0]=== "home";
+  const isHome = segments[0] === "home";
 
   return (
     <View style={[styles.navHeader, styles.webNav]}>
       {isLesson && <SlideNavigation wideScreen={wideScreen} />}
       {isHome && <HomeTopNavBar />}
-	  {isCourse && props.course && <CourseTopNavBar course={props.course}/>}
-	  {isModule&& props.module && <ModuleTopNavBar module={props.module}/>}
+      {isCourse && props.course && <CourseTopNavBar course={props.course} />}
+      {isModule && props.module && <ModuleTopNavBar module={props.module} />}
     </View>
   );
 };
@@ -38,8 +39,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     zIndex: 2,
     paddingVertical: 4,
-	maxHeight: 56,
-	marginBottom: 8
+    maxHeight: 56,
+    marginBottom: 8,
   },
   webNav: {
     borderBottomWidth: 1,

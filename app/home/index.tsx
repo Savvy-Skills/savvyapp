@@ -11,6 +11,7 @@ import TopNavBar from "@/components/navigation/TopNavBar";
 import { ScrollView } from "react-native-gesture-handler";
 import styles from "@/styles/styles";
 import { Link } from "expo-router";
+import { Footer } from "@/components/Footer";
 
 export default function Home() {
   const { data: courses = [], isLoading: isLoadingCourses } = useQuery<
@@ -62,6 +63,7 @@ export default function Home() {
             )}
           </View>
         </ScrollView>
+		<Footer />
     </ScreenWrapper>
   );
 }
