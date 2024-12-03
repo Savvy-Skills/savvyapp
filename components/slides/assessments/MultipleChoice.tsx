@@ -250,7 +250,7 @@ export default function MultipleChoice({
           {options.map((option, index) => renderImageOption(option, index))}
         </View>
       ) : (
-        <View>
+        <View style={localStyles.options}>
           {options.map((option, index) => renderTextOption(option, index))}
         </View>
       )}
@@ -264,6 +264,9 @@ const localStyles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 16,
     justifyContent: "center",
+  },
+  options: {
+	gap:4
   },
   imageContainer: {
     width: "45%",

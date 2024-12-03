@@ -63,7 +63,7 @@ export default function NumericalAnswerAssessment({
   useEffect(() => {
     if (currentSubmission) {
       if (quizMode) {
-        setValue(answer.toString());
+        // setValue(answer.toString());
         setShowAnswer(true);
       }
       if (!currentSubmission.correct) {

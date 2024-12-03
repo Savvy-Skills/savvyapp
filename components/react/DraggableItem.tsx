@@ -1,5 +1,6 @@
 import React from 'react'
 import { useDrag } from 'react-dnd'
+import { Icon } from 'react-native-paper'
 
 interface Item {
   text: string
@@ -26,6 +27,7 @@ export function DraggableItem({ item, isDisabled }: DraggableItemProps) {
       ref={drag}
       className={`item ${isDragging ? 'dragging' : ''} ${isDisabled ? 'disabled' : ''}`}
     >
+		<Icon source="drag" size={16}  color="#000" />
       {item.text}
     </div>
   )

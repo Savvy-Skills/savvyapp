@@ -62,11 +62,11 @@ export default function SingleChoice({
 
   useEffect(() => {
     if (currentSubmission) {
-      if (quizMode) {
-        setShowAnswer(true);
-      }
       if (!currentSubmission.correct) {
         setIsWrong(true);
+        if (quizMode) {
+          setShowAnswer(true);
+        }
       }
       if (!completedSlides[index]) {
         checkSlideCompletion();
