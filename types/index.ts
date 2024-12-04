@@ -77,6 +77,7 @@ export interface BaseSlide extends BareSlide {
   published: boolean;
   module_id: number;
   type: "Assessment" | "Content" | "Activity" | "Custom";
+  name: string;
 }
 
 export interface AssessmentSlide extends BaseSlide {

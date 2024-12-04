@@ -90,6 +90,13 @@ export default function DragAndDropAssessment({
     }
   }, [quizMode, index, setCorrectnessState, submitAssessment, question.id]);
 
+  const handleDrop = useCallback((droppedItems: Record<string, string[]>)=>{
+	setDroppedItems(droppedItems);
+	setShowFeedback(false);
+	setIsWrong(false);
+	setIsSubmitted(false);
+  }, [setShowFeedback, setIsWrong]);
+
   const isMobile = Platform.OS !== "web" || width < 768;
 
   return (
@@ -111,7 +118,7 @@ export default function DragAndDropAssessment({
         tryAgain={tryAgain.current}
         isCorrect={currentSubmission ? currentSubmission.correct : false}
         droppedItems={droppedItems}
-        setDroppedItems={setDroppedItems}
+        setDroppedItems={handleDrop}
 		isMobile={isMobile}
       />
     </AssessmentWrapper>

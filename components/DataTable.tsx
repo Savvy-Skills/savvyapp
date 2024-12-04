@@ -11,10 +11,10 @@ import TableHeader from './TableHeader';
 import TableRow from './TableRow';
 import type { DataTableProps } from '../types/table';
 import { useTableDimensions } from '@/hooks/usetableDimensions';
+import styles from '@/styles/styles';
 
 const MAX_VISIBLE_COLUMNS = 4;
 const ROWS_PER_BATCH = 20;
-const MAX_WIDTH = 600;
 
 export default function DataTable({
   data,
@@ -46,21 +46,21 @@ export default function DataTable({
   );
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.tableContainer, { width: tableWidth }]}>
-        <ThemedTitle style={[styles.boldText, styles.title]}>{name}</ThemedTitle>
+    <View style={[styles.centeredMaxWidth, styles.slideWidth]}>
+      <View style={[localStyles.tableContainer, { width: tableWidth }]}>
+        <ThemedTitle style={[localStyles.boldText, localStyles.title]}>{name}</ThemedTitle>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={true}
           scrollEnabled={columns.length > MAX_VISIBLE_COLUMNS}
           contentContainerStyle={[
-            styles.scrollViewContent,
+            localStyles.scrollViewContent,
             columns.length <= MAX_VISIBLE_COLUMNS && { flexGrow: 1 },
           ]}
         >
           <View
             style={[
-              styles.tableWrapper,
+              localStyles.tableWrapper,
               {
                 width: columnWidth * columns.length,
                 height: tableHeight,
@@ -82,12 +82,12 @@ export default function DataTable({
               maxToRenderPerBatch={ROWS_PER_BATCH}
               windowSize={5}
               removeClippedSubviews={true}
-              style={[styles.tableBody, { maxHeight: tableHeight - 40 }]}
+              style={[localStyles.tableBody, { maxHeight: tableHeight - 40 }]}
               showsVerticalScrollIndicator={true}
             />
           </View>
         </ScrollView>
-        <Text style={[styles.metadataText, styles.boldText]}>
+        <Text style={[localStyles.metadataText, localStyles.boldText]}>
           {data.length} records
         </Text>
       </View>
@@ -95,12 +95,7 @@ export default function DataTable({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    maxWidth: MAX_WIDTH,
-    width: '100%',
-    alignSelf: 'center',
-  },
+const localStyles = StyleSheet.create({
   title: {
     alignSelf: 'center',
   },

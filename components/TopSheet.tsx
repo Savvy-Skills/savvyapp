@@ -1,0 +1,102 @@
+import { Dimensions, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useImperativeHandle } from "react";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
+const MAX_TRANSLATE_Y = SCREEN_HEIGHT - 10;
+
+export type TopSheetProps = {};
+
+export type TopSheetRefProps = {
+  scrollTo: (destination: number) => void;
+};
+
+const TopSheet = React.forwardRef<TopSheetRefProps, TopSheetProps>(
+  ({}, ref) => {
+    const translateY = useSharedValue(0);
+    const context = useSharedValue({
+      y: 0,
+    });
+    const scrollTo = useCallback((destination: number) => {
+      translateY.value = withSpring(destination, {
+        reduceMotion: ReduceMotion.Never,
+        damping: 50,
+      });
+    }, []);
+
+    useImperativeHandle(ref, () => ({ scrollTo }), [scrollTo]);
+
+    const gesture = Gesture.Pan()
+      .onStart(() => {
+        context.value = { y: translateY.value };
+      })
+      .onUpdate((event) => {
+        translateY.value = event.translationY + context.value.y;
+        translateY.value = Math.min(translateY.value, MAX_TRANSLATE_Y);
+        console.log({ val: translateY.value });
+      })
+      .onEnd(() => {
+        if (translateY.value < SCREEN_HEIGHT / 3.5) {
+          scrollTo(0);
+        } else if (translateY.value > SCREEN_HEIGHT / 1.5) {
+          scrollTo(MAX_TRANSLATE_Y);
+        }
+      });
+
+    const rTopSheetStyle = useAnimatedStyle(() => {
+      const borderRadius = interpolate(
+        translateY.value,
+        [100, MAX_TRANSLATE_Y - 10],
+        [25, 5],
+        Extrapolation.CLAMP
+      );
+      return {
+        borderBottomEndRadius: borderRadius,
+        borderBottomStartRadius: borderRadius,
+        transform: [{ translateY: translateY.value }],
+      };
+    }, [translateY.value, MAX_TRANSLATE_Y]);
+
+
+    return (
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={[styles.topSheetContainer, rTopSheetStyle]}>
+          <View style={styles.line}></View>
+        </Animated.View>
+      </GestureDetector>
+    );
+  }
+);
+
+export default TopSheet;
+
+const styles = StyleSheet.create({
+  topSheetContainer: {
+	zIndex:5,
+    height: SCREEN_HEIGHT,
+    width: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    position: "absolute",
+    bottom: SCREEN_HEIGHT,
+    // borderRadius: 25,
+    flexDirection: "column-reverse",
+    borderBottomEndRadius: 25,
+    borderBottomStartRadius: 25,
+  },
+  line: {
+    width: 75,
+    height: 4,
+    backgroundColor: "white",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginVertical: 10,
+  },
+});

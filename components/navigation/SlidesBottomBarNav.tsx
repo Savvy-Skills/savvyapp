@@ -6,6 +6,7 @@ import { useAudioStore } from "@/store/audioStore";
 import styles from "@/styles/styles";
 import CustomNavMenu from "../CustomNavMenu";
 import { hexToRgbA } from "@/utils/utilfunctions";
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
 function generateColors(color: string, opacity: number) {
   let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
@@ -84,8 +85,8 @@ const BottomBarNav = () => {
   const isCurrentSlideCompleted = completedSlides[currentSlideIndex];
 
   return (
-    <View style={localStyles.container}>
-      <View style={localStyles.menusContainer}>
+    <View style={[localStyles.container]}>
+      <View style={[localStyles.menusContainer]}>
         <CustomNavMenu
           visible={isNavMenuVisible}
           onDismiss={handleDismissMenu}
@@ -93,7 +94,13 @@ const BottomBarNav = () => {
           onExplanation={handleExplanation}
         />
       </View>
-      <View style={styles.bottomNavigation}>
+      <View
+        style={[
+          styles.bottomNavigation,
+          styles.centeredMaxWidth,
+          localStyles.navMenu,
+        ]}
+      >
         <IconButton
           icon="arrow-left"
           size={18}
@@ -112,22 +119,20 @@ const BottomBarNav = () => {
         <VerticalSeparator />
         <IconButton
           icon="dots-vertical"
-          size={18}
+          size={20}
           onPress={toggleMenu}
           mode="contained"
           iconColor="#000"
           containerColor="rgb(244, 187, 98)"
           style={styles.navButton}
         />
-        {isCurrentSlideCompleted ? (
+        {!currentAssessmentID ? (
           <Button
-            icon="arrow-right"
             mode="contained"
-            disabled={isLastSlide}
+            disabled={isLastSlide || !isCurrentSlideCompleted}
             onPress={handleNextSlide}
             style={[styles.checkButton]}
-            contentStyle={{ height: 28, flexDirection: "row-reverse" }}
-            labelStyle={{ fontSize: 14, lineHeight: 14 }}
+            labelStyle={{ fontSize: 18, lineHeight: 18, fontWeight: "bold" }}
             dark={false}
             theme={{
               colors: {
@@ -136,7 +141,7 @@ const BottomBarNav = () => {
               },
             }}
           >
-            Next
+            NEXT
           </Button>
         ) : (
           <Button
@@ -145,8 +150,7 @@ const BottomBarNav = () => {
             disabled={!isCurrentSlideSubmittable()}
             onPress={handleCheck}
             style={[styles.checkButton]}
-            contentStyle={{ height: 28 }}
-            labelStyle={{ fontSize: 14, lineHeight: 14 }}
+            labelStyle={{ fontSize: 18, lineHeight: 18, fontWeight: "bold" }}
             dark={false}
             theme={{
               colors: {
@@ -155,13 +159,13 @@ const BottomBarNav = () => {
               },
             }}
           >
-            Check
+            CHECK
           </Button>
         )}
         <VerticalSeparator />
         <IconButton
           icon="arrow-right"
-          size={18}
+          size={20}
           onPress={handleNextSlide}
           disabled={isLastSlide}
           style={styles.navButton}
@@ -180,8 +184,12 @@ const BottomBarNav = () => {
 };
 
 const localStyles = StyleSheet.create({
+  navMenu: {
+    maxWidth: SLIDE_MAX_WIDTH,
+  },
   container: {
     position: "relative",
+	paddingHorizontal: 8,
   },
   menusContainer: {
     position: "absolute",

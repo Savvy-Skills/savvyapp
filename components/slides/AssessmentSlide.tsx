@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef } from "react";
-import { Platform, View } from "react-native";
+import { Platform, useWindowDimensions, View } from "react-native";
 import { AssessmentSlide as AssessmentSlideType } from "@/types";
 import NumericalAnswer from "./assessments/NumericalAnswer";
 import SingleChoice from "./assessments/SingleChoice";
@@ -144,20 +144,12 @@ export default function AssessmentSlide({
   index,
   quizMode,
 }: AssessmentProps) {
-  const scrollViewRef = useRef<ScrollView>(null);
-  const { setScrollToEnd } = useCourseStore();
 
-  //   useEffect(() => {
-  //     if (scrollViewRef.current) {
-  //       setScrollToEnd(() =>
-  //         scrollViewRef.current?.scrollToEnd({ animated: false })
-  //       );
-  //     }
-  //   }, [setScrollToEnd]);
+	const {width} = useWindowDimensions();
 
   return (
     <ScrollView
-      contentContainerStyle={{ gap: 16, flexGrow: 1, justifyContent: "center" }}
+      contentContainerStyle={{ gap: 16, flexGrow: 1, justifyContent: "center", width: width }}
     >
       {slide.question_info.dataset && slide.question_info.dataset_info && (
         <DataTableContainer datasetInfo={slide.question_info.dataset_info} />

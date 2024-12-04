@@ -86,6 +86,7 @@ export default function DragAndDrop({
       );
       setSubmittableState(index, allItemsDropped);
       setDroppedItems(newDroppedItems);
+	  
     },
     [isSubmitted, isCorrect, droppedItems]
   );

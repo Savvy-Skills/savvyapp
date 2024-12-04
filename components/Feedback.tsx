@@ -1,3 +1,5 @@
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
+import styles from "@/styles/styles";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
@@ -132,7 +134,7 @@ function FeedbackComponent({
         <Dialog
           visible={visible}
           onDismiss={hideDialog}
-          style={{ maxWidth: 600, alignSelf: "center", width: "100%" }}
+          style={[styles.centeredMaxWidth, styles.slideWidth]}
         >
           <Dialog.Title>Are you sure?</Dialog.Title>
           <Dialog.Content style={{ gap: 16 }}>
@@ -159,7 +161,7 @@ const localStyles = StyleSheet.create({
   wrapperContainer: {
     flex: 1,
     flexDirection: "column",
-    maxWidth: 600,
+    maxWidth: SLIDE_MAX_WIDTH,
     marginHorizontal: "auto",
     gap: 16,
   },
