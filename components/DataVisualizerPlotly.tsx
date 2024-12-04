@@ -10,6 +10,7 @@ import {
 import { Button, SegmentedButtons, Text } from "react-native-paper";
 import { Data, Layout, Config, PlotType } from "plotly.js";
 import DataPlotter from "./DataPlotter";
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
 type TraceConfig = {
   x: string;
@@ -69,7 +70,7 @@ export default function DataVisualizerPlotly({
     justifyContent: "center",
     flex: 1,
   };
-  if (width < 600) {
+  if (width < SLIDE_MAX_WIDTH) {
     buttonContainerStyle.justifyContent = "flex-start";
   }
   const chartTypeOptions = [
@@ -409,9 +410,8 @@ export default function DataVisualizerPlotly({
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    maxWidth: 600,
+    maxWidth: SLIDE_MAX_WIDTH,
     alignSelf: "center",
-    backgroundColor: "white",
     padding: 16,
   },
   title: {

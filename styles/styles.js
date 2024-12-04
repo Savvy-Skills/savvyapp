@@ -1,3 +1,4 @@
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { StyleSheet, Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -52,8 +53,23 @@ export default StyleSheet.create({
     padding: 16,
   },
   centeredMaxWidth: {
-	alignSelf: "center",
-	width: "100%",
+    alignSelf: "center",
+    width: "100%",
+  },
+  centeredItems: {
+    alignItems: "center",
+  },
+  menuContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#4a148c",
+    borderRadius: 12,
+    paddingVertical: 12,
+    gap: 16,
+    paddingHorizontal: 12,
+  },
+  slideWidth: {
+    maxWidth: SLIDE_MAX_WIDTH,
   },
   title: {
     fontSize: fontSizes.large,
@@ -108,23 +124,19 @@ export default StyleSheet.create({
   },
   bottomNavigation: {
     flexDirection: "row",
-    justifyContent: "space-between",
     gap: 10,
     alignItems: "center",
     backgroundColor: "#4a148c",
     borderRadius: 10,
-    margin: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    alignSelf: "center",
+    padding: 10,
   },
   navButton: {
     margin: 0,
     borderRadius: 5,
-    height: 28,
   },
   checkButton: {
     borderRadius: 5,
+    flex: 1,
   },
   verticalSeparator: {
     width: 1,
@@ -172,8 +184,7 @@ export default StyleSheet.create({
     backgroundColor: "rgba(158, 158, 158, 0.1)",
   },
 
-  disabledOption: {
-  },
+  disabledOption: {},
 });
 
 // You can also export individual style objects or functions

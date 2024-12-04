@@ -6,6 +6,7 @@ import { Button, Text, Title, useTheme, Icon } from "react-native-paper";
 import { useCourseStore } from "@/store/courseStore";
 import ThemedTitle from "../themed/ThemedTitle";
 import FeedbackComponent from "../Feedback";
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
 interface AssessmentWrapperProps {
   children: React.ReactNode;
@@ -96,7 +97,7 @@ const localStyles = StyleSheet.create({
   wrapperContainer: {
     flex: 1,
     flexDirection: "column",
-    maxWidth: 600,
+    maxWidth: SLIDE_MAX_WIDTH,
     marginHorizontal: "auto",
     gap: 16,
   },

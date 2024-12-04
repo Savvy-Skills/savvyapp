@@ -4,6 +4,7 @@ import { ThemeSwitcher } from "./ThemeSwitcher";
 import { Button, Icon, Modal, Portal } from "react-native-paper";
 import { FeedbackModal } from "./FeedbackModal";
 import { useCourseStore } from "@/store/courseStore";
+import styles from "@/styles/styles";
 
 interface CustomMenuProps {
   visible: boolean;
@@ -29,24 +30,24 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
   return (
     <>
       <TouchableOpacity
-        style={styles.overlay}
+        style={localStyles.overlay}
         onPress={onDismiss}
         activeOpacity={1}
       >
         <View style={styles.menuContainer}>
           <ThemeSwitcher />
-          <TouchableOpacity style={styles.menuItem} onPress={onExplanation}>
+          <TouchableOpacity style={styles.centeredItems} onPress={onExplanation}>
             <Icon source="account" size={24} color="white" />
-            <Text style={styles.menuText}>Explanation</Text>
+            <Text style={localStyles.menuText}>Explanation</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.menuItem}
+            style={styles.centeredItems}
             onPress={() => {
               showModal();
             }}
           >
             <Icon source="send" size={24} color="white" />
-            <Text style={styles.menuText}>Message us</Text>
+            <Text style={localStyles.menuText}>Message us</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -66,31 +67,10 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   overlay: {
     alignItems: "center",
     alignSelf: "center",
-  },
-  containerStyle: {
-    backgroundColor: "white",
-    padding: 20,
-    maxWidth: 600,
-    borderRadius: 4,
-    alignSelf: "center",
-    width: "100%",
-  },
-
-  menuContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#4a148c", // Deep purple color
-    borderRadius: 12,
-    paddingVertical: 12,
-    gap: 16,
-    paddingHorizontal: 12,
-  },
-  menuItem: {
-    alignItems: "center",
   },
   menuText: {
     color: "white",

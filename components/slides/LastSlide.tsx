@@ -1,4 +1,6 @@
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { useCourseStore } from "@/store/courseStore";
+import styles from "@/styles/styles";
 import { ScrollView, StyleSheet, View } from "react-native";
 import {
   Text,
@@ -43,8 +45,8 @@ export default function LastSlide() {
 
   return (
     <ScrollView>
-      <Surface style={styles.container} elevation={0}>
-        <Card style={styles.card}>
+      <Surface style={[styles.container, styles.centeredMaxWidth, styles.slideWidth]} elevation={0}>
+        <Card style={localStyles.card}>
           <Card.Title
             title="Your Progress Stats"
             subtitle="Keep up the great work!"
@@ -57,52 +59,52 @@ export default function LastSlide() {
               />
             )}
           />
-          <Card.Content style={styles.statsContainer}>
+          <Card.Content style={localStyles.statsContainer}>
             {/* Slides Progress */}
-            <View style={styles.statItem}>
-              <View style={styles.statHeader}>
+            <View style={localStyles.statItem}>
+              <View style={localStyles.statHeader}>
                 <IconButton icon="book-open-variant" size={24} />
                 <Text variant="titleMedium">Slides Progress</Text>
               </View>
-              <Text variant="bodyMedium" style={styles.statText}>
+              <Text variant="bodyMedium" style={localStyles.statText}>
                 {totalCompletedSlides}/{totalSlides} slides completed
               </Text>
               <ProgressBar
                 progress={slideProgress}
-                style={styles.progressBar}
+                style={localStyles.progressBar}
                 color={theme.colors.primary}
               />
             </View>
 
             {/* Assessments Progress */}
-            <View style={styles.statItem}>
-              <View style={styles.statHeader}>
+            <View style={localStyles.statItem}>
+              <View style={localStyles.statHeader}>
                 <IconButton icon="pencil-box-multiple" size={24} />
                 <Text variant="titleMedium">Assessments</Text>
               </View>
-              <Text variant="bodyMedium" style={styles.statText}>
+              <Text variant="bodyMedium" style={localStyles.statText}>
                 {correctSubmissions}/{totalAssessments} correct answers
               </Text>
               <ProgressBar
                 progress={assessmentProgress}
-                style={styles.progressBar}
+                style={localStyles.progressBar}
                 color={theme.colors.secondary}
               />
             </View>
 
             {/* Activities Progress */}
-            <View style={styles.statItem}>
-              <View style={styles.statHeader}>
+            <View style={localStyles.statItem}>
+              <View style={localStyles.statHeader}>
                 <IconButton icon="puzzle" size={24} />
                 <Text variant="titleMedium">Activities</Text>
               </View>
-              <Text variant="bodyMedium" style={styles.statText}>
+              <Text variant="bodyMedium" style={localStyles.statText}>
                 {completedActivities.length}/{activities.length} activities
                 completed
               </Text>
               <ProgressBar
                 progress={activityProgress}
-                style={styles.progressBar}
+                style={localStyles.progressBar}
                 color={theme.colors.tertiary}
               />
             </View>
@@ -110,9 +112,9 @@ export default function LastSlide() {
         </Card>
 
         {/* Motivational message based on progress */}
-        <Card style={[styles.messageCard, styles.marginTop]}>
+        <Card style={[localStyles.messageCard, localStyles.marginTop]}>
           <Card.Content>
-            <Text variant="titleMedium" style={styles.messageText}>
+            <Text variant="titleMedium" style={localStyles.messageText}>
               {slideProgress === 1
                 ? "🎉 Amazing! You've completed all slides!"
                 : "Keep going! You're making great progress! 💪"}
@@ -124,16 +126,7 @@ export default function LastSlide() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    maxHeight: "100%",
-    maxWidth: 600,
-	width: "100%",
-    flex: 1,
-    padding: 16,
-    justifyContent: "center",
-    alignSelf: "center",
-  },
+const localStyles = StyleSheet.create({
   content: {
     width: "100%",
   },

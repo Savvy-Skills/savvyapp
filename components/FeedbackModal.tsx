@@ -1,3 +1,4 @@
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { useSnackbarStore } from "@/store/snackbarStore";
 import styles from "@/styles/styles";
 import React, { useState } from "react";
@@ -110,7 +111,7 @@ const localStyles = StyleSheet.create({
     padding: 20,
     margin: 20,
     borderRadius: 8,
-	maxWidth: 600,
+	maxWidth: SLIDE_MAX_WIDTH,
   },
   title: {
     fontSize: 18,

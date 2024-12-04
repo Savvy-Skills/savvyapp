@@ -88,13 +88,11 @@ export default function SlideRenderer({
   }, [currentSlideIndex]);
 
   return (
-    <View style={styles.slideRenderer}>
-      <SlideComponent
-        slide={slide}
-        isActive={isActive}
-        index={index}
-        quizMode={quizMode}
-      />
-    </View>
+    <SlideComponent
+      slide={slide}
+      isActive={isActive}
+      index={index}
+      quizMode={quizMode}
+    />
   );
 }

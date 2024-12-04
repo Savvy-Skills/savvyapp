@@ -10,6 +10,7 @@ import {
 } from "react-native-paper";
 import { useFilters } from "../hooks/useFilters";
 import type { FilterProps } from "../types/filter";
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
 function SingleFilterRow({
   filter,
@@ -285,7 +286,7 @@ export default function Filter({
 
 const styles = StyleSheet.create({
   container: {
-    maxWidth: 600,
+    maxWidth: SLIDE_MAX_WIDTH,
     alignSelf: "center",
     gap: 8,
     padding: 8,

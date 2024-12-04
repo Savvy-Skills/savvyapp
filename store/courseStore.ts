@@ -10,6 +10,40 @@ import {
 } from "../types";
 import { useAudioStore } from "./audioStore";
 
+function createCustomSlide(
+  type: string,
+  module_id: number,
+  lesson: LessonWithSlides
+): CustomSlide {
+  if (type === "first") {
+    return {
+      name: `Intro: ${lesson.name}`,
+      order: 0,
+      slide_id: 0,
+      quizMode: lesson.quiz,
+      created_at: Date.now(),
+      published: true,
+      module_id: module_id,
+      type: "Custom",
+      subtype: "first",
+      image: `${lesson.lesson_info.intro_image}`,
+    };
+  } else {
+    return {
+      name: `Stats`,
+      order: 999,
+      slide_id: 999999,
+      quizMode: false,
+      created_at: Date.now(),
+      published: true,
+      module_id: module_id,
+      type: "Custom",
+      subtype: "last",
+      image: `${lesson.lesson_info.intro_image}`,
+    };
+  }
+}
+
 interface CourseStore {
   lessons: Lesson[];
   currentSlideIndex: number;
@@ -73,27 +107,18 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       set({ isLoading: true });
       const lesson = await getLessonByID(id);
       const sorted = lesson.slides.sort((a, b) => a.order - b.order);
-      const firstSlide: CustomSlide = {
-        order: 0,
-        slide_id: 0,
-        quizMode: false,
-        created_at: 1711977124397,
-        published: true,
-        module_id: id,
-        type: "Custom",
-        subtype: "first",
-        image: `${lesson.lesson_info.intro_image}`,
-      };
-      const lastSlide: CustomSlide = {
-        order: 999,
-        slide_id: 999999,
-        quizMode: false,
-        created_at: 1711977124397,
-        published: true,
-        module_id: id,
-        type: "Custom",
-        subtype: "last",
-      };
+
+      const firstSlide: CustomSlide = createCustomSlide(
+        "first",
+        lesson.module_id,
+        lesson
+      );
+      const lastSlide: CustomSlide = createCustomSlide(
+        "last",
+        lesson.module_id,
+        lesson
+      );
+
       sorted.unshift(firstSlide);
       sorted.push(lastSlide);
       set({
@@ -137,12 +162,6 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
   setSubmittableState: (index, isSubmittable, source) => {
     set((state) => {
-    //   console.log("Received", {
-    //     index,
-    //     isSubmittable,
-	// 	source
-    //   });
-
       if (state.submittableStates[index] === isSubmittable) {
         return state; // Return the current state if there's no change
       }
@@ -175,7 +194,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       currentLesson,
     } = get();
 
-    const quizMode = currentLesson?.slides[currentSlideIndex].quizMode || false;
+    const quizMode = currentLesson?.quiz;
     const isCorrect = correctnessStates[currentSlideIndex] || false;
 
     useAudioStore
@@ -193,11 +212,10 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
           )
         : [...state.submittedAssessments, { question_id, correct: isCorrect }],
     }));
-    setSubmittableState(currentSlideIndex, false);
-
     if (isCorrect || quizMode) {
       checkSlideCompletion();
     }
+    setSubmittableState(currentSlideIndex, false);
   },
 
   markSlideAsCompleted: (index: number) =>
@@ -223,7 +241,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
     switch (slide.type) {
       case "Assessment":
-        if (correctnessStates[currentSlideIndex]) {
+        if (correctnessStates[currentSlideIndex]||currentLesson.quiz) {
           markSlideAsCompleted(currentSlideIndex);
         }
         break;

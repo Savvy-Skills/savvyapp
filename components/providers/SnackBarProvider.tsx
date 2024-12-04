@@ -20,7 +20,7 @@ export const SnackbarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // }}
 		icon={'close'}
 		onIconPress={hideSnackbar}
-		style={[styles.centeredMaxWidth, {maxWidth: 600}]}
+		style={[styles.centeredMaxWidth, styles.slideWidth]}
       >
         {message}
       </Snackbar>

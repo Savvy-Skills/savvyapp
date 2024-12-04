@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useCourseStore } from "@/store/courseStore";
 import { IconButton, useTheme } from "react-native-paper";
 import { router } from "expo-router";
+import styles from "@/styles/styles";
 
 interface SlideNavigationProps {
   wideScreen: boolean;
@@ -26,17 +27,17 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.navContainer}>
+    <View style={localStyles.container}>
+      <View style={[localStyles.navContainer, styles.centeredMaxWidth, styles.slideWidth]}>
         <IconButton icon="close" size={20} onPress={handleClose} />
         {currentLesson.slides.map((_, index) => (
           <TouchableOpacity
             key={index}
             style={[
-              styles.slideIndicator,
-              completedSlides[index] && styles.completed,
+              localStyles.slideIndicator,
+              completedSlides[index] && localStyles.completed,
               currentSlideIndex === index && [
-                styles.current,
+                localStyles.current,
                 { borderColor: theme.dark ? "#fff" : "#000" },
               ],
             ]}
@@ -61,16 +62,13 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
 
 export default SlideNavigation;
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   container: {
     flex: 1,
   },
   navContainer: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "center",
-    maxWidth: 600,
-    width: "100%",
     paddingHorizontal: 8,
   },
   slideIndicator: {

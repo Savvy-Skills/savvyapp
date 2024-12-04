@@ -6,6 +6,7 @@ import { QuestionInfo } from "@/types";
 import { useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import AssessmentWrapper from "../AssessmentWrapper";
+import { Colors } from "@/constants/Colors";
 
 export type TrueFalseQuestionProps = {
   question: QuestionInfo;
@@ -185,18 +186,34 @@ export default function TrueFalseQuestion({
             disabled={blocked && !correctAnswer}
             style={getButtonStyle(true)}
             labelStyle={styles.buttonLabel}
+			contentStyle={{ paddingVertical: 8 }}
           >
             True
             {selectedValue === true && renderStatusIcon(true)}
           </Button>
+          <View style={{ alignSelf: "center" }}>
+            <Icon
+              source="chevron-double-up"
+              size={24}
+              color={Colors.light.primary}
+            />
+          </View>
           <Text style={styles.questionText}>{question.text}</Text>
-
+          <View style={{ alignSelf: "center" }}>
+            <Icon
+              source="chevron-double-down"
+              size={24}
+              color={Colors.light.primary}
+            />
+          </View>
           <Button
             mode="contained"
             onPress={() => handleChoiceSelection(false)}
             disabled={blocked && correctAnswer}
             style={getButtonStyle(false)}
             labelStyle={styles.buttonLabel}
+			contentStyle={{ paddingVertical: 8 }}
+
           >
             False
             {selectedValue === false && renderStatusIcon(false)}
@@ -228,10 +245,8 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   button: {
-    height: 56,
     justifyContent: "center",
     borderRadius: 28,
-    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -254,12 +269,12 @@ const styles = StyleSheet.create({
   correctButton: {
     backgroundColor: "#daedf5",
     borderColor: "#3bc2f5",
-	borderWidth: 1,
+    borderWidth: 1,
   },
   incorrectButton: {
     backgroundColor: "#FC8181",
     borderColor: "#FC8181",
-	borderWidth: 1,
+    borderWidth: 1,
   },
   revealedButton: {
     backgroundColor: "#F6E05E",

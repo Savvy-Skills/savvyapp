@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <ScreenWrapper>
       <TopNavBar />
-      <ScrollView contentContainerStyle={{gap: 32}}>
+      <ScrollView contentContainerStyle={{flex: 1,gap: 32, alignContent:"space-between"}}>
         <View style={styles.innerSection}>
           <Link href="/debug">Debug</Link>
           <View>

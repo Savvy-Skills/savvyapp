@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { Dimensions } from 'react-native';
 import type { TableDimensionsProps } from '../types/table';
+import { SLIDE_MAX_WIDTH } from '@/constants/Utils';
 
 const MAX_VISIBLE_COLUMNS = 4;
-const MAX_WIDTH = 600;
+const MAX_WIDTH = SLIDE_MAX_WIDTH;
 const MAX_COLUMN_WIDTH = 150;
 
 export function useTableDimensions({ columns }: Pick<TableDimensionsProps, 'columns'>) {
