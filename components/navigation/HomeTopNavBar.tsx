@@ -44,7 +44,7 @@ const HomeTopNavBar = () => {
           leadingIcon={"logout-variant"}
           onPress={handleLogout}
           title="Logout"
-        />{" "}
+        />
       </Menu>
     </View>
   );

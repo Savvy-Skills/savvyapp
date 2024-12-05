@@ -6,7 +6,6 @@ import HomeTopNavBar from "./HomeTopNavBar";
 import CourseTopNavBar from "./CourseTopNavBar";
 import { Course, Module } from "@/types";
 import ModuleTopNavBar from "./ModuleTopNavBar";
-import { IconButton } from "react-native-paper";
 
 interface NavBarProps {
   course?: Course;
@@ -24,7 +23,7 @@ const TopNavBar = (props: NavBarProps) => {
   const isHome = segments[0] === "home";
 
   return (
-    <View style={[styles.navHeader, styles.webNav]}>
+    <View style={[styles.navHeader, styles.webNav]} id={"navbar"}>
       {isLesson && <SlideNavigation wideScreen={wideScreen} />}
       {isHome && <HomeTopNavBar />}
       {isCourse && props.course && <CourseTopNavBar course={props.course} />}
@@ -40,7 +39,6 @@ const styles = StyleSheet.create({
     zIndex: 2,
     paddingVertical: 4,
     maxHeight: 56,
-    marginBottom: 8,
   },
   webNav: {
     borderBottomWidth: 1,

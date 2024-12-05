@@ -69,7 +69,6 @@ export interface Progress {
 export interface BareSlide {
   readonly slide_id: number;
   order: number;
-  quizMode: boolean;
 }
 
 export interface BaseSlide extends BareSlide {

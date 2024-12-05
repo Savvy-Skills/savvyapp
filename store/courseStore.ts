@@ -20,7 +20,6 @@ function createCustomSlide(
       name: `Intro: ${lesson.name}`,
       order: 0,
       slide_id: 0,
-      quizMode: lesson.quiz,
       created_at: Date.now(),
       published: true,
       module_id: module_id,
@@ -33,7 +32,6 @@ function createCustomSlide(
       name: `Stats`,
       order: 999,
       slide_id: 999999,
-      quizMode: false,
       created_at: Date.now(),
       published: true,
       module_id: module_id,
@@ -78,6 +76,8 @@ interface CourseStore {
   isNavMenuVisible: boolean;
   setNavMenuVisible: (isVisible: boolean) => void;
   clearCurrentLesson: () => void;
+  showIncorrect: boolean;
+  setShowIncorrect: (show: boolean) => void;
 }
 
 export const useCourseStore = create<CourseStore>((set, get) => ({
@@ -92,6 +92,9 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
   scrollToEnd: null,
   isLoading: false,
   error: null,
+  showIncorrect: false,
+
+  setShowIncorrect: (show) => set({ showIncorrect: show }),
 
   fetchModuleLessons: async (module_id: number) => {
     try {
@@ -241,7 +244,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
     switch (slide.type) {
       case "Assessment":
-        if (correctnessStates[currentSlideIndex]||currentLesson.quiz) {
+        if (correctnessStates[currentSlideIndex] || currentLesson.quiz) {
           markSlideAsCompleted(currentSlideIndex);
         }
         break;

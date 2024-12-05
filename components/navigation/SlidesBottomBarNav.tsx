@@ -7,6 +7,7 @@ import styles from "@/styles/styles";
 import CustomNavMenu from "../CustomNavMenu";
 import { hexToRgbA } from "@/utils/utilfunctions";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
+import { Colors } from "@/constants/Colors";
 
 function generateColors(color: string, opacity: number) {
   let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
@@ -29,6 +30,7 @@ const BottomBarNav = () => {
     isNavMenuVisible,
     setNavMenuVisible,
     completedSlides,
+    showIncorrect,
   } = useCourseStore();
 
   const { playSound } = useAudioStore();
@@ -40,6 +42,7 @@ const BottomBarNav = () => {
   if (currentLesson?.slides[currentSlideIndex].type === "Assessment") {
     currentAssessmentID = currentLesson?.slides[currentSlideIndex].question_id;
   }
+  const currentSlide = currentLesson?.slides[currentSlideIndex];
 
   const handleCheck = useCallback(() => {
     if (currentAssessmentID !== undefined) {
@@ -103,7 +106,7 @@ const BottomBarNav = () => {
       >
         <IconButton
           icon="arrow-left"
-          size={18}
+          size={20}
           onPress={handlePreviousSlide}
           disabled={currentSlideIndex === 0}
           style={styles.navButton}
@@ -126,42 +129,60 @@ const BottomBarNav = () => {
           containerColor="rgb(244, 187, 98)"
           style={styles.navButton}
         />
-        {!currentAssessmentID ? (
+        {showIncorrect ? (
           <Button
             mode="contained"
-            disabled={isLastSlide || !isCurrentSlideCompleted}
-            onPress={handleNextSlide}
-            style={[styles.checkButton]}
-            labelStyle={{ fontSize: 18, lineHeight: 18, fontWeight: "bold" }}
+            disabled
+            style={[localStyles.incorrectButton]}
+            labelStyle={localStyles.incorrectLabel}
             dark={false}
-            theme={{
-              colors: {
-                primary: checkButtonColors.normal,
-                surfaceDisabled: checkButtonColors.disabled,
-              },
-            }}
           >
-            NEXT
+            INCORRECT
           </Button>
         ) : (
-          <Button
-            icon="check"
-            mode="contained"
-            disabled={!isCurrentSlideSubmittable()}
-            onPress={handleCheck}
-            style={[styles.checkButton]}
-            labelStyle={{ fontSize: 18, lineHeight: 18, fontWeight: "bold" }}
-            dark={false}
-            theme={{
-              colors: {
-                primary: checkButtonColors.normal,
-                surfaceDisabled: checkButtonColors.disabled,
-              },
-            }}
-          >
-            CHECK
-          </Button>
+          <>
+            {!currentAssessmentID || isCurrentSlideCompleted ? (
+              <Button
+                mode="contained"
+                disabled={isLastSlide || !isCurrentSlideCompleted}
+                onPress={handleNextSlide}
+                style={[styles.checkButton]}
+                labelStyle={localStyles.checkButtonLabel}
+                dark={false}
+                theme={{
+                  colors: {
+                    primary: checkButtonColors.normal,
+                    surfaceDisabled: checkButtonColors.disabled,
+                  },
+                }}
+              >
+                {!isCurrentSlideCompleted &&
+                currentSlide?.type === "Content" &&
+                currentSlide.content_info.type === "Video"
+                  ? "WATCH THE VIDEO FIRST"
+                  : "NEXT"}
+              </Button>
+            ) : (
+              <Button
+                mode="contained"
+                disabled={!isCurrentSlideSubmittable()}
+                onPress={handleCheck}
+                style={[styles.checkButton]}
+                labelStyle={localStyles.checkButtonLabel}
+                dark={false}
+                theme={{
+                  colors: {
+                    primary: checkButtonColors.normal,
+                    surfaceDisabled: checkButtonColors.disabled,
+                  },
+                }}
+              >
+                CHECK
+              </Button>
+            )}
+          </>
         )}
+
         <VerticalSeparator />
         <IconButton
           icon="arrow-right"
@@ -189,7 +210,8 @@ const localStyles = StyleSheet.create({
   },
   container: {
     position: "relative",
-	paddingHorizontal: 8,
+    paddingHorizontal: 8,
+    marginBottom: 10,
   },
   menusContainer: {
     position: "absolute",
@@ -198,6 +220,24 @@ const localStyles = StyleSheet.create({
     maxWidth: 300,
     alignSelf: "center",
     zIndex: 2,
+  },
+  checkButtonLabel: {
+    fontSize: 18,
+    lineHeight: 18,
+    fontWeight: "bold",
+    letterSpacing: 1,
+  },
+  incorrectLabel: {
+	fontSize: 18,
+	lineHeight: 18,
+	fontWeight: "bold",
+	letterSpacing: 1,
+	color: Colors.light.orange,
+  },
+  incorrectButton: {
+	flex: 1,
+	backgroundColor: "#ffe7cc",
+	borderRadius: 4,
   },
 });
 

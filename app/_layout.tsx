@@ -96,7 +96,6 @@ export default function RootLayout() {
         <SnackbarProvider>
           <QueryClientProvider client={queryClient}>
             <SafeAreaProvider>
-              <View style={{ flex: 1 }}>
                 <Stack screenOptions={{ headerShown: false }}>
                   <Stack.Screen
                     name="index"
@@ -128,7 +127,6 @@ export default function RootLayout() {
                   <Stack.Screen name="debug/index" options={{ title: "Debug" }} />
                   <Stack.Screen name="+not-found" />
                 </Stack>
-              </View>
             </SafeAreaProvider>
           </QueryClientProvider>
         </SnackbarProvider>

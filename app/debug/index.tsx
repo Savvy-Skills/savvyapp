@@ -5,7 +5,7 @@ import TfjsRegression from "@/components/TFJSRegression";
 import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
 import React, { useCallback, useRef } from "react";
 import { ScrollView, View } from "react-native";
-import { Button } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 
 export default function DebugScreen() {
   const ref = useRef<TopSheetRefProps>(null);
@@ -17,8 +17,17 @@ export default function DebugScreen() {
       {/* <TfjsRegression></TfjsRegression> */}
       {/* <TfjsComponent></TfjsComponent> */}
       {/* <NeuralNetworkVisualizer /> */}
-      <TopSheet ref={ref} />
-      <View style={{justifyContent:"center", flex: 1}}>
+      <TopSheet ref={ref}>
+		<Text>TEst 1</Text>
+		<Text>TEst</Text>
+		<Text>TEst</Text>
+		<Text>TEst</Text>
+		<Text>TEst</Text>
+		<Text>TEst</Text>
+		<Text>TEst</Text>
+		<Text>TEst</Text>
+	  </TopSheet>
+      <View style={{ justifyContent: "center", flex: 1 }}>
         <Button style={{ justifyContent: "center" }} onPress={onPress}>
           Press
         </Button>
