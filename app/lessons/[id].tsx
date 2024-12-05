@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import SlideRenderer from "../../components/slides/SlideRenderer";
@@ -7,6 +7,8 @@ import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import AnimatedSlide from "@/components/slides/AnimatedSlide";
 import { useCourseStore } from "@/store/courseStore";
+import { useFocusEffect } from "@react-navigation/native";
+import { useKeyPress } from "@/hooks/useKeyboard";
 
 export default function ModuleDetail() {
   const { id } = useLocalSearchParams();
@@ -16,7 +18,9 @@ export default function ModuleDetail() {
     currentSlideIndex,
     isNavMenuVisible,
     setNavMenuVisible,
-	clearCurrentLesson
+    clearCurrentLesson,
+    nextSlide,
+    previousSlide,
   } = useCourseStore();
   const [direction, setDirection] = useState<"forward" | "backward" | null>(
     null
@@ -25,9 +29,25 @@ export default function ModuleDetail() {
   const [isInitialRender, setIsInitialRender] = useState(true);
 
   useEffect(() => {
-	clearCurrentLesson();
+    clearCurrentLesson();
     getLessonById(Number(id));
   }, [id]);
+
+  const handleArrowRight = () => {
+    if (currentLesson && currentSlideIndex < currentLesson.slides.length - 1) {
+      nextSlide();
+    }
+  };
+  const handleArrowLeft = () => {
+    if (currentSlideIndex > 0) {
+      previousSlide();
+    }
+  };
+
+  useKeyPress({
+    ArrowRight: () => handleArrowRight(),
+    ArrowLeft: () => handleArrowLeft(),
+  });
 
   useEffect(() => {
     if (currentSlideIndex !== prevIndexRef.current) {
@@ -50,8 +70,11 @@ export default function ModuleDetail() {
   }
 
   return (
-    <ScreenWrapper style={{overflow: "hidden"}}>
-      <Pressable style={styles.pressableArea} onPress={handlePressOutside}>
+    <ScreenWrapper style={{ overflow: "hidden" }}>
+      <Pressable
+        style={[styles.pressableArea, { gap: 10 }]}
+        onPress={handlePressOutside}
+      >
         <TopNavBar />
         <View style={styles.slidesContainer}>
           {currentLesson.slides.map((slide, index) => (
@@ -61,7 +84,11 @@ export default function ModuleDetail() {
               direction={index === currentSlideIndex ? direction : null}
               isInitialRender={isInitialRender && index === currentSlideIndex}
             >
-              <SlideRenderer slide={slide} index={index} quizMode={currentLesson.quiz} />
+              <SlideRenderer
+                slide={slide}
+                index={index}
+                quizMode={currentLesson.quiz}
+              />
             </AnimatedSlide>
           ))}
         </View>

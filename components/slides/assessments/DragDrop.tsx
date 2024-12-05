@@ -23,8 +23,10 @@ export default function DragAndDropAssessment({
   const tryAgain = useRef(false);
   const {width} = useWindowDimensions();
 
-  const { setCorrectnessState, submitAssessment, submittedAssessments, completedSlides, checkSlideCompletion } =
+  const { setCorrectnessState, submitAssessment, submittedAssessments, completedSlides, checkSlideCompletion, currentSlideIndex } =
     useCourseStore();
+
+	const isActive = index === currentSlideIndex;
 
   const items = question.options.map((option) => ({
     text: option.text,
@@ -107,6 +109,8 @@ export default function DragAndDropAssessment({
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
+	  isActive={isActive}
+	  isCorrect={currentSubmission ? currentSubmission.correct : false}
     >
       <DragAndDrop
         items={items}

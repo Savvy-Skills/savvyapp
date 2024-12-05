@@ -31,11 +31,14 @@ export default function SingleChoice({
     submitAssessment,
     completedSlides,
     checkSlideCompletion,
+	currentSlideIndex
   } = useCourseStore();
 
   const options = question.options.map((option) => option.text);
   const correctAnswer =
     question.options.find((option) => option.isCorrect)?.text || "";
+
+  const isActive = index === currentSlideIndex;
 
   useEffect(() => {
     if (selectedValue) {
@@ -225,6 +228,8 @@ export default function SingleChoice({
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
+	  isActive={isActive}
+	  isCorrect={currentSubmission ? currentSubmission.correct : false}
     >
       {question.subtype === "Image" ? (
         <View style={localStyles.imageGrid}>

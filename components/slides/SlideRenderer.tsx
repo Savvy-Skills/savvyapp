@@ -63,16 +63,17 @@ export default function SlideRenderer({
     setSubmittableState,
     checkSlideCompletion,
     submittableStates,
+    setShowIncorrect,
   } = useCourseStore();
   const isActive = currentSlideIndex === index;
 
   useEffect(() => {
-    if (
-      isActive &&
-      slide.type !== "Assessment" &&
-      submittableStates[currentSlideIndex]
-    ) {
-      setSubmittableState(currentSlideIndex, false, "Slide Renderer");
+    if (isActive && slide.type !== "Assessment") {
+      setShowIncorrect(false);
+
+      if (submittableStates[currentSlideIndex]) {
+        setSubmittableState(currentSlideIndex, false, "Slide Renderer");
+      }
     }
   }, [currentSlideIndex, setSubmittableState]);
 

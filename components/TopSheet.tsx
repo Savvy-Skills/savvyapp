@@ -9,18 +9,21 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 const MAX_TRANSLATE_Y = SCREEN_HEIGHT - 10;
 
-export type TopSheetProps = {};
+export type TopSheetProps = {
+  children?: React.ReactNode;
+};
 
 export type TopSheetRefProps = {
   scrollTo: (destination: number) => void;
 };
 
 const TopSheet = React.forwardRef<TopSheetRefProps, TopSheetProps>(
-  ({}, ref) => {
+  ({ children }, ref) => {
     const translateY = useSharedValue(0);
     const context = useSharedValue({
       y: 0,
@@ -65,11 +68,12 @@ const TopSheet = React.forwardRef<TopSheetRefProps, TopSheetProps>(
       };
     }, [translateY.value, MAX_TRANSLATE_Y]);
 
-
     return (
       <GestureDetector gesture={gesture}>
         <Animated.View style={[styles.topSheetContainer, rTopSheetStyle]}>
           <View style={styles.line}></View>
+          {/* Children */}
+          {children}
         </Animated.View>
       </GestureDetector>
     );
@@ -79,10 +83,15 @@ const TopSheet = React.forwardRef<TopSheetRefProps, TopSheetProps>(
 export default TopSheet;
 
 const styles = StyleSheet.create({
+  list: {},
   topSheetContainer: {
-	zIndex:5,
+    zIndex: 5,
     height: SCREEN_HEIGHT,
     width: "100%",
+    maxWidth: SLIDE_MAX_WIDTH,
+    marginHorizontal: "auto",
+    left: 0,
+    right: 0,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     position: "absolute",
     bottom: SCREEN_HEIGHT,
@@ -90,6 +99,9 @@ const styles = StyleSheet.create({
     flexDirection: "column-reverse",
     borderBottomEndRadius: 25,
     borderBottomStartRadius: 25,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    gap: 16,
   },
   line: {
     width: 75,

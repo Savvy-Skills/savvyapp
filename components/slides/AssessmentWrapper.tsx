@@ -16,6 +16,8 @@ interface AssessmentWrapperProps {
   showFeedback: boolean;
   setShowFeedback: (show: boolean) => void;
   quizMode: boolean;
+  isActive?: boolean;
+  isCorrect?: boolean;
 }
 
 export default function AssessmentWrapper({
@@ -23,14 +25,40 @@ export default function AssessmentWrapper({
   children: assessment,
   onTryAgain,
   onRevealAnswer,
-  showFeedback,
-  setShowFeedback,
+  showFeedback: showFeedbackParent,
+  setShowFeedback: setShowFeedbackParent,
   quizMode,
+  isActive,
+  isCorrect,
 }: AssessmentWrapperProps) {
   const [showExplanation, setShowExplanation] = useState(false);
   const [revealedAnswer, setRevealedAnswer] = useState(false);
-  const { submittedAssessments } = useCourseStore();
+  const {
+    submittedAssessments,
+    setShowIncorrect,
+    showIncorrect,
+    currentLesson,
+    currentSlideIndex,
+  } = useCourseStore();
   const theme = useTheme();
+
+  useEffect(() => {
+    if (isActive) {
+        if (isCorrect) {
+          setShowIncorrect(false);
+        } else if (showFeedbackParent) {
+          setShowIncorrect(true);
+        } else if (!showFeedbackParent) {
+          setShowIncorrect(false);
+        }
+    }
+  }, [
+    showFeedbackParent,
+    isActive,
+    currentLesson,
+    isCorrect,
+    currentSlideIndex,
+  ]);
 
   const toggleExplanation = () => {
     setShowExplanation(!showExplanation);
@@ -43,7 +71,7 @@ export default function AssessmentWrapper({
 
   const handleTryAgain = () => {
     if (onTryAgain) onTryAgain();
-    setShowFeedback(false);
+    setShowFeedbackParent(false);
     setRevealedAnswer(false);
   };
 
@@ -62,7 +90,7 @@ export default function AssessmentWrapper({
       ]}
     >
       <View style={localStyles.container}>
-		{/* Show title except for untitled assessments */}
+        {/* Show title except for untitled assessments */}
         {!untitledAssessments.includes(question.type) && (
           <ThemedTitle
             style={{ fontSize: 18, lineHeight: 27, fontWeight: 600 }}
@@ -78,7 +106,7 @@ export default function AssessmentWrapper({
           <>{assessment}</>
         )}
       </View>
-      {currentSubmission && showFeedback && (
+      {currentSubmission && showFeedbackParent && (
         <FeedbackComponent
           correctness={currentSubmission.correct}
           revealed={revealedAnswer}
@@ -107,5 +135,4 @@ const localStyles = StyleSheet.create({
     padding: 30,
     paddingTop: 16,
   },
-
 });

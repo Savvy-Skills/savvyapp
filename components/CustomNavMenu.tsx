@@ -35,10 +35,9 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
         activeOpacity={1}
       >
         <View style={styles.menuContainer}>
-          <ThemeSwitcher />
           <TouchableOpacity style={styles.centeredItems} onPress={onExplanation}>
-            <Icon source="account" size={24} color="white" />
-            <Text style={localStyles.menuText}>Explanation</Text>
+            <Icon source="format-list-numbered" size={24} color="white" />
+            <Text style={localStyles.menuText}>Slide List</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.centeredItems}
