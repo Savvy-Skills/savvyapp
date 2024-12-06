@@ -14,9 +14,11 @@ export default function DebugScreen() {
   }, []);
   return (
     <ScreenWrapper style={{ flex: 1 }}>
-      <TfjsRegression></TfjsRegression>
-      {/* <TfjsComponent></TfjsComponent> */}
-      {/* <NeuralNetworkVisualizer /> */}
+      <ScrollView style={{ flex: 1 }}>
+        <NeuralNetworkVisualizer />
+        <TfjsRegression></TfjsRegression>
+        {/* <TfjsComponent></TfjsComponent> */}
+      </ScrollView>
     </ScreenWrapper>
   );
 }

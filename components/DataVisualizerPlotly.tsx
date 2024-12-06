@@ -1,16 +1,15 @@
-"use dom";
-
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, lazy, Suspense } from "react";
 import {
   View,
   StyleSheet,
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import { Button, SegmentedButtons, Text } from "react-native-paper";
+import { ActivityIndicator, Button, SegmentedButtons, Text } from "react-native-paper";
 import { Data, Layout, Config, PlotType } from "plotly.js";
-import DataPlotter from "./DataPlotter";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
+
+let DataPlotter = lazy(() => import("@/components/DataPlotter"));
 
 type TraceConfig = {
   x: string;
@@ -291,12 +290,14 @@ export default function DataVisualizerPlotly({
           </>
         )}
         <View style={styles.plotContainer}>
-          <DataPlotter
-            data={plotlyData}
-            layout={layout}
-            config={config}
-            style={styles.plot}
-          />
+          <Suspense fallback={<ActivityIndicator/>}>
+            <DataPlotter
+              data={plotlyData}
+              layout={layout}
+              config={config}
+              style={styles.plot}
+            />
+          </Suspense>
         </View>
       </View>
       <ScrollView

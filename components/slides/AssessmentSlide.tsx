@@ -20,7 +20,7 @@ type AssessmentProps = {
   quizMode: boolean;
 };
 
-let DataVisualizerPlotly = lazy(() => import("../DataVisualizerPlotly"));
+
 
 function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
   switch (slide.assessment_info.type) {
@@ -101,44 +101,6 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
   }
 }
 
-const dataform = [
-  {
-    x: 1,
-    y: 10,
-    z: 16,
-    v: 20,
-    w: 5,
-  },
-  {
-    x: 2,
-    y: 15,
-    z: 5,
-    v: 10,
-    w: 1,
-  },
-  {
-    x: 3,
-    y: 13,
-    z: 11,
-    v: 7,
-    w: 4,
-  },
-  {
-    x: 3,
-    y: 13,
-    z: 11,
-    v: 15,
-    w: 8,
-  },
-  {
-    x: 4,
-    y: 17,
-    z: 9,
-    v: 5,
-    w: 2,
-  },
-];
-
 export default function AssessmentSlide({
   slide,
   index,
@@ -152,16 +114,9 @@ export default function AssessmentSlide({
       contentContainerStyle={{ gap: 16, flexGrow: 1, justifyContent: "center", width: width }}
     >
       {slide.assessment_info.dataset && slide.assessment_info.dataset_info && (
+
         <DataTableContainer datasetInfo={slide.assessment_info.dataset_info} />
-      )}
-      {index === 3 && (
-        <Suspense fallback={<View />}>
-          <DataVisualizerPlotly
-            dataset={dataform}
-            traces={[{ x: "x", y: "y", name: "First", type: "bar" }]}
-            title="Data Visualizer"
-          />
-        </Suspense>
+
       )}
       <View style={{ flexDirection: "row" }}>
         <AssessmentComponent slide={slide} index={index} quizMode={quizMode} />

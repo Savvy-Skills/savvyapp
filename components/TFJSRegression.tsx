@@ -13,11 +13,21 @@ async function initializeTf() {
   }
 }
 
+type Info = {
+  min: tf.Tensor;
+  max: tf.Tensor;
+};
+
+const xValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+const yValues = [1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225];
+
 export default function TfjsRegression() {
   const [model, setModel] = useState<tf.Sequential | null>(null);
   const [trained, setTrained] = useState(false);
   const [prediction, setPrediction] = useState<number | null>(null);
   const [modelCreated, setModelCreated] = useState(false);
+  const [finalLoss, setFinalLoss] = useState<number | null>(null);
+  const infoRef = React.useRef<Info>({} as Info);
 
   const [tfReady, setTfReady] = useState(false);
 
@@ -37,8 +47,16 @@ export default function TfjsRegression() {
 
   const createModel = () => {
     const newModel = tf.sequential();
-    newModel.add(tf.layers.dense({ units: 1, inputShape: [1] }));
-    newModel.compile({ loss: "meanSquaredError", optimizer: "sgd" });
+    newModel.add(
+      tf.layers.dense({ units: 2, inputShape: [1], activation: "relu" })
+    );
+    newModel.add(tf.layers.dense({ units: 1 }));
+    const opt = tf.train["sgd"](0.01);
+    newModel.compile({
+      loss: "meanSquaredError",
+      optimizer: opt,
+      metrics: ["mse"],
+    });
     newModel.summary();
     setModel(newModel);
     setModelCreated(true);
@@ -49,10 +67,36 @@ export default function TfjsRegression() {
 
     try {
       // Generate some synthetic data for training
-      const xs = tf.tensor2d([-1, 0, 1, 2, 3, 4], [6, 1]);
-      const ys = tf.tensor2d([-3, -1, 1, 3, 5, 7], [6, 1]);
+      const xs = tf.tensor2d(xValues, [15, 1]);
+      const ys = tf.tensor2d(yValues, [15, 1]);
+
+      // MinMax scaling
+      const min = xs.min();
+      const max = xs.max();
+      const scaledXs = xs.sub(min).div(max.sub(min));
+      const scaledYs = ys.sub(min).div(max.sub(min));
+
+      //Save the min and max to scale the input data later
+      infoRef.current = { min, max };
+
       // Train the model
-      await model.fit(xs, ys, { epochs: 250 });
+      await model.fit(scaledXs, scaledYs, {
+        epochs: 50,
+        batchSize: 2,
+        shuffle: true,
+        callbacks: {
+          onEpochEnd: (epoch, logs) => {
+            if (epoch % 10 === 0) {
+              console.log(`Epoch ${epoch}: loss = ${logs?.loss}`);
+            }
+			if (epoch === 49 && logs) {
+			  setFinalLoss(logs?.loss);
+			}
+          },
+          onTrainEnd: (logs) => {
+          },
+        },
+      });
       setTrained(true);
     } catch (err) {
       console.log({ err });
@@ -63,16 +107,37 @@ export default function TfjsRegression() {
     if (!model || !trained) return;
 
     // Make a prediction
-    const inputValue = 5;
-    const inputTensor = tf.tensor2d([inputValue], [1, 1]);
-    const predictionTensor = model.predict(inputTensor) as tf.Tensor;
-    const predictionValue = await predictionTensor.data();
-    setPrediction(predictionValue[0]);
+    const inputValue = 16;
+    const { min, max } = infoRef.current;
+    // Scale the input value
+
+    const scaledInput = tf.scalar(inputValue).sub(min).div(max.sub(min));
+
+    // Make Tensor 2D
+    const scaledInput2D = scaledInput.reshape([1, 1]);
+
+    // Make a prediction
+    const scaledPrediction = model.predict(scaledInput2D) as tf.Tensor;
+    const predictionValueArray = scaledPrediction.arraySync();
+
+    const predictionValue = (predictionValueArray as number[][])[0][0];
+
+    // Unscale the prediction
+    const uscalePredictionTensor = tf
+      .scalar(predictionValue)
+      .mul(max.sub(min))
+      .add(min);
+
+    const uscaledPredictionValue = uscalePredictionTensor.arraySync();
+
+    setPrediction(uscaledPredictionValue as number);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>TensorFlow.js Linear Regression</Text>
+      <Text>Input: {xValues.toString()}</Text>
+      <Text>Output: {yValues.toString()}</Text>
       <Button
         mode="contained"
         onPress={createModel}
@@ -86,15 +151,9 @@ export default function TfjsRegression() {
         <Text>Model Stats</Text>
         <View style={styles.layersContainer}>
           {model &&
-            model.layers.map((layer, i) => (
-              <View style={styles.layer}>
-                {layer.getWeights().map((weights, j) => (
-                  <>
-                    <Text key={j}>Layer: {i}</Text>
-                    <Text key={j}>Weight: {j}</Text>
-                    <Text key={j}>Values: {weights.dataSync()}</Text>
-                  </>
-                ))}
+            model.layers.map((layer, index) => (
+              <View key={index} style={styles.layer}>
+                <Text>{layer.name}</Text>
               </View>
             ))}
         </View>
@@ -115,9 +174,14 @@ export default function TfjsRegression() {
       >
         Make Prediction
       </Button>
+      {finalLoss && (
+        <Text style={styles.result}>
+          Final Loss: {finalLoss.toFixed(2)}
+        </Text>
+      )}
       {prediction !== null && (
         <Text style={styles.result}>
-          Prediction for input 5: {prediction.toFixed(2)}
+          Prediction for input 16: {prediction.toFixed(2)}
         </Text>
       )}
     </View>
@@ -147,9 +211,9 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   layersContainer: {
-	display: "flex",
+    display: "flex",
   },
   layer: {
-	backgroundColor: "rgba(0,0,0,0.3)",
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
 });
