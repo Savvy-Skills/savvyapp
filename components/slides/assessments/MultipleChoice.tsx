@@ -48,7 +48,7 @@ export default function MultipleChoice({
   );
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.question_id === question.id
+    (submission) => submission.assessment_id === question.id
   );
 
   const currentSubmission =
@@ -70,7 +70,7 @@ export default function MultipleChoice({
   useEffect(() => {
     if (currentSubmission) {
       if (quizMode) {
-        if (!currentSubmission.correct) {
+        if (!currentSubmission.isCorrect) {
           setIsWrong(true);
         }
         if (!completedSlides[index]) {
@@ -89,7 +89,7 @@ export default function MultipleChoice({
   ]);
 
   const blocked =
-    currentSubmission?.correct || showAnswer || (quizMode && isWrong);
+    currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
 
   const getOptionStyles = (option: string) => {
     const baseStyles =
@@ -114,7 +114,7 @@ export default function MultipleChoice({
     }
 
     if (selectedValues.includes(option)) {
-      if (currentSubmission?.correct) {
+      if (currentSubmission?.isCorrect) {
         return [...baseStyles, styles.correctOption];
       } else if (isWrong) {
         return [...baseStyles, styles.incorrectOption];
@@ -130,7 +130,7 @@ export default function MultipleChoice({
   };
 
   const handleChoiceSelection = (value: string) => {
-    if (quizMode && (isWrong || currentSubmission?.correct)) {
+    if (quizMode && (isWrong || currentSubmission?.isCorrect)) {
       return;
     }
     setSelectedValues((prevSelectedValues) => {
@@ -191,7 +191,7 @@ export default function MultipleChoice({
     if (selectedValues.includes(option)) {
       return (
         <StatusIcon
-          isCorrect={currentSubmission?.correct || false}
+          isCorrect={currentSubmission?.isCorrect || false}
           isWrong={isWrong}
           showAnswer={showAnswer}
         />

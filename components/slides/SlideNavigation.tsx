@@ -47,17 +47,6 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
           />
         ))}
       </View>
-      {wideScreen && (
-        <View style={{ position: "absolute", right: 20, top: 8 }}>
-          <Image
-            source={require("@/assets/images/savvylogo.svg")}
-            style={{
-              height: 32,
-              width: 32,
-            }}
-          />
-        </View>
-      )}
     </View>
   );
 };

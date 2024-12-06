@@ -65,7 +65,7 @@ export default function AssessmentWrapper({
   };
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.question_id === question.id
+    (submission) => submission.assessment_id === question.id
   );
   const currentSubmission = submittedAssessments[currentSubmissionIndex];
 
@@ -93,7 +93,7 @@ export default function AssessmentWrapper({
         {/* Show title except for untitled assessments */}
         {!untitledAssessments.includes(question.type) && (
           <ThemedTitle
-            style={{ fontSize: 18, lineHeight: 27, fontWeight: 600 }}
+            style={{ fontSize: 18, lineHeight: 27, fontWeight: 600, textAlign:"center" }}
           >
             {question.text}
           </ThemedTitle>
@@ -108,7 +108,7 @@ export default function AssessmentWrapper({
       </View>
       {currentSubmission && showFeedbackParent && (
         <FeedbackComponent
-          correctness={currentSubmission.correct}
+          correctness={currentSubmission.isCorrect}
           revealed={revealedAnswer}
           onTryAgain={handleTryAgain}
           onRevealAnswer={handleRevealAnswer}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, lazy, Suspense } from "react";
 import { View, StyleSheet } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useDataFetch } from "@/hooks/useDataFetch";
@@ -7,11 +7,13 @@ import Filter from "./Filter";
 import { filterData } from "../utils/filterData";
 import type { DatasetInfo } from "@/types";
 import type { FilterField, CombinedFilter } from "../types/filter";
+import DataVisualizerPlotly from "@/components/DataVisualizerPlotly";
 
 interface DataTableContainerProps {
   datasetInfo: DatasetInfo;
   headerColors?: string[];
 }
+
 
 export default function DataTableContainer({
   datasetInfo,
@@ -90,6 +92,18 @@ export default function DataTableContainer({
         headerColors={headerColors}
       />
       <Filter fields={fields} onFilterChange={setActiveFilter} />
+        <DataVisualizerPlotly
+          dataset={filteredData}
+          traces={[
+            {
+              x: "sepal_length",
+              y: "sepal_width",
+              name: "Sepal Length vs Width",
+              type: "scatter",
+            },
+          ]}
+          title="Data Visualizer"
+        />
     </View>
   );
 }

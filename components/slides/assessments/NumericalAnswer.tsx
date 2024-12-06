@@ -52,7 +52,7 @@ export default function NumericalAnswerAssessment({
   }, [value, index, setSubmittableState, answer, setCorrectnessState]);
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.question_id === question.id
+    (submission) => submission.assessment_id === question.id
   );
 
   const currentSubmission =
@@ -66,7 +66,7 @@ export default function NumericalAnswerAssessment({
         // setValue(answer.toString());
         setShowAnswer(true);
       }
-      if (!currentSubmission.correct) {
+      if (!currentSubmission.isCorrect) {
         setIsWrong(true);
       }
       if (!completedSlides[index]) {
@@ -76,7 +76,7 @@ export default function NumericalAnswerAssessment({
     }
   }, [submittedAssessments, currentSubmission, quizMode]);
 
-  const blocked = currentSubmission?.correct || showAnswer;
+  const blocked = currentSubmission?.isCorrect || showAnswer;
 
   const handleTryAgain = () => {
     setValue("");
@@ -120,7 +120,7 @@ export default function NumericalAnswerAssessment({
             textColor="black"
             style={[
               localStyles.input,
-              currentSubmission?.correct && localStyles.correctInput,
+              currentSubmission?.isCorrect && localStyles.correctInput,
               isWrong && localStyles.incorrectInput,
               showAnswer && localStyles.revealedInput,
             ]}
@@ -128,7 +128,7 @@ export default function NumericalAnswerAssessment({
           />
           <View style={styles.iconContainer}>
             <StatusIcon
-              isCorrect={currentSubmission?.correct || false}
+              isCorrect={currentSubmission?.isCorrect || false}
               isWrong={isWrong}
               showAnswer={showAnswer}
             />

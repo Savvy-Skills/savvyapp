@@ -10,12 +10,15 @@ export interface Course {
   duration: number;
 }
 
-export interface Module {
-  readonly id: number;
+export interface ModuleInfo {
   readonly created_at: number;
+  readonly id: number;
   name: string;
   description: string;
   course_id: number;
+}
+
+export interface Module extends ModuleInfo {
   course_info: Course;
   lessons: Lesson[];
 }
@@ -56,6 +59,7 @@ export interface LessonWithSlides {
   progress: Progress;
   quiz: boolean;
   readonly timestamp: number;
+  module_info: ModuleInfo;
 }
 export interface Progress {
   readonly id: string;
@@ -81,8 +85,8 @@ export interface BaseSlide extends BareSlide {
 
 export interface AssessmentSlide extends BaseSlide {
   type: "Assessment";
-  question_id: number;
-  question_info: QuestionInfo;
+  assessment_id: number;
+  assessment_info: QuestionInfo;
 }
 
 export interface ContentSlide extends BaseSlide {
@@ -116,6 +120,36 @@ export interface ActivityInfo {
   steps: number;
 }
 
+export interface Answer {
+  text: string;
+  order?: number;
+  match?: string;
+}
+
+export interface BaseSubmission {
+  assessment_id: number;
+  isCorrect: boolean;
+  answer: Answer[];
+  lessons_id: number;
+}
+
+export interface Submission extends BaseSubmission {
+  id: number;
+  created_at: number;
+  submissionTime: number;
+  student_id?: number;
+}
+
+export interface LessonProgress {
+  readonly id?: string;
+  readonly created_at: number;
+  user_id: number;
+  lesson_id: number;
+  class_id: number;
+  progress: any[];
+  timestamp: number;
+}
+
 type ContentTypes = "Video" | "Image" | "Rich Text";
 
 export interface ContentInfo {
@@ -126,12 +160,6 @@ export interface ContentInfo {
   state: string;
   title: string;
   image: Image;
-}
-
-export interface Submission {
-  question_id: number;
-  correct: boolean;
-  answer?: string[];
 }
 
 type QuestionTypes =
@@ -154,6 +182,10 @@ interface ExtrasInfo {
   text?: string;
   text2?: string;
   operator: NumericOperator;
+  filterable: boolean;
+  table: boolean;
+  plot: boolean;
+  traces: any[];
 }
 
 export interface QuestionInfo {

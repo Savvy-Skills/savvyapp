@@ -2,12 +2,12 @@ import React, { useState, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { IconButton, Button } from "react-native-paper";
 import { useCourseStore } from "@/store/courseStore";
-import { useAudioStore } from "@/store/audioStore";
 import styles from "@/styles/styles";
 import CustomNavMenu from "../CustomNavMenu";
 import { hexToRgbA } from "@/utils/utilfunctions";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { Colors } from "@/constants/Colors";
+import { FeedbackModal } from "../FeedbackModal";
 
 function generateColors(color: string, opacity: number) {
   let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
@@ -19,7 +19,11 @@ function generateColors(color: string, opacity: number) {
 const navButtonColors = generateColors("#f4bb62", 0.5);
 const checkButtonColors = generateColors("#d9f0fb", 0.5);
 
-const BottomBarNav = () => {
+type BottomBarNavProps = {
+  onShowTopSheet: () => void;
+};
+
+const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
   const {
     previousSlide,
     currentLesson,
@@ -33,14 +37,16 @@ const BottomBarNav = () => {
     showIncorrect,
   } = useCourseStore();
 
-  const { playSound } = useAudioStore();
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
+  const showModal = () => setFeedbackModalVisible(true);
+  const hideModal = () => setFeedbackModalVisible(false);
 
   let currentAssessmentID = undefined;
 
   const isLastSlide =
     currentLesson && currentSlideIndex === currentLesson.slides.length - 1;
   if (currentLesson?.slides[currentSlideIndex].type === "Assessment") {
-    currentAssessmentID = currentLesson?.slides[currentSlideIndex].question_id;
+    currentAssessmentID = currentLesson?.slides[currentSlideIndex].assessment_id;
   }
   const currentSlide = currentLesson?.slides[currentSlideIndex];
 
@@ -93,8 +99,8 @@ const BottomBarNav = () => {
         <CustomNavMenu
           visible={isNavMenuVisible}
           onDismiss={handleDismissMenu}
-          onShowCaptions={handleShowCaptions}
-          onExplanation={handleExplanation}
+		  onShowTopSheet={onShowTopSheet}
+		  showModal={showModal}
         />
       </View>
       <View
@@ -200,6 +206,17 @@ const BottomBarNav = () => {
           }}
         />
       </View>
+	  <FeedbackModal
+        visible={feedbackModalVisible}
+        onDismiss={() => setFeedbackModalVisible(false)}
+        currentLessonInfo={{
+          lessonId: currentLesson?.id || 0,
+          lessonTitle: currentLesson?.name || "",
+          currentIndex: currentSlideIndex,
+        }}
+        onSubmitFeedback={() => {
+        }}
+      />
     </View>
   );
 };
@@ -211,7 +228,7 @@ const localStyles = StyleSheet.create({
   container: {
     position: "relative",
     paddingHorizontal: 8,
-    marginBottom: 10,
+    marginVertical: 10,
   },
   menusContainer: {
     position: "absolute",
@@ -228,16 +245,16 @@ const localStyles = StyleSheet.create({
     letterSpacing: 1,
   },
   incorrectLabel: {
-	fontSize: 18,
-	lineHeight: 18,
-	fontWeight: "bold",
-	letterSpacing: 1,
-	color: Colors.light.orange,
+    fontSize: 18,
+    lineHeight: 18,
+    fontWeight: "bold",
+    letterSpacing: 1,
+    color: Colors.light.orange,
   },
   incorrectButton: {
-	flex: 1,
-	backgroundColor: "#ffe7cc",
-	borderRadius: 4,
+    flex: 1,
+    backgroundColor: "#ffe7cc",
+    borderRadius: 4,
   },
 });
 

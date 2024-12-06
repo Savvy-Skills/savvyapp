@@ -6,6 +6,9 @@ import HomeTopNavBar from "./HomeTopNavBar";
 import CourseTopNavBar from "./CourseTopNavBar";
 import { Course, Module } from "@/types";
 import ModuleTopNavBar from "./ModuleTopNavBar";
+import { Text } from "react-native-paper";
+import LessonInfo from "../LessonInfo";
+import { Colors } from "@/constants/Colors";
 
 interface NavBarProps {
   course?: Course;
@@ -23,22 +26,38 @@ const TopNavBar = (props: NavBarProps) => {
   const isHome = segments[0] === "home";
 
   return (
-    <View style={[styles.navHeader, styles.webNav]} id={"navbar"}>
-      {isLesson && <SlideNavigation wideScreen={wideScreen} />}
-      {isHome && <HomeTopNavBar />}
-      {isCourse && props.course && <CourseTopNavBar course={props.course} />}
-      {isModule && props.module && <ModuleTopNavBar module={props.module} />}
-    </View>
+    <>
+      {isLesson ? (
+        <>
+          <View style={[styles.navHeader, styles.webNav]} id={"navbar"}>
+            <SlideNavigation wideScreen={wideScreen} />
+          </View>
+          <LessonInfo />
+        </>
+      ) : (
+        <View style={[styles.navHeader, styles.webNav]} id={"navbar"}>
+          {isHome && <HomeTopNavBar />}
+          {isCourse && props.course && (
+            <CourseTopNavBar course={props.course} />
+          )}
+          {isModule && props.module && (
+            <ModuleTopNavBar module={props.module} />
+          )}
+        </View>
+      )}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   navHeader: {
+	backgroundColor: Colors.light.background,
     flexDirection: "row",
     justifyContent: "center",
-    zIndex: 2,
+    zIndex: 3,
     paddingVertical: 4,
     maxHeight: 56,
+    marginBottom: 10,
   },
   webNav: {
     borderBottomWidth: 1,

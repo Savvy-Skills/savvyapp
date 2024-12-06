@@ -76,7 +76,7 @@ export default function FillBlankAssessment({
   ]);
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.question_id === question.id
+    (submission) => submission.assessment_id === question.id
   );
   const currentSubmission =
     currentSubmissionIndex !== -1
@@ -85,7 +85,7 @@ export default function FillBlankAssessment({
 
   useEffect(() => {
     if (currentSubmission) {
-      if (!currentSubmission.correct) {
+      if (!currentSubmission.isCorrect) {
         setIsWrong(true);
         if (quizMode) {
           setShowAnswer(true);
@@ -106,7 +106,7 @@ export default function FillBlankAssessment({
   ]);
 
   const blocked =
-    currentSubmission?.correct || showAnswer || (quizMode && isWrong);
+    currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
 
   const handleOptionPress = useCallback(
     (option: string) => {
@@ -263,7 +263,7 @@ export default function FillBlankAssessment({
         );
       }
 
-      if (showAnswer || currentSubmission?.correct) {
+      if (showAnswer || currentSubmission?.isCorrect) {
         return (
           <StatusIcon
             isCorrect={

@@ -37,6 +37,12 @@
 
 .drop-zone.correct {
   border-color: #1890ff;
+
+  border-style: solid;
+}
+.drop-zone.show-answer {
+  border-color: #9e9e9e;
+
   border-style: solid;
 }
 
