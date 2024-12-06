@@ -184,7 +184,7 @@ export default function MatchWordsAssessment({
   };
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.question_id === question.id
+    (submission) => submission.assessment_id === question.id
   );
   const currentSubmission = submittedAssessments[currentSubmissionIndex];
 

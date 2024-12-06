@@ -14,24 +14,9 @@ export default function DebugScreen() {
   }, []);
   return (
     <ScreenWrapper style={{ flex: 1 }}>
-      {/* <TfjsRegression></TfjsRegression> */}
+      <TfjsRegression></TfjsRegression>
       {/* <TfjsComponent></TfjsComponent> */}
       {/* <NeuralNetworkVisualizer /> */}
-      <TopSheet ref={ref}>
-		<Text>TEst 1</Text>
-		<Text>TEst</Text>
-		<Text>TEst</Text>
-		<Text>TEst</Text>
-		<Text>TEst</Text>
-		<Text>TEst</Text>
-		<Text>TEst</Text>
-		<Text>TEst</Text>
-	  </TopSheet>
-      <View style={{ justifyContent: "center", flex: 1 }}>
-        <Button style={{ justifyContent: "center" }} onPress={onPress}>
-          Press
-        </Button>
-      </View>
     </ScreenWrapper>
   );
 }

@@ -49,7 +49,7 @@ export default function ReorderAssessment({
   }, [currentOrder, correctOrder, index, setCorrectnessState]);
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.question_id === question.id
+    (submission) => submission.assessment_id === question.id
   );
 
   const currentSubmission =
@@ -59,7 +59,7 @@ export default function ReorderAssessment({
 
   useEffect(() => {
     if (currentSubmission) {
-      if (!currentSubmission.correct) {
+      if (!currentSubmission.isCorrect) {
         setIsWrong(true);
         if (quizMode) {
           setShowAnswer(true);
@@ -80,7 +80,7 @@ export default function ReorderAssessment({
   ]);
 
   const blocked =
-    currentSubmission?.correct || showAnswer || (quizMode && isWrong);
+    currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
 
   const moveItem = useCallback(
     (itemIndex: number, direction: string) => {
@@ -162,7 +162,7 @@ export default function ReorderAssessment({
       return <StatusIcon isCorrect={false} isWrong={true} showAnswer={false} />;
     }
 
-    if (showAnswer || currentSubmission?.correct) {
+    if (showAnswer || currentSubmission?.isCorrect) {
       return (
         <StatusIcon
           isCorrect={correctOrder[itemIndex] === item}

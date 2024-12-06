@@ -1,31 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { ThemeSwitcher } from "./ThemeSwitcher";
-import { Button, Icon, Modal, Portal } from "react-native-paper";
-import { FeedbackModal } from "./FeedbackModal";
-import { useCourseStore } from "@/store/courseStore";
 import styles from "@/styles/styles";
+import { Icon } from "react-native-paper";
 
 interface CustomMenuProps {
   visible: boolean;
   onDismiss: () => void;
-  onShowCaptions: () => void;
-  onExplanation: () => void;
+  onShowTopSheet: () => void;
+  showModal: () => void;
 }
 
 const CustomNavMenu: React.FC<CustomMenuProps> = ({
   visible,
   onDismiss,
-  onShowCaptions,
-  onExplanation,
+  onShowTopSheet,
+  showModal,
 }) => {
   if (!visible) return null;
-
-  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
-  const showModal = () => setFeedbackModalVisible(true);
-  const hideModal = () => setFeedbackModalVisible(false);
-
-  const { currentLesson, currentSlideIndex } = useCourseStore();
 
   return (
     <>
@@ -35,7 +26,13 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
         activeOpacity={1}
       >
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.centeredItems} onPress={onExplanation}>
+          <TouchableOpacity
+            style={styles.centeredItems}
+            onPress={() => {
+              onShowTopSheet();
+              onDismiss();
+            }}
+          >
             <Icon source="format-list-numbered" size={24} color="white" />
             <Text style={localStyles.menuText}>Slide List</Text>
           </TouchableOpacity>
@@ -43,6 +40,7 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
             style={styles.centeredItems}
             onPress={() => {
               showModal();
+              onDismiss();
             }}
           >
             <Icon source="send" size={24} color="white" />
@@ -50,18 +48,6 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
-      <FeedbackModal
-        visible={feedbackModalVisible}
-        onDismiss={() => setFeedbackModalVisible(false)}
-        currentLessonInfo={{
-          lessonId: currentLesson?.id || 0,
-          lessonTitle: currentLesson?.name || "",
-          currentIndex: currentSlideIndex,
-        }}
-        onSubmitFeedback={() => {
-          onDismiss();
-        }}
-      />
     </>
   );
 };

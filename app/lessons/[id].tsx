@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import SlideRenderer from "../../components/slides/SlideRenderer";
 import BottomBarNav from "@/components/navigation/SlidesBottomBarNav";
@@ -9,8 +15,12 @@ import AnimatedSlide from "@/components/slides/AnimatedSlide";
 import { useCourseStore } from "@/store/courseStore";
 import { useFocusEffect } from "@react-navigation/native";
 import { useKeyPress } from "@/hooks/useKeyboard";
+import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
+import { Text } from "react-native-paper";
 
 export default function ModuleDetail() {
+  const ref = useRef<TopSheetRefProps>(null);
+
   const { id } = useLocalSearchParams();
   const {
     getLessonById,
@@ -21,12 +31,17 @@ export default function ModuleDetail() {
     clearCurrentLesson,
     nextSlide,
     previousSlide,
+	setCurrentSlideIndex,
   } = useCourseStore();
   const [direction, setDirection] = useState<"forward" | "backward" | null>(
     null
   );
   const prevIndexRef = useRef(currentSlideIndex);
   const [isInitialRender, setIsInitialRender] = useState(true);
+
+  const onPress = useCallback(() => {
+    ref?.current?.scrollTo(100);
+  }, []);
 
   useEffect(() => {
     clearCurrentLesson();
@@ -44,10 +59,12 @@ export default function ModuleDetail() {
     }
   };
 
-  useKeyPress({
-    ArrowRight: () => handleArrowRight(),
-    ArrowLeft: () => handleArrowLeft(),
-  });
+  if (Platform.OS === "web") {
+    useKeyPress({
+      ArrowRight: () => handleArrowRight(),
+      ArrowLeft: () => handleArrowLeft(),
+    });
+  }
 
   useEffect(() => {
     if (currentSlideIndex !== prevIndexRef.current) {
@@ -71,11 +88,15 @@ export default function ModuleDetail() {
 
   return (
     <ScreenWrapper style={{ overflow: "hidden" }}>
-      <Pressable
-        style={[styles.pressableArea, { gap: 10 }]}
-        onPress={handlePressOutside}
-      >
+      <Pressable style={[styles.pressableArea]} onPress={handlePressOutside}>
         <TopNavBar />
+        <TopSheet ref={ref}>
+          <ScrollView>
+            {currentLesson.slides.map((slide, index) => (
+				<Text onPress={()=>setCurrentSlideIndex(index)} key={index}>{slide.name}</Text>
+			))}
+          </ScrollView>
+        </TopSheet>
         <View style={styles.slidesContainer}>
           {currentLesson.slides.map((slide, index) => (
             <AnimatedSlide
@@ -92,7 +113,7 @@ export default function ModuleDetail() {
             </AnimatedSlide>
           ))}
         </View>
-        <BottomBarNav />
+        <BottomBarNav onShowTopSheet={onPress} />
       </Pressable>
     </ScreenWrapper>
   );

@@ -30,41 +30,43 @@ export default function Home() {
   return (
     <ScreenWrapper>
       <TopNavBar />
-      <ScrollView contentContainerStyle={{flex: 1,gap: 32, alignContent:"space-between"}}>
-        <View style={styles.innerSection}>
-          <Link href="/debug">Debug</Link>
-          <View>
-            <Text style={styles.sectionTitle}>Courses</Text>
-            {isLoadingCourses ? (
-              <ActivityIndicator />
-            ) : (
-              <FlatList
-                data={courses}
-                renderItem={({ item }) => <CourseCard course={item} />}
-                keyExtractor={(item) => item.id.toString()}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={{ paddingHorizontal: 4 }}
-              />
-            )}
+      <ScrollView style={{ flex: 1}}>
+        <View style={{flex:1}}>
+          <View style={styles.innerSection}>
+            <Link href="/debug">Debug</Link>
+            <View>
+              <Text style={styles.sectionTitle}>Courses</Text>
+              {isLoadingCourses ? (
+                <ActivityIndicator />
+              ) : (
+                <FlatList
+                  data={courses}
+                  renderItem={({ item }) => <CourseCard course={item} />}
+                  keyExtractor={(item) => item.id.toString()}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ paddingHorizontal: 4 }}
+                />
+              )}
+            </View>
+            <View>
+              <Text style={styles.sectionTitle}>Modules</Text>
+              {isLoadingModules ? (
+                <ActivityIndicator />
+              ) : (
+                <FlatList
+                  data={modules}
+                  renderItem={({ item }) => <ModuleCard module={item} />}
+                  keyExtractor={(item) => item.id.toString()}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ paddingHorizontal: 4 }}
+                />
+              )}
+            </View>
           </View>
-          <View>
-            <Text style={styles.sectionTitle}>Modules</Text>
-            {isLoadingModules ? (
-              <ActivityIndicator />
-            ) : (
-              <FlatList
-                data={modules}
-                renderItem={({ item }) => <ModuleCard module={item} />}
-                keyExtractor={(item) => item.id.toString()}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={{ paddingHorizontal: 4 }}
-              />
-            )}
-          </View>
+          <Footer />
         </View>
-        <Footer />
       </ScrollView>
     </ScreenWrapper>
   );

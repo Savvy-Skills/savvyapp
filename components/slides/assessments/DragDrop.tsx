@@ -34,7 +34,7 @@ export default function DragAndDropAssessment({
   }));
 
   const currentSubmission = submittedAssessments.find(
-    (submission) => submission.question_id === question.id
+    (submission) => submission.assessment_id === question.id
   );
 
   const [droppedItems, setDroppedItems] = useState<Record<string, string[]>>(
@@ -63,7 +63,7 @@ export default function DragAndDropAssessment({
           checkSlideCompletion();
         }
       }
-      if (!currentSubmission.correct) {
+      if (!currentSubmission.isCorrect) {
         setIsWrong(true);
       } else {
         setDroppedItems(correctZones);
@@ -110,7 +110,7 @@ export default function DragAndDropAssessment({
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
 	  isActive={isActive}
-	  isCorrect={currentSubmission ? currentSubmission.correct : false}
+	  isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
     >
       <DragAndDrop
         items={items}
@@ -120,7 +120,7 @@ export default function DragAndDropAssessment({
         isSubmitted={isSubmitted}
         showAnswer={showAnswer}
         tryAgain={tryAgain.current}
-        isCorrect={currentSubmission ? currentSubmission.correct : false}
+        isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
         droppedItems={droppedItems}
         setDroppedItems={handleDrop}
 		isMobile={isMobile}

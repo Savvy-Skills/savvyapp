@@ -145,6 +145,7 @@ export default function DragAndDrop({
               isCorrect={isCorrect}
               isSubmitted={isSubmitted}
               isWrong={!isCorrect}
+			  showAnswer={showAnswer}
             >
               <div className="drop-zone-title">{zone}</div>
               <div className="dropped-items">
@@ -194,6 +195,7 @@ export default function DragAndDrop({
               isCorrect={isCorrect}
               isSubmitted={isSubmitted}
               isWrong={!isCorrect}
+			  showAnswer={showAnswer}
             >
               <div className="drop-zone-title">{zone}</div>
               <div className="dropped-items">

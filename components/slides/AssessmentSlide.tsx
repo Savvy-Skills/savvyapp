@@ -23,11 +23,11 @@ type AssessmentProps = {
 let DataVisualizerPlotly = lazy(() => import("../DataVisualizerPlotly"));
 
 function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
-  switch (slide.question_info.type) {
+  switch (slide.assessment_info.type) {
     case "Numerical":
       return (
         <NumericalAnswer
-          question={slide.question_info}
+          question={slide.assessment_info}
           index={index}
           quizMode={quizMode}
         />
@@ -35,7 +35,7 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
     case "Single Choice":
       return (
         <SingleChoice
-          question={slide.question_info}
+          question={slide.assessment_info}
           index={index}
           quizMode={quizMode}
         />
@@ -43,7 +43,7 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
     case "Multiple Choice":
       return (
         <MultipleChoice
-          question={slide.question_info}
+          question={slide.assessment_info}
           index={index}
           quizMode={quizMode}
         />
@@ -51,7 +51,7 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
     case "Order List":
       return (
         <ReorderAssessment
-          question={slide.question_info}
+          question={slide.assessment_info}
           index={index}
           quizMode={quizMode}
         />
@@ -59,7 +59,7 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
     case "Fill in the Blank":
       return (
         <FillBlankAssessment
-          question={slide.question_info}
+          question={slide.assessment_info}
           index={index}
           quizMode={quizMode}
         />
@@ -67,7 +67,7 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
     case "Match the Words":
       return (
         <MatchWordsAssessment
-          question={slide.question_info}
+          question={slide.assessment_info}
           index={index}
           quizMode={quizMode}
         />
@@ -75,7 +75,7 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
     case "Open Ended":
       return (
         <OpenEnded
-          question={slide.question_info}
+          question={slide.assessment_info}
           index={index}
           quizMode={quizMode}
         />
@@ -83,7 +83,7 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
     case "Drag and Drop":
       return (
         <DragAndDropAssessment
-          question={slide.question_info}
+          question={slide.assessment_info}
           index={index}
           quizMode={quizMode}
         />
@@ -91,7 +91,7 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
 	case "True or False":
 		return (
 			<TrueFalseQuestion
-				question={slide.question_info}
+				question={slide.assessment_info}
 				index={index}
 				quizMode={quizMode}
 			/>
@@ -151,8 +151,8 @@ export default function AssessmentSlide({
     <ScrollView
       contentContainerStyle={{ gap: 16, flexGrow: 1, justifyContent: "center", width: width }}
     >
-      {slide.question_info.dataset && slide.question_info.dataset_info && (
-        <DataTableContainer datasetInfo={slide.question_info.dataset_info} />
+      {slide.assessment_info.dataset && slide.assessment_info.dataset_info && (
+        <DataTableContainer datasetInfo={slide.assessment_info.dataset_info} />
       )}
       {index === 3 && (
         <Suspense fallback={<View />}>

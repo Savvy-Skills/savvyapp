@@ -12,13 +12,12 @@ export const Footer: React.FC = () => {
       backgroundColor: theme.colors.surfaceVariant,
       paddingVertical: 24,
       paddingHorizontal: 16,
-      marginTop: 'auto',
+      marginTop: 10,
     },
     content: {
       flexDirection: 'column',
       alignItems: 'flex-start',
 	  alignSelf: "center",
-
     },
     linkContainer: {
       flexDirection: 'column',

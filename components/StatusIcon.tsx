@@ -45,11 +45,3 @@ export default function StatusIcon({
   }
   return null;
 }
-
-const styles = StyleSheet.create({
-  iconContainer: {
-    position: "absolute",
-    right: -10,
-    top: -10,
-  },
-});

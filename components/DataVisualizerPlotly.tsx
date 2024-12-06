@@ -265,12 +265,12 @@ export default function DataVisualizerPlotly({
 
   return (
     <View style={styles.container}>
-      <SegmentedButtons
+      {/* <SegmentedButtons
         value={activeChartType}
         onValueChange={(value) => setActiveChartType(value as PlotType)}
         buttons={chartTypeOptions}
         style={{ marginBottom: 16 }}
-      />
+      /> */}
       {activeChartType === "pie" && (
         <SegmentedButtons
           value={pieMode}

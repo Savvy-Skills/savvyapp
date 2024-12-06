@@ -28,6 +28,7 @@ export default StyleSheet.create({
   navBarInfo: {
     flex: 1,
     alignItems: "center",
+	marginRight: 62,
   },
   sectionTitle: {
     fontSize: 28,

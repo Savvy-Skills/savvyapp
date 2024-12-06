@@ -55,7 +55,7 @@ export default function SingleChoice({
   ]);
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.question_id === question.id
+    (submission) => submission.assessment_id === question.id
   );
 
   const currentSubmission =
@@ -65,7 +65,7 @@ export default function SingleChoice({
 
   useEffect(() => {
     if (currentSubmission) {
-      if (!currentSubmission.correct) {
+      if (!currentSubmission.isCorrect) {
         setIsWrong(true);
         if (quizMode) {
           setShowAnswer(true);
@@ -79,7 +79,7 @@ export default function SingleChoice({
   }, [submittedAssessments, currentSubmission, quizMode]);
 
   const blocked =
-    currentSubmission?.correct || showAnswer || (quizMode && isWrong);
+    currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
 
   const getOptionStyles = (option: string) => {
     const baseStyles =
@@ -104,7 +104,7 @@ export default function SingleChoice({
     }
 
     if (option === selectedValue) {
-      if (currentSubmission?.correct) {
+      if (currentSubmission?.isCorrect) {
         return [...baseStyles, styles.correctOption];
       } else if (isWrong) {
         return [...baseStyles, styles.incorrectOption];
@@ -120,7 +120,7 @@ export default function SingleChoice({
   };
 
   const handleChoiceSelection = (value: string) => {
-    if (quizMode && (isWrong || currentSubmission?.correct)) {
+    if (quizMode && (isWrong || currentSubmission?.isCorrect)) {
       return;
     }
     // Prevent reselection of the same option
@@ -174,7 +174,7 @@ export default function SingleChoice({
     if (option === selectedValue) {
       return (
         <StatusIcon
-          isCorrect={currentSubmission?.correct || false}
+          isCorrect={currentSubmission?.isCorrect || false}
           isWrong={isWrong}
           showAnswer={showAnswer}
         />
@@ -229,7 +229,7 @@ export default function SingleChoice({
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
 	  isActive={isActive}
-	  isCorrect={currentSubmission ? currentSubmission.correct : false}
+	  isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
     >
       {question.subtype === "Image" ? (
         <View style={localStyles.imageGrid}>

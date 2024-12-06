@@ -9,9 +9,10 @@ interface DropZoneProps {
   isCorrect: boolean
   isSubmitted: boolean
   isWrong: boolean
+  showAnswer: boolean
 }
 
-export function DropZone({ zone, onDrop, children, isCorrect, isSubmitted, isWrong }: DropZoneProps) {
+export function DropZone({ zone, onDrop, children, isCorrect, isSubmitted, isWrong, showAnswer }: DropZoneProps) {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: 'item',
     drop: (item: { text: string, match: string }) => {
@@ -27,11 +28,12 @@ export function DropZone({ zone, onDrop, children, isCorrect, isSubmitted, isWro
       ref={drop} 
       className={`drop-zone ${isOver ? 'hover' : ''} ${
         isSubmitted ? (isCorrect ? 'correct' : 'wrong') : ''
+	  } ${showAnswer ? 'show-answer' : ''
       }`}
     >
       {isSubmitted && (
         <div className="status-icon-container">
-          <StatusIcon isCorrect={isCorrect} isWrong={!isCorrect} showAnswer={false} />
+          <StatusIcon isCorrect={isCorrect} isWrong={!isCorrect} showAnswer={showAnswer} />
         </div>
       )}
       {children}

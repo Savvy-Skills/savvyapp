@@ -81,6 +81,24 @@ export default function TfjsRegression() {
       >
         {modelCreated ? "Model Created" : "Create Model"}
       </Button>
+      {/* Show stats from the model */}
+      <View style={styles.modelStats}>
+        <Text>Model Stats</Text>
+        <View style={styles.layersContainer}>
+          {model &&
+            model.layers.map((layer, i) => (
+              <View style={styles.layer}>
+                {layer.getWeights().map((weights, j) => (
+                  <>
+                    <Text key={j}>Layer: {i}</Text>
+                    <Text key={j}>Weight: {j}</Text>
+                    <Text key={j}>Values: {weights.dataSync()}</Text>
+                  </>
+                ))}
+              </View>
+            ))}
+        </View>
+      </View>
       <Button
         mode="contained"
         onPress={trainModel}
@@ -124,5 +142,14 @@ const styles = StyleSheet.create({
   result: {
     marginTop: 20,
     fontSize: 18,
+  },
+  modelStats: {
+    marginVertical: 20,
+  },
+  layersContainer: {
+	display: "flex",
+  },
+  layer: {
+	backgroundColor: "rgba(0,0,0,0.3)",
   },
 });
