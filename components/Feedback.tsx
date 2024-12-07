@@ -3,6 +3,7 @@ import styles from "@/styles/styles";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
+import ConfirmationDialog from "./ConfirmationDialog";
 
 function FeedbackComponent({
   correctness,
@@ -130,27 +131,13 @@ function FeedbackComponent({
           </Button>
         )}
       </View>
-      <Portal>
-        <Dialog
-          visible={visible}
-          onDismiss={hideDialog}
-          style={[styles.centeredMaxWidth, styles.slideWidth]}
-        >
-          <Dialog.Title>Are you sure?</Dialog.Title>
-          <Dialog.Content style={{ gap: 16 }}>
-            <View style={{ alignItems: "center" }}>
-              <Icon source="alert" size={120} color="#ff861d" />
-            </View>
-            <Text style={{ alignSelf: "center" }} variant="bodyMedium">
-              This will give you no points for this question.
-            </Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={hideDialog}>No</Button>
-            <Button onPress={handleReveal}>Yes</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <ConfirmationDialog
+        visible={visible}
+        onDismiss={hideDialog}
+        onConfirm={handleReveal}
+        title="Are you sure?"
+        content="This will give you no points for this question."
+      />
     </View>
   );
 }

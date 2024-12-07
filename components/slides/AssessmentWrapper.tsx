@@ -18,6 +18,7 @@ interface AssessmentWrapperProps {
   quizMode: boolean;
   isActive?: boolean;
   isCorrect?: boolean;
+  answerRevealed?: boolean;
 }
 
 export default function AssessmentWrapper({
@@ -30,27 +31,29 @@ export default function AssessmentWrapper({
   quizMode,
   isActive,
   isCorrect,
+  answerRevealed,
 }: AssessmentWrapperProps) {
   const [showExplanation, setShowExplanation] = useState(false);
-  const [revealedAnswer, setRevealedAnswer] = useState(false);
+  const [revealedAnswer, setRevealedAnswer] = useState(answerRevealed??false);
   const {
     submittedAssessments,
     setShowIncorrect,
-    showIncorrect,
     currentLesson,
     currentSlideIndex,
   } = useCourseStore();
+
   const theme = useTheme();
 
   useEffect(() => {
     if (isActive) {
-        if (isCorrect) {
-          setShowIncorrect(false);
-        } else if (showFeedbackParent) {
-          setShowIncorrect(true);
-        } else if (!showFeedbackParent) {
-          setShowIncorrect(false);
-        }
+      if (isCorrect) {
+        setShowIncorrect(false);
+      } else if (showFeedbackParent) {
+        setShowIncorrect(true);
+      } else if (!showFeedbackParent) {
+        setShowIncorrect(false);
+        console.log({ showFeedbackParent });
+      }
     }
   }, [
     showFeedbackParent,
@@ -93,7 +96,12 @@ export default function AssessmentWrapper({
         {/* Show title except for untitled assessments */}
         {!untitledAssessments.includes(question.type) && (
           <ThemedTitle
-            style={{ fontSize: 18, lineHeight: 27, fontWeight: 600, textAlign:"center" }}
+            style={{
+              fontSize: 18,
+              lineHeight: 27,
+              fontWeight: 600,
+              textAlign: "center",
+            }}
           >
             {question.text}
           </ThemedTitle>

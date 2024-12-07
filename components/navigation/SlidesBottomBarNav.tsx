@@ -8,6 +8,7 @@ import { hexToRgbA } from "@/utils/utilfunctions";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { Colors } from "@/constants/Colors";
 import { FeedbackModal } from "../FeedbackModal";
+import ConfirmationDialog from "../ConfirmationDialog";
 
 function generateColors(color: string, opacity: number) {
   let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
@@ -35,11 +36,19 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
     setNavMenuVisible,
     completedSlides,
     showIncorrect,
+	restartLesson,
   } = useCourseStore();
 
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
-  const showModal = () => setFeedbackModalVisible(true);
-  const hideModal = () => setFeedbackModalVisible(false);
+  const [showRestartLessonDialog, setShowRestartLessonDialog] = useState(false);
+  const showFeedbackModal = () => setFeedbackModalVisible(true);
+
+  const showRestartDialog = () => {
+	setShowRestartLessonDialog(true);
+  };
+  const hideDialog = () => {
+	setShowRestartLessonDialog(false);
+  }
 
   let currentAssessmentID = undefined;
 
@@ -100,7 +109,8 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
           visible={isNavMenuVisible}
           onDismiss={handleDismissMenu}
 		  onShowTopSheet={onShowTopSheet}
-		  showModal={showModal}
+		  showModal={showFeedbackModal}
+		  onRestart={showRestartDialog}
         />
       </View>
       <View
@@ -216,6 +226,13 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
         }}
         onSubmitFeedback={() => {
         }}
+      />
+	  <ConfirmationDialog
+        visible={showRestartLessonDialog}
+        onDismiss={hideDialog}
+        onConfirm={restartLesson}
+        title="Are you sure?"
+        content="This will restart the lesson and you will lose your progress."
       />
     </View>
   );

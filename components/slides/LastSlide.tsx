@@ -34,7 +34,7 @@ export default function LastSlide() {
     (bool) => bool === true
   ).length;
   const correctSubmissions = submittedAssessments.filter(
-    (submission) => submission.correct
+    (submission) => submission.isCorrect
   ).length;
 
   // Calculate percentages for progress bars

@@ -30,7 +30,7 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
 
   return (
     <View style={localStyles.container}>
-      <View style={[localStyles.navContainer, styles.centeredMaxWidth, {maxWidth: SLIDE_MAX_WIDTH+16}]}>
+      <View style={[localStyles.navContainer, styles.centeredMaxWidth, {maxWidth: SLIDE_MAX_WIDTH+22}]}>
         <IconButton icon="close" size={20} onPress={handleClose} />
         {currentLesson.slides.map((_, index) => (
           <TouchableOpacity

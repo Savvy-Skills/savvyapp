@@ -1,5 +1,5 @@
 import {
-	BaseSubmission,
+  BaseSubmission,
   Course,
   Lesson,
   LessonProgress,
@@ -118,16 +118,16 @@ export const postLessonSubmission = async (
   submission: BaseSubmission
 ): Promise<Submission> => {
   try {
-	const response = await courses_api.post<Submission>(
-	  `/lessons/${lesson_id}/submissions`,
-	  submission
-	);
-	return response.data;
+    const response = await courses_api.post<Submission>(
+      `/lessons/${lesson_id}/submissions`,
+      submission
+    );
+    return response.data;
   } catch (error) {
-	console.error("Error posting lesson submission", error);
-	return {} as Submission;
+    console.error("Error posting lesson submission", error);
+    return {} as Submission;
   }
-}
+};
 
 export const getLessonByID = async (id: number): Promise<LessonWithSlides> => {
   try {
@@ -138,6 +138,14 @@ export const getLessonByID = async (id: number): Promise<LessonWithSlides> => {
   } catch (error) {
     console.error("Error fetching module", error);
     return {} as LessonWithSlides;
+  }
+};
+
+export const restartLesson = async (lesson_id: number): Promise<void> => {
+  try {
+    await courses_api.post(`/lessons/${lesson_id}/restart`);
+  } catch (error) {
+    console.error("Error restarting lesson", error);
   }
 };
 

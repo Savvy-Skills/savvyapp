@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { Button, Icon, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { QuestionInfo } from "@/types";
-import { useCourseStore } from "@/store/courseStore";
+import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { Colors } from "@/constants/Colors";
@@ -14,13 +14,26 @@ export type TrueFalseQuestionProps = {
   quizMode: boolean;
 };
 
+function createAnswer(
+  selectedValue: string,
+  showAnswer: boolean
+): AssessmentAnswer {
+  return {
+    answer: [
+      {
+        text: selectedValue,
+      },
+    ],
+    revealed: showAnswer,
+  };
+}
+
 export default function TrueFalseQuestion({
   question,
   index,
   quizMode = false,
 }: TrueFalseQuestionProps) {
-  const [selectedValue, setSelectedValue] = useState<boolean | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
+  const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [isWrong, setIsWrong] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
@@ -31,24 +44,16 @@ export default function TrueFalseQuestion({
     submitAssessment,
     completedSlides,
     checkSlideCompletion,
+    currentSlideIndex,
+    setAnswer,
   } = useCourseStore();
 
-  const correctAnswer =
-    question.options.find((option) => option.isCorrect)?.text === "True";
+  const isActive = index === currentSlideIndex;
 
-  useEffect(() => {
-    if (selectedValue !== null) {
-      setSubmittableState(index, true);
-      let correct: boolean = selectedValue === correctAnswer;
-      setCorrectnessState(index, correct);
-    }
-  }, [
-    selectedValue,
-    index,
-    setSubmittableState,
-    correctAnswer,
-    setCorrectnessState,
-  ]);
+  const options = question.options.map((option) => option.text);
+
+  const correctAnswer =
+    question.options.find((option) => option.isCorrect)?.text || "";
 
   const currentSubmissionIndex = submittedAssessments.findIndex(
     (submission) => submission.assessment_id === question.id
@@ -59,6 +64,26 @@ export default function TrueFalseQuestion({
       ? submittedAssessments[currentSubmissionIndex]
       : undefined;
 
+  const [showAnswer, setShowAnswer] = useState(
+    currentSubmission?.revealed ?? false
+  );
+
+  useEffect(() => {
+    if (selectedValue !== null) {
+      setSubmittableState(index, true);
+      let correct: boolean = selectedValue === correctAnswer;
+      setCorrectnessState(index, correct);
+      const answer = createAnswer(selectedValue, showAnswer);
+      setAnswer(index, answer);
+    }
+  }, [
+    selectedValue,
+    index,
+    setSubmittableState,
+    correctAnswer,
+    setCorrectnessState,
+  ]);
+
   useEffect(() => {
     if (currentSubmission) {
       if (!currentSubmission.isCorrect) {
@@ -67,6 +92,7 @@ export default function TrueFalseQuestion({
           setShowAnswer(true);
         }
       }
+      setSelectedValue(currentSubmission.answer[0].text);
       if (!completedSlides[index]) {
         checkSlideCompletion();
       }
@@ -77,11 +103,11 @@ export default function TrueFalseQuestion({
   const blocked =
     currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
 
-  const getButtonStyle = (value: boolean) => {
+  const getButtonStyle = (value: string) => {
     const baseStyle = [styles.button];
 
     if (showAnswer && value === correctAnswer) {
-      return [...baseStyle, styles.correctButton];
+      return [...baseStyle, styles.revealedButton];
     }
     if (quizMode && isWrong) {
       if (value === correctAnswer) {
@@ -105,7 +131,7 @@ export default function TrueFalseQuestion({
     return [...baseStyle, styles.defaultButton];
   };
 
-  const handleChoiceSelection = (value: boolean) => {
+  const handleChoiceSelection = (value: string) => {
     if (quizMode && (isWrong || currentSubmission?.isCorrect)) {
       return;
     }
@@ -137,11 +163,13 @@ export default function TrueFalseQuestion({
       setIsWrong(false);
       setShowFeedback(true);
       setCorrectnessState(index, true);
+      const answer = createAnswer(correctAnswer, true);
+      setAnswer(index, answer);
       submitAssessment(question.id);
     }
   };
 
-  const renderStatusIcon = (value: boolean) => {
+  const renderStatusIcon = (value: string) => {
     if (quizMode && isWrong) {
       if (value === correctAnswer) {
         return (
@@ -176,21 +204,24 @@ export default function TrueFalseQuestion({
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
+      isActive={isActive}
+      isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
+      answerRevealed={showAnswer}
     >
       <View style={styles.container}>
         <View style={styles.buttonContainer}>
           <Button
             mode="contained"
-            onPress={() => handleChoiceSelection(true)}
-            disabled={blocked && !correctAnswer}
-            style={getButtonStyle(true)}
+            onPress={() => handleChoiceSelection(options[0])}
+            disabled={blocked}
+            style={getButtonStyle(options[0])}
             labelStyle={styles.buttonLabel}
             contentStyle={{ paddingVertical: 8 }}
           >
-            True
+            {options[0]}
           </Button>
           <View style={styles.iconContainer}>
-            {selectedValue === true && renderStatusIcon(true)}
+            {renderStatusIcon(options[0])}
           </View>
         </View>
         <View style={{ alignSelf: "center" }}>
@@ -211,16 +242,16 @@ export default function TrueFalseQuestion({
         <View style={styles.buttonContainer}>
           <Button
             mode="contained"
-            onPress={() => handleChoiceSelection(false)}
-            disabled={blocked && correctAnswer}
-            style={getButtonStyle(false)}
+            onPress={() => handleChoiceSelection(options[1])}
+            disabled={blocked}
+            style={getButtonStyle(options[1])}
             labelStyle={styles.buttonLabel}
             contentStyle={{ paddingVertical: 8 }}
           >
-            False
+            {options[1]}
           </Button>
           <View style={styles.iconContainer}>
-            {selectedValue === false && renderStatusIcon(false)}
+            {renderStatusIcon(options[1])}
           </View>
         </View>
       </View>
@@ -232,7 +263,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     position: "absolute",
     right: -10,
-	top: -10,
+    top: -10,
   },
   buttonContainer: {},
   container: {
@@ -279,8 +310,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   revealedButton: {
-    backgroundColor: "#F6E05E",
-    borderColor: "#F6E05E",
+    backgroundColor: "rgba(158, 158, 158, 0.1)",
+    borderColor: "#9E9E9E",
   },
   disabledButton: {
     backgroundColor: "#EDF2F7",

@@ -6,6 +6,7 @@ import {
   getModuleLessons,
   postLessonProgress,
   postLessonSubmission,
+  restartLesson,
 } from "../services/coursesApi";
 import {
   CustomSlide,
@@ -21,17 +22,19 @@ import { useAudioStore } from "./audioStore";
 const createSubmission = (
   assessment_id: number,
   correct: boolean,
-  answer: Answer[],
-  lesson_id: number
+  answer: AssessmentAnswer,
+  lesson_id: number,
+  submission_id: number
 ): Submission => {
   return {
-    id: 0,
+    id: submission_id,
     created_at: Date.now(),
     assessment_id,
     lessons_id: lesson_id,
     submissionTime: Date.now(),
     isCorrect: correct,
-    answer,
+    answer: answer.answer,
+    revealed: answer.revealed,
   };
 };
 
@@ -67,6 +70,11 @@ function createCustomSlide(
   }
 }
 
+export interface AssessmentAnswer {
+  answer: Answer[];
+  revealed: boolean;
+}
+
 interface CourseStore {
   lessons: Lesson[];
   currentSlideIndex: number;
@@ -77,6 +85,8 @@ interface CourseStore {
   submittedAssessments: Submission[];
   completedSlides: boolean[];
   scrollToEnd: (() => void) | null;
+  answers: AssessmentAnswer[];
+  setAnswer: (index: number, answer: AssessmentAnswer) => void;
 
   error: string | null;
   isLoading: boolean;
@@ -103,10 +113,15 @@ interface CourseStore {
   clearCurrentLesson: () => void;
   showIncorrect: boolean;
   setShowIncorrect: (show: boolean) => void;
+
+  restartLesson: () => void;
+  restartingLesson: boolean;
+  stopRestartingLesson: () => void;
 }
 
 export const useCourseStore = create<CourseStore>((set, get) => ({
   lessons: [],
+  restartingLesson: false,
   currentSlideIndex: 0,
   prevSlideIndex: 0,
   currentLesson: undefined,
@@ -118,6 +133,19 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
   isLoading: false,
   error: null,
   showIncorrect: false,
+  answers: [],
+  setAnswer: (index, answers) => {
+    set((state) => {
+      if (state.answers[index] === answers) {
+        return state; // Return the current state if there's no change
+      }
+      const newAnswers = [...state.answers];
+      newAnswers[index] = answers;
+      return {
+        answers: newAnswers,
+      };
+    });
+  },
 
   setShowIncorrect: (show) => set({ showIncorrect: show }),
 
@@ -135,7 +163,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       set({ isLoading: true });
       const lesson = await getLessonByID(id);
       const progress = await getLessonProgress(id);
-	  const submissions = await getLessonSubmissions(id);
+      const submissions = await getLessonSubmissions(id);
 
       const sorted = lesson.slides.sort((a, b) => a.order - b.order);
 
@@ -163,7 +191,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
           slides: sorted,
         },
         completedSlides: progressArray,
-		submittedAssessments: submissions,
+        submittedAssessments: submissions,
         isLoading: false,
       });
     } catch (error) {
@@ -228,45 +256,79 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       correctnessStates,
       checkSlideCompletion,
       setSubmittableState,
+      submittedAssessments,
       currentLesson,
+      answers,
     } = get();
 
     const quizMode = currentLesson?.quiz;
     const isCorrect = correctnessStates[currentSlideIndex] || false;
     if (!currentLesson) return;
 
+    const currentSubmission = submittedAssessments.find(
+      (submission) => submission.assessment_id === assessment_id
+    );
+
     useAudioStore
       .getState()
       .playSound(isCorrect ? "success" : "failVariant", 0.6);
 
-	const placeHolderSubmission = createSubmission(
-	  assessment_id,
-	  isCorrect,
-	  [{ text: "25" }],
-	  currentLesson?.id
-	);
+    const placeHolderSubmission = createSubmission(
+      assessment_id,
+      isCorrect,
+      answers[currentSlideIndex],
+      currentLesson?.id,
+      currentSubmission?.id || 0
+    );
 
-    set((state) => ({
-      submittedAssessments: state.submittedAssessments.some(
-        (submission) => submission.assessment_id === assessment_id
-      )
-        ? state.submittedAssessments.map((submission) =>
-            submission.assessment_id === assessment_id
-              ? { ...submission, correct: isCorrect }
-              : submission
-          )
-        : [
-            ...state.submittedAssessments,
-			{
-			  ...placeHolderSubmission,
-			},
-          ],
-    }));
+    const newSubmittedAssessments = submittedAssessments.some(
+      (submission) => submission.assessment_id === assessment_id
+    )
+      ? submittedAssessments.map((submission) =>
+          submission.assessment_id === assessment_id
+            ? {
+                ...submission,
+                isCorrect,
+                answer: answers[currentSlideIndex].answer,
+                revealed: answers[currentSlideIndex].revealed,
+              }
+            : submission
+        )
+      : [
+          ...submittedAssessments,
+          {
+            ...placeHolderSubmission,
+          },
+        ];
+
+    set({ submittedAssessments: newSubmittedAssessments });
+
     if (isCorrect || quizMode) {
       checkSlideCompletion();
     }
-	// Post submission to server and replace placeholder submission
-	await postLessonSubmission(currentLesson.id, placeHolderSubmission); 
+
+    // Post submission to server and replace placeholder submission
+    const postedSubmission = await postLessonSubmission(
+      currentLesson.id,
+      placeHolderSubmission
+    );
+
+    // Replace placeholder submission with the actual submission
+    // Logic is as follows: Search for placeholder submission in the array of submissions with its ID=0
+    // If found, replace it with the actual submission
+
+    const newSubmissions = newSubmittedAssessments.map((submission) =>
+      submission.id === 0 ? { ...postedSubmission } : submission
+    );
+
+    set({ submittedAssessments: newSubmissions });
+
+    console.log("Submitting assessment", {
+      submission: placeHolderSubmission,
+      postedSubmission,
+      newSubmissions,
+      newSubmittedAssessments,
+    });
 
     setSubmittableState(currentSlideIndex, false);
   },
@@ -279,12 +341,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
     const newCompletedSlides = [...completedSlides];
     newCompletedSlides[index] = true;
-    console.log("Marking slide as completed", {
-      index,
-      completedSlides,
-      newCompletedSlides,
-      currentLesson,
-    });
+
     await postLessonProgress(currentLesson?.id, newCompletedSlides);
     set({ completedSlides: newCompletedSlides });
   },
@@ -363,4 +420,14 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       correctnessStates: {},
       submittedAssessments: [],
     }),
+
+  restartLesson: async () => {
+    const { currentLesson } = get();
+    if (!currentLesson) return;
+    const lesson_id = currentLesson.id;
+    await restartLesson(lesson_id);
+    set({ restartingLesson: true });
+  },
+
+  stopRestartingLesson: () => set({ restartingLesson: false }),
 }));
