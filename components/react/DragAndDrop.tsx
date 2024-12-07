@@ -8,7 +8,7 @@ import { DraggableItem } from "./DraggableItem";
 import { DropZone } from "./DropZone";
 import { CustomDragLayer } from "./CustomDragLayer";
 import "./drag-and-drop.css";
-import { useCourseStore } from "@/store/courseStore";
+import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { Icon } from "react-native-paper";
 import { Colors } from "@/constants/Colors";
 
@@ -31,6 +31,24 @@ interface DragAndDropProps {
   isMobile: boolean;
 }
 
+function createAnswer(
+  droppedItems: Record<string, string[]>,
+  showAnswer: boolean
+): AssessmentAnswer {
+  return {
+    //  Answer should be a list of all the items, the zone they're in should be the match value
+    answer: Object.entries(droppedItems)
+      .map(([zone, items]) => {
+        return items.map((item) => ({
+          text: item,
+          match: zone,
+        }));
+      })
+      .flat(),
+    revealed: showAnswer,
+  };
+}
+
 export default function DragAndDrop({
   items,
   index,
@@ -44,7 +62,8 @@ export default function DragAndDrop({
   setDroppedItems,
   isMobile,
 }: DragAndDropProps) {
-  const { setSubmittableState, setCorrectnessState } = useCourseStore();
+  const { setSubmittableState, setCorrectnessState, setAnswer } =
+    useCourseStore();
 
   const isTouchDevice =
     "ontouchstart" in window || navigator.maxTouchPoints > 0;
@@ -60,6 +79,8 @@ export default function DragAndDrop({
       const correct = items.every((item) =>
         droppedItems[item.match]?.includes(item.text)
       );
+      const answer = createAnswer(droppedItems, false);
+      setAnswer(index, answer);
       setCorrectnessState(index, correct);
     }
   }, [droppedItems, questionId, setSubmittableState, setCorrectnessState]);
@@ -86,7 +107,6 @@ export default function DragAndDrop({
       );
       setSubmittableState(index, allItemsDropped);
       setDroppedItems(newDroppedItems);
-	  
     },
     [isSubmitted, isCorrect, droppedItems]
   );
@@ -125,6 +145,8 @@ export default function DragAndDrop({
         acc[item.match].push(item.text);
         return acc;
       }, {} as Record<string, string[]>);
+	  const answer = createAnswer(correctDroppedItems, true);
+	  setAnswer(index, answer);
       setDroppedItems(correctDroppedItems);
     }
   };
@@ -145,7 +167,7 @@ export default function DragAndDrop({
               isCorrect={isCorrect}
               isSubmitted={isSubmitted}
               isWrong={!isCorrect}
-			  showAnswer={showAnswer}
+              showAnswer={showAnswer}
             >
               <div className="drop-zone-title">{zone}</div>
               <div className="dropped-items">
@@ -180,7 +202,7 @@ export default function DragAndDrop({
               />
             ))}
           </div>
-		  <div className="centered-icon">
+          <div className="centered-icon">
             <Icon
               source="chevron-double-down"
               size={24}
@@ -195,7 +217,7 @@ export default function DragAndDrop({
               isCorrect={isCorrect}
               isSubmitted={isSubmitted}
               isWrong={!isCorrect}
-			  showAnswer={showAnswer}
+              showAnswer={showAnswer}
             >
               <div className="drop-zone-title">{zone}</div>
               <div className="dropped-items">

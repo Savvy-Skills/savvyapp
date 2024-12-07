@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { useCourseStore } from "@/store/courseStore";
+import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
@@ -12,6 +12,20 @@ type BlankItem = {
   filled: string;
 };
 
+function createAnswer(
+  selectedValues: string[],
+  showAnswer: boolean
+): AssessmentAnswer {
+  return {
+    answer: selectedValues.map((value, i) => ({
+      text: value,
+      order: i + 1,
+    })),
+
+    revealed: showAnswer,
+  };
+}
+
 export default function FillBlankAssessment({
   question,
   index,
@@ -19,7 +33,6 @@ export default function FillBlankAssessment({
 }: AssessmentProps) {
   const [blanks, setBlanks] = useState<BlankItem[]>([]);
   const [remainingOptions, setRemainingOptions] = useState<string[]>([]);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [isWrong, setIsWrong] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
@@ -32,12 +45,25 @@ export default function FillBlankAssessment({
     checkSlideCompletion,
     submittableStates,
     currentSlideIndex,
+    setAnswer,
   } = useCourseStore();
 
   const text = useMemo(() => question.text, [question.text]);
   const options = useMemo(
     () => question.options.map((option) => option.text),
     [question.options]
+  );
+
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+    (submission) => submission.assessment_id === question.id
+  );
+  const currentSubmission =
+    currentSubmissionIndex !== -1
+      ? submittedAssessments[currentSubmissionIndex]
+      : undefined;
+
+  const [showAnswer, setShowAnswer] = useState(
+    currentSubmission?.revealed ?? false
   );
 
   const extractedBlanks = useMemo(() => {
@@ -67,6 +93,11 @@ export default function FillBlankAssessment({
 
   useEffect(() => {
     const correct = checkCorrectness();
+    const answer = createAnswer(
+      blanks.map((blank) => blank.filled),
+      false
+    );
+    setAnswer(index, answer);
     setCorrectnessState(index, correct);
   }, [
     blanks,
@@ -75,14 +106,6 @@ export default function FillBlankAssessment({
     index,
     checkCorrectness,
   ]);
-
-  const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.assessment_id === question.id
-  );
-  const currentSubmission =
-    currentSubmissionIndex !== -1
-      ? submittedAssessments[currentSubmissionIndex]
-      : undefined;
 
   useEffect(() => {
     if (currentSubmission) {
@@ -95,9 +118,32 @@ export default function FillBlankAssessment({
       if (quizMode && !completedSlides[index]) {
         checkSlideCompletion();
       }
+      // Transform answer to correct format of blanks and remaining options
+      // From answer get the current filled blanks
+      // Get the remaining options from question and the extracted blanks
+
+      const filledBlanks = currentSubmission.answer.map(
+        (answer) => answer.text
+      );
+
+      const questionOptions = question.options.map((option) => option.text);
+      const extractedOptions = extractedBlanks.map((blank) => blank);
+
+      //   Combine question options and extracted options
+      const remainingOptions = questionOptions.concat(extractedOptions);
+
+      //   Fill the blanks with the filled blanks, remaining options with the options
+      const newBlanks = extractedBlanks.map((blank, index) => ({
+        original: blank,
+        filled: filledBlanks[index],
+      }));
+      setBlanks(newBlanks);
+      setRemainingOptions(remainingOptions.filter((opt) => !filledBlanks.includes(opt)));
+
       setShowFeedback(true);
     }
   }, [
+    extractedBlanks,
     submittedAssessments,
     currentSubmission,
     quizMode,
@@ -218,6 +264,8 @@ export default function FillBlankAssessment({
       setIsWrong(false);
       setShowFeedback(true);
       setCorrectnessState(index, true);
+      const answer = createAnswer(extractedBlanks, true);
+      setAnswer(index, answer);
       submitAssessment(question.id);
     }
   }, [quizMode, index, setCorrectnessState, submitAssessment, question.id]);
@@ -302,6 +350,7 @@ export default function FillBlankAssessment({
       quizMode={quizMode}
       isActive={isActive}
       isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
+      answerRevealed={showAnswer}
     >
       <View style={localStyles.textContainer}>{renderText}</View>
       <View style={localStyles.optionsContainer}>

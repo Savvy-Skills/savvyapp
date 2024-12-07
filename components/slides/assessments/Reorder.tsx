@@ -6,7 +6,6 @@ import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
-import { Colors } from "@/constants/Colors";
 
 function createAnswer(
   currentOrder: string[],
