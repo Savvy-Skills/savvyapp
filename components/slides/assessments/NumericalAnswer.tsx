@@ -2,11 +2,22 @@ import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { useCourseStore } from "@/store/courseStore";
+import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
 import OperatorRenderer from "@/components/OperatorRenderer";
+
+function createAnswer(value: string, showAnswer: boolean): AssessmentAnswer {
+  return {
+    answer: [
+      {
+        text: value,
+      },
+    ],
+    revealed: showAnswer,
+  };
+}
 
 export default function NumericalAnswerAssessment({
   question,
@@ -16,7 +27,6 @@ export default function NumericalAnswerAssessment({
   const [value, setValue] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [isWrong, setIsWrong] = useState(false);
-  const [showAnswer, setShowAnswer] = useState(false);
 
   const answer = parseFloat(question.options[0].text);
   const {
@@ -26,7 +36,21 @@ export default function NumericalAnswerAssessment({
     submitAssessment,
     completedSlides,
     checkSlideCompletion,
+    currentSlideIndex,
+    setAnswer,
   } = useCourseStore();
+
+  const isActive = index === currentSlideIndex;
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+    (submission) => submission.assessment_id === question.id
+  );
+
+  const currentSubmission =
+    currentSubmissionIndex !== -1
+      ? submittedAssessments[currentSubmissionIndex]
+      : undefined;
+
+  const [showAnswer, setShowAnswer] = useState(currentSubmission ? currentSubmission.revealed : false);
 
   const handleChange = (text: string) => {
     const sanitizedText = text.replace(/[^0-9.]/g, "");
@@ -47,28 +71,21 @@ export default function NumericalAnswerAssessment({
       } else {
         correct = Math.abs(parseFloat(value)) === answer;
       }
+      const assessmentAnswer = createAnswer(value, showAnswer);
+      setAnswer(index, assessmentAnswer);
       setCorrectnessState(index, correct);
     }
   }, [value, index, setSubmittableState, answer, setCorrectnessState]);
 
-  const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.assessment_id === question.id
-  );
-
-  const currentSubmission =
-    currentSubmissionIndex !== -1
-      ? submittedAssessments[currentSubmissionIndex]
-      : undefined;
-
   useEffect(() => {
     if (currentSubmission) {
       if (quizMode) {
-        // setValue(answer.toString());
         setShowAnswer(true);
       }
       if (!currentSubmission.isCorrect) {
         setIsWrong(true);
       }
+      setValue(currentSubmission.answer[0].text);
       if (!completedSlides[index]) {
         checkSlideCompletion();
       }
@@ -92,6 +109,8 @@ export default function NumericalAnswerAssessment({
       setIsWrong(false);
       setShowFeedback(true);
       setCorrectnessState(index, true);
+      const assessmentAnswer = createAnswer(answer.toString(), true);
+      setAnswer(index, assessmentAnswer);
       submitAssessment(question.id);
     }
   };
@@ -104,6 +123,9 @@ export default function NumericalAnswerAssessment({
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
+      isActive={isActive}
+      isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
+	  answerRevealed={showAnswer}
     >
       <View style={localStyles.container}>
         {!!question.extras?.text && (

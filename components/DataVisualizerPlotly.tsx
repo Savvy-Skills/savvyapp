@@ -5,7 +5,12 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import { ActivityIndicator, Button, SegmentedButtons, Text } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  SegmentedButtons,
+  Text,
+} from "react-native-paper";
 import { Data, Layout, Config, PlotType } from "plotly.js";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
@@ -46,21 +51,25 @@ export default function DataVisualizerPlotly({
   xAxisLabel = "X AXIS",
   yAxisLabel = "Y AXIS",
 }: DataVisualizerProps) {
+  const initialColumn = dataset.length > 0 ? Object.keys(dataset[0])[0] : null;
+
   const [activeChartType, setActiveChartType] = useState<PlotType>("scatter");
   const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
     Object.fromEntries(traces.map((trace) => [trace.name, true]))
   );
   const [isScatterPlot, setIsScatterPlot] = useState(true);
   const [pieMode, setPieMode] = useState<"frequency" | "sum">("frequency");
-  const [selectedColumn, setSelectedColumn] = useState<string>(
-    Object.keys(dataset[0])[0]
+
+  const [selectedColumn, setSelectedColumn] = useState<string | null>(
+    initialColumn
   );
-  const [histogramColumn, setHistogramColumn] = useState<string>(
-    Object.keys(dataset[0])[0]
+  const [histogramColumn, setHistogramColumn] = useState<string | null>(
+    initialColumn
   );
-  const [barPlotColumn, setBarPlotColumn] = useState<string>(
-    Object.keys(dataset[0])[0]
+  const [barPlotColumn, setBarPlotColumn] = useState<string | null>(
+    initialColumn
   );
+
   const { width } = useWindowDimensions();
   const buttonContainerStyle: {
     justifyContent: "center" | "flex-start";
@@ -100,12 +109,13 @@ export default function DataVisualizerPlotly({
   }, [dataset, traces, activeChartType]);
 
   const plotlyData: Data[] = useMemo(() => {
+    if (dataset.length === 0) return [];
     switch (activeChartType) {
       case "pie":
         if (pieMode === "frequency") {
           const frequencies: Record<string, number> = {};
           dataset.forEach((item) => {
-            const value = String(item[selectedColumn]);
+            const value = selectedColumn ? String(item[selectedColumn]) : "";
             frequencies[value] = (frequencies[value] || 0) + 1;
           });
           return [
@@ -147,8 +157,10 @@ export default function DataVisualizerPlotly({
       case "bar":
         const barData: Record<string, number> = {};
         dataset.forEach((item) => {
-          const value = String(item[barPlotColumn]);
-          barData[value] = (barData[value] || 0) + 1;
+          if (barPlotColumn) {
+            const value = String(item[barPlotColumn]);
+            barData[value] = (barData[value] || 0) + 1;
+          }
         });
         return [
           {
@@ -164,7 +176,9 @@ export default function DataVisualizerPlotly({
         return [
           {
             type: "histogram",
-            x: dataset.map((item) => item[histogramColumn]),
+            x: dataset
+              .map((item) => (histogramColumn ? item[histogramColumn] : null))
+              .filter((value) => value !== null),
             marker: {
               color: colors[0],
             },
@@ -220,7 +234,7 @@ export default function DataVisualizerPlotly({
           hoverformat: " ",
           range: ranges?.x,
           title: {
-            text: activeChartType === "histogram" ? histogramColumn : "",
+            text: activeChartType === "histogram" ? histogramColumn || "" : "",
           },
         },
     yaxis: ["pie"].includes(activeChartType)
@@ -290,7 +304,7 @@ export default function DataVisualizerPlotly({
           </>
         )}
         <View style={styles.plotContainer}>
-          <Suspense fallback={<ActivityIndicator/>}>
+          <Suspense fallback={<ActivityIndicator />}>
             <DataPlotter
               data={plotlyData}
               layout={layout}
@@ -307,7 +321,7 @@ export default function DataVisualizerPlotly({
       >
         {activeChartType === "pie" &&
           pieMode === "frequency" &&
-          Object.keys(dataset[0]).map((columnName, index) => (
+          Object.keys(dataset[0] || {}).map((columnName, index) => (
             <Button
               key={columnName}
               mode="outlined"
@@ -329,7 +343,7 @@ export default function DataVisualizerPlotly({
             </Button>
           ))}
         {activeChartType === "bar" &&
-          Object.keys(dataset[0]).map((columnName, index) => (
+          Object.keys(dataset[0] || {}).map((columnName, index) => (
             <Button
               key={columnName}
               mode="outlined"
@@ -351,7 +365,7 @@ export default function DataVisualizerPlotly({
             </Button>
           ))}
         {activeChartType === "histogram" &&
-          Object.keys(dataset[0]).map((columnName, index) => (
+          Object.keys(dataset[0] || {}).map((columnName, index) => (
             <Button
               key={columnName}
               mode="outlined"

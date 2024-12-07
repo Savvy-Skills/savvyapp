@@ -31,6 +31,7 @@ export default function FillBlankAssessment({
     completedSlides,
     checkSlideCompletion,
     submittableStates,
+    currentSlideIndex,
   } = useCourseStore();
 
   const text = useMemo(() => question.text, [question.text]);
@@ -105,6 +106,8 @@ export default function FillBlankAssessment({
     checkSlideCompletion,
   ]);
 
+  const isActive = index === currentSlideIndex;
+
   const blocked =
     currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
 
@@ -160,7 +163,7 @@ export default function FillBlankAssessment({
   const handleBlankPress = useCallback(
     (blankIndex: number) => {
       if (blocked) return;
-	  if(blanks[blankIndex].filled === "") return;
+      if (blanks[blankIndex].filled === "") return;
       setBlanks((prevBlanks) => {
         const newBlanks = [...prevBlanks];
         if (newBlanks[blankIndex].filled) {
@@ -172,12 +175,21 @@ export default function FillBlankAssessment({
         }
         return newBlanks;
       });
-	  setSubmittableState(index, false);
+      setSubmittableState(index, false);
       setIsWrong(false);
       setShowAnswer(false);
       setShowFeedback(false);
     },
-    [blocked, setBlanks, setRemainingOptions, setIsWrong, setShowAnswer, setShowFeedback, blanks, setSubmittableState]
+    [
+      blocked,
+      setBlanks,
+      setRemainingOptions,
+      setIsWrong,
+      setShowAnswer,
+      setShowFeedback,
+      blanks,
+      setSubmittableState,
+    ]
   );
 
   const resetStates = useCallback(() => {
@@ -288,6 +300,8 @@ export default function FillBlankAssessment({
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
+      isActive={isActive}
+      isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
     >
       <View style={localStyles.textContainer}>{renderText}</View>
       <View style={localStyles.optionsContainer}>

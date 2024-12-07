@@ -8,6 +8,7 @@ interface CustomMenuProps {
   onDismiss: () => void;
   onShowTopSheet: () => void;
   showModal: () => void;
+  onRestart: () => void;
 }
 
 const CustomNavMenu: React.FC<CustomMenuProps> = ({
@@ -15,6 +16,7 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
   onDismiss,
   onShowTopSheet,
   showModal,
+  onRestart
 }) => {
   if (!visible) return null;
 
@@ -26,6 +28,16 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
         activeOpacity={1}
       >
         <View style={styles.menuContainer}>
+          <TouchableOpacity
+            style={styles.centeredItems}
+            onPress={() => {
+              onRestart();
+              onDismiss();
+            }}
+          >
+            <Icon source="restore" size={24} color="white" />
+            <Text style={localStyles.menuText}>Restart Lesson</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.centeredItems}
             onPress={() => {

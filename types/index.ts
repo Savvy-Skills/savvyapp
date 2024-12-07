@@ -131,9 +131,10 @@ export interface BaseSubmission {
   isCorrect: boolean;
   answer: Answer[];
   lessons_id: number;
+  revealed: boolean
 }
 
-export interface Submission extends BaseSubmission {
+export interface  Submission extends BaseSubmission {
   id: number;
   created_at: number;
   submissionTime: number;

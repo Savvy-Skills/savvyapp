@@ -2,10 +2,25 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { List, IconButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { useCourseStore } from "@/store/courseStore";
+import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
+import { Colors } from "@/constants/Colors";
+
+function createAnswer(
+  currentOrder: string[],
+  showAnswer: boolean
+): AssessmentAnswer {
+  return {
+    answer: currentOrder.map((value, i) => ({
+      text: value,
+      order: i + 1,
+    })),
+
+    revealed: showAnswer,
+  };
+}
 
 export default function ReorderAssessment({
   question,
@@ -13,7 +28,6 @@ export default function ReorderAssessment({
   quizMode = false,
 }: AssessmentProps) {
   const [currentOrder, setCurrentOrder] = useState<string[]>([]);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [isWrong, setIsWrong] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
@@ -24,6 +38,8 @@ export default function ReorderAssessment({
     submitAssessment,
     completedSlides,
     checkSlideCompletion,
+    currentSlideIndex,
+    setAnswer,
   } = useCourseStore();
 
   const correctOrder = useMemo(
@@ -32,6 +48,21 @@ export default function ReorderAssessment({
         .sort((a, b) => a.correctOrder - b.correctOrder)
         .map((option) => option.text),
     [question]
+  );
+
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+    (submission) => submission.assessment_id === question.id
+  );
+
+  const currentSubmission =
+    currentSubmissionIndex !== -1
+      ? submittedAssessments[currentSubmissionIndex]
+      : undefined;
+
+  const isActive = index === currentSlideIndex;
+
+  const [showAnswer, setShowAnswer] = useState(
+    currentSubmission?.revealed ?? false
   );
 
   useEffect(() => {
@@ -46,16 +77,9 @@ export default function ReorderAssessment({
     const correct =
       JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
     setCorrectnessState(index, correct);
+    const answer = createAnswer(currentOrder, showAnswer);
+    setAnswer(index, answer);
   }, [currentOrder, correctOrder, index, setCorrectnessState]);
-
-  const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.assessment_id === question.id
-  );
-
-  const currentSubmission =
-    currentSubmissionIndex !== -1
-      ? submittedAssessments[currentSubmissionIndex]
-      : undefined;
 
   useEffect(() => {
     if (currentSubmission) {
@@ -65,6 +89,11 @@ export default function ReorderAssessment({
           setShowAnswer(true);
         }
       }
+      const currentSubmissionOrder = currentSubmission.answer.sort((a, b) => {
+        if (a.order === undefined || b.order === undefined) return 0;
+        return a.order - b.order;
+      });
+      setCurrentOrder(currentSubmissionOrder.map((answer) => answer.text));
       if (quizMode && !completedSlides[index]) {
         checkSlideCompletion();
       }
@@ -137,6 +166,8 @@ export default function ReorderAssessment({
       setIsWrong(false);
       setShowFeedback(true);
       setCorrectnessState(index, true);
+      const assessmentAnswer = createAnswer(correctOrder, true);
+      setAnswer(index, assessmentAnswer);
       submitAssessment(question.id);
     }
   }, [
@@ -152,20 +183,15 @@ export default function ReorderAssessment({
     submitAssessment,
   ]);
 
-  const renderStatusIcon = (item: string, itemIndex: number) => {
-    if (quizMode && isWrong) {
-      if (correctOrder[itemIndex] === item) {
-        return (
-          <StatusIcon isCorrect={true} isWrong={false} showAnswer={false} />
-        );
-      }
+  const renderStatusIcon = () => {
+    if (isWrong) {
       return <StatusIcon isCorrect={false} isWrong={true} showAnswer={false} />;
     }
 
     if (showAnswer || currentSubmission?.isCorrect) {
       return (
         <StatusIcon
-          isCorrect={correctOrder[itemIndex] === item}
+          isCorrect={true}
           isWrong={false}
           showAnswer={showAnswer}
         />
@@ -183,8 +209,21 @@ export default function ReorderAssessment({
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
+      isActive={isActive}
+      isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
+      answerRevealed={showAnswer}
     >
-      <List.Section>
+      <List.Section
+        style={[
+          localStyles.container,
+          isWrong
+            ? localStyles.wrongContainer
+            : currentSubmission?.isCorrect
+            ? localStyles.correctContainer
+            : {},
+          showAnswer && localStyles.revealedContainer,
+        ]}
+      >
         {currentOrder.map((item, index) => (
           <View key={index} style={styles.optionContainer}>
             <List.Item
@@ -203,27 +242,13 @@ export default function ReorderAssessment({
                   />
                 </View>
               )}
-              style={[
-                styles.option,
-                showAnswer &&
-                  correctOrder[index] === item &&
-                  styles.correctOption,
-                quizMode &&
-                  isWrong &&
-                  correctOrder[index] === item &&
-                  styles.correctOption,
-                quizMode &&
-                  isWrong &&
-                  correctOrder[index] !== item &&
-                  styles.incorrectOption,
-                blocked && styles.disabledOption,
-              ]}
+              style={[styles.option]}
             />
-            <View style={[styles.iconContainer, { top: quizMode ? -10 : 20 }]}>
-              {renderStatusIcon(item, index)}
-            </View>
           </View>
         ))}
+        <View style={[styles.iconContainer, { top: -10, right: -10 }]}>
+          {renderStatusIcon()}
+        </View>
       </List.Section>
     </AssessmentWrapper>
   );
@@ -233,5 +258,25 @@ const localStyles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  container: {
+    borderRadius: 4,
+    gap: 4,
+  },
+
+  wrongContainer: {
+    backgroundColor: "rgba(255, 0, 0, 0.1)",
+    borderWidth: 1,
+    borderColor: "red",
+  },
+  revealedContainer: {
+    backgroundColor: "rgba(158, 158, 158, 0.1)",
+    borderWidth: 1,
+    borderColor: "#29e9e9e",
+  },
+  correctContainer: {
+    backgroundColor: "rgba(35, 181, 236, 0.2)",
+    borderWidth: 1,
+    borderColor: "#23b5ec",
   },
 });

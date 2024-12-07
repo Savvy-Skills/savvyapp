@@ -1,18 +1,76 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
-import { Checkbox } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { QuestionInfo } from "@/types";
-import { useCourseStore } from "@/store/courseStore";
+import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
 import CustomCheckbox from "@/components/SavvyCheckbox";
-import { sub } from "@tensorflow/tfjs";
 
 export type AssessmentProps = {
   question: QuestionInfo;
   index: number;
   quizMode: boolean;
+};
+
+function createAnswer(
+  selectedValues: string[],
+  showAnswer: boolean
+): AssessmentAnswer {
+  return {
+    answer: selectedValues.map((value) => ({
+      text: value,
+    })),
+    revealed: showAnswer,
+  };
+}
+
+const getOptionStyles = (
+  option: string,
+  question: QuestionInfo,
+  showAnswer: boolean,
+  quizMode: boolean,
+  isWrong: boolean,
+  selectedValues: string[],
+  isCorrect: boolean
+) => {
+  const baseStyles =
+    question.subtype === "Image" ? [localStyles.imageOption] : [styles.option];
+
+  const correctAnswers = question.options
+    .filter((option) => option.isCorrect)
+    .map((option) => option.text);
+
+  if (showAnswer && correctAnswers.includes(option)) {
+    if (!quizMode) {
+      return [...baseStyles, styles.revealedOption];
+    }
+  }
+
+  if (quizMode && isWrong) {
+    if (correctAnswers.includes(option)) {
+      return [...baseStyles, styles.correctOption];
+    }
+    if (selectedValues.includes(option)) {
+      return [...baseStyles, styles.incorrectOption];
+    }
+    return [...baseStyles, styles.disabledOption];
+  }
+
+  if (selectedValues.includes(option)) {
+    if (isCorrect) {
+      return [...baseStyles, styles.correctOption];
+    } else if (isWrong) {
+      return [...baseStyles, styles.incorrectOption];
+    } else if (showAnswer) {
+      return [...baseStyles, styles.revealedOption];
+    }
+    if (question.subtype === "Image") {
+      return [...baseStyles, localStyles.selectedImage];
+    }
+    return [...baseStyles, styles.selectedOption];
+  }
+  return baseStyles;
 };
 
 export default function MultipleChoice({
@@ -21,7 +79,6 @@ export default function MultipleChoice({
   quizMode = false,
 }: AssessmentProps) {
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [isWrong, setIsWrong] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
@@ -32,6 +89,8 @@ export default function MultipleChoice({
     submitAssessment,
     completedSlides,
     checkSlideCompletion,
+    currentSlideIndex,
+    setAnswer,
   } = useCourseStore();
 
   const options = useMemo(
@@ -56,6 +115,10 @@ export default function MultipleChoice({
       ? submittedAssessments[currentSubmissionIndex]
       : undefined;
 
+  const [showAnswer, setShowAnswer] = useState(
+    currentSubmission?.revealed ?? false
+  );
+
   useEffect(() => {
     if (selectedValues.length > 0) {
       let correct =
@@ -69,14 +132,15 @@ export default function MultipleChoice({
 
   useEffect(() => {
     if (currentSubmission) {
+      if (!currentSubmission.isCorrect) {
+        setIsWrong(true);
+      }
       if (quizMode) {
-        if (!currentSubmission.isCorrect) {
-          setIsWrong(true);
-        }
         if (!completedSlides[index]) {
           checkSlideCompletion();
         }
       }
+      setSelectedValues(currentSubmission.answer.map((answer) => answer.text));
       setShowFeedback(true);
     }
   }, [
@@ -88,46 +152,9 @@ export default function MultipleChoice({
     checkSlideCompletion,
   ]);
 
+  const isActive = index === currentSlideIndex;
   const blocked =
     currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
-
-  const getOptionStyles = (option: string) => {
-    const baseStyles =
-      question.subtype === "Image"
-        ? [localStyles.imageOption]
-        : [styles.option];
-
-    if (showAnswer && correctAnswers.includes(option)) {
-      if (!quizMode) {
-        return [...baseStyles, styles.revealedOption];
-      }
-    }
-
-    if (quizMode && isWrong) {
-      if (correctAnswers.includes(option)) {
-        return [...baseStyles, styles.correctOption];
-      }
-      if (selectedValues.includes(option)) {
-        return [...baseStyles, styles.incorrectOption];
-      }
-      return [...baseStyles, styles.disabledOption];
-    }
-
-    if (selectedValues.includes(option)) {
-      if (currentSubmission?.isCorrect) {
-        return [...baseStyles, styles.correctOption];
-      } else if (isWrong) {
-        return [...baseStyles, styles.incorrectOption];
-      } else if (showAnswer) {
-        return [...baseStyles, styles.revealedOption];
-      }
-      if (question.subtype === "Image") {
-        return [...baseStyles, localStyles.selectedImage];
-      }
-      return [...baseStyles, styles.selectedOption];
-    }
-    return baseStyles;
-  };
 
   const handleChoiceSelection = (value: string) => {
     if (quizMode && (isWrong || currentSubmission?.isCorrect)) {
@@ -140,6 +167,8 @@ export default function MultipleChoice({
       setIsWrong(false);
       setShowAnswer(false);
       setShowFeedback(false);
+      const answer = createAnswer(newSelectedValues, false);
+      setAnswer(index, answer);
       if (newSelectedValues.length === 0) {
         setSubmittableState(index, false);
       } else {
@@ -169,6 +198,8 @@ export default function MultipleChoice({
       setIsWrong(false);
       setShowFeedback(true);
       setCorrectnessState(index, true);
+      const answer = createAnswer(correctAnswers, true);
+      setAnswer(index, answer);
       submitAssessment(question.id);
     }
   };
@@ -209,7 +240,17 @@ export default function MultipleChoice({
       accessibilityRole="checkbox"
       accessibilityState={{ checked: selectedValues.includes(option) }}
     >
-      <View style={getOptionStyles(option)}>
+      <View
+        style={getOptionStyles(
+          option,
+          question,
+          showAnswer,
+          quizMode,
+          isWrong,
+          selectedValues,
+          currentSubmission?.isCorrect ?? false
+        )}
+      >
         <Image
           source={{ uri: option }}
           style={localStyles.image}
@@ -229,7 +270,15 @@ export default function MultipleChoice({
         status={selectedValues.includes(option) ? "checked" : "unchecked"}
         onPress={() => handleChoiceSelection(option)}
         disabled={blocked && !correctAnswers.includes(option)}
-        style={getOptionStyles(option)}
+        style={getOptionStyles(
+          option,
+          question,
+          showAnswer,
+          quizMode,
+          isWrong,
+          selectedValues,
+          currentSubmission?.isCorrect ?? false
+        )}
         disabledTouchable={blocked}
       />
       <View style={styles.iconContainer}>{renderStatusIcon(option)}</View>
@@ -244,6 +293,8 @@ export default function MultipleChoice({
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
+      isActive={isActive}
+      isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
     >
       {question.subtype === "Image" ? (
         <View style={localStyles.imageGrid}>
@@ -266,7 +317,7 @@ const localStyles = StyleSheet.create({
     justifyContent: "center",
   },
   options: {
-	gap:4
+    gap: 4,
   },
   imageContainer: {
     width: "45%",

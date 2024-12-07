@@ -35,8 +35,14 @@ export default function MatchWordsAssessment({
   const scaleAnims = useRef<Animated.Value[]>([]).current;
   const shakeAnims = useRef<Animated.Value[]>([]).current;
 
-  const { setCorrectnessState, submittedAssessments, submitAssessment } =
-    useCourseStore();
+  const {
+    setCorrectnessState,
+    submittedAssessments,
+    submitAssessment,
+    currentSlideIndex,
+  } = useCourseStore();
+
+  const isActive = index === currentSlideIndex;
 
   useEffect(() => {
     initializeCards();
@@ -87,7 +93,7 @@ export default function MatchWordsAssessment({
       shakeAnims[index].setValue(0);
     });
     initializeCards();
-	setShowFeedback(false);
+    setShowFeedback(false);
   };
 
   const shakeAnimation = (index: number) => {
@@ -252,6 +258,8 @@ export default function MatchWordsAssessment({
       showFeedback={showFeedback}
       setShowFeedback={setShowFeedback}
       quizMode={quizMode}
+      isActive={isActive}
+      isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
     >
       <View style={styles.mainContainer}>
         <View style={styles.cardsContainer}>
