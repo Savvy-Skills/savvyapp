@@ -20,6 +20,7 @@ export type TopSheetProps = {
 
 export type TopSheetRefProps = {
   scrollTo: (destination: number) => void;
+  scrollToEnd: () => void;
 };
 
 const TopSheet = React.forwardRef<TopSheetRefProps, TopSheetProps>(
@@ -35,7 +36,14 @@ const TopSheet = React.forwardRef<TopSheetRefProps, TopSheetProps>(
       });
     }, []);
 
-    useImperativeHandle(ref, () => ({ scrollTo }), [scrollTo]);
+	const scrollToEnd = useCallback(() => {
+	  translateY.value = withSpring(MAX_TRANSLATE_Y, {
+		reduceMotion: ReduceMotion.Never,
+		damping: 50,
+	  });
+	}, []);
+
+    useImperativeHandle(ref, () => ({ scrollTo, scrollToEnd }), [scrollTo, scrollToEnd]);
 
     const gesture = Gesture.Pan()
       .onStart(() => {
