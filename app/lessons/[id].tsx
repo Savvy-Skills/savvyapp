@@ -43,7 +43,7 @@ export default function ModuleDetail() {
   const [showIndicator, setShowIndicator] = useState(false);
 
   const onPress = useCallback(() => {
-    ref?.current?.scrollTo(100);
+    ref?.current?.scrollToEnd();
   }, []);
 
   useEffect(() => {
