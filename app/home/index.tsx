@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <ScreenWrapper>
       <TopNavBar />
-      <ScrollView style={{ flex: 1, flexGrow: 1 }} id="scrollview-home" contentContainerStyle={{flexGrow:1}}>
+      <ScrollView style={{ flex: 1, flexGrow: 1 }} contentContainerStyle={{flexGrow:1}}>
         <View style={{ flex: 1 }}>
           <View style={styles.innerSection}>
             <Link href="/debug">Debug</Link>
