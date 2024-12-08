@@ -1,21 +1,31 @@
 import { Colors } from "@/constants/Colors";
 import styles from "@/styles/styles";
-import { Course, Module } from "@/types";
+import { Module } from "@/types";
 import { router } from "expo-router";
-import { Image, View } from "react-native";
+import { View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
+import { useCallback, useRef } from "react";
 
 interface ModuleProps {
   module: Module;
 }
 
 const ModuleTopNavBar = (props: ModuleProps) => {
-  const handleBack = () => {
+  const lastClickTimeRef = useRef<number>(0);
+
+  const handleBack = useCallback(() => {
+    const now = Date.now();
+    if (now - lastClickTimeRef.current < 1000) {
+      return;
+    }
+    lastClickTimeRef.current = now;
+
     const course = props.module.course_id;
     if (course) {
-      router.navigate(`/courses/${course}`);
+      router.dismissTo({ pathname: "/courses/[id]", params: { id: course } });
     }
-  };
+  }, [props.module.course_id]);
+
   return (
     <View style={styles.topNavBarInner}>
       <IconButton

@@ -11,7 +11,7 @@ interface CourseProps {
 
 const CourseTopNavBar = (props: CourseProps) => {
   const handleBack = () => {
-    router.navigate("/home");
+    router.dismissTo("/home");
   };
   
   return (
