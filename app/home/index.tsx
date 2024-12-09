@@ -33,7 +33,7 @@ export default function Home() {
       <ScrollView style={{ flex: 1, flexGrow: 1 }} contentContainerStyle={{flexGrow:1}}>
         <View style={{ flex: 1 }}>
           <View style={styles.innerSection}>
-            <Link href="/debug">Debug</Link>
+            <Link href="/debug">Debufghgfhg</Link>
             <View>
               <Text style={styles.sectionTitle}>Courses</Text>
               {isLoadingCourses ? (
