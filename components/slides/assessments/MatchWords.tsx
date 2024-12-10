@@ -206,17 +206,17 @@ export default function MatchWordsAssessment({
   );
   const currentSubmission = submittedAssessments[currentSubmissionIndex];
 
-  useEffect(() => {
-    if (currentSubmission) {
-      if (quizMode) {
-      }
-      if (!currentSubmission.isCorrect) {
-        setIsWrong(true);
-      }
-      setValue(currentSubmission.answer[0].text);
-      setShowFeedback(true);
-    }
-  }, [submittedAssessments, currentSubmission, quizMode]);
+//   useEffect(() => {
+//     if (currentSubmission) {
+//       if (quizMode) {
+//       }
+//       if (!currentSubmission.isCorrect) {
+//         setIsWrong(true);
+//       }
+//       setValue(currentSubmission.answer[0].text);
+//       setShowFeedback(true);
+//     }
+//   }, [submittedAssessments, currentSubmission, quizMode]);
 
   useEffect(() => {
     if (cards.length < 1) return;
