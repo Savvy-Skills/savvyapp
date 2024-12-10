@@ -44,10 +44,8 @@ export default function DragAndDropAssessment({
     setCorrectnessState,
     submitAssessment,
     submittedAssessments,
-    completedSlides,
-    checkSlideCompletion,
     currentSlideIndex,
-	setAnswer
+    setAnswer,
   } = useCourseStore();
 
   const isActive = index === currentSlideIndex;
@@ -85,14 +83,11 @@ export default function DragAndDropAssessment({
   useEffect(() => {
     if (currentSubmission) {
       setIsSubmitted(true);
-      if (quizMode) {
-        setShowAnswer(true);
-        if (!completedSlides[index]) {
-          checkSlideCompletion();
-        }
-      }
       if (!currentSubmission.isCorrect) {
         setIsWrong(true);
+        if (quizMode) {
+          setShowAnswer(true);
+        }
       }
       //   Transform the dropped items to the correct format of [zone]: [items]
       const droppedItems = currentSubmission.answer.reduce<

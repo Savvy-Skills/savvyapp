@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import ModuleCard from "../../components/ModuleCard";
@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import { ScrollView } from "react-native-gesture-handler";
 import styles from "@/styles/styles";
-import { Link } from "expo-router";
+import { Link, useNavigation } from "expo-router";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
@@ -30,8 +30,12 @@ export default function Home() {
   return (
     <ScreenWrapper>
       <TopNavBar />
-      <ScrollView style={{ flex: 1, flexGrow: 1 }} contentContainerStyle={{flexGrow:1}}>
-        <View style={{ flex: 1 }}>
+      <ScrollView
+        style={{ flex: 1, flexGrow: 1 }}
+        id="scrollview-home"
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        <>
           <View style={styles.innerSection}>
             <Link href="/debug">Debug</Link>
             <View>
@@ -66,7 +70,7 @@ export default function Home() {
             </View>
           </View>
           <Footer />
-        </View>
+        </>
       </ScrollView>
     </ScreenWrapper>
   );

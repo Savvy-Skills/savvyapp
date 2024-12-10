@@ -52,7 +52,6 @@ export default function AssessmentWrapper({
         setShowIncorrect(true);
       } else if (!showFeedbackParent) {
         setShowIncorrect(false);
-        console.log({ showFeedbackParent });
       }
     }
   }, [

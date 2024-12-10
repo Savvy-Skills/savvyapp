@@ -37,11 +37,11 @@ export default StyleSheet.create({
   },
   innerSection: {
     paddingHorizontal: 20,
-    gap: 32,
     maxWidth: 1080,
     width: "100%",
     alignSelf: "center",
     flex: 1,
+	gap:16,
   },
   customContainer: {
     justifyContent: "center",

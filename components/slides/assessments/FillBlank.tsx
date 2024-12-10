@@ -115,9 +115,6 @@ export default function FillBlankAssessment({
           setShowAnswer(true);
         }
       }
-      if (quizMode && !completedSlides[index]) {
-        checkSlideCompletion();
-      }
       // Transform answer to correct format of blanks and remaining options
       // From answer get the current filled blanks
       // Get the remaining options from question and the extracted blanks
