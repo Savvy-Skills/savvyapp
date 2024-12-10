@@ -32,12 +32,12 @@ export default function Home() {
       <TopNavBar />
       <ScrollView
         style={{ flex: 1, flexGrow: 1 }}
-        id="scrollview-home"
+        
         contentContainerStyle={{ flexGrow: 1 }}
       >
         <>
           <View style={styles.innerSection}>
-            <Link href="/debug">Debufghgfhg</Link>
+            <Link href="/debug">Debug</Link>
             <View>
               <Text style={styles.sectionTitle}>Courses</Text>
               {isLoadingCourses ? (
