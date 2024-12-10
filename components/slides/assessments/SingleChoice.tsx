@@ -89,8 +89,6 @@ export default function SingleChoice({
     setCorrectnessState,
     submittedAssessments,
     submitAssessment,
-    completedSlides,
-    checkSlideCompletion,
     currentSlideIndex,
     setAnswer,
   } = useCourseStore();
@@ -139,12 +137,12 @@ export default function SingleChoice({
         }
       }
       setSelectedValue(currentSubmission.answer[0].text);
-      if (!completedSlides[index]) {
-        checkSlideCompletion();
-      }
+    //   if (!completedSlides[index]) {
+    //     checkSlideCompletion({}, "Single Choice useEffect");
+    //   }
       setShowFeedback(true);
     }
-  }, [submittedAssessments, currentSubmission, quizMode]);
+  }, [currentSubmission, quizMode]);
 
   const blocked =
     currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
@@ -282,7 +280,7 @@ export default function SingleChoice({
       quizMode={quizMode}
       isActive={isActive}
       isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
-	  answerRevealed={showAnswer}
+      answerRevealed={showAnswer}
     >
       {question.subtype === "Image" ? (
         <View style={localStyles.imageGrid}>

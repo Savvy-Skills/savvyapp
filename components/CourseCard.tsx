@@ -46,12 +46,12 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   card: {
-    backgroundColor: "white",
     width: 320,
+    backgroundColor: "white",
     borderRadius: 8,
     overflow: "hidden",
+    marginVertical: 6,
     padding: 10,
-    marginBottom: 6,
     gap: 10,
     shadowOffset: {
       width: 0,

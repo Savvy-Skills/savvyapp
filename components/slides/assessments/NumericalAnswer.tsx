@@ -34,8 +34,6 @@ export default function NumericalAnswerAssessment({
     setCorrectnessState,
     submittedAssessments,
     submitAssessment,
-    completedSlides,
-    checkSlideCompletion,
     currentSlideIndex,
     setAnswer,
   } = useCourseStore();
@@ -86,9 +84,6 @@ export default function NumericalAnswerAssessment({
         setIsWrong(true);
       }
       setValue(currentSubmission.answer[0].text);
-      if (!completedSlides[index]) {
-        checkSlideCompletion();
-      }
       setShowFeedback(true);
     }
   }, [submittedAssessments, currentSubmission, quizMode]);

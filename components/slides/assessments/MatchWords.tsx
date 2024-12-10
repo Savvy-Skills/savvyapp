@@ -2,10 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet, View, TouchableOpacity, Animated } from "react-native";
 import { Text, IconButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { useCourseStore } from "@/store/courseStore";
+import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import { Colors } from "@/constants/Colors";
+import { QuestionInfo } from "@/types";
 
 type Card = {
   id: string;
@@ -21,6 +22,16 @@ const ANIMATION_TIMING = {
   SHRINK_DURATION: 300,
   SHAKE_DURATION: 500,
 } as const;
+
+function createAnswer(question: QuestionInfo): AssessmentAnswer {
+  return {
+    answer: question.options.map((opt) => ({
+      text: opt.text,
+      match: opt.match,
+    })),
+    revealed: false,
+  };
+}
 
 export default function MatchWordsAssessment({
   question,
@@ -40,6 +51,7 @@ export default function MatchWordsAssessment({
     submittedAssessments,
     submitAssessment,
     currentSlideIndex,
+    setAnswer,
   } = useCourseStore();
 
   const isActive = index === currentSlideIndex;
@@ -200,6 +212,8 @@ export default function MatchWordsAssessment({
     setAllMatched(allMatched);
     setCorrectnessState(index, allMatched);
     if (allMatched) {
+      const answer = createAnswer(question);
+      setAnswer(index, answer);
       setShowFeedback(true);
       if (!currentSubmission) {
         submitAssessment(question.id);

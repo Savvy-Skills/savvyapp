@@ -135,11 +135,6 @@ export default function MultipleChoice({
       if (!currentSubmission.isCorrect) {
         setIsWrong(true);
       }
-      if (quizMode) {
-        if (!completedSlides[index]) {
-          checkSlideCompletion();
-        }
-      }
       setSelectedValues(currentSubmission.answer.map((answer) => answer.text));
       setShowFeedback(true);
     }

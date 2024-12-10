@@ -104,7 +104,7 @@ interface CourseStore {
   setCorrectnessState: (index: number, isCorrect: boolean | null) => void;
   submitAssessment: (assessment_id: number) => void;
   markSlideAsCompleted: (index: number) => void;
-  checkSlideCompletion: (data?: any) => void;
+  checkSlideCompletion: (data?: any, source?: string) => void;
   setScrollToEnd: (scrollFn: () => void) => void;
   isCurrentSlideSubmittable: () => boolean;
 
@@ -342,11 +342,11 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
     const newCompletedSlides = [...completedSlides];
     newCompletedSlides[index] = true;
 
-    await postLessonProgress(currentLesson?.id, newCompletedSlides);
     set({ completedSlides: newCompletedSlides });
+    await postLessonProgress(currentLesson?.id, newCompletedSlides);
   },
 
-  checkSlideCompletion: (data: any) => {
+  checkSlideCompletion: (data, source?) => {
     const {
       currentSlideIndex,
       markSlideAsCompleted,
@@ -356,6 +356,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
     const slide = currentLesson?.slides[currentSlideIndex];
 
     if (!slide) return;
+
+	console.log("Checking slide completion", {data, source, slide, currentSlideIndex, currentLesson, correctnessStates});
 
     switch (slide.type) {
       case "Assessment":

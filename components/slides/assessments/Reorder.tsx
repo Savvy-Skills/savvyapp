@@ -93,9 +93,6 @@ export default function ReorderAssessment({
         return a.order - b.order;
       });
       setCurrentOrder(currentSubmissionOrder.map((answer) => answer.text));
-      if (quizMode && !completedSlides[index]) {
-        checkSlideCompletion();
-      }
       setShowFeedback(true);
     }
   }, [
