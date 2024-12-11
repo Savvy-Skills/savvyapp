@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import AssessmentSlide from "./AssessmentSlide";
 import ActivitySlide from "./ActivitySlide";
 import { Slide } from "../../types";
-import styles from "@/styles/styles";
 import { useCourseStore } from "@/store/courseStore";
 import LastSlide from "./LastSlide";
 import VideoSlide from "./content/VideoSlide";
@@ -12,23 +11,18 @@ import ImageSlide from "./content/ImageSlide";
 export interface SlideProps {
   slide: Slide;
   index: number;
-  quizMode?: boolean;
+  quizMode: boolean;
 }
 
-const SlideComponent = ({
-  slide,
-  index,
-  quizMode,
-}: {
-  slide: Slide;
-  isActive: boolean;
-  index: number;
-  quizMode: boolean;
-}) => {
+const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
   switch (slide.type) {
     case "Assessment":
       return (
-        <AssessmentSlide slide={slide} index={index} quizMode={quizMode} />
+        <AssessmentSlide
+          slide={slide}
+          index={index}
+          quizMode={quizMode}
+        />
       );
     case "Activity":
       return <ActivitySlide slide={slide} index={index} />;
@@ -88,12 +82,5 @@ export default function SlideRenderer({
     }
   }, [currentSlideIndex]);
 
-  return (
-    <SlideComponent
-      slide={slide}
-      isActive={isActive}
-      index={index}
-      quizMode={quizMode}
-    />
-  );
+  return <SlideComponent slide={slide} index={index} quizMode={quizMode} />;
 }

@@ -9,6 +9,7 @@ import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { Colors } from "@/constants/Colors";
 import { FeedbackModal } from "../FeedbackModal";
 import ConfirmationDialog from "../ConfirmationDialog";
+import { router } from "expo-router";
 
 function generateColors(color: string, opacity: number) {
   let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
@@ -36,26 +37,28 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
     setNavMenuVisible,
     completedSlides,
     showIncorrect,
-	restartLesson,
+    restartLesson,
   } = useCourseStore();
 
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [showRestartLessonDialog, setShowRestartLessonDialog] = useState(false);
+  const [showFinishDialog, setShowFinishDialog] = useState(false);
   const showFeedbackModal = () => setFeedbackModalVisible(true);
 
   const showRestartDialog = () => {
-	setShowRestartLessonDialog(true);
+    setShowRestartLessonDialog(true);
   };
-  const hideDialog = () => {
-	setShowRestartLessonDialog(false);
-  }
+  const hideRestartDialog = () => {
+    setShowRestartLessonDialog(false);
+  };
 
   let currentAssessmentID = undefined;
 
   const isLastSlide =
     currentLesson && currentSlideIndex === currentLesson.slides.length - 1;
   if (currentLesson?.slides[currentSlideIndex].type === "Assessment") {
-    currentAssessmentID = currentLesson?.slides[currentSlideIndex].assessment_id;
+    currentAssessmentID =
+      currentLesson?.slides[currentSlideIndex].assessment_id;
   }
   const currentSlide = currentLesson?.slides[currentSlideIndex];
 
@@ -102,15 +105,20 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
   const isCurrentSlideCompleted = completedSlides[currentSlideIndex];
 
+  const handleFinish = useCallback(() => {
+    // Implement finish functionality
+    setShowFinishDialog(true);
+  }, [handleDismissMenu]);
+
   return (
     <View style={[localStyles.container]}>
       <View style={[localStyles.menusContainer]}>
         <CustomNavMenu
           visible={isNavMenuVisible}
           onDismiss={handleDismissMenu}
-		  onShowTopSheet={onShowTopSheet}
-		  showModal={showFeedbackModal}
-		  onRestart={showRestartDialog}
+          onShowTopSheet={onShowTopSheet}
+          showModal={showFeedbackModal}
+          onRestart={showRestartDialog}
         />
       </View>
       <View
@@ -145,7 +153,23 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
           containerColor="rgb(244, 187, 98)"
           style={styles.navButton}
         />
-        {showIncorrect ? (
+        {isLastSlide ? (
+          <Button
+            mode="contained"
+            onPress={handleFinish}
+            style={[styles.checkButton]}
+            labelStyle={localStyles.checkButtonLabel}
+            dark={false}
+            theme={{
+              colors: {
+                primary: checkButtonColors.normal,
+                surfaceDisabled: checkButtonColors.disabled,
+              },
+            }}
+          >
+            FINISH
+          </Button>
+        ) : showIncorrect ? (
           <Button
             mode="contained"
             disabled
@@ -158,26 +182,44 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
         ) : (
           <>
             {!currentAssessmentID || isCurrentSlideCompleted ? (
-              <Button
-                mode="contained"
-                disabled={isLastSlide || !isCurrentSlideCompleted}
-                onPress={handleNextSlide}
-                style={[styles.checkButton]}
-                labelStyle={localStyles.checkButtonLabel}
-                dark={false}
-                theme={{
-                  colors: {
-                    primary: checkButtonColors.normal,
-                    surfaceDisabled: checkButtonColors.disabled,
-                  },
-                }}
-              >
-                {!isCurrentSlideCompleted &&
-                currentSlide?.type === "Content" &&
-                currentSlide.content_info.type === "Video"
-                  ? "WATCH THE VIDEO FIRST"
-                  : "NEXT"}
-              </Button>
+              <>
+                {currentSlide?.type === "Content" &&
+                currentSlide.content_info.type === "Video" ? (
+                  <Button
+                    mode="contained"
+                    disabled={!isCurrentSlideCompleted}
+                    onPress={handleNextSlide}
+                    style={[styles.checkButton]}
+                    labelStyle={localStyles.checkButtonLabel}
+                    dark={false}
+                    theme={{
+                      colors: {
+                        primary: checkButtonColors.normal,
+                        surfaceDisabled: checkButtonColors.disabled,
+                      },
+                    }}
+                  >
+                    NEXT
+                  </Button>
+                ) : (
+                  <Button
+                    mode="contained"
+                    disabled={!isCurrentSlideCompleted}
+                    onPress={handleNextSlide}
+                    style={[styles.checkButton]}
+                    labelStyle={localStyles.checkButtonLabel}
+                    dark={false}
+                    theme={{
+                      colors: {
+                        primary: checkButtonColors.normal,
+                        surfaceDisabled: checkButtonColors.disabled,
+                      },
+                    }}
+                  >
+                    NEXT
+                  </Button>
+                )}
+              </>
             ) : (
               <Button
                 mode="contained"
@@ -216,7 +258,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
           }}
         />
       </View>
-	  <FeedbackModal
+      <FeedbackModal
         visible={feedbackModalVisible}
         onDismiss={() => setFeedbackModalVisible(false)}
         currentLessonInfo={{
@@ -224,15 +266,28 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
           lessonTitle: currentLesson?.name || "",
           currentIndex: currentSlideIndex,
         }}
-        onSubmitFeedback={() => {
-        }}
+        onSubmitFeedback={() => {}}
       />
-	  <ConfirmationDialog
+      <ConfirmationDialog
         visible={showRestartLessonDialog}
-        onDismiss={hideDialog}
+        onDismiss={hideRestartDialog}
         onConfirm={restartLesson}
         title="Are you sure?"
         content="This will restart the lesson and you will lose your progress."
+      />
+      <ConfirmationDialog
+        visible={showFinishDialog}
+        onDismiss={() => setShowFinishDialog(false)}
+        onConfirm={() => {
+          if (currentLesson && currentLesson.module_id) {
+            router.dismissTo({
+              pathname: "/modules/[id]",
+              params: { id: currentLesson.module_id },
+            });
+          }
+        }}
+        title="Are you sure you want to exit this lesson?"
+        content="You can still check you answers later."
       />
     </View>
   );

@@ -32,7 +32,7 @@ export default function Home() {
       <TopNavBar />
       <ScrollView
         style={{ flex: 1, flexGrow: 1 }}
-        
+        id={"scrollview-home-" + Date.now()}
         contentContainerStyle={{ flexGrow: 1 }}
       >
         <>

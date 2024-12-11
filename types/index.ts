@@ -131,10 +131,10 @@ export interface BaseSubmission {
   isCorrect: boolean;
   answer: Answer[];
   lessons_id: number;
-  revealed: boolean
+  revealed: boolean;
 }
 
-export interface  Submission extends BaseSubmission {
+export interface Submission extends BaseSubmission {
   id: number;
   created_at: number;
   submissionTime: number;
@@ -280,4 +280,16 @@ export interface Logo {
 export interface RoleInfo {
   Role_Name: string;
   Rank_Value: number;
+}
+
+export interface BaseFeedback {
+  type: string;
+  text: string;
+  extra_info: any;
+}
+
+export interface Feedback extends BaseFeedback {
+  readonly id: string;
+  readonly created_at: number;
+  user_id: number;
 }
