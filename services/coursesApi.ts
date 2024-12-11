@@ -1,6 +1,8 @@
 import {
+  BaseFeedback,
   BaseSubmission,
   Course,
+  Feedback,
   Lesson,
   LessonProgress,
   LessonWithSlides,
@@ -146,6 +148,28 @@ export const restartLesson = async (lesson_id: number): Promise<void> => {
     await courses_api.post(`/lessons/${lesson_id}/restart`);
   } catch (error) {
     console.error("Error restarting lesson", error);
+  }
+};
+
+export const getAllFeedback = async (): Promise<Feedback[]> => {
+  try {
+    const response = await courses_api.get<Feedback[]>(`/feedback`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching feedback", error);
+    return [];
+  }
+};
+
+export const postFeedback = async (
+  feedback: BaseFeedback
+): Promise<Feedback> => {
+  try {
+    const response = await courses_api.post<Feedback>(`/feedback`, feedback);
+    return response.data;
+  } catch (error) {
+    console.error("Error posting feedback", error);
+    return {} as Feedback;
   }
 };
 

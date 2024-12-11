@@ -16,7 +16,8 @@ import { useCourseStore } from "@/store/courseStore";
 import { useFocusEffect } from "@react-navigation/native";
 import { useKeyPress } from "@/hooks/useKeyboard";
 import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
-import { ActivityIndicator, Text } from "react-native-paper";
+import { ActivityIndicator, FAB, Text } from "react-native-paper";
+import SlideListItem from "@/components/slides/SlideListItem";
 
 export default function ModuleDetail() {
   const ref = useRef<TopSheetRefProps>(null);
@@ -33,7 +34,8 @@ export default function ModuleDetail() {
     previousSlide,
     setCurrentSlideIndex,
     restartingLesson,
-	stopRestartingLesson
+    stopRestartingLesson,
+    completedSlides,
   } = useCourseStore();
   const [direction, setDirection] = useState<"forward" | "backward" | null>(
     null
@@ -46,6 +48,7 @@ export default function ModuleDetail() {
     ref?.current?.scrollToEnd();
   }, []);
 
+
   useEffect(() => {
     clearCurrentLesson();
     getLessonById(Number(id));
@@ -55,7 +58,7 @@ export default function ModuleDetail() {
     if (restartingLesson) {
       clearCurrentLesson();
       getLessonById(Number(id));
-	  stopRestartingLesson();
+      stopRestartingLesson();
     }
   }, [restartingLesson]);
 
@@ -97,20 +100,33 @@ export default function ModuleDetail() {
     return null;
   }
 
+
   return (
     <ScreenWrapper style={{ overflow: "hidden" }}>
       <Pressable style={[styles.pressableArea]} onPress={handlePressOutside}>
         <TopNavBar />
         {restartingLesson ? (
-          <ActivityIndicator size={64} style={{flex:1}}></ActivityIndicator>
+          <ActivityIndicator size={64} style={{ flex: 1 }}></ActivityIndicator>
         ) : (
           <>
             <TopSheet ref={ref}>
-              <ScrollView>
+              <ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
                 {currentLesson.slides.map((slide, index) => (
-                  <Text onPress={() => setCurrentSlideIndex(index)} key={index}>
-                    {slide.name}
-                  </Text>
+                  <SlideListItem
+                    key={`slide-${slide.slide_id}-${index}`}
+                    name={slide.name}
+                    type={slide.type}
+                    subtype={
+                      slide.type === "Assessment"
+                        ? slide.assessment_info?.type
+                        : slide.type === "Content"
+                        ? slide.content_info?.type
+                        : undefined
+                    }
+                    isCompleted={completedSlides[index]}
+                    isActive={index === currentSlideIndex}
+                    onPress={() => setCurrentSlideIndex(index)}
+                  />
                 ))}
               </ScrollView>
             </TopSheet>
@@ -148,5 +164,11 @@ const styles = StyleSheet.create({
   slidesContainer: {
     flex: 1,
     position: "relative",
+  },
+  fab: {
+    position: "absolute",
+    margin: 8,
+    right: 0,
+    bottom: 68,
   },
 });

@@ -1,7 +1,7 @@
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { useSnackbarStore } from "@/store/snackbarStore";
 import styles from "@/styles/styles";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import {
   Modal,
@@ -11,6 +11,9 @@ import {
   Button,
   RadioButton,
 } from "react-native-paper";
+import CustomRadioButton from "./SavvyRadioButton";
+import { BaseFeedback } from "@/types";
+import { postFeedback } from "@/services/coursesApi";
 
 type FeedbackType = "bug" | "suggestion";
 
@@ -25,6 +28,25 @@ interface FeedbackModalProps {
   onSubmitFeedback: () => void;
 }
 
+const renderTextOption = (
+  option: "bug" | "suggestion",
+  onPress: (name: "bug" | "suggestion") => void,
+  selected?: boolean
+) => {
+  const label = option === "bug" ? "Report a bug" : "Suggest an idea";
+  return (
+    <View style={styles.optionContainer}>
+      <CustomRadioButton
+        label={label}
+        value={option}
+        status={selected ? "checked" : "unchecked"}
+        onPress={() => onPress(option)}
+        style={[styles.option, selected && styles.selectedOption]}
+        disabledTouchable={selected}
+      />
+    </View>
+  );
+};
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({
   visible,
   onDismiss,
@@ -48,39 +70,43 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
     setDescription("");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(async () => {
     // Here you would typically send this data to your backend
-    const feedbackData = {
+    const feedbackData: BaseFeedback = {
       type: feedbackType,
-      description,
-      lessonInfo: currentLessonInfo,
-      timestamp: new Date().toISOString(),
+      text: description,
+      extra_info: {
+        lessonInfo: currentLessonInfo,
+      },
     };
-    console.log("Submitting feedback:", feedbackData);
-    // TODO: Implement actual submission logic
+
+    await postFeedback(feedbackData);
+
     resetStates();
     onDismiss();
-	showNack();
-	onSubmitFeedback();
-  };
+    showNack();
+    onSubmitFeedback();
+  }, [feedbackType, description, currentLessonInfo]);
 
   return (
     <Portal>
       <Modal
         visible={visible}
         onDismiss={onDismiss}
-        contentContainerStyle={[localStyles.containerStyle, styles.centeredMaxWidth]}
+        contentContainerStyle={[
+          localStyles.containerStyle,
+          styles.centeredMaxWidth,
+        ]}
       >
         <Text style={localStyles.title}>Send Feedback</Text>
-        <RadioButton.Group
-          onValueChange={(value) => setFeedbackType(value as FeedbackType)}
-          value={feedbackType}
-        >
-          <View style={localStyles.radioGroup}>
-            <RadioButton.Item label="Report a bug" value="bug" />
-            <RadioButton.Item label="Suggest an idea" value="suggestion" />
-          </View>
-        </RadioButton.Group>
+        <View style={localStyles.optionsContainer}>
+          {renderTextOption("bug", setFeedbackType, feedbackType === "bug")}
+          {renderTextOption(
+            "suggestion",
+            setFeedbackType,
+            feedbackType === "suggestion"
+          )}
+        </View>
         <TextInput
           label="Description"
           value={description}
@@ -111,18 +137,19 @@ const localStyles = StyleSheet.create({
     padding: 20,
     margin: 20,
     borderRadius: 8,
-	maxWidth: SLIDE_MAX_WIDTH,
+    maxWidth: SLIDE_MAX_WIDTH,
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
   },
-  radioGroup: {
-    marginBottom: 15,
+  optionsContainer: {
+    gap: 4,
+    marginBottom: 16,
   },
   input: {
-    marginBottom: 15,
+    marginBottom: 16,
   },
   infoText: {
     fontSize: 12,

@@ -107,7 +107,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
   const handleFinish = useCallback(() => {
     // Implement finish functionality
-	setShowFinishDialog(true);
+    setShowFinishDialog(true);
   }, [handleDismissMenu]);
 
   return (
@@ -185,7 +185,22 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
               <>
                 {currentSlide?.type === "Content" &&
                 currentSlide.content_info.type === "Video" ? (
-                  <></>
+                  <Button
+                    mode="contained"
+                    disabled={!isCurrentSlideCompleted}
+                    onPress={handleNextSlide}
+                    style={[styles.checkButton]}
+                    labelStyle={localStyles.checkButtonLabel}
+                    dark={false}
+                    theme={{
+                      colors: {
+                        primary: checkButtonColors.normal,
+                        surfaceDisabled: checkButtonColors.disabled,
+                      },
+                    }}
+                  >
+                    NEXT
+                  </Button>
                 ) : (
                   <Button
                     mode="contained"
