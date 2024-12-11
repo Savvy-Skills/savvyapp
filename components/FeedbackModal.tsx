@@ -9,7 +9,6 @@ import {
   Text,
   TextInput,
   Button,
-  RadioButton,
 } from "react-native-paper";
 import CustomRadioButton from "./SavvyRadioButton";
 import { BaseFeedback } from "@/types";
