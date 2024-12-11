@@ -52,7 +52,6 @@ const TopSheet = React.forwardRef<TopSheetRefProps, TopSheetProps>(
       .onUpdate((event) => {
         translateY.value = event.translationY + context.value.y;
         translateY.value = Math.min(translateY.value, MAX_TRANSLATE_Y);
-        console.log({ val: translateY.value });
       })
       .onEnd(() => {
         if (translateY.value < SCREEN_HEIGHT / 3.5) {
