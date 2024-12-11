@@ -56,6 +56,11 @@ export default function MatchWordsAssessment({
 
   const isActive = index === currentSlideIndex;
 
+  const currentSubmissionIndex = submittedAssessments.findIndex(
+    (submission) => submission.assessment_id === question.id
+  );
+  const currentSubmission = submittedAssessments[currentSubmissionIndex];
+
   useEffect(() => {
     initializeCards();
   }, [question]);
@@ -80,23 +85,35 @@ export default function MatchWordsAssessment({
     }));
 
     const allCards = [...options, ...matches];
-    const shuffledCards = [...allCards].sort(() => Math.random() - 0.5);
 
-    setCards(shuffledCards);
-    // Original cards are used to display the correct matches, we should have an array where the match is next to the option in the array
     const originalCards = [];
     for (let i = 0; i < options.length; i++) {
       originalCards.push(options[i]);
       originalCards.push(matches[i]);
     }
     setOriginalCards(originalCards);
-    scaleAnims.length = shuffledCards.length;
-    shakeAnims.length = shuffledCards.length;
-    shuffledCards.forEach((_, index) => {
-      scaleAnims[index] = new Animated.Value(1);
-      shakeAnims[index] = new Animated.Value(0);
-    });
-    setAllMatched(false);
+
+    if (currentSubmission && currentSubmission.isCorrect) {
+      setCards(
+        allCards.map((card) => ({
+          ...card,
+          isMatched: true,
+          showFeedback: false,
+          isCorrect: true,
+        }))
+      );
+    } else {
+      const shuffledCards = [...allCards].sort(() => Math.random() - 0.5);
+      setCards(shuffledCards);
+      // Original cards are used to display the correct matches, we should have an array where the match is next to the option in the array
+      scaleAnims.length = shuffledCards.length;
+      shakeAnims.length = shuffledCards.length;
+      shuffledCards.forEach((_, index) => {
+        scaleAnims[index] = new Animated.Value(1);
+        shakeAnims[index] = new Animated.Value(0);
+      });
+      setAllMatched(false);
+    }
   };
 
   const handleReset = () => {
@@ -201,22 +218,13 @@ export default function MatchWordsAssessment({
     setSelectedCard(null);
   };
 
-  const currentSubmissionIndex = submittedAssessments.findIndex(
-    (submission) => submission.assessment_id === question.id
-  );
-  const currentSubmission = submittedAssessments[currentSubmissionIndex];
-
-//   useEffect(() => {
-//     if (currentSubmission) {
-//       if (quizMode) {
-//       }
-//       if (!currentSubmission.isCorrect) {
-//         setIsWrong(true);
-//       }
-//       setValue(currentSubmission.answer[0].text);
-//       setShowFeedback(true);
-//     }
-//   }, [submittedAssessments, currentSubmission, quizMode]);
+  useEffect(() => {
+    console.log({ currentSubmission });
+    if (currentSubmission) {
+      setAllMatched(true);
+      setShowFeedback(true);
+    }
+  }, [submittedAssessments, currentSubmission, setAllMatched, setShowFeedback]);
 
   useEffect(() => {
     if (cards.length < 1) return;

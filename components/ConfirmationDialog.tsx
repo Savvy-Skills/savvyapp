@@ -1,7 +1,7 @@
 // ConfirmationDialog.tsx
 import styles from "@/styles/styles";
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, useWindowDimensions } from "react-native";
 import { Dialog, Portal, Button, Icon, Text } from "react-native-paper";
 
 interface ConfirmationDialogProps {
@@ -19,12 +19,14 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   title,
   content,
 }) => {
+  const { width } = useWindowDimensions();
+  const maxWidth = width <= 600 ? width-32 : 600;
   return (
     <Portal>
       <Dialog
         visible={visible}
         onDismiss={onDismiss}
-        style={[styles.centeredMaxWidth, styles.slideWidth]}
+        style={[styles.centeredMaxWidth, styles.slideWidth, { maxWidth }]}
       >
         <Dialog.Title>{title}</Dialog.Title>
         <Dialog.Content style={{ gap: 16 }}>
