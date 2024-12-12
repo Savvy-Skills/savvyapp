@@ -129,27 +129,7 @@ export default function DragAndDrop({
       resetStates();
     }
   }, [tryAgain]);
-
-  useEffect(() => {
-    if (showAnswer) {
-      handleRevealAnswer();
-    }
-  }, [showAnswer]);
-
-  const handleRevealAnswer = () => {
-    if (!quizMode) {
-      const correctDroppedItems = items.reduce((acc, item) => {
-        if (!acc[item.match]) {
-          acc[item.match] = [];
-        }
-        acc[item.match].push(item.text);
-        return acc;
-      }, {} as Record<string, string[]>);
-	  const answer = createAnswer(correctDroppedItems, true);
-	  setAnswer(index, answer);
-      setDroppedItems(correctDroppedItems);
-    }
-  };
+ 
 
   const zones = [...new Set(items.map((item) => item.match))];
   const firstHalf = zones.slice(0, Math.ceil(zones.length / 2));

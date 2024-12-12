@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
-import { RadioButton } from "react-native-paper";
+import { RadioButton, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { Answer, QuestionInfo } from "@/types";
 import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
@@ -130,6 +130,7 @@ export default function SingleChoice({
 
   useEffect(() => {
     if (currentSubmission) {
+		console.log("Sigle choice")
       if (!currentSubmission.isCorrect) {
         setIsWrong(true);
         if (quizMode) {
@@ -137,9 +138,6 @@ export default function SingleChoice({
         }
       }
       setSelectedValue(currentSubmission.answer[0].text);
-    //   if (!completedSlides[index]) {
-    //     checkSlideCompletion({}, "Single Choice useEffect");
-    //   }
       setShowFeedback(true);
     }
   }, [currentSubmission, quizMode]);
