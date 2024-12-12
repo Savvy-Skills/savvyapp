@@ -1,20 +1,16 @@
 import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import { View, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
 import { TextInput, Button, Text, useTheme } from "react-native-paper";
 import { useAuthStore } from "@/store/authStore";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import ThemedLogo from "@/components/themed/ThemedLogo";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, isLoading, token, user } = useAuthStore();
+  const { login, isLoading, token, user, setTest, test } = useAuthStore();
   const theme = useTheme();
 
   const handleLogin = async () => {
@@ -26,8 +22,8 @@ export default function LoginScreen() {
   };
 
   const handlePress = () => {
-	console.log({token, user})
-  }
+    console.log({ token, user });
+  };
 
   return (
     <ScreenWrapper>
@@ -36,7 +32,7 @@ export default function LoginScreen() {
         style={[styles.keyboardAvoidingView]}
       >
         <View style={styles.logoContainer}>
-          <ThemedLogo width={140} height={140}/>
+          <ThemedLogo width={140} height={140} />
         </View>
         <Text style={[styles.title, { color: theme.colors.primary }]}>
           Welcome Back!
@@ -59,6 +55,9 @@ export default function LoginScreen() {
           mode="outlined"
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
+        {/* <Button mode="contained" onPress={handleGoogleLogin}>
+          Sign in with Google
+        </Button> */}
         <Button
           mode="contained"
           onPress={handleLogin}
@@ -68,11 +67,7 @@ export default function LoginScreen() {
         >
           Login
         </Button>
-        <Button
-          mode="text"
-          onPress={handlePress}
-          style={styles.forgotPassword}
-        >
+        <Button mode="text" onPress={handlePress} style={styles.forgotPassword}>
           Forgot Password?
         </Button>
       </KeyboardAvoidingView>

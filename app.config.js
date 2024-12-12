@@ -47,6 +47,7 @@ export default {
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#ffffff",
     },
+	googleServicesFile: "./google-services.json",
     package: getUniqueIdentifier(),
     permissions: [
       "android.permission.CAMERA",
@@ -60,6 +61,7 @@ export default {
   },
   plugins: [
     "expo-router",
+	"@react-native-google-signin/google-signin",
     [
       "expo-camera",
       {

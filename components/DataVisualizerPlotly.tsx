@@ -1,4 +1,4 @@
-import React, { useState, useMemo, lazy, Suspense } from "react";
+import React, { useState, useMemo, lazy, Suspense, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -44,6 +44,56 @@ const colors = [
   "#FF5722",
 ];
 
+const TENDENCY_LINES = [
+  "linear",
+  "exponential",
+  "polynomial",
+  "logarithmic",
+  "power",
+];
+
+type TendencyLine = (typeof TENDENCY_LINES)[number];
+
+function getTendencyTraces(dataset: Record<string, any>[], type: TendencyLine) {
+  switch (type) {
+    case "linear":
+      // Calculate linear tendency line
+      const xValues = dataset.map((item) => item.x);
+      const yValues = dataset.map((item) => item.y);
+      const xMean = xValues.reduce((a, b) => a + b) / xValues.length;
+      const yMean = yValues.reduce((a, b) => a + b) / yValues.length;
+      const numerator = xValues.reduce(
+        (acc, x, i) => acc + (x - xMean) * (yValues[i] - yMean),
+        0
+      );
+      const denominator = xValues.reduce((acc, x) => acc + (x - xMean) ** 2, 0);
+
+      const m = numerator / denominator;
+      const b = yMean - m * xMean;
+
+      const xMin = Math.min(...xValues);
+      const xMax = Math.max(...xValues);
+      const yMin = m * xMin + b;
+      const yMax = m * xMax + b;
+
+      return [
+        {
+          x: [xMin, xMax],
+          y: [yMin, yMax],
+          type: "scatter",
+          mode: "lines",
+          line: {
+            color: "grey",
+            dash: "dot",
+          },
+          showlegend: false,
+        } as Data,
+      ];
+    default:
+      return {};
+  }
+}
+
 export default function DataVisualizerPlotly({
   dataset,
   traces,
@@ -57,7 +107,7 @@ export default function DataVisualizerPlotly({
   const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
     Object.fromEntries(traces.map((trace) => [trace.name, true]))
   );
-  const [isScatterPlot, setIsScatterPlot] = useState(true);
+  const [showLine, setShowLine] = useState<null | TendencyLine>(null);
   const [pieMode, setPieMode] = useState<"frequency" | "sum">("frequency");
 
   const [selectedColumn, setSelectedColumn] = useState<string | null>(
@@ -193,7 +243,7 @@ export default function DataVisualizerPlotly({
               y: dataset.map((d) => d[trace.y]),
               name: trace.name,
               type: "scatter",
-              mode: isScatterPlot ? "markers" : "lines+markers",
+              mode: "markers",
               visible: visibleTraces[trace.name],
               line: {
                 shape: "linear",
@@ -207,19 +257,28 @@ export default function DataVisualizerPlotly({
               showlegend: false,
             } as Data;
           })
-          .filter((trace) => (trace as any).visible);
+          .filter((trace) => (trace as any).visible)
+          .concat(showLine ? getTendencyTraces(dataset, showLine) : []);
     }
   }, [
     dataset,
     traces,
     activeChartType,
     visibleTraces,
-    isScatterPlot,
+    showLine,
     pieMode,
     selectedColumn,
     barPlotColumn,
     histogramColumn,
   ]);
+
+  useEffect(() => {
+    console.log("Tendency traces");
+    if (dataset && showLine) {
+      const traces = getTendencyTraces(dataset, showLine);
+      console.log({ traces });
+    }
+  }, [dataset, showLine]);
 
   const layout: Partial<Layout> = {
     showlegend: false,
@@ -272,8 +331,12 @@ export default function DataVisualizerPlotly({
     }));
   };
 
-  const togglePlotType = () => {
-    setIsScatterPlot((prev) => !prev);
+  const showTendencyLine = () => {
+    if (showLine) {
+      setShowLine(null);
+    } else {
+      setShowLine("linear");
+    }
   };
 
   return (
@@ -412,10 +475,10 @@ export default function DataVisualizerPlotly({
       {activeChartType === "scatter" && (
         <Button
           mode="contained"
-          onPress={togglePlotType}
+          onPress={showTendencyLine}
           style={styles.plotTypeButton}
         >
-          {isScatterPlot ? "Show Lines" : "Hide Lines"}
+          {showLine ? "Show Line" : "Hide Line"}
         </Button>
       )}
     </View>

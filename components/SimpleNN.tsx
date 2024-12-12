@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Image } from "react-native";
 import { Text, Surface, IconButton, Button } from "react-native-paper";
 
 type LayerType = "input" | "hidden" | "output" | null;
@@ -41,11 +41,10 @@ export default function NeuralNetworkVisualizer() {
     >
       <Text style={styles.layerTitle}>Hidden layers</Text>
       <View style={styles.hiddenLayerCircle}>
-        <View style={styles.neuronsContainer}>
-          {[1, 2, 3].map((_, index) => (
-            <View key={index} style={styles.neuron} />
-          ))}
-        </View>
+        <Image
+          source={require("@/assets/images/pngs/nn.png")}
+          style={{ width: 100, height: 100 }}
+        />
       </View>
       <Text style={styles.layerInfo}>[3] hidden layers</Text>
       <Text style={styles.layerInfo}>[5] neurons per layer</Text>
@@ -64,7 +63,10 @@ export default function NeuralNetworkVisualizer() {
     >
       <Text style={styles.layerTitle}>Output layer</Text>
       <View style={styles.outputBox}>
-        <IconButton icon="chart-bell-curve" size={32} iconColor="#666" />
+        <Image
+          source={require("@/assets/images/pngs/nn-output.png")}
+          style={{ width: 60, height: 60 }}
+        />
       </View>
       <Text style={styles.outputLabel}>[Output name]</Text>
     </Surface>
@@ -106,7 +108,10 @@ export default function NeuralNetworkVisualizer() {
           {renderInputLayer()}
         </Pressable>
 
-        <Pressable style={styles.hiddenLayerWrapper} onPress={() => setSelectedLayer("hidden")}>
+        <Pressable
+          style={styles.hiddenLayerWrapper}
+          onPress={() => setSelectedLayer("hidden")}
+        >
           {renderHiddenLayer()}
         </Pressable>
 
@@ -115,7 +120,11 @@ export default function NeuralNetworkVisualizer() {
         </Pressable>
       </View>
 
-      <Button mode="contained" style={styles.trainingButton} buttonColor="#ffa726">
+      <Button
+        mode="contained"
+        style={styles.trainingButton}
+        buttonColor="#ffa726"
+      >
         Start training
       </Button>
       {renderLayerDetails()}
@@ -153,17 +162,17 @@ const styles = StyleSheet.create({
   },
   networkContainer: {
     flexDirection: "row",
-	minHeight: 200
+    minHeight: 200,
   },
   layerContainer: {
     padding: 8,
     borderRadius: 8,
     alignItems: "center",
-	justifyContent:"center",
+    justifyContent: "center",
     borderWidth: 1,
     borderStyle: "dashed",
     borderColor: "#ccc",
-	height:"100%"
+    height: "100%",
   },
   hiddenLayerWrapper: {
     flex: 1,
@@ -182,7 +191,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   inputLayer: {
-    width: 'auto',
+    width: "auto",
   },
   inputLayerSelected: {
     borderColor: "#2196f3",
@@ -194,7 +203,7 @@ const styles = StyleSheet.create({
     borderColor: "#4caf50",
   },
   outputLayer: {
-    width: 'auto',
+    width: "auto",
   },
   outputLayerSelected: {
     borderColor: "#ffa726",
@@ -215,11 +224,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   hiddenLayerCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: "#4caf50",
+    width: 100,
+    height: 100,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -240,10 +246,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   outputBox: {
-    width: 60,
-    height: 60,
+    width: 80,
+    height: 80,
     borderRadius: 8,
-    backgroundColor: "#ffcc80",
+    backgroundColor: "rgba(255, 204, 128, 0.2)",
+	borderColor: "#ffcc80",
+	borderWidth: 2,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -268,4 +276,3 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 });
-

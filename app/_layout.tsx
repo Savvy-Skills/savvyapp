@@ -32,6 +32,8 @@ const queryClient = new QueryClient({
   },
 });
 
+const excluded = ["auth", "debug", "login"];
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMonoRegular.ttf"),
@@ -72,7 +74,7 @@ export default function RootLayout() {
       if (user && !notInRoot) {
         router.replace("/home");
       }
-      if (!token && !inAuthGroup && notInRoot && !inDebug) {
+      if (!token && notInRoot && !excluded.includes(segments[0])) {
         router.replace("/auth/login");
       } else if (token) {
         if (!user) {
@@ -96,37 +98,41 @@ export default function RootLayout() {
         <SnackbarProvider>
           <QueryClientProvider client={queryClient}>
             <SafeAreaProvider>
-                <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen
-                    name="index"
-                    options={{ title: "Landing Page" }}
-                  />
-                  <Stack.Screen name="home/index" options={{ title: "Home" }} />
-                  <Stack.Screen
-                    name="courses/index"
-                    options={{ title: "Courses" }}
-                  />
-                  <Stack.Screen
-                    name="courses/[id]"
-                    options={{ title: "Course Details" }}
-                  />
-                  <Stack.Screen
-                    name="modules/index"
-                    options={{ title: "Modules" }}
-                  />
-                  <Stack.Screen
-                    name="modules/[id]"
-                    options={{ title: "Module Details" }}
-                  />
-                  <Stack.Screen
-                    name="lessons/[id]"
-                    options={{ title: "Lesson Details" }}
-                  />
-                  <Stack.Screen name="auth/login" options={{ title: "Login" }} />
-                  <Stack.Screen name="terms/index" options={{ title: "Terms" }} />
-                  <Stack.Screen name="debug/index" options={{ title: "Debug" }} />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen
+                  name="index"
+                  options={{ title: "Landing Page" }}
+                />
+                <Stack.Screen name="home/index" options={{ title: "Home" }} />
+                <Stack.Screen
+                  name="courses/index"
+                  options={{ title: "Courses" }}
+                />
+                <Stack.Screen
+                  name="courses/[id]"
+                  options={{ title: "Course Details" }}
+                />
+                <Stack.Screen
+                  name="modules/index"
+                  options={{ title: "Modules" }}
+                />
+                <Stack.Screen
+                  name="modules/[id]"
+                  options={{ title: "Module Details" }}
+                />
+                <Stack.Screen
+                  name="lessons/[id]"
+                  options={{ title: "Lesson Details" }}
+                />
+                <Stack.Screen name="auth/login" options={{ title: "Login" }} />
+                <Stack.Screen
+                  name="login/google-oauth/index"
+                  options={{ title: "Google redirect" }}
+                />
+                <Stack.Screen name="terms/index" options={{ title: "Terms" }} />
+                <Stack.Screen name="debug/index" options={{ title: "Debug" }} />
+                <Stack.Screen name="+not-found" />
+              </Stack>
             </SafeAreaProvider>
           </QueryClientProvider>
         </SnackbarProvider>
@@ -134,4 +140,3 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
-
