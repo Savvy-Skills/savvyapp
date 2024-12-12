@@ -34,6 +34,7 @@ const crossPlatformStorage = {
 };
 
 interface AuthStore {
+  test: string;
   token: string | null;
   user: User | null;
   isLoading: boolean;
@@ -42,15 +43,20 @@ interface AuthStore {
   getUser: () => Promise<void>;
   isInitialized: boolean;
   setInitialized: () => void;
+  setTest: (test: string) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
+      test: "null",
       token: null,
       user: null,
       isLoading: false,
       isInitialized: false,
+      setTest: (test: string) => {
+        set({ test });
+      },
       login: async (email: string, password: string) => {
         set({ isLoading: true });
         try {

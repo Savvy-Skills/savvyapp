@@ -148,7 +148,6 @@ export default function DragAndDropAssessment({
       isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
       answerRevealed={showAnswer}
     >
-		<Text>{JSON.stringify({showAnswer, showFeedback, currentSubmission, tryAgain})}</Text>
       <DragAndDrop
         items={items}
         index={index}
