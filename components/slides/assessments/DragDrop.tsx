@@ -4,6 +4,7 @@ import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import AssessmentWrapper from "../AssessmentWrapper";
 import DragAndDrop from "@/components/react/DragAndDrop";
 import { Platform, useWindowDimensions } from "react-native";
+import { Text } from "react-native-paper";
 
 export type DragAndDropAssessmentProps = {
   question: QuestionInfo;
@@ -36,7 +37,6 @@ export default function DragAndDropAssessment({
 }: DragAndDropAssessmentProps) {
   const [isWrong, setIsWrong] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const tryAgain = useRef(false);
   const { width } = useWindowDimensions();
 
@@ -60,7 +60,7 @@ export default function DragAndDropAssessment({
   );
 
   const [showAnswer, setShowAnswer] = useState(
-    currentSubmission?.isCorrect ?? false
+    currentSubmission ? currentSubmission.revealed : false
   );
 
   const [droppedItems, setDroppedItems] = useState<Record<string, string[]>>(
@@ -72,24 +72,15 @@ export default function DragAndDropAssessment({
     }
   );
 
-  //   Make correct zones, which should be a droppedItems object with all items in the correct zone
-  const correctZones = items.reduce<Record<string, string[]>>((acc, item) => {
-    return {
-      ...acc,
-      [item.match]: [...(acc[item.match] || []), item.text],
-    };
-  }, {});
-
   useEffect(() => {
     if (currentSubmission) {
-      setIsSubmitted(true);
       if (!currentSubmission.isCorrect) {
         setIsWrong(true);
         if (quizMode) {
           setShowAnswer(true);
         }
       }
-      //   Transform the dropped items to the correct format of [zone]: [items]
+      // Get the dropped items from the current submission, it should be an array of objects with text and match properties
       const droppedItems = currentSubmission.answer.reduce<
         Record<string, string[]>
       >((acc, item) => {
@@ -104,11 +95,10 @@ export default function DragAndDropAssessment({
       setDroppedItems(droppedItems);
       setShowFeedback(true);
     }
-  }, [currentSubmission, quizMode, setShowFeedback, submittedAssessments]);
+  }, [currentSubmission, quizMode, setShowFeedback]);
 
   const handleTryAgain = useCallback(() => {
     if (!quizMode) {
-      setIsSubmitted(false);
       setShowAnswer(false);
       setIsWrong(false);
       setShowFeedback(false);
@@ -140,7 +130,6 @@ export default function DragAndDropAssessment({
       setDroppedItems(droppedItems);
       setShowFeedback(false);
       setIsWrong(false);
-      setIsSubmitted(false);
     },
     [setShowFeedback, setIsWrong]
   );
@@ -159,12 +148,13 @@ export default function DragAndDropAssessment({
       isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
       answerRevealed={showAnswer}
     >
+		<Text>{JSON.stringify({showAnswer, showFeedback, currentSubmission, tryAgain})}</Text>
       <DragAndDrop
         items={items}
         index={index}
         quizMode={quizMode}
         questionId={question.id}
-        isSubmitted={isSubmitted}
+        isSubmitted={currentSubmission ? true : false}
         showAnswer={showAnswer}
         tryAgain={tryAgain.current}
         isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
