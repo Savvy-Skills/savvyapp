@@ -4,7 +4,6 @@ import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import AssessmentWrapper from "../AssessmentWrapper";
 import DragAndDrop from "@/components/react/DragAndDrop";
 import { Platform, useWindowDimensions } from "react-native";
-import { Text } from "react-native-paper";
 
 export type DragAndDropAssessmentProps = {
   question: QuestionInfo;
@@ -159,6 +158,7 @@ export default function DragAndDropAssessment({
         isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
         droppedItems={droppedItems}
         setDroppedItems={handleDrop}
+        isWrong={isWrong}
         isMobile={isMobile}
       />
     </AssessmentWrapper>

@@ -6,14 +6,13 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import SlideRenderer from "../../components/slides/SlideRenderer";
+import { useLocalSearchParams } from "expo-router";
+import SlideRenderer from "../../../components/slides/SlideRenderer";
 import BottomBarNav from "@/components/navigation/SlidesBottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import AnimatedSlide from "@/components/slides/AnimatedSlide";
 import { useCourseStore } from "@/store/courseStore";
-import { useFocusEffect } from "@react-navigation/native";
 import { useKeyPress } from "@/hooks/useKeyboard";
 import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
 import { ActivityIndicator, FAB, Text } from "react-native-paper";

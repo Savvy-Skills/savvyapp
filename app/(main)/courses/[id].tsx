@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FlatList, ScrollView, StyleSheet, View } from "react-native";
-import ModuleCard from "../../components/ModuleCard";
+import ModuleCard from "../../../components/ModuleCard";
 import styles from "@/styles/styles";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import { useLocalSearchParams } from "expo-router";

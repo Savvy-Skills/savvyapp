@@ -162,6 +162,7 @@ const localStyles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     gap: 10,
+
   },
   feedbackHeader: {
     flexDirection: "row",

@@ -130,7 +130,6 @@ export default function SingleChoice({
 
   useEffect(() => {
     if (currentSubmission) {
-		console.log("Sigle choice")
       if (!currentSubmission.isCorrect) {
         setIsWrong(true);
         if (quizMode) {

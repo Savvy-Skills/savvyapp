@@ -219,7 +219,6 @@ export default function MatchWordsAssessment({
   };
 
   useEffect(() => {
-    console.log({ currentSubmission });
     if (currentSubmission) {
       setAllMatched(true);
       setShowFeedback(true);
