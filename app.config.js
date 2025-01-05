@@ -3,14 +3,14 @@ const IS_PREVIEW = process.env.APP_VARIANT === "preview";
 
 const getUniqueIdentifier = () => {
   if (IS_DEV) {
-    return "com.yourname.SavvySkills.dev";
+    return "com.SavvySkills.dev";
   }
 
   if (IS_PREVIEW) {
-    return "com.yourname.SavvySkills.preview";
+    return "com.SavvySkills.preview";
   }
 
-  return "com.yourname.SavvySkills";
+  return "com.SavvySkills";
 };
 
 const getAppName = () => {
@@ -47,7 +47,6 @@ export default {
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#ffffff",
     },
-	googleServicesFile: "./google-services.json",
     package: getUniqueIdentifier(),
     permissions: [
       "android.permission.CAMERA",
