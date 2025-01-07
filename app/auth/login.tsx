@@ -4,7 +4,6 @@ import { TextInput, Button, Text, useTheme } from "react-native-paper";
 import { useAuthStore } from "@/store/authStore";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import ThemedLogo from "@/components/themed/ThemedLogo";
-import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");

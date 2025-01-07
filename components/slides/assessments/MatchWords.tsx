@@ -219,7 +219,6 @@ export default function MatchWordsAssessment({
   };
 
   useEffect(() => {
-    console.log({ currentSubmission });
     if (currentSubmission) {
       setAllMatched(true);
       setShowFeedback(true);
@@ -289,11 +288,7 @@ export default function MatchWordsAssessment({
   return (
     <AssessmentWrapper
       question={question}
-      showFeedback={showFeedback}
-      setShowFeedback={setShowFeedback}
-      quizMode={quizMode}
       isActive={isActive}
-      isCorrect={currentSubmission ? currentSubmission.isCorrect : false}
     >
       <View style={styles.mainContainer}>
         <View style={styles.cardsContainer}>

@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import React from "react";
+import { FlatList, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
-import ModuleCard from "../../components/ModuleCard";
+import ModuleCard from "../../../components/ModuleCard";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import { getCourses, getModules } from "@/services/coursesApi";
 import { Course, Module } from "@/types";
@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import { ScrollView } from "react-native-gesture-handler";
 import styles from "@/styles/styles";
-import { Link, useNavigation } from "expo-router";
+import { Link } from "expo-router";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
@@ -29,7 +29,7 @@ export default function Home() {
 
   return (
     <ScreenWrapper>
-      <TopNavBar />
+      <TopNavBar  />
       <ScrollView
         style={{ flex: 1, flexGrow: 1 }}
         id={"scrollview-home-" + Date.now()}

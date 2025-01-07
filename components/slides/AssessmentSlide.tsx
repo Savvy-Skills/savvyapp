@@ -112,10 +112,17 @@ export default function AssessmentSlide({
 }: AssessmentProps) {
   const { width } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
+  const { scrollToEnd, currentSlideIndex } = useCourseStore();
 
   const handlePressFab = useCallback(() => {
     scrollRef.current?.scrollToEnd();
   }, []);
+
+  useEffect(() => {
+    if (currentSlideIndex === index) {
+		scrollRef.current?.scrollToEnd();
+    }
+  }, [scrollToEnd]);
 
   return (
     <ScrollView

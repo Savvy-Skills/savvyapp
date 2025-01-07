@@ -29,6 +29,7 @@ interface DragAndDropProps {
   droppedItems: Record<string, string[]>;
   setDroppedItems: (items: Record<string, string[]>) => void;
   isMobile: boolean;
+  isWrong: boolean;
 }
 
 function createAnswer(
@@ -61,6 +62,7 @@ export default function DragAndDrop({
   droppedItems,
   setDroppedItems,
   isMobile,
+  isWrong,
 }: DragAndDropProps) {
   const { setSubmittableState, setCorrectnessState, setAnswer } =
     useCourseStore();
@@ -127,7 +129,7 @@ export default function DragAndDrop({
   useEffect(() => {
     if (tryAgain) {
       resetStates();
-    }
+	}
   }, [tryAgain]);
  
 
@@ -146,7 +148,7 @@ export default function DragAndDrop({
               onDrop={handleDrop}
               isCorrect={isCorrect}
               isSubmitted={isSubmitted}
-              isWrong={!isCorrect}
+              isWrong={isWrong}
               showAnswer={showAnswer}
             >
               <div className="drop-zone-title">{zone}</div>
@@ -196,7 +198,7 @@ export default function DragAndDrop({
               onDrop={handleDrop}
               isCorrect={isCorrect}
               isSubmitted={isSubmitted}
-              isWrong={!isCorrect}
+              isWrong={isWrong}
               showAnswer={showAnswer}
             >
               <div className="drop-zone-title">{zone}</div>

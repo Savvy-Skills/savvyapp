@@ -273,10 +273,8 @@ export default function DataVisualizerPlotly({
   ]);
 
   useEffect(() => {
-    console.log("Tendency traces");
     if (dataset && showLine) {
       const traces = getTendencyTraces(dataset, showLine);
-      console.log({ traces });
     }
   }, [dataset, showLine]);
 

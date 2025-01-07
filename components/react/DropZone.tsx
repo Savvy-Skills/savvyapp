@@ -27,13 +27,13 @@ export function DropZone({ zone, onDrop, children, isCorrect, isSubmitted, isWro
     <div 
       ref={drop} 
       className={`drop-zone ${isOver ? 'hover' : ''} ${
-        isSubmitted ? (isCorrect ? 'correct' : 'wrong') : ''
+        isSubmitted ? (isCorrect ? 'correct' : isWrong ? 'wrong' : '') : ''
 	  } ${showAnswer ? 'show-answer' : ''
       }`}
     >
       {isSubmitted && (
         <div className="status-icon-container">
-          <StatusIcon isCorrect={isCorrect} isWrong={!isCorrect} showAnswer={showAnswer} />
+          <StatusIcon isCorrect={isCorrect} isWrong={isWrong} showAnswer={showAnswer} />
         </div>
       )}
       {children}

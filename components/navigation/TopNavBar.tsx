@@ -20,10 +20,11 @@ const TopNavBar = (props: NavBarProps) => {
   const segments = useSegments();
   const wideScreen = width > 1024;
 
-  const isCourse = segments[0] === "courses";
-  const isModule = segments[0] === "modules";
-  const isLesson = segments[0] === "lessons";
-  const isHome = segments[0] === "home";
+  const isCourse = segments[1] === "courses";
+  const isModule = segments[1] === "modules";
+  const isLesson = segments[1] === "lessons";
+  const isHome = segments[1] === "home";
+
 
   return (
     <>

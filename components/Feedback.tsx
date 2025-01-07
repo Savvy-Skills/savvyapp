@@ -99,7 +99,7 @@ function FeedbackComponent({
       <View style={localStyles.buttonContainer}>
         {!quizMode ? (
           <>
-            <Button
+            {/* <Button
               mode="contained"
               onPress={onTryAgain}
               buttonColor="#321A5F"
@@ -107,8 +107,7 @@ function FeedbackComponent({
               labelStyle={{ fontWeight: 600 }}
             >
               Try again
-            </Button>
-
+            </Button> */}
             <Button
               mode="text"
               onPress={handleShowReveal}
@@ -162,6 +161,11 @@ const localStyles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     gap: 10,
+    maxWidth: SLIDE_MAX_WIDTH,
+    alignSelf: "center",
+    width: "100%",
+    flexDirection: "row",
+	justifyContent:"space-between"
   },
   feedbackHeader: {
     flexDirection: "row",
