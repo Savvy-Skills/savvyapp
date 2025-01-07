@@ -129,7 +129,7 @@ export default function DragAndDrop({
   useEffect(() => {
     if (tryAgain) {
       resetStates();
-    }
+	}
   }, [tryAgain]);
  
 

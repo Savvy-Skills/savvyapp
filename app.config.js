@@ -61,7 +61,7 @@ export default {
   plugins: [
     "expo-router",
 	"@react-native-google-signin/google-signin",
-    [
+    [ 
       "expo-camera",
       {
         cameraPermission: "Allow SavvySkills to access your camera",

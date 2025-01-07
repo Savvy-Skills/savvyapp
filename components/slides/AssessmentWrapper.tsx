@@ -11,78 +11,28 @@ import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 interface AssessmentWrapperProps {
 	children: React.ReactNode;
 	question: QuestionInfo;
-	onTryAgain?: () => void;
-	onRevealAnswer?: () => void;
-	showFeedback: boolean;
-	setShowFeedback: (show: boolean) => void;
-	quizMode: boolean;
-	isActive?: boolean;
-	isCorrect?: boolean;
-	answerRevealed?: boolean;
+	isActive: boolean;
 }
 
 export default function AssessmentWrapper({
 	question,
 	children: assessment,
-	onTryAgain,
-	onRevealAnswer,
-	showFeedback: showFeedbackParent,
-	setShowFeedback: setShowFeedbackParent,
-	quizMode,
 	isActive,
-	isCorrect,
-	answerRevealed,
 }: AssessmentWrapperProps) {
-	const [showExplanation, setShowExplanation] = useState(false);
-	const [revealedAnswer, setRevealedAnswer] = useState(answerRevealed ?? false);
+	const [showExplanationComponent, setShowExplanationComponent] = useState(false);
 	const {
-		submittedAssessments,
-		setShowIncorrect,
-		currentLesson,
-		currentSlideIndex,
+		showExplanation,
 	} = useCourseStore();
 
 	const theme = useTheme();
 
+	const untitledAssessments = ["Fill in the Blank", "True or False"];
+
 	useEffect(() => {
 		if (isActive) {
-			if (isCorrect) {
-				setShowIncorrect(false);
-			} else if (showFeedbackParent) {
-				setShowIncorrect(true);
-			} else if (!showFeedbackParent) {
-				setShowIncorrect(false);
-			}
+			setShowExplanationComponent((state) => !state);
 		}
-	}, [
-		showFeedbackParent,
-		isActive,
-		currentLesson,
-		isCorrect,
-		currentSlideIndex,
-	]);
-
-	const toggleExplanation = () => {
-		setShowExplanation(!showExplanation);
-	};
-
-	const currentSubmissionIndex = submittedAssessments.findIndex(
-		(submission) => submission.assessment_id === question.id
-	);
-	const currentSubmission = submittedAssessments[currentSubmissionIndex];
-
-	const handleTryAgain = () => {
-		if (onTryAgain) onTryAgain();
-		setShowFeedbackParent(false);
-		setRevealedAnswer(false);
-	};
-
-	const handleRevealAnswer = () => {
-		if (onRevealAnswer) onRevealAnswer();
-		setRevealedAnswer(true);
-	};
-
-	const untitledAssessments = ["Fill in the Blank", "True or False"];
+	}, [showExplanation]);
 
 	return (
 		<View
@@ -105,7 +55,7 @@ export default function AssessmentWrapper({
 						{question.text}
 					</ThemedTitle>
 				)}
-				{showExplanation ? (
+				{showExplanationComponent ? (
 					<View style={styles.explanationContainer}>
 						<Text>{question.explanation}</Text>
 					</View>
@@ -113,17 +63,6 @@ export default function AssessmentWrapper({
 					<>{assessment}</>
 				)}
 			</View>
-			{currentSubmission && showFeedbackParent && (
-				<FeedbackComponent
-					correctness={currentSubmission.isCorrect}
-					revealed={revealedAnswer}
-					onTryAgain={handleTryAgain}
-					onRevealAnswer={handleRevealAnswer}
-					onShowExplanation={toggleExplanation}
-					showExplanation={showExplanation}
-					quizMode={quizMode}
-				/>
-			)}
 		</View>
 	);
 }

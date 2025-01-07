@@ -9,7 +9,6 @@ export default function MainLayout() {
         headerStyle: {
           backgroundColor: '#f4f4f4',
         },
-        animation: 'slide_from_right',
       }}
     >
       <Stack.Screen 
