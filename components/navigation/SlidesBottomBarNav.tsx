@@ -45,6 +45,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 		submittedAssessments,
 		triggerTryAgain,
 		triggerScrollToEnd,
+		setSubmittableState,
 	} = useCourseStore();
 
 	const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
@@ -125,11 +126,12 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	const handleTryAgain = useCallback(() => {
 		triggerTryAgain();
 		setHiddenFeedback(currentSlideIndex, true);
+		setSubmittableState(currentSlideIndex, false);
 	}, [triggerTryAgain, setHiddenFeedback, currentSlideIndex]);
 
 
 	const MiddleButton = () => {
-		const buttonLabel = currentSlide?.buttonLabel || "CONTINUE";
+		const buttonLabel = currentSlide?.buttonLabel ? currentSlide.buttonLabel : currentSubmission && currentSubmission.revealed ? "GOT IT" : "CONTINUE";
 		return (
 			<>
 				{isLastSlide ? (
