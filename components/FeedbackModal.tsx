@@ -13,16 +13,17 @@ import {
 import CustomRadioButton from "./SavvyRadioButton";
 import { BaseFeedback } from "@/types";
 import { postFeedback } from "@/services/coursesApi";
+import { Colors } from "@/constants/Colors";
 
 type FeedbackType = "bug" | "suggestion";
 
 interface FeedbackModalProps {
   visible: boolean;
   onDismiss: () => void;
-  currentLessonInfo: {
-    lessonId: number;
+  currentViewInfo: {
+    viewId: number;
     currentIndex: number;
-    lessonTitle: string;
+    viewTitle: string;
   };
   onSubmitFeedback: () => void;
 }
@@ -49,7 +50,7 @@ const renderTextOption = (
 export const FeedbackModal: React.FC<FeedbackModalProps> = ({
   visible,
   onDismiss,
-  currentLessonInfo,
+  currentViewInfo,
   onSubmitFeedback,
 }) => {
   const [feedbackType, setFeedbackType] = useState<FeedbackType>("bug");
@@ -75,7 +76,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
       type: feedbackType,
       text: description,
       extra_info: {
-        lessonInfo: currentLessonInfo,
+        viewInfo: currentViewInfo,
       },
     };
 
@@ -85,7 +86,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
     onDismiss();
     showNack();
     onSubmitFeedback();
-  }, [feedbackType, description, currentLessonInfo]);
+  }, [feedbackType, description, currentViewInfo]);
 
   return (
     <Portal>
@@ -93,8 +94,9 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
         visible={visible}
         onDismiss={onDismiss}
         contentContainerStyle={[
-          localStyles.containerStyle,
+          styles.feedbackModalContainer,
           styles.centeredMaxWidth,
+          styles.slideWidth,
         ]}
       >
         <Text style={localStyles.title}>Send Feedback</Text>
@@ -115,8 +117,8 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
           style={localStyles.input}
         />
         <Text style={localStyles.infoText}>
-          Lesson: {currentLessonInfo.lessonTitle} (Slide{" "}
-          {currentLessonInfo.currentIndex + 1})
+          View: {currentViewInfo.viewTitle} (Slide{" "}
+          {currentViewInfo.currentIndex + 1})
         </Text>
         <Button
           mode="contained"
@@ -131,13 +133,6 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
 };
 
 const localStyles = StyleSheet.create({
-  containerStyle: {
-    backgroundColor: "white",
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-    maxWidth: SLIDE_MAX_WIDTH,
-  },
   title: {
     fontSize: 18,
     fontWeight: "bold",
@@ -152,7 +147,7 @@ const localStyles = StyleSheet.create({
   },
   infoText: {
     fontSize: 12,
-    color: "gray",
+    color: Colors.mutedText,
     marginBottom: 15,
   },
   submitButton: {

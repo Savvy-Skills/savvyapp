@@ -13,7 +13,15 @@ function hexToRgbA(hex: string): string {
     throw new Error('Bad Hex');
 }
 
+function generateColors(color: string, opacity: number) {
+	let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
+	const color1 = rgba.replace(/[^,]+(?=\))/, "1");
+	const color2 = rgba.replace(/[^,]+(?=\))/, opacity.toString());
+	return { normal: color1, muted: color2 };
+}
+
 export {
 	includes,
-	hexToRgbA
+	hexToRgbA,
+	generateColors
 }

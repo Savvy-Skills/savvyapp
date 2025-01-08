@@ -34,7 +34,7 @@ const CustomRadioButton: React.FC<CustomRadioButtonProps> = ({
             disabled && styles.radioDisabled,
           ]}
         >
-          {status === "checked" && <View style={[styles.radioInner, {backgroundColor: isDarkMode ? Colors.dark.assessment : Colors.light.assessment}]} />}
+          {status === "checked" && <View style={[styles.radioInner, {backgroundColor: isDarkMode ? Colors.dark.assessment : Colors.assessment}]} />}
         </View>
         <Text style={[styles.label, disabled && styles.labelDisabled]}>
           {label}

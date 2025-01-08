@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import styles from "@/styles/styles";
 import { Icon } from "react-native-paper";
+import { Colors } from "@/constants/Colors";
 
 interface CustomMenuProps {
   visible: boolean;
@@ -23,7 +24,7 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
   return (
     <>
       <TouchableOpacity
-        style={localStyles.overlay}
+        style={styles.overlay}
         onPress={onDismiss}
         activeOpacity={1}
       >
@@ -36,7 +37,7 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
             }}
           >
             <Icon source="restore" size={24} color="white" />
-            <Text style={localStyles.menuText}>Restart Lesson</Text>
+            <Text style={styles.menuText}>Restart Lesson</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.centeredItems}
@@ -46,7 +47,7 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
             }}
           >
             <Icon source="format-list-numbered" size={24} color="white" />
-            <Text style={localStyles.menuText}>Slide List</Text>
+            <Text style={styles.menuText}>Slide List</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.centeredItems}
@@ -56,24 +57,12 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
             }}
           >
             <Icon source="send" size={24} color="white" />
-            <Text style={localStyles.menuText}>Message us</Text>
+            <Text style={styles.menuText}>Message us</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
     </>
   );
 };
-
-const localStyles = StyleSheet.create({
-  overlay: {
-    alignItems: "center",
-    alignSelf: "center",
-  },
-  menuText: {
-    color: "white",
-    marginTop: 4,
-    fontSize: 12,
-  },
-});
 
 export default CustomNavMenu;

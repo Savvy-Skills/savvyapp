@@ -7,7 +7,7 @@ import CourseTopNavBar from "./CourseTopNavBar";
 import { Course, Module } from "@/types";
 import ModuleTopNavBar from "./ModuleTopNavBar";
 import { Text } from "react-native-paper";
-import LessonInfo from "../LessonInfo";
+import ViewInfo from "../ViewInfo";
 import { Colors } from "@/constants/Colors";
 
 interface NavBarProps {
@@ -22,18 +22,18 @@ const TopNavBar = (props: NavBarProps) => {
 
   const isCourse = segments[1] === "courses";
   const isModule = segments[1] === "modules";
-  const isLesson = segments[1] === "lessons";
+  const isView = segments[1] === "views";
   const isHome = segments[1] === "home";
 
 
   return (
     <>
-      {isLesson ? (
+      {isView ? (
         <>
           <View style={[styles.navHeader, styles.webNav]} id={"navbar"}>
             <SlideNavigation wideScreen={wideScreen} />
           </View>
-          <LessonInfo />
+          <ViewInfo />
         </>
       ) : (
         <View style={[styles.navHeader, styles.webNav]} id={"navbar"}>
@@ -52,7 +52,7 @@ const TopNavBar = (props: NavBarProps) => {
 
 const styles = StyleSheet.create({
   navHeader: {
-	backgroundColor: Colors.light.background,
+	backgroundColor: Colors.background,
     flexDirection: "row",
     justifyContent: "center",
     zIndex: 3,

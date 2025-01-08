@@ -7,6 +7,7 @@ import { useCourseStore } from "@/store/courseStore";
 import LastSlide from "./LastSlide";
 import VideoSlide from "./content/VideoSlide";
 import ImageSlide from "./content/ImageSlide";
+import RichTextSlide from "./content/RichTextSlide";
 
 export interface SlideProps {
   slide: Slide;
@@ -31,13 +32,16 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
         return <VideoSlide url={slide.content_info.url} index={index} />;
       } else if (slide.content_info.type === "Image") {
         return <ImageSlide url={slide.content_info.url} index={index} />;
+      } else if (slide.content_info.type === "Rich Text") {
+        return <RichTextSlide text={slide.content_info.state}/>;
       }
+
       return <View />;
 
     case "Custom":
-      if (slide.subtype === "first") {
+      if (slide.subtype === "intro") {
         return <ImageSlide url={slide.image} index={index} />;
-      } else if (slide.subtype === "last") {
+      } else if (slide.subtype === "outro") {
         return <LastSlide />;
       }
 

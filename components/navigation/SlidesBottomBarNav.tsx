@@ -10,27 +10,20 @@ import { Colors } from "@/constants/Colors";
 import { FeedbackModal } from "../FeedbackModal";
 import ConfirmationDialog from "../ConfirmationDialog";
 import { router } from "expo-router";
+import { generateColors } from "@/utils/utilfunctions";
 
-function generateColors(color: string, opacity: number) {
-	let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
-	const color1 = rgba.replace(/[^,]+(?=\))/, "1");
-	const color2 = rgba.replace(/[^,]+(?=\))/, opacity.toString());
-	return { normal: color1, disabled: color2 };
-}
-
-const navButtonColors = generateColors("#f4bb62", 0.5);
-const checkButtonColors = generateColors("#d9f0fb", 0.5);
+const navButtonColors = generateColors(Colors.navigationOrange, 0.5);
+const checkButtonColors = generateColors(Colors.navigationWhite, 0.5);
 
 type BottomBarNavProps = {
 	onShowTopSheet: () => void;
 };
 
 
-
 const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	const {
 		previousSlide,
-		currentLesson,
+		currentView,
 		currentSlideIndex,
 		nextSlide,
 		submitAssessment,
@@ -38,8 +31,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 		isNavMenuVisible,
 		setNavMenuVisible,
 		completedSlides,
-		showIncorrect,
-		restartLesson,
+		restartView,
 		hiddenFeedbacks,
 		setHiddenFeedback,
 		submittedAssessments,
@@ -49,28 +41,28 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	} = useCourseStore();
 
 	const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
-	const [showRestartLessonDialog, setShowRestartLessonDialog] = useState(false);
+	const [showRestartViewDialog, setShowRestartViewDialog] = useState(false);
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
 	const showFeedbackModal = () => setFeedbackModalVisible(true);
 
 	const showRestartDialog = () => {
-		setShowRestartLessonDialog(true);
+		setShowRestartViewDialog(true);
 	};
 	const hideRestartDialog = () => {
-		setShowRestartLessonDialog(false);
+		setShowRestartViewDialog(false);
 	};
 
 	let currentAssessmentID = undefined;
 
 	const isLastSlide =
-		currentLesson && currentSlideIndex === currentLesson.slides.length - 1;
-	if (currentLesson?.slides[currentSlideIndex].type === "Assessment") {
+		currentView && currentSlideIndex === currentView.slides.length - 1;
+	if (currentView?.slides[currentSlideIndex].type === "Assessment") {
 		currentAssessmentID =
-			currentLesson?.slides[currentSlideIndex].assessment_id;
+			currentView?.slides[currentSlideIndex].assessment_id;
 	}
-	const currentSlide = currentLesson?.slides[currentSlideIndex];
+	const currentSlide = currentView?.slides[currentSlideIndex];
 
-	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentLesson?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentLesson.slides[currentSlideIndex].assessment_info?.id);
+	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentView?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentView.slides[currentSlideIndex].assessment_info?.id);
 	const currentSubmission = submittedAssessments[currentSubmissionIndex];
 
 	const handleCheck = useCallback(() => {
@@ -144,7 +136,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 						theme={{
 							colors: {
 								primary: checkButtonColors.normal,
-								surfaceDisabled: checkButtonColors.disabled,
+								surfaceDisabled: checkButtonColors.muted,
 							},
 						}}
 					>
@@ -166,7 +158,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 										theme={{
 											colors: {
 												primary: checkButtonColors.normal,
-												surfaceDisabled: checkButtonColors.disabled,
+												surfaceDisabled: checkButtonColors.muted,
 											},
 										}}
 									>
@@ -193,7 +185,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 										theme={{
 											colors: {
 												primary: checkButtonColors.normal,
-												surfaceDisabled: checkButtonColors.disabled,
+												surfaceDisabled: checkButtonColors.muted,
 											},
 										}}
 									>
@@ -222,7 +214,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 								theme={{
 									colors: {
 										primary: checkButtonColors.normal,
-										surfaceDisabled: checkButtonColors.disabled,
+										surfaceDisabled: checkButtonColors.muted,
 									},
 								}}
 							>
@@ -264,7 +256,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 					theme={{
 						colors: {
 							surfaceVariant: navButtonColors.normal,
-							surfaceDisabled: navButtonColors.disabled,
+							surfaceDisabled: navButtonColors.muted,
 						},
 					}}
 				/>
@@ -292,7 +284,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 					theme={{
 						colors: {
 							surfaceVariant: navButtonColors.normal,
-							surfaceDisabled: navButtonColors.disabled,
+							surfaceDisabled: navButtonColors.muted,
 						},
 					}}
 				/>
@@ -300,32 +292,32 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 			<FeedbackModal
 				visible={feedbackModalVisible}
 				onDismiss={() => setFeedbackModalVisible(false)}
-				currentLessonInfo={{
-					lessonId: currentLesson?.id || 0,
-					lessonTitle: currentLesson?.name || "",
+				currentViewInfo={{
+					viewId: currentView?.id || 0,
+					viewTitle: currentView?.name || "",
 					currentIndex: currentSlideIndex,
 				}}
 				onSubmitFeedback={() => { }}
 			/>
 			<ConfirmationDialog
-				visible={showRestartLessonDialog}
+				visible={showRestartViewDialog}
 				onDismiss={hideRestartDialog}
-				onConfirm={restartLesson}
+				onConfirm={restartView}
 				title="Are you sure?"
-				content="This will restart the lesson and you will lose your progress."
+				content="This will restart the view and you will lose your progress."
 			/>
 			<ConfirmationDialog
 				visible={showFinishDialog}
 				onDismiss={() => setShowFinishDialog(false)}
 				onConfirm={() => {
-					if (currentLesson && currentLesson.module_id) {
+					if (currentView && currentView.module_id) {
 						router.dismissTo({
 							pathname: "/modules/[id]",
-							params: { id: currentLesson.module_id },
+							params: { id: currentView.module_id },
 						});
 					}
 				}}
-				title="Are you sure you want to exit this lesson?"
+				title="Are you sure you want to exit this view?"
 				content="You can still check you answers later."
 			/>
 		</View>
@@ -359,7 +351,7 @@ const localStyles = StyleSheet.create({
 		lineHeight: 18,
 		fontWeight: "bold",
 		letterSpacing: 1,
-		color: Colors.light.orange,
+		color: Colors.orange,
 	},
 	incorrectButton: {
 		flex: 1,

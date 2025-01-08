@@ -40,7 +40,7 @@ const ModuleTopNavBar = (props: ModuleProps) => {
         </Text>
         <Text
           style={{
-            color: Colors.light.primary,
+            color: Colors.primary,
             fontWeight: "bold",
             fontSize: 16,
             textAlign: "center",

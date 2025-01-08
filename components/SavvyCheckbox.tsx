@@ -38,7 +38,7 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({
             <Feather
               name="check"
               size={16}
-              color={isDarkMode ? Colors.dark.assessment : Colors.light.assessment}
+              color={isDarkMode ? Colors.dark.assessment : Colors.assessment}
             />
           )}
         </View>

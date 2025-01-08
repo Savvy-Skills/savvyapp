@@ -2,21 +2,21 @@ import React from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Title, Paragraph, ProgressBar } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { Lesson } from "../types";
+import { ViewType } from "../types";
 import ThemedTitle from "./themed/ThemedTitle";
 import ThemedParagraph from "./themed/ThemedParagraph";
 
-interface LessonCardProps {
-  lesson: Lesson;
+interface ViewCardProps {
+  view: ViewType;
 }
 
-export default function LessonCard({ lesson }: LessonCardProps) {
+export default function ViewCard({ view }: ViewCardProps) {
   const router = useRouter();
 
   const handlePress = () => {
     router.navigate({
-      pathname: "/lessons/[id]",
-      params: { id: lesson.id },
+      pathname: "/views/[id]",
+      params: { id: view.id },
     });
   };
 
@@ -24,14 +24,14 @@ export default function LessonCard({ lesson }: LessonCardProps) {
     <TouchableOpacity onPress={handlePress} accessibilityRole="button">
       <Card style={styles.card}>
         <Card.Content>
-          <ThemedTitle>{lesson.name}</ThemedTitle>
+          <ThemedTitle>{view.name}</ThemedTitle>
           <ThemedParagraph numberOfLines={2} style={styles.description}>
-            {lesson.description}
+            {view.description}
           </ThemedParagraph>
           <View style={styles.statsContainer}>
-            <ThemedParagraph>Slides: {lesson.slides.length}</ThemedParagraph>
+            <ThemedParagraph>Slides: {view.slides.length}</ThemedParagraph>
             <ThemedParagraph>
-              Completed: 0/{lesson.slides.length}
+              Completed: 0/{view.slides.length}
             </ThemedParagraph>
           </View>
           <ProgressBar progress={0} style={styles.progressBar} />

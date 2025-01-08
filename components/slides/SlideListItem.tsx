@@ -51,7 +51,7 @@ export default function SlideListItem({
         <Icon
           source={getIcon()}
           size={24}
-          color={Colors.light.primary}
+          color={Colors.primary}
         />
       )}
       right={props => (
@@ -60,7 +60,7 @@ export default function SlideListItem({
             <Icon
               source="check-circle"
               size={20}
-              color={Colors.light.primary}
+              color={Colors.primary}
             />
           )}
         </View>

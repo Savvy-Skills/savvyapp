@@ -37,15 +37,15 @@ function FeedbackComponent({
   if (revealed) {
     return (
       <View
-        style={[localStyles.feedbackContainer, localStyles.revealedFeedback]}
+        style={[styles.feedbackContainer, styles.revealedFeedback]}
       >
-        <View style={localStyles.feedbackHeader}>
+        <View style={styles.feedbackHeader}>
           <Icon source="check" size={20} color="#666666" />
-          <Text style={[localStyles.feedbackTitle, localStyles.revealedTitle]}>
+          <Text style={[styles.feedbackTitle, styles.revealedTitle]}>
             Here's the correct answer
           </Text>
         </View>
-        <View style={localStyles.buttonContainer}>
+        <View style={styles.buttonContainer}>
           <Button
             mode="text"
             onPress={onShowExplanation}
@@ -63,15 +63,15 @@ function FeedbackComponent({
   if (correctness) {
     return (
       <View
-        style={[localStyles.feedbackContainer, localStyles.correctFeedback]}
+        style={[styles.feedbackContainer, styles.correctFeedback]}
       >
-        <View style={localStyles.feedbackHeader}>
+        <View style={styles.feedbackHeader}>
           <Icon source="star" size={20} color="#3bc2f5" />
-          <Text style={[localStyles.feedbackTitle, localStyles.correctTitle]}>
+          <Text style={[styles.feedbackTitle, styles.correctTitle]}>
             Positive feedback
           </Text>
         </View>
-        <View style={localStyles.buttonContainer}>
+        <View style={styles.buttonContainer}>
           <Button
             mode="text"
             onPress={onShowExplanation}
@@ -88,26 +88,17 @@ function FeedbackComponent({
 
   return (
     <View
-      style={[localStyles.feedbackContainer, localStyles.incorrectFeedback]}
+      style={[styles.feedbackContainer, styles.incorrectFeedback]}
     >
-      <View style={localStyles.feedbackHeader}>
+      <View style={styles.feedbackHeader}>
         <Icon source="alert" size={20} color="#ff861d" />
-        <Text style={[localStyles.feedbackTitle, localStyles.incorrectTitle]}>
+        <Text style={[styles.feedbackTitle, styles.incorrectTitle]}>
           Negative feedback text
         </Text>
       </View>
-      <View style={localStyles.buttonContainer}>
+      <View style={styles.buttonContainer}>
         {!quizMode ? (
           <>
-            {/* <Button
-              mode="contained"
-              onPress={onTryAgain}
-              buttonColor="#321A5F"
-              textColor="white"
-              labelStyle={{ fontWeight: 600 }}
-            >
-              Try again
-            </Button> */}
             <Button
               mode="text"
               onPress={handleShowReveal}
@@ -142,64 +133,3 @@ function FeedbackComponent({
 }
 
 export default FeedbackComponent;
-
-const localStyles = StyleSheet.create({
-  wrapperContainer: {
-    flex: 1,
-    flexDirection: "column",
-    maxWidth: SLIDE_MAX_WIDTH,
-    marginHorizontal: "auto",
-    gap: 16,
-  },
-  container: {
-    flex: 1,
-    gap: 16,
-    padding: 30,
-    paddingTop: 16,
-  },
-  feedbackContainer: {
-    padding: 16,
-    borderWidth: 1,
-    gap: 10,
-    maxWidth: SLIDE_MAX_WIDTH,
-    alignSelf: "center",
-    width: "100%",
-    flexDirection: "row",
-	justifyContent:"space-between"
-  },
-  feedbackHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  feedbackTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    gap: 16,
-    padding: 10,
-  },
-  correctFeedback: {
-    backgroundColor: "#daedf5",
-    borderColor: "#3bc2f5",
-  },
-  incorrectFeedback: {
-    backgroundColor: "#ffe7cc",
-    borderColor: "#ff861d",
-  },
-  revealedFeedback: {
-    backgroundColor: "#f4f4f4",
-    borderColor: "#e0e0e0",
-  },
-  correctTitle: {
-    color: "#3bc2f5",
-  },
-  incorrectTitle: {
-    color: "#ff861d",
-  },
-  revealedTitle: {
-    color: "#666666",
-  },
-});

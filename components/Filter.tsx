@@ -11,6 +11,9 @@ import {
 import { useFilters } from "../hooks/useFilters";
 import type { FilterProps } from "../types/filter";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
+import { Colors } from "@/constants/Colors";
+import styles from "@/styles/styles";
+import { generateColors } from "@/utils/utilfunctions";
 
 function SingleFilterRow({
   filter,
@@ -39,8 +42,8 @@ function SingleFilterRow({
   const [concatMenuVisible, setConcatMenuVisible] = React.useState(false);
 
   return (
-    <View style={styles.filterRowContainer}>
-      <View style={styles.filterRow}>
+    <View style={localStyles.filterRowContainer}>
+      <View style={localStyles.filterRow}>
         <Menu
           visible={fieldMenuVisible}
           onDismiss={() => setFieldMenuVisible(false)}
@@ -49,20 +52,20 @@ function SingleFilterRow({
               mode="outlined"
               onPress={() => setFieldMenuVisible(true)}
               style={[
-                styles.button,
-                styles.fieldButton,
+                localStyles.button,
+                localStyles.fieldButton,
                 !selectedField
                   ? disabled
-                    ? styles.disabled
-                    : styles.callToAction
-                  : styles.hasValue,
+                    ? localStyles.disabled
+                    : localStyles.callToAction
+                  : localStyles.hasValue,
               ]}
               labelStyle={[
                 !selectedField
                   ? disabled
-                    ? styles.disabled
-                    : styles.callToActionLabel
-                  : styles.hasValueLabel,
+                    ? localStyles.disabled
+                    : localStyles.callToActionLabel
+                  : localStyles.hasValueLabel,
               ]}
               disabled={disabled}
             >
@@ -90,13 +93,13 @@ function SingleFilterRow({
               mode="outlined"
               onPress={() => setOperatorMenuVisible(true)}
               style={[
-                styles.button,
-                styles.operatorButton,
-                !selectedField || disabled ? styles.disabled : styles.hasValue,
+                localStyles.button,
+                localStyles.operatorButton,
+                !selectedField || disabled ? localStyles.disabled : localStyles.hasValue,
               ]}
               disabled={!selectedField || disabled}
               labelStyle={
-                !selectedField || disabled ? {} : styles.hasValueLabel
+                !selectedField || disabled ? {} : localStyles.hasValueLabel
               }
             >
               {selectedOperator}
@@ -121,12 +124,12 @@ function SingleFilterRow({
             mode="outlined"
             onChangeText={setFilterValue}
             style={[
-              styles.input,
+              localStyles.input,
               disabled || !selectedField
-                ? styles.disabled
+                ? localStyles.disabled
                 : filterValue
-                ? styles.hasValue
-                : styles.callToAction,
+                ? localStyles.hasValue
+                : localStyles.callToAction,
             ]}
             outlineColor={
               disabled || !filterValue
@@ -153,13 +156,13 @@ function SingleFilterRow({
                 mode="outlined"
                 onPress={() => setValueMenuVisible(true)}
                 style={[
-                  styles.button,
-                  styles.valueButton,
+                  localStyles.button,
+                  localStyles.valueButton,
                   filterValue
-                    ? styles.hasValue
+                    ? localStyles.hasValue
                     : disabled || !selectedField
-                    ? styles.disabled
-                    : styles.callToAction,
+                    ? localStyles.disabled
+                    : localStyles.callToAction,
                 ]}
                 disabled={!selectedField || disabled}
               >
@@ -185,7 +188,7 @@ function SingleFilterRow({
           icon="plus"
           size={20}
           onPress={onAddClick}
-          style={styles.addFilterButton}
+          style={localStyles.addFilterButton}
         />
       )}
       {showConcatenator && (
@@ -196,8 +199,8 @@ function SingleFilterRow({
             <Button
               mode="outlined"
               onPress={() => setConcatMenuVisible(true)}
-              style={[styles.button, styles.concatButton, styles.hasValue]}
-              labelStyle={styles.hasValueLabel}
+              style={[localStyles.button, localStyles.concatButton, localStyles.hasValue]}
+              labelStyle={localStyles.hasValueLabel}
             >
               {concatenationType}
             </Button>
@@ -245,16 +248,16 @@ export default function Filter({
   }, [currentCombinedFilter, onFilterChange]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.titleContainer}>
+    <View style={[styles.slideWidth, styles.centeredMaxWidth]}>
+      <View style={localStyles.titleContainer}>
         <Icon source="cog" size={24} />
-        <Text style={styles.title}>Filters</Text>
+        <Text style={localStyles.title}>Filters</Text>
         {currentCombinedFilter && (
           <IconButton
             icon="trash-can"
             size={20}
             onPress={resetFilters}
-            style={styles.clearButton}
+            style={localStyles.clearButton}
             iconColor="red"
           />
         )}
@@ -284,14 +287,10 @@ export default function Filter({
   );
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   container: {
-    maxWidth: SLIDE_MAX_WIDTH,
-    alignSelf: "center",
     gap: 8,
     padding: 8,
-	width: "100%",
-	flex:1	
   },
   titleContainer: {
     flexDirection: "row",
@@ -342,21 +341,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   callToAction: {
-    backgroundColor: "rgba(255, 152, 0, 0.2)",
-    borderColor: "rgb(255, 152, 0)",
-    color: "rgb(255, 152, 0)",
+	backgroundColor: generateColors(Colors.orange, 0.2).muted,
+    borderColor: Colors.orange,
+	color: Colors.orange,
   },
   callToActionLabel: {
-    color: "rgb(255, 152, 0)",
+    color: Colors.orange,
   },
   hasValue: {
-    backgroundColor: "rgba(33, 150, 243, 0.2)",
-    borderColor: "rgb(33, 150, 243)",
+	backgroundColor: generateColors(Colors.blue, 0.2).muted,
+	borderColor: Colors.blue,
   },
   hasValueLabel: {
-    color: "rgb(33, 150, 243)",
+	color: Colors.blue,
   },
   disabled: {
-    backgroundColor: "rgba(0, 0, 0, 0.1)",
+	backgroundColor: generateColors(Colors.text, 0.1).muted,
   },
 });

@@ -172,7 +172,7 @@ export default function DragAndDrop({
             <Icon
               source="chevron-double-up"
               size={24}
-              color={Colors.light.primary}
+              color={Colors.primary}
             />
           </div>
           <div className="draggable-items">
@@ -188,7 +188,7 @@ export default function DragAndDrop({
             <Icon
               source="chevron-double-down"
               size={24}
-              color={Colors.light.primary}
+              color={Colors.primary}
             />
           </div>
           {secondHalf.map((zone) => (

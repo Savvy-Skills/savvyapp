@@ -12,18 +12,18 @@ interface SlideNavigationProps {
 
 const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
   const {
-    currentLesson,
+    currentView,
     completedSlides,
     currentSlideIndex,
     setCurrentSlideIndex,
   } = useCourseStore();
   const theme = useTheme();
 
-  if (!currentLesson) return null;
+  if (!currentView) return null;
 
   const handleClose = () => {
     setCurrentSlideIndex(0);
-	const currentModule = currentLesson.module_id;
+	const currentModule = currentView.module_id;
     // router.navigate(`/modules/${currentModule}`);
 	router.dismissTo(`/modules/${currentModule}`);
   };
@@ -32,7 +32,7 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
     <View style={localStyles.container}>
       <View style={[localStyles.navContainer, styles.centeredMaxWidth, {maxWidth: SLIDE_MAX_WIDTH+22}]}>
         <IconButton icon="close" size={20} onPress={handleClose} />
-        {currentLesson.slides.map((_, index) => (
+        {currentView.slides.map((_, index) => (
           <TouchableOpacity
             key={index}
             style={[

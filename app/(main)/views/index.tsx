@@ -1,7 +1,7 @@
 
 import { Redirect } from "expo-router";
 
-export default function LessonsList() {
+export default function ViewList() {
 
   return <Redirect href={"/home"}></Redirect>
 }
