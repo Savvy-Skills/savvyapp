@@ -1,18 +1,18 @@
 import { create } from "zustand";
 import {
-	getLessonByID,
-	getLessonProgress,
-	getLessonSubmissions,
-	getModuleLessons,
-	postLessonProgress,
-	postLessonSubmission,
-	restartLesson,
+	getViewByID,
+	getViewProgress,
+	getViewSubmissions,
+	getModule,
+	postViewProgress,
+	postViewSubmission,
+	restartView,
 } from "../services/coursesApi";
 import {
 	CustomSlide,
 	Module,
-	Lesson,
-	LessonWithSlides,
+	ViewType,
+	ViewWithSlides,
 	Slide,
 	Submission,
 	Answer,
@@ -23,14 +23,14 @@ const createSubmission = (
 	assessment_id: number,
 	correct: boolean,
 	answer: AssessmentAnswer,
-	lesson_id: number,
+	view_id: number,
 	submission_id: number
 ): Submission => {
 	return {
 		id: submission_id,
 		created_at: Date.now(),
 		assessment_id,
-		lessons_id: lesson_id,
+		views_id: view_id,
 		submissionTime: Date.now(),
 		isCorrect: correct,
 		answer: answer.answer,
@@ -41,19 +41,19 @@ const createSubmission = (
 function createCustomSlide(
 	type: string,
 	module_id: number,
-	lesson: LessonWithSlides
+	view: ViewWithSlides
 ): CustomSlide {
 	if (type === "first") {
 		return {
-			name: `Intro: ${lesson.name}`,
+			name: `Intro: ${view.name}`,
 			order: 0,
 			slide_id: 0,
 			created_at: Date.now(),
 			published: true,
 			module_id: module_id,
 			type: "Custom",
-			subtype: "first",
-			image: `${lesson.lesson_info.intro_image}`,
+			subtype: "intro",
+			image: `${view.view_info.intro_image}`,
 		};
 	} else {
 		return {
@@ -64,8 +64,8 @@ function createCustomSlide(
 			published: true,
 			module_id: module_id,
 			type: "Custom",
-			subtype: "last",
-			image: `${lesson.lesson_info.intro_image}`,
+			subtype: "outro",
+			image: `${view.view_info.intro_image}`,
 		};
 	}
 }
@@ -76,10 +76,10 @@ export interface AssessmentAnswer {
 }
 
 interface CourseStore {
-	lessons: Lesson[];
+	views: ViewType[];
 	currentSlideIndex: number;
 	prevSlideIndex: number;
-	currentLesson: LessonWithSlides | undefined;
+	currentView: ViewWithSlides | undefined;
 	submittableStates: Record<number, boolean>;
 	correctnessStates: Record<number, boolean | null>;
 	submittedAssessments: Submission[];
@@ -92,8 +92,8 @@ interface CourseStore {
 	error: string | null;
 	isLoading: boolean;
 
-	fetchModuleLessons: (module_id: number) => Promise<void>;
-	getLessonById: (id: number) => Promise<void>;
+	fetchModuleViews: (module_id: number) => Promise<void>;
+	getViewById: (id: number) => Promise<void>;
 	setCurrentSlideIndex: (index: number) => void;
 	nextSlide: () => void;
 	previousSlide: () => void;
@@ -110,13 +110,13 @@ interface CourseStore {
 
 	isNavMenuVisible: boolean;
 	setNavMenuVisible: (isVisible: boolean) => void;
-	clearCurrentLesson: () => void;
+	clearCurrentView: () => void;
 	showIncorrect: boolean;
 	setShowIncorrect: (show: boolean) => void;
 
-	restartLesson: () => void;
-	restartingLesson: boolean;
-	stopRestartingLesson: () => void;
+	restartView: () => void;
+	restartingView: boolean;
+	stopRestartingView: () => void;
 
 	tryAgain: boolean;
 	triggerTryAgain: () => void;
@@ -133,11 +133,11 @@ interface CourseStore {
 }
 
 export const useCourseStore = create<CourseStore>((set, get) => ({
-	lessons: [],
-	restartingLesson: false,
+	views: [],
+	restartingView: false,
 	currentSlideIndex: 0,
 	prevSlideIndex: 0,
-	currentLesson: undefined,
+	currentView: undefined,
 	submittableStates: {},
 	correctnessStates: {},
 	submittedAssessments: [],
@@ -172,33 +172,33 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
 	setShowIncorrect: (show) => set({ showIncorrect: show }),
 
-	fetchModuleLessons: async (module_id: number) => {
+	fetchModuleViews: async (module_id: number) => {
 		try {
-			const moduleResponse = await getModuleLessons(module_id);
-			set({ lessons: moduleResponse.lessons });
+			const moduleResponse = await getModule(module_id);
+			set({ views: moduleResponse.views });
 		} catch (error) {
-			console.error("Error fetching lessons:", error);
+			console.error("Error fetching views:", error);
 		}
 	},
 
-	getLessonById: async (id: number) => {
+	getViewById: async (id: number) => {
 		try {
 			set({ isLoading: true });
-			const lesson = await getLessonByID(id);
-			const progress = await getLessonProgress(id);
-			const submissions = await getLessonSubmissions(id);
+			const view = await getViewByID(id);
+			const progress = await getViewProgress(id);
+			const submissions = await getViewSubmissions(id);
 
-			const sorted = lesson.slides.sort((a, b) => a.order - b.order);
+			const sorted = view.slides.sort((a, b) => a.order - b.order);
 
 			const firstSlide: CustomSlide = createCustomSlide(
 				"first",
-				lesson.module_id,
-				lesson
+				view.module_id,
+				view
 			);
 			const lastSlide: CustomSlide = createCustomSlide(
 				"last",
-				lesson.module_id,
-				lesson
+				view.module_id,
+				view
 			);
 
 			sorted.unshift(firstSlide);
@@ -209,8 +209,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 				: Array(sorted.length).fill(false);
 
 			set({
-				currentLesson: {
-					...lesson,
+				currentView: {
+					...view,
 					slides: sorted,
 				},
 				completedSlides: progressArray,
@@ -230,8 +230,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 		})),
 
 	nextSlide: () => {
-		const { currentSlideIndex, currentLesson } = get();
-		if (currentLesson && currentSlideIndex < currentLesson.slides.length - 1) {
+		const { currentSlideIndex, currentView } = get();
+		if (currentView && currentSlideIndex < currentView.slides.length - 1) {
 			set((state) => ({
 				prevSlideIndex: state.currentSlideIndex,
 				currentSlideIndex: currentSlideIndex + 1,
@@ -280,13 +280,13 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			checkSlideCompletion,
 			setSubmittableState,
 			submittedAssessments,
-			currentLesson,
+			currentView,
 			answers,
 		} = get();
 
-		const quizMode = currentLesson?.quiz;
+		const quizMode = currentView?.quiz;
 		const isCorrect = correctnessStates[currentSlideIndex] || false;
-		if (!currentLesson) return;
+		if (!currentView) return;
 
 		const currentSubmission = submittedAssessments.find(
 			(submission) => submission.assessment_id === assessment_id
@@ -300,7 +300,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			assessment_id,
 			isCorrect,
 			answers[currentSlideIndex],
-			currentLesson?.id,
+			currentView?.id,
 			currentSubmission?.id || 0
 		);
 
@@ -331,8 +331,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 		}
 
 		// Post submission to server and replace placeholder submission
-		const postedSubmission = await postLessonSubmission(
-			currentLesson.id,
+		const postedSubmission = await postViewSubmission(
+			currentView.id,
 			placeHolderSubmission
 		);
 
@@ -357,8 +357,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 	},
 
 	markSlideAsCompleted: async (index: number) => {
-		const { completedSlides, currentLesson } = get();
-		if (completedSlides[index] || !currentLesson) {
+		const { completedSlides, currentView } = get();
+		if (completedSlides[index] || !currentView) {
 			return;
 		}
 
@@ -366,25 +366,25 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 		newCompletedSlides[index] = true;
 
 		set({ completedSlides: newCompletedSlides });
-		await postLessonProgress(currentLesson?.id, newCompletedSlides);
+		await postViewProgress(currentView?.id, newCompletedSlides);
 	},
 
 	checkSlideCompletion: (data, source?) => {
 		const {
 			currentSlideIndex,
 			markSlideAsCompleted,
-			currentLesson,
+			currentView,
 			correctnessStates,
 		} = get();
-		const slide = currentLesson?.slides[currentSlideIndex];
+		const slide = currentView?.slides[currentSlideIndex];
 
 		if (!slide) return;
 
-		console.log("Checking slide completion", { data, source, slide, currentSlideIndex, currentLesson, correctnessStates });
+		console.log("Checking slide completion", { data, source, slide, currentSlideIndex, currentView, correctnessStates });
 
 		switch (slide.type) {
 			case "Assessment":
-				if (correctnessStates[currentSlideIndex] || currentLesson.quiz) {
+				if (correctnessStates[currentSlideIndex] || currentView.quiz) {
 					markSlideAsCompleted(currentSlideIndex);
 				}
 				break;
@@ -416,11 +416,11 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			currentSlideIndex,
 			submittableStates,
 			submittedAssessments,
-			currentLesson,
+			currentView,
 		} = get();
-		if (currentLesson?.slides[currentSlideIndex].type === "Assessment") {
+		if (currentView?.slides[currentSlideIndex].type === "Assessment") {
 			const currentAssessmentID =
-				currentLesson?.slides[currentSlideIndex].assessment_id;
+				currentView?.slides[currentSlideIndex].assessment_id;
 			const submission = submittedAssessments.find(
 				(submission) => submission.assessment_id === currentAssessmentID
 			);
@@ -434,9 +434,9 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 	},
 	isNavMenuVisible: false,
 	setNavMenuVisible: (isVisible) => set({ isNavMenuVisible: isVisible }),
-	clearCurrentLesson: () =>
+	clearCurrentView: () =>
 		set({
-			currentLesson: undefined,
+			currentView: undefined,
 			currentSlideIndex: 0,
 			completedSlides: [],
 			submittableStates: {},
@@ -444,13 +444,13 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			submittedAssessments: [],
 		}),
 
-	restartLesson: async () => {
-		const { currentLesson } = get();
-		if (!currentLesson) return;
-		const lesson_id = currentLesson.id;
-		await restartLesson(lesson_id);
-		set({ restartingLesson: true });
+	restartView: async () => {
+		const { currentView } = get();
+		if (!currentView) return;
+		const view_id = currentView.id;
+		await restartView(view_id);
+		set({ restartingView: true });
 	},
 
-	stopRestartingLesson: () => set({ restartingLesson: false }),
+	stopRestartingView: () => set({ restartingView: false }),
 }));

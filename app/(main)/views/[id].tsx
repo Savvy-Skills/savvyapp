@@ -18,23 +18,24 @@ import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
 import { ActivityIndicator, FAB, Text } from "react-native-paper";
 import SlideListItem from "@/components/slides/SlideListItem";
 import FeedbackComponent from "@/components/Feedback";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 export default function ModuleDetail() {
 	const ref = useRef<TopSheetRefProps>(null);
 
 	const { id } = useLocalSearchParams();
 	const {
-		getLessonById,
-		currentLesson,
+		getViewById,
+		currentView,
 		currentSlideIndex,
 		isNavMenuVisible,
 		setNavMenuVisible,
-		clearCurrentLesson,
+		clearCurrentView,
 		nextSlide,
 		previousSlide,
 		setCurrentSlideIndex,
-		restartingLesson,
-		stopRestartingLesson,
+		restartingView,
+		stopRestartingView,
 		completedSlides,
 		submittedAssessments,
 		hiddenFeedbacks,
@@ -47,12 +48,11 @@ export default function ModuleDetail() {
 	const [direction, setDirection] = useState<"forward" | "backward" | null>(
 		null
 	);
-	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentLesson?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentLesson.slides[currentSlideIndex].assessment_info?.id);
+	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentView?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentView.slides[currentSlideIndex].assessment_info?.id);
 	const currentSubmission = submittedAssessments[currentSubmissionIndex];
 
 	const prevIndexRef = useRef(currentSlideIndex);
 	const [isInitialRender, setIsInitialRender] = useState(true);
-	const [showIndicator, setShowIndicator] = useState(false);
 
 	const revealedAnswer = currentSubmission?.revealed ?? false;
 
@@ -62,20 +62,20 @@ export default function ModuleDetail() {
 
 
 	useEffect(() => {
-		clearCurrentLesson();
-		getLessonById(Number(id));
+		clearCurrentView();
+		getViewById(Number(id));
 	}, [id]);
 
 	useEffect(() => {
-		if (restartingLesson) {
-			clearCurrentLesson();
-			getLessonById(Number(id));
-			stopRestartingLesson();
+		if (restartingView) {
+			clearCurrentView();
+			getViewById(Number(id));
+			stopRestartingView();
 		}
-	}, [restartingLesson]);
+	}, [restartingView]);
 
 	const handleArrowRight = () => {
-		if (currentLesson && currentSlideIndex < currentLesson.slides.length - 1) {
+		if (currentView && currentSlideIndex < currentView.slides.length - 1) {
 			nextSlide();
 		}
 	};
@@ -113,23 +113,23 @@ export default function ModuleDetail() {
 		setHiddenFeedback(currentSlideIndex, true);
 	}
 
-	const isAssessment = currentLesson?.slides[currentSlideIndex].type === "Assessment";
+	const isAssessment = currentView?.slides[currentSlideIndex].type === "Assessment";
 	
-	if (!currentLesson) {
-		return <ActivityIndicator size={64} style={{ flex: 1 }}></ActivityIndicator>
+	if (!currentView) {
+		return <LoadingIndicator />
 	}
 
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
 			<Pressable style={[styles.pressableArea]} onPress={handlePressOutside}>
 				<TopNavBar />
-				{restartingLesson ? (
+				{restartingView ? (
 					<ActivityIndicator size={64} style={{ flex: 1 }}></ActivityIndicator>
 				) : (
 					<>
 						<TopSheet ref={ref}>
 							<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
-								{currentLesson.slides.map((slide, index) => (
+								{currentView.slides.map((slide, index) => (
 									<SlideListItem
 										key={`slide-${slide.slide_id}-${index}`}
 										name={slide.name}
@@ -149,7 +149,7 @@ export default function ModuleDetail() {
 							</ScrollView>
 						</TopSheet>
 						<View style={styles.slidesContainer}>
-							{currentLesson.slides.map((slide, index) => (
+							{currentView.slides.map((slide, index) => (
 								<AnimatedSlide
 									key={`${slide.slide_id}-${index}`}
 									isActive={index === currentSlideIndex}
@@ -161,7 +161,7 @@ export default function ModuleDetail() {
 									<SlideRenderer
 										slide={slide}
 										index={index}
-										quizMode={currentLesson.quiz}
+										quizMode={currentView.quiz}
 									/>
 								</AnimatedSlide>
 							))}
@@ -174,7 +174,7 @@ export default function ModuleDetail() {
 									onTryAgain={handleTryAgain}
 									onRevealAnswer={triggerRevealAnswer}
 									onShowExplanation={triggerShowExplanation}
-									quizMode={currentLesson.quiz}
+									quizMode={currentView.quiz}
 									showExplanation={false}
 								/>
 							)}

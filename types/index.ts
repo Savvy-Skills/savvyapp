@@ -20,10 +20,10 @@ export interface ModuleInfo {
 
 export interface Module extends ModuleInfo {
   course_info: Course;
-  lessons: Lesson[];
+  views: ViewType[];
 }
 
-export interface LessonInfo {
+export interface ViewInfo {
   video: string;
   slides: number;
   questions: number;
@@ -31,7 +31,7 @@ export interface LessonInfo {
   intro_image: string;
 }
 
-export interface Lesson {
+export interface ViewType {
   readonly id: number;
   readonly created_at: number;
   name: string;
@@ -39,22 +39,24 @@ export interface Lesson {
   class_id: number;
   owner_id: number;
   shared_user_ids: number[];
-  savvy_lesson: boolean;
+  savvy: boolean;
   content_id?: string;
-  lesson_info: LessonInfo;
+  view_info: ViewInfo;
   module_id: number;
   quiz: boolean;
+  type: "lesson" | "example" | "tool";
   slides: BaseSlide[];
+  order: number;
 }
 
-export interface LessonWithSlides {
+export interface ViewWithSlides {
   readonly id: number;
-  lesson_info: LessonInfo;
+  view_info: ViewInfo;
   name: string;
   class_id: number;
   content_id: string;
   slides: Slide[];
-  lesson_content: ContentInfo;
+  view_content: ContentInfo;
   module_id: number;
   progress: Progress;
   quiz: boolean;
@@ -65,7 +67,7 @@ export interface Progress {
   readonly id: string;
   readonly created_at: number;
   user_id: number;
-  lesson_id: number;
+  view_id: number;
   slide_n: number;
   class_id: number;
 }
@@ -103,7 +105,7 @@ export interface ActivitySlide extends BaseSlide {
 }
 export interface CustomSlide extends BaseSlide {
   type: "Custom";
-  subtype: "first" | "last";
+  subtype: "intro" | "outro";
   image?: string;
 }
 
@@ -131,7 +133,7 @@ export interface BaseSubmission {
   assessment_id: number;
   isCorrect: boolean;
   answer: Answer[];
-  lessons_id: number;
+  views_id: number;
   revealed: boolean;
 }
 
@@ -142,11 +144,11 @@ export interface Submission extends BaseSubmission {
   student_id?: number;
 }
 
-export interface LessonProgress {
+export interface ViewProgress {
   readonly id?: string;
   readonly created_at: number;
   user_id: number;
-  lesson_id: number;
+  view_id: number;
   class_id: number;
   progress: any[];
   timestamp: number;

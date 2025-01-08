@@ -90,7 +90,7 @@ const TopSheet = React.forwardRef<TopSheetRefProps, TopSheetProps>(
 			style={{
 				alignSelf: "flex-end",
 			}}
-			iconColor={Colors.light.primary}
+			iconColor={Colors.primary}
 		  	icon={"chevron-double-up"}
 		  ></IconButton>
           {/* Children */}
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     marginHorizontal: "auto",
     left: 0,
     right: 0,
-    backgroundColor: Colors.light.background,
+    backgroundColor: Colors.background,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

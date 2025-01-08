@@ -112,7 +112,7 @@ const LandingPage = () => {
       gap: 8,
       alignSelf: "center",
       borderWidth: 2,
-      borderColor: Colors.light.lightOrange,
+      borderColor: Colors.lightOrange,
       borderRadius: 30,
       paddingVertical: 6,
       paddingHorizontal: 10,
@@ -167,7 +167,7 @@ const LandingPage = () => {
               style={styles.button}
               mode="contained"
               onPress={handleLogin}
-              buttonColor={!user ? Colors.light.orange : theme.colors.secondary}
+              buttonColor={!user ? Colors.orange : theme.colors.secondary}
               labelStyle={styles.buttonLabel}
             >
               {!user ? "Log in" : "Log out"}
@@ -194,7 +194,7 @@ const LandingPage = () => {
                 styles.buttonLabel,
                 { fontSize: 24, paddingHorizontal: 0, paddingVertical: 2 },
               ]}
-              buttonColor={Colors.light.primary}
+              buttonColor={Colors.primary}
             >
               Get started
             </Button>
@@ -243,7 +243,7 @@ const LandingPage = () => {
               style={styles.gradient}
             />
             <View
-              style={[styles.iconPillCont, { borderColor: Colors.light.blue }]}
+              style={[styles.iconPillCont, { borderColor: Colors.blue }]}
             >
               <Image
                 source={require("@/assets/images/pngs/bag.png")}
@@ -287,7 +287,7 @@ const LandingPage = () => {
               style={styles.gradient}
             />
             <View
-              style={[styles.iconPillCont, { borderColor: Colors.light.primaryLighter }]}
+              style={[styles.iconPillCont, { borderColor: Colors.primaryLighter }]}
             >
               <Image
                 source={require("@/assets/images/pngs/solution.png")}

@@ -32,8 +32,8 @@ export default function MainLayout() {
         options={{ title: "Module Details" }} 
       />
       <Stack.Screen 
-        name="lessons/[id]" 
-        options={{ title: "Lesson" }} 
+        name="views/[id]" 
+        options={{ title: "Views" }} 
       />
     </Stack>
   );

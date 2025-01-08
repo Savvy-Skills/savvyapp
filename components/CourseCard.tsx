@@ -4,6 +4,7 @@ import { Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { Course } from "../types";
 import { Colors } from "@/constants/Colors";
+import styles from "@/styles/styles";
 
 interface CourseCardProps {
   course: Course;
@@ -23,17 +24,17 @@ export default function CourseCard({ course }: CourseCardProps) {
     <TouchableOpacity
       onPress={handlePress}
       accessibilityRole="button"
-      style={styles.container}
+      style={localStyles.container}
     >
       <View style={styles.card}>
         <Image
           source={require("../assets/images/placeholder.png")}
-          style={styles.backgroundPattern}
+          style={localStyles.backgroundPattern}
         />
         <View style={styles.tagContainer}>
           <Text style={styles.tag}>AI</Text>
         </View>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={localStyles.title} numberOfLines={2}>
           {course.name}
         </Text>
       </View>
@@ -41,24 +42,9 @@ export default function CourseCard({ course }: CourseCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   container: {
     marginRight: 16,
-  },
-  card: {
-    width: 320,
-    backgroundColor: "white",
-    borderRadius: 8,
-    overflow: "hidden",
-    marginVertical: 6,
-    padding: 10,
-    gap: 10,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowRadius: 4,
-    shadowColor: "grey",
   },
   backgroundPattern: {
     width: "100%",
@@ -69,18 +55,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  tagContainer: {
-    backgroundColor: "rgba(102, 74, 204, 0.2)",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-    alignSelf: "flex-start",
-  },
-  tag: {
-    fontSize: 12,
-    fontFamily: "PoppinsBold",
-    color: Colors.light.primary,
   },
   title: {
     fontSize: 20,

@@ -1,6 +1,7 @@
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
+import { generateColors } from "@/utils/utilfunctions";
 import { StyleSheet, Dimensions } from "react-native";
-
+import { Colors } from "@/constants/Colors";
 const { width, height } = Dimensions.get("window");
 
 const fontSizes = {
@@ -15,9 +16,25 @@ export default StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+
+  feedbackModalContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    margin: 20,
+    borderRadius: 8,
+  },
   listContainer: {
     padding: 8,
     flexGrow: 1,
+  },
+  overlay: {
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  menuText: {
+    color: Colors.whiteText,
+    marginTop: 4,
+    fontSize: 12,
   },
   topNavBarInner: {
     flex: 1,
@@ -87,25 +104,87 @@ export default StyleSheet.create({
     textAlign: "center",
     fontSize: fontSizes.medium,
   },
+  card: {
+	width: 320,
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    overflow: "hidden",
+    marginVertical: 6,
+    padding: 10,
+    gap: 10,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowRadius: 4,
+    shadowColor: "grey",
+  },
+  tagContainer: {
+    backgroundColor: generateColors(Colors.primary, 0.2).muted,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+    alignSelf: "flex-start",
+    fontFamily: "PoppinsBold",
+
+  },
+  tag: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontFamily: "PoppinsBold",
+  },
   // Add more styles as needed
+
+  feedbackContainer: {
+    padding: 16,
+    borderWidth: 1,
+    gap: 10,
+    maxWidth: SLIDE_MAX_WIDTH,
+    alignSelf: "center",
+    width: "100%",
+    flexDirection: "row",
+	justifyContent:"space-between",
+  },
+  feedbackHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+	flex: 1
+  },
+  feedbackTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 16,
+    padding: 10,
+  },
+  correctFeedback: {
+    backgroundColor: "#daedf5",
+    borderColor: "#3bc2f5",
+  },
+  incorrectFeedback: {
+    backgroundColor: "#ffe7cc",
+    borderColor: "#ff861d",
+  },
+  revealedFeedback: {
+    backgroundColor: "#f4f4f4",
+    borderColor: "#e0e0e0",
+  },
+  correctTitle: {
+    color: "#3bc2f5",
+  },
+  incorrectTitle: {
+    color: "#ff861d",
+  },
+  revealedTitle: {
+    color: "#666666",
+  },
   navigation: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 16,
-  },
-  feedbackContainer: {
-    padding: 8,
-    borderRadius: 4,
-    marginTop: 16,
-  },
-  correctFeedback: {
-    backgroundColor: "#d4edda",
-  },
-  incorrectFeedback: {
-    backgroundColor: "#f8d7da",
-  },
-  feedbackText: {
-    textAlign: "center",
   },
   assessmentButtonContainer: {
     flexDirection: "row",

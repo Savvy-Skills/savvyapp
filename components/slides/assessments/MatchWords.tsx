@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   selectedCard: {
     borderWidth: 2,
-    borderColor: Colors.light.primary,
+    borderColor: Colors.primary,
   },
   correctCard: {
     borderWidth: 2,

@@ -232,7 +232,7 @@ export default function TrueFalseQuestion({
 					<Icon
 						source="chevron-double-up"
 						size={24}
-						color={Colors.light.primary}
+						color={Colors.primary}
 					/>
 				</View>
 				<Text style={styles.questionText}>{question.text}</Text>
@@ -240,7 +240,7 @@ export default function TrueFalseQuestion({
 					<Icon
 						source="chevron-double-down"
 						size={24}
-						color={Colors.light.primary}
+						color={Colors.primary}
 					/>
 				</View>
 				<View style={styles.buttonContainer}>

@@ -3,9 +3,9 @@ import {
   BaseSubmission,
   Course,
   Feedback,
-  Lesson,
-  LessonProgress,
-  LessonWithSlides,
+  ViewType,
+  ViewWithSlides,
+  ViewProgress,
   Module,
   Submission,
 } from "../types";
@@ -52,102 +52,97 @@ export const getCourseModules = async (
   }
 };
 
-interface ModuleLessons {
-  lessons: Lesson[];
-  module: Module;
-}
 
-export const getModuleLessons = async (
+
+export const getModule = async (
   module_id: number
-): Promise<ModuleLessons> => {
+): Promise<Module> => {
   try {
-    const response = await courses_api.get<ModuleLessons>(
-      `/modules/${module_id}/lessons`
+    const response = await courses_api.get<Module>(
+      `/modules/${module_id}`
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching lessons", error);
-    return {} as ModuleLessons;
+    console.error("Error fetching module", error);
+    return {} as Module;
   }
 };
 
-export const getLessonProgress = async (
-  lesson_id: number
-): Promise<LessonProgress> => {
+export const getViewProgress = async (
+  view_id: number
+): Promise<ViewProgress> => {
   try {
-    const response = await courses_api.get<LessonProgress>(
-      `/lessons/${lesson_id}/progress`
+    const response = await courses_api.get<ViewProgress>(
+      `/views/${view_id}/progress`
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching lesson progress", error);
-    return {} as LessonProgress;
+    console.error("Error fetching view progress", error);
+    return {} as ViewProgress;
   }
 };
 
-export const postLessonProgress = async (
-  lesson_id: number,
+export const postViewProgress = async (
+  view_id: number,
   progress: boolean[]
-): Promise<LessonProgress> => {
+): Promise<ViewProgress> => {
   try {
-    const response = await courses_api.post<LessonProgress>(
-      `/lessons/${lesson_id}/progress`,
+    const response = await courses_api.post<ViewProgress>(
+      `/views/${view_id}/progress`,
       { progress }
     );
     return response.data;
   } catch (error) {
-    console.error("Error posting lesson progress", error);
-    return {} as LessonProgress;
+    console.error("Error posting view progress", error);
+    return {} as ViewProgress;
   }
 };
 
-export const getLessonSubmissions = async (
-  lesson_id: number
+export const getViewSubmissions = async (
+  view_id: number
 ): Promise<Submission[]> => {
   try {
     const response = await courses_api.get<Submission[]>(
-      `/lessons/${lesson_id}/submissions`
+      `/views/${view_id}/submissions`
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching lesson submissions", error);
+    console.error("Error fetching view submissions", error);
     return [];
   }
 };
 
-export const postLessonSubmission = async (
-  lesson_id: number,
+export const postViewSubmission = async (
+  view_id: number,
   submission: BaseSubmission
 ): Promise<Submission> => {
   try {
     const response = await courses_api.post<Submission>(
-      `/lessons/${lesson_id}/submissions`,
+      `/views/${view_id}/submissions`,
       submission
     );
     return response.data;
   } catch (error) {
-    console.error("Error posting lesson submission", error);
+    console.error("Error posting view submission", error);
     return {} as Submission;
   }
 };
 
-export const getLessonByID = async (id: number): Promise<LessonWithSlides> => {
+export const getViewByID = async (id: number): Promise<ViewWithSlides> => {
   try {
-    const response = await courses_api.get<LessonWithSlides[]>(
-      `/lessons/${id}`
-    );
+    const response = await courses_api.get<ViewWithSlides[]>(`/views/${id}`);
     return response.data[0];
   } catch (error) {
     console.error("Error fetching module", error);
-    return {} as LessonWithSlides;
+    return {} as ViewWithSlides;
   }
 };
 
-export const restartLesson = async (lesson_id: number): Promise<void> => {
+export const restartView = async (view_id: number): Promise<void> => {
   try {
-    await courses_api.post(`/lessons/${lesson_id}/restart`);
+    await courses_api.post(`/views/${view_id}/restart`);
   } catch (error) {
-    console.error("Error restarting lesson", error);
+    console.error("Error restarting view", error);
   }
 };
 

@@ -25,7 +25,7 @@ const CourseTopNavBar = (props: CourseProps) => {
       <View style={styles.navBarInfo}>
         <Text
           style={{
-            color: Colors.light.primary,
+            color: Colors.primary,
             fontWeight: "bold",
             textAlign: "center",
 			fontSize:16
