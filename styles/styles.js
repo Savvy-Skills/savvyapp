@@ -186,6 +186,11 @@ export default StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 16,
   },
+  assessmentWrapper: {
+	backgroundColor: "#F4F1FE",
+	marginTop: "auto",
+	marginBottom: "auto",
+  },
   assessmentButtonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",

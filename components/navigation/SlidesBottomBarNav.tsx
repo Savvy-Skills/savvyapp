@@ -121,6 +121,8 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 		setSubmittableState(currentSlideIndex, false);
 	}, [triggerTryAgain, setHiddenFeedback, currentSlideIndex]);
 
+	const currentContents = currentSlide?.contents && currentSlide.contents.length > 0 ? currentSlide.contents.sort((a, b) => a.order - b.order) : [];
+	const lastContent = currentContents[currentContents.length-1]
 
 	const MiddleButton = () => {
 		const buttonLabel = currentSlide?.buttonLabel ? currentSlide.buttonLabel : currentSubmission && currentSubmission.revealed ? "GOT IT" : "CONTINUE";
@@ -147,7 +149,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 						{!currentAssessmentID || isCurrentSlideCompleted ? (
 							<>
 								{currentSlide?.type === "Content" &&
-									currentSlide.content_info.type === "Video" ? (
+									lastContent.type === "Video" ? (
 									<Button
 										mode="contained"
 										disabled={!isCurrentSlideCompleted}

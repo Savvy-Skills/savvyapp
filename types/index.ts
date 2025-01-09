@@ -77,11 +77,17 @@ export interface BareSlide {
   order: number;
 }
 
+interface ContentResponse extends ContentInfo {
+	content_id: string;
+	order: number;
+}
+
 export interface BaseSlide extends BareSlide {
   readonly created_at: number;
   published: boolean;
   module_id: number;
   type: "Assessment" | "Content" | "Activity" | "Custom";
+  contents: ContentResponse[];
   name: string;
   buttonLabel?: string;
 }
@@ -154,7 +160,7 @@ export interface ViewProgress {
   timestamp: number;
 }
 
-type ContentTypes = "Video" | "Image" | "Rich Text";
+type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network";
 
 export interface ContentInfo {
   readonly created_at: number;
@@ -164,6 +170,8 @@ export interface ContentInfo {
   state: string;
   title: string;
   image: Image;
+  dataset_id?: string;
+  dataset_info?: DatasetInfo;
 }
 
 type QuestionTypes =

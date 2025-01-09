@@ -49,7 +49,7 @@ export const Footer: React.FC = () => {
             <Text style={localStyles.link}>Contact Us</Text>
           </Link>
         </View>
-        <Text style={localStyles.copyright}>&copy; 2023 Savvyapp</Text>
+        <Text style={localStyles.copyright}>&copy; 2025 Savvyskills</Text>
       </View>
     </View>
   );

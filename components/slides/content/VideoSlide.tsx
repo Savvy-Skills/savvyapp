@@ -1,8 +1,9 @@
 import VideoComponent from "../../VideoComponent";
 
-interface VideoSlideProps {
+export interface VideoSlideProps {
   url: string;
   index: number;
+  canComplete: boolean;
 }
 
 const VideoSlide: React.FC<VideoSlideProps> = (props) => {

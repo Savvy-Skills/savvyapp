@@ -1,88 +1,147 @@
-import React, { useEffect } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useCallback, useEffect, useRef } from "react";
+import { ScrollView, useWindowDimensions, View } from "react-native";
 import AssessmentSlide from "./AssessmentSlide";
 import ActivitySlide from "./ActivitySlide";
-import { Slide } from "../../types";
+import { ContentInfo, DatasetInfo, Slide } from "../../types";
 import { useCourseStore } from "@/store/courseStore";
 import LastSlide from "./LastSlide";
 import VideoSlide from "./content/VideoSlide";
 import ImageSlide from "./content/ImageSlide";
 import RichTextSlide from "./content/RichTextSlide";
+import DataTableContainer from "../DataTableContainer";
+import styles from "@/styles/styles";
 
 export interface SlideProps {
-  slide: Slide;
-  index: number;
-  quizMode: boolean;
+	slide: Slide;
+	index: number;
+	quizMode: boolean;
 }
 
+interface ContentComponentProps {
+	content: ContentInfo;
+	index: number;
+	canComplete: boolean;
+}
+
+const ContentComponent = ({ content, index, canComplete }: ContentComponentProps) => {
+	switch (content.type) {
+		case "Video":
+			return <VideoSlide url={content.url} index={index} canComplete={canComplete} />;
+		case "Image":
+			return <ImageSlide url={content.url} index={index} />;
+		case "Rich Text":
+			return <RichTextSlide text={content.state} />;
+		case "Dataset":
+			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} />;
+		default:
+			return <View />;
+	}
+};
+
 const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
-  switch (slide.type) {
-    case "Assessment":
-      return (
-        <AssessmentSlide
-          slide={slide}
-          index={index}
-          quizMode={quizMode}
-        />
-      );
-    case "Activity":
-      return <ActivitySlide slide={slide} index={index} />;
-    case "Content":
-      if (slide.content_info.type === "Video") {
-        return <VideoSlide url={slide.content_info.url} index={index} />;
-      } else if (slide.content_info.type === "Image") {
-        return <ImageSlide url={slide.content_info.url} index={index} />;
-      } else if (slide.content_info.type === "Rich Text") {
-        return <RichTextSlide text={slide.content_info.state}/>;
-      }
+	const sortedContents = slide.contents.sort((a, b) => a.order - b.order);
+	switch (slide.type) {
+		case "Assessment":
+			return (
+				<View style={[styles.slideWidth, styles.centeredMaxWidth, { flexGrow: 1, flex: 1 }]}>
+					{sortedContents.length > 0 && (
+						sortedContents.map((content, contentIndex) => (
+							<View key={`${contentIndex}-${content.type}`}>
+								<ContentComponent content={content} index={index} canComplete={false} />
+							</View>
+						))
+					)}
+					<AssessmentSlide
+						slide={slide}
+						index={index}
+						quizMode={quizMode}
+					/>
+				</View>
+			);
+		case "Activity":
+			return <ActivitySlide slide={slide} index={index} />;
+		case "Content":
 
-      return <View />;
-
-    case "Custom":
-      if (slide.subtype === "intro") {
-        return <ImageSlide url={slide.image} index={index} />;
-      } else if (slide.subtype === "outro") {
-        return <LastSlide />;
-      }
-
-      return <View />;
-    default:
-      return <View />;
-  }
+			return sortedContents.map((content, contentIndex) => (
+				<View key={`${contentIndex}-${content.type}`} style={{flexGrow: 1, flex: 1, justifyContent: "center"}}>
+					<ContentComponent
+						content={content}
+						index={index}
+						canComplete={contentIndex === sortedContents.length - 1}
+					/>
+				</View>
+			));
+		case "Custom":
+			if (slide.subtype === "intro") {
+				return <ImageSlide url={slide.image} index={index} />;
+			} else if (slide.subtype === "outro") {
+				return <LastSlide />;
+			}
+			return <View />;
+		default:
+			return <View />;
+	}
 };
 
 export default function SlideRenderer({
-  slide,
-  index,
-  quizMode = false,
+	slide,
+	index,
+	quizMode = false,
 }: SlideProps) {
-  const {
-    currentSlideIndex,
-    setSubmittableState,
-    checkSlideCompletion,
-    submittableStates,
-  } = useCourseStore();
-  const isActive = currentSlideIndex === index;
+	const {
+		currentSlideIndex,
+		setSubmittableState,
+		checkSlideCompletion,
+		submittableStates,
+		scrollToEnd,
+		completedSlides,
+	} = useCourseStore();
+	const { width } = useWindowDimensions();
+	const isActive = currentSlideIndex === index;
+	const scrollRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
-    if (isActive && slide.type !== "Assessment") {
+	const currentContents = slide?.contents && slide.contents.length > 0 ? slide.contents.sort((a, b) => a.order - b.order) : [];
+	const lastContent = currentContents[currentContents.length-1]
 
-      if (submittableStates[currentSlideIndex]) {
-        setSubmittableState(currentSlideIndex, false, "Slide Renderer");
-      }
-    }
-  }, [currentSlideIndex, setSubmittableState]);
 
-  useEffect(() => {
-    if (isActive) {
-      if (
-        (slide.type === "Content" && slide.content_info.type !== "Video") ||
-        slide.type === "Custom"
-      ) {
-        checkSlideCompletion({ viewed: true });
-      }
-    }
-  }, [currentSlideIndex]);
+	useEffect(() => {
+		if (currentSlideIndex === index) {
+			scrollRef.current?.scrollToEnd();
+		}
+	}, [scrollToEnd]);
 
-  return <SlideComponent slide={slide} index={index} quizMode={quizMode} />;
+	useEffect(() => {
+		if (isActive && slide.type !== "Assessment") {
+
+			if (submittableStates[currentSlideIndex]) {
+				setSubmittableState(currentSlideIndex, false, "Slide Renderer");
+			}
+		}
+	}, [currentSlideIndex, setSubmittableState]);
+
+	useEffect(() => {
+		if (isActive && !completedSlides[currentSlideIndex]) {
+			if (
+				(slide.type === "Content" &&  lastContent.type !== "Video") ||
+				slide.type === "Custom"
+			) {
+				checkSlideCompletion({ viewed: true });
+			}
+		}
+	}, [currentSlideIndex]);
+
+	return (
+		<ScrollView
+			contentContainerStyle={{
+				flex: 1,
+				flexGrow: 1,
+				justifyContent: "center",
+				gap: 16,
+				width: width,
+			}}
+			ref={scrollRef}
+		>
+			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
+		</ScrollView>
+	);
 }

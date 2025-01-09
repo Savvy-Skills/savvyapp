@@ -10,10 +10,8 @@ import {
 } from "../services/coursesApi";
 import {
 	CustomSlide,
-	Module,
 	ViewType,
 	ViewWithSlides,
-	Slide,
 	Submission,
 	Answer,
 } from "../types";
@@ -43,7 +41,7 @@ function createCustomSlide(
 	module_id: number,
 	view: ViewWithSlides
 ): CustomSlide {
-	if (type === "first") {
+	if (type === "intro") {
 		return {
 			name: `Intro: ${view.name}`,
 			order: 0,
@@ -54,6 +52,7 @@ function createCustomSlide(
 			type: "Custom",
 			subtype: "intro",
 			image: `${view.view_info.intro_image}`,
+			contents: [],
 		};
 	} else {
 		return {
@@ -66,6 +65,7 @@ function createCustomSlide(
 			type: "Custom",
 			subtype: "outro",
 			image: `${view.view_info.intro_image}`,
+			contents: [],
 		};
 	}
 }
@@ -191,12 +191,12 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			const sorted = view.slides.sort((a, b) => a.order - b.order);
 
 			const firstSlide: CustomSlide = createCustomSlide(
-				"first",
+				"intro",
 				view.module_id,
 				view
 			);
 			const lastSlide: CustomSlide = createCustomSlide(
-				"last",
+				"outro",
 				view.module_id,
 				view
 			);
@@ -345,13 +345,6 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 		);
 
 		set({ submittedAssessments: newSubmissions });
-
-		console.log("Submitting assessment", {
-			submission: placeHolderSubmission,
-			postedSubmission,
-			newSubmissions,
-			newSubmittedAssessments,
-		});
 
 		setSubmittableState(currentSlideIndex, false);
 	},
