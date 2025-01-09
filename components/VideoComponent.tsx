@@ -5,14 +5,10 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { StyleSheet, View, Button } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 
-interface VideoSlideProps {
-  url: string;
-  index: number;
-}
+import { VideoSlideProps } from "./slides/content/VideoSlide";
 
-const VideoComponent: React.FC<VideoSlideProps> = ({ url, index }) => {
+const VideoComponent: React.FC<VideoSlideProps> = ({ url, index, canComplete }) => {
   const {
-    nextSlide,
     completedSlides,
     checkSlideCompletion,
     currentSlideIndex,
@@ -64,7 +60,7 @@ const VideoComponent: React.FC<VideoSlideProps> = ({ url, index }) => {
 
   useEffect(() => {
     const progress = (currentTime / duration) * 100;
-    if (progress > 80 && !completedSlides[index]) {
+    if (canComplete&& progress > 80 && !completedSlides[index]) {
       checkSlideCompletion({ completed: true });
     }
   }, [currentTime]);

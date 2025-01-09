@@ -24,7 +24,6 @@ export default function AssessmentWrapper({
 		showExplanation,
 	} = useCourseStore();
 
-	const theme = useTheme();
 
 	const untitledAssessments = ["Fill in the Blank", "True or False"];
 
@@ -37,8 +36,9 @@ export default function AssessmentWrapper({
 	return (
 		<View
 			style={[
-				localStyles.wrapperContainer,
-				{ backgroundColor: theme.dark ? "#6c6878" : "#F4F1FE" },
+				styles.slideWidth,
+				styles.centeredMaxWidth,
+				styles.assessmentWrapper,
 			]}
 		>
 			<View style={localStyles.container}>
@@ -68,13 +68,6 @@ export default function AssessmentWrapper({
 }
 
 const localStyles = StyleSheet.create({
-	wrapperContainer: {
-		flex: 1,
-		flexDirection: "column",
-		maxWidth: SLIDE_MAX_WIDTH,
-		marginHorizontal: "auto",
-		gap: 16,
-	},
 	container: {
 		flex: 1,
 		gap: 16,

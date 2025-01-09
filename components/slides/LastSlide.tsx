@@ -11,16 +11,10 @@ import {
 	Surface,
 } from "react-native-paper";
 import { useTheme } from "react-native-paper";
-import RichTextComponent from "./RichTextComponent";
-
-const sampleText = `Hello [style={"color":"#ff0000", "fontWeight":"bold"}]World[/style]! Have a [style={"color":"#ff0000"}]great day[/style]!
-[style={"color":"#0000ff", "fontWeight":"bold"}]Bold Blue[/style]
-[style={"color":"#0000ff", "fontWeight":"bold", "fontSize":20}]Big Bold Blue[/style]
-`;
 
 export default function LastSlide() {
 	const theme = useTheme();
-	const { currentView, completedSlides, submittedAssessments } =
+	const { currentView, completedSlides, submittedAssessments, currentSlideIndex } =
 		useCourseStore();
 	const currentSlides = currentView?.slides;
 	const imageRef = useRef<Image>(null);
@@ -126,9 +120,6 @@ export default function LastSlide() {
 						)}
 					</Card.Content>
 				</Card>
-
-				{/* <RichTextComponent text={sampleText} /> */}
-
 				{/* Motivational message based on progress */}
 				<Card style={[localStyles.messageCard, localStyles.marginTop]}>
 					<Card.Content>
