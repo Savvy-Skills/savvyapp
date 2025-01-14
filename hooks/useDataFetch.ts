@@ -4,14 +4,34 @@ import Papa from 'papaparse';
 
 type DataFetchResult = {
   data: Record<string, any>[];
-  columns: { Header: string; accessor: string; width: number }[];
+  columns: Column[];
   isLoading: boolean;
   error: Error | null;
 };
 
+export interface Column {
+	Header: string;
+	accessor: string;
+	dtype: string;
+	width: number;
+}
+
+const getDtype = (value: any) => {
+	if (typeof value === "number") {
+		return "number";
+	} else if (typeof value === "string") {
+		return "string";
+	} else if (typeof value === "boolean") {
+		return "boolean";
+	} else if (typeof value === "object") {
+		return "object";
+	}
+	return "unknown";
+};
+
 export function useDataFetch(source: string, isCSV: boolean = true): DataFetchResult {
   const [data, setData] = useState<Record<string, any>[]>([]);
-  const [columns, setColumns] = useState<{ Header: string; accessor: string; width: number }[]>([]);
+  const [columns, setColumns] = useState<Column[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [metadata, setMetadata] = useState<any | null>(null);
@@ -28,11 +48,14 @@ export function useDataFetch(source: string, isCSV: boolean = true): DataFetchRe
           Papa.parse(response.data, {
             header: true,
             complete: (result) => {
-              setData(result.data as Record<string, any>[]);
+              const parsedData = result.data as Record<string, any>[];
+              setData(parsedData);
+
               setColumns(
-                Object.keys(result.data[0] as Record<string, any>).map((key) => ({
+                Object.keys(parsedData[0]).map((key) => ({
                   Header: key,
                   accessor: key,
+                  dtype: getDtype(parsedData[0][key]),
                   width: key.length * 10,
                 }))
               );
@@ -46,6 +69,7 @@ export function useDataFetch(source: string, isCSV: boolean = true): DataFetchRe
               Object.keys(jsonData[0]).map((key) => ({
                 Header: key,
                 accessor: key,
+                dtype: getDtype(jsonData[0][key]),
                 width: key.length * 10,
               }))
             );

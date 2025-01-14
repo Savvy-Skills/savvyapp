@@ -1,3 +1,5 @@
+import { TraceConfig } from "@/components/DataVisualizerPlotly";
+
 export interface Course {
   readonly id: number;
   readonly created_at: number;
@@ -8,6 +10,7 @@ export interface Course {
   tags: string[];
   type: "Savvy" | "Own";
   duration: number;
+  published: boolean;
 }
 
 export interface ModuleInfo {
@@ -16,6 +19,7 @@ export interface ModuleInfo {
   name: string;
   description: string;
   course_id: number;
+  published: boolean;
 }
 
 export interface Module extends ModuleInfo {
@@ -31,7 +35,12 @@ export interface ViewInfo {
   intro_image: string;
 }
 
-export interface ViewType {
+interface BaseView {
+	view_id: number;
+	order: number;
+}
+
+export interface ViewType extends BaseView {
   readonly id: number;
   readonly created_at: number;
   name: string;
@@ -44,9 +53,9 @@ export interface ViewType {
   view_info: ViewInfo;
   module_id: number;
   quiz: boolean;
+  published: boolean;
   type: "lesson" | "example" | "tool";
   slides: BaseSlide[];
-  order: number;
 }
 
 export interface ViewWithSlides {
@@ -61,7 +70,8 @@ export interface ViewWithSlides {
   progress: Progress;
   quiz: boolean;
   readonly timestamp: number;
-  module_info: ModuleInfo;
+  module_info: Module;
+  published: boolean;
 }
 export interface Progress {
   readonly id: string;
@@ -89,6 +99,7 @@ export interface BaseSlide extends BareSlide {
   type: "Assessment" | "Content" | "Activity" | "Custom";
   contents: ContentResponse[];
   name: string;
+  subtype?: string;
   buttonLabel?: string;
 }
 
@@ -160,7 +171,7 @@ export interface ViewProgress {
   timestamp: number;
 }
 
-type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network";
+type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity";
 
 export interface ContentInfo {
   readonly created_at: number;
@@ -172,6 +183,7 @@ export interface ContentInfo {
   image: Image;
   dataset_id?: string;
   dataset_info?: DatasetInfo;
+  traces?: TraceConfig[];
 }
 
 type QuestionTypes =

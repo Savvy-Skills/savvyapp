@@ -1,9 +1,5 @@
-import React, { lazy, Suspense, useCallback, useEffect, useRef } from "react";
+import React from "react";
 import {
-	Platform,
-	ScrollView,
-	StyleSheet,
-	useWindowDimensions,
 	View,
 } from "react-native";
 import { AssessmentSlide as AssessmentSlideType } from "@/types";
@@ -14,12 +10,8 @@ import ReorderAssessment from "./assessments/Reorder";
 import FillBlankAssessment from "./assessments/FillBlank";
 import MatchWordsAssessment from "./assessments/MatchWords";
 import OpenEnded from "./assessments/OpenEnded";
-import { useCourseStore } from "@/store/courseStore";
 import DragAndDropAssessment from "./assessments/DragDrop";
-import DataTableContainer from "../DataTableContainer";
 import TrueFalseQuestion from "./assessments/TrueFalse";
-import { FAB, Portal } from "react-native-paper";
-import styles from "@/styles/styles";
 
 type AssessmentProps = {
 	slide: AssessmentSlideType;

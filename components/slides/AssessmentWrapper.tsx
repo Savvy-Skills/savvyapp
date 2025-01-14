@@ -2,11 +2,9 @@ import styles from "@/styles/styles";
 import { QuestionInfo } from "@/types";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Button, Text, Title, useTheme, Icon, Portal } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { useCourseStore } from "@/store/courseStore";
 import ThemedTitle from "../themed/ThemedTitle";
-import FeedbackComponent from "../Feedback";
-import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
 interface AssessmentWrapperProps {
 	children: React.ReactNode;

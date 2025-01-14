@@ -43,6 +43,8 @@ export default function ModuleDetail() {
 		triggerTryAgain,
 		triggerShowExplanation,
 		triggerRevealAnswer,
+		setShownExplanation,
+		shownExplanations,
 	} = useCourseStore();
 
 	const [direction, setDirection] = useState<"forward" | "backward" | null>(
@@ -102,20 +104,25 @@ export default function ModuleDetail() {
 		}
 	}, [currentSlideIndex]);
 
-	const handlePressOutside = () => {
+	const handlePressOutside = useCallback(() => {
 		if (isNavMenuVisible) {
 			setNavMenuVisible(false);
 		}
-	};
+	}, [isNavMenuVisible, setNavMenuVisible]);
 
-	const handleTryAgain = () => {
+	const handleTryAgain = useCallback(() => {
 		triggerTryAgain();
 		setHiddenFeedback(currentSlideIndex, true);
-	}
+	}, [triggerTryAgain, setHiddenFeedback, currentSlideIndex]);
+
+	const handleToggleExplanation = useCallback(() => {
+		triggerShowExplanation();
+		setShownExplanation(currentSlideIndex, !shownExplanations[currentSlideIndex]);
+	}, [triggerShowExplanation, setShownExplanation, currentSlideIndex, shownExplanations]);
 
 	const isAssessment = currentView?.slides[currentSlideIndex].type === "Assessment";
-	
-	if (!currentView) {
+
+	if (!currentView || restartingView) {
 		return <LoadingIndicator />
 	}
 
@@ -123,65 +130,65 @@ export default function ModuleDetail() {
 		<ScreenWrapper style={{ overflow: "hidden" }}>
 			<Pressable style={[styles.pressableArea]} onPress={handlePressOutside}>
 				<TopNavBar />
-				{restartingView ? (
-					<ActivityIndicator size={64} style={{ flex: 1 }}></ActivityIndicator>
-				) : (
-					<>
-						<TopSheet ref={ref}>
-							<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
-								{currentView.slides.map((slide, index) => (
-									<SlideListItem
-										key={`slide-${slide.slide_id}-${index}`}
-										name={slide.name}
-										type={slide.type}
-										subtype={
-											slide.type === "Assessment"
-												? slide.assessment_info?.type
-												: slide.type === "Content"
-													? slide.content_info?.type
-													: undefined
-										}
-										isCompleted={completedSlides[index]}
-										isActive={index === currentSlideIndex}
-										onPress={() => setCurrentSlideIndex(index)}
-									/>
-								))}
-							</ScrollView>
-						</TopSheet>
-						<View style={styles.slidesContainer}>
+				(
+				<>
+					{/* TopSheet */}
+					<TopSheet ref={ref}>
+						<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
 							{currentView.slides.map((slide, index) => (
-								<AnimatedSlide
-									key={`${slide.slide_id}-${index}`}
-									isActive={index === currentSlideIndex}
-									direction={index === currentSlideIndex ? direction : null}
-									isInitialRender={
-										isInitialRender && index === currentSlideIndex
+								<SlideListItem
+									key={`slide-${slide.slide_id}-${index}`}
+									name={slide.name}
+									type={slide.type}
+									subtype={
+										slide.type === "Assessment"
+											? slide.assessment_info?.type
+											: slide.type === "Content"
+												? slide.content_info?.type
+												: undefined
 									}
-								>
-									<SlideRenderer
-										slide={slide}
-										index={index}
-										quizMode={currentView.quiz}
-									/>
-								</AnimatedSlide>
-							))}
-						</View>
-						<View style={{ flexDirection: "column" }}>
-							{isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex] && (
-								<FeedbackComponent
-									correctness={currentSubmission?.isCorrect}
-									revealed={revealedAnswer}
-									onTryAgain={handleTryAgain}
-									onRevealAnswer={triggerRevealAnswer}
-									onShowExplanation={triggerShowExplanation}
-									quizMode={currentView.quiz}
-									showExplanation={false}
+									isCompleted={completedSlides[index]}
+									isActive={index === currentSlideIndex}
+									onPress={() => setCurrentSlideIndex(index)}
 								/>
-							)}
-							<BottomBarNav onShowTopSheet={onPress} />
-						</View>
-					</>
-				)}
+							))}
+						</ScrollView>
+					</TopSheet>
+					{/* Slides */}
+					<View style={styles.slidesContainer}>
+						{currentView.slides.map((slide, index) => (
+							<AnimatedSlide
+								key={`${slide.slide_id}-${index}`}
+								isActive={index === currentSlideIndex}
+								direction={index === currentSlideIndex ? direction : null}
+								isInitialRender={
+									isInitialRender && index === currentSlideIndex
+								}
+							>
+								<SlideRenderer
+									slide={slide}
+									index={index}
+									quizMode={currentView.quiz}
+								/>
+							</AnimatedSlide>
+						))}
+					</View>
+					<View style={{ flexDirection: "column" }}>
+						{isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex] && (
+							<FeedbackComponent
+								correctness={currentSubmission?.isCorrect}
+								revealed={revealedAnswer}
+								onTryAgain={handleTryAgain}
+								onRevealAnswer={triggerRevealAnswer}
+								onShowExplanation={handleToggleExplanation}
+								quizMode={currentView.quiz}
+								showExplanation={shownExplanations[currentSlideIndex]}
+							/>
+						)}
+						<BottomBarNav onShowTopSheet={onPress} />
+					</View>
+				</>
+
 			</Pressable>
 		</ScreenWrapper>
 	);
@@ -195,6 +202,7 @@ const styles = StyleSheet.create({
 	slidesContainer: {
 		flex: 1,
 		position: "relative",
+		flexDirection: "column",
 	},
 	fab: {
 		position: "absolute",

@@ -7,114 +7,119 @@ import Filter from "./Filter";
 import { filterData } from "../utils/filterData";
 import type { DatasetInfo } from "@/types";
 import type { FilterField, CombinedFilter } from "../types/filter";
-import DataVisualizerPlotly from "@/components/DataVisualizerPlotly";
+import DataVisualizerPlotly, { TraceConfig } from "@/components/DataVisualizerPlotly";
+import NeuralNetworkVisualizer from "./SimpleNN";
 
 interface DataTableContainerProps {
-  datasetInfo: DatasetInfo;
-  headerColors?: string[];
+	datasetInfo: DatasetInfo;
+	headerColors?: string[];
+	traces?: TraceConfig[];
+	NN?: boolean;
+	hideVisualizer?: boolean;
+	hideFilter?: boolean;
 }
 
 
 export default function DataTableContainer({
-  datasetInfo,
-  headerColors,
+	datasetInfo,
+	headerColors,
+	traces,
+	NN,
+	hideVisualizer = false,
+	hideFilter = false,
 }: DataTableContainerProps) {
-  const { url, name, extension } = datasetInfo;
-  const { data, columns, isLoading, error } = useDataFetch(
-    url,
-    extension.toLowerCase() === "csv"
-  );
+	const { url, name, extension } = datasetInfo;
+	const { data, columns, isLoading, error } = useDataFetch(
+		url,
+		extension.toLowerCase() === "csv"
+	);
 
-  const [activeFilter, setActiveFilter] = useState<CombinedFilter | null>(null);
+	const [activeFilter, setActiveFilter] = useState<CombinedFilter | null>(null);
 
-  const fields: FilterField[] = useMemo(() => {
-    if (!data || !columns) return [];
+	const fields: FilterField[] = useMemo(() => {
+		if (!data || !columns) return [];
 
-    return columns.map((column) => {
-      const values = data.map((row) => row[column.accessor]);
-      // Check first value for type inference
-      const isNumeric = !isNaN(Number(values[0]));
+		return columns.map((column) => {
+			const values = data.map((row) => row[column.accessor]);
+			// Check first value for type inference
+			const isNumeric = !isNaN(Number(values[0]));
 
-      // Filter out null, undefined, and empty string values
-      const filteredValues = values.filter(
-        (value) =>
-          value !== null &&
-          value !== undefined &&
-          value !== "" &&
-          value.toString().trim() !== ""
-      );
+			// Filter out null, undefined, and empty string values
+			const filteredValues = values.filter(
+				(value) =>
+					value !== null &&
+					value !== undefined &&
+					value !== "" &&
+					value.toString().trim() !== ""
+			);
 
-      return {
-        name: column.Header,
-        accessor: column.accessor,
-        type: isNumeric ? "numeric" : "categorical",
-        uniqueValues: isNumeric
-          ? undefined
-          : Array.from(new Set(filteredValues))
-              .filter(
-                (value) =>
-                  value !== null &&
-                  value !== undefined &&
-                  value.toString().trim() !== ""
-              )
-              .sort(),
-      };
-    });
-  }, [data, columns]);
+			return {
+				name: column.Header,
+				accessor: column.accessor,
+				type: isNumeric ? "numeric" : "categorical",
+				uniqueValues: isNumeric
+					? undefined
+					: Array.from(new Set(filteredValues))
+						.filter(
+							(value) =>
+								value !== null &&
+								value !== undefined &&
+								value.toString().trim() !== ""
+						)
+						.sort(),
+			};
+		});
+	}, [data, columns]);
 
-  const filteredData = useMemo(() => {
-    if (!data) return [];
-    return filterData(data, activeFilter);
-  }, [data, activeFilter]);
+	const filteredData = useMemo(() => {
+		if (!data) return [];
+		return filterData(data, activeFilter);
+	}, [data, activeFilter]);
 
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
+	if (isLoading) {
+		return (
+			<View style={styles.centered}>
+				<ActivityIndicator size="large" color="#0000ff" />
+			</View>
+		);
+	}
 
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text>Error: {error.message}</Text>
-      </View>
-    );
-  }
+	if (error) {
+		return (
+			<View style={styles.centered}>
+				<Text>Error: {error.message}</Text>
+			</View>
+		);
+	}
 
-  return (
-    <View style={styles.container}>
-      <DataTable
-        data={filteredData}
-        columns={columns}
-        name={name}
-        headerColors={headerColors}
-      />
-      <Filter fields={fields} onFilterChange={setActiveFilter} />
-        <DataVisualizerPlotly
-          dataset={filteredData}
-          traces={[
-            {
-              x: "sepal_length",
-              y: "sepal_width",
-              name: "Sepal Length vs Width",
-              type: "scatter",
-            },
-          ]}
-          title="Data Visualizer"
-        />
-    </View>
-  );
+	return (
+		<View style={styles.container}>
+			<DataTable
+				data={filteredData}
+				columns={columns}
+				name={name}
+				headerColors={headerColors}
+			/>
+			{!hideFilter && <Filter fields={fields} onFilterChange={setActiveFilter} />}
+			{!hideVisualizer && <DataVisualizerPlotly
+				dataset={filteredData}
+				traces={traces}
+					title="Data Visualizer"
+				/>
+			}
+			{NN && <NeuralNetworkVisualizer data={filteredData} columns={columns} />}
+		</View>
+	);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+	container: {
+		flex: 1,
+		gap: 16,
+	},
+	centered: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+	},
 });

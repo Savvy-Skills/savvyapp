@@ -10,6 +10,7 @@ import ImageSlide from "./content/ImageSlide";
 import RichTextSlide from "./content/RichTextSlide";
 import DataTableContainer from "../DataTableContainer";
 import styles from "@/styles/styles";
+import VideoComponent from "../VideoComponent";
 
 export interface SlideProps {
 	slide: Slide;
@@ -26,13 +27,13 @@ interface ContentComponentProps {
 const ContentComponent = ({ content, index, canComplete }: ContentComponentProps) => {
 	switch (content.type) {
 		case "Video":
-			return <VideoSlide url={content.url} index={index} canComplete={canComplete} />;
+			return <VideoComponent url={content.url} index={index} canComplete={canComplete} />;
 		case "Image":
 			return <ImageSlide url={content.url} index={index} />;
 		case "Rich Text":
 			return <RichTextSlide text={content.state} />;
 		case "Dataset":
-			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} />;
+			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.traces} />;
 		default:
 			return <View />;
 	}
@@ -43,10 +44,10 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 	switch (slide.type) {
 		case "Assessment":
 			return (
-				<View style={[styles.slideWidth, styles.centeredMaxWidth, { flexGrow: 1, flex: 1 }]}>
+				<View style={[styles.slideWidth, styles.centeredMaxWidth, { gap: 16, flex: 1 }]}>
 					{sortedContents.length > 0 && (
 						sortedContents.map((content, contentIndex) => (
-							<View key={`${contentIndex}-${content.type}`}>
+							<View key={`${contentIndex}-${content.type}`} style={{ gap: 16, paddingHorizontal: 8 }}>
 								<ContentComponent content={content} index={index} canComplete={false} />
 							</View>
 						))
@@ -61,16 +62,19 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 		case "Activity":
 			return <ActivitySlide slide={slide} index={index} />;
 		case "Content":
-
-			return sortedContents.map((content, contentIndex) => (
-				<View key={`${contentIndex}-${content.type}`} style={{flexGrow: 1, flex: 1, justifyContent: "center"}}>
-					<ContentComponent
-						content={content}
-						index={index}
-						canComplete={contentIndex === sortedContents.length - 1}
-					/>
-				</View>
-			));
+			if (sortedContents.length > 1) {
+				return sortedContents.map((content, contentIndex) => (
+					<View key={`${contentIndex}-${content.type}`} style={[[styles.slideWidth, styles.centeredMaxWidth], { gap: 16, paddingHorizontal: 8 }]}>
+						<ContentComponent
+							content={content}
+							index={index}
+							canComplete={contentIndex === sortedContents.length - 1}
+						/>
+					</View>
+				));
+			} else {
+				return <ContentComponent content={sortedContents[0]} index={index} canComplete={false} />;
+			}
 		case "Custom":
 			if (slide.subtype === "intro") {
 				return <ImageSlide url={slide.image} index={index} />;
@@ -101,7 +105,7 @@ export default function SlideRenderer({
 	const scrollRef = useRef<ScrollView>(null);
 
 	const currentContents = slide?.contents && slide.contents.length > 0 ? slide.contents.sort((a, b) => a.order - b.order) : [];
-	const lastContent = currentContents[currentContents.length-1]
+	const lastContent = currentContents[currentContents.length - 1]
 
 
 	useEffect(() => {
@@ -122,7 +126,7 @@ export default function SlideRenderer({
 	useEffect(() => {
 		if (isActive && !completedSlides[currentSlideIndex]) {
 			if (
-				(slide.type === "Content" &&  lastContent.type !== "Video") ||
+				(slide.type === "Content" && lastContent.type !== "Activity") ||
 				slide.type === "Custom"
 			) {
 				checkSlideCompletion({ viewed: true });
@@ -130,18 +134,25 @@ export default function SlideRenderer({
 		}
 	}, [currentSlideIndex]);
 
+
+	if ((slide.type === "Content" && currentContents.length === 1) || slide.subtype === "intro") {
+		return (
+			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
+		);
+	}
+
 	return (
 		<ScrollView
 			contentContainerStyle={{
-				flex: 1,
-				flexGrow: 1,
-				justifyContent: "center",
 				gap: 16,
 				width: width,
+				flex: 1,
 			}}
 			ref={scrollRef}
 		>
-			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
+			<View style={{ marginVertical: "auto" }}>
+				<SlideComponent slide={slide} index={index} quizMode={quizMode} />
+			</View>
 		</ScrollView>
 	);
 }
