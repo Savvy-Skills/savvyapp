@@ -16,16 +16,16 @@ import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
 let DataPlotter = lazy(() => import("@/components/DataPlotter"));
 
-type TraceConfig = {
+export type TraceConfig = {
   x: string;
   y: string;
   name: string;
   type: "scatter" | "bar" | "histogram";
 };
 
-type DataVisualizerProps = {
+export type DataVisualizerProps = {
   dataset: Record<string, any>[];
-  traces: TraceConfig[];
+  traces?: TraceConfig[];
   title?: string;
   xAxisLabel?: string;
   yAxisLabel?: string;
@@ -96,7 +96,7 @@ function getTendencyTraces(dataset: Record<string, any>[], type: TendencyLine) {
 
 export default function DataVisualizerPlotly({
   dataset,
-  traces,
+  traces = [],
   title = "Data Visualizer",
   xAxisLabel = "X AXIS",
   yAxisLabel = "Y AXIS",
@@ -488,7 +488,6 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: SLIDE_MAX_WIDTH,
     alignSelf: "center",
-    padding: 16,
   },
   title: {
     textAlign: "center",

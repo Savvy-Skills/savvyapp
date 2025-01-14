@@ -138,6 +138,7 @@ export default StyleSheet.create({
   feedbackContainer: {
     padding: 16,
     borderWidth: 1,
+	borderBottomWidth: 0,
     gap: 10,
     maxWidth: SLIDE_MAX_WIDTH,
     alignSelf: "center",
@@ -161,19 +162,19 @@ export default StyleSheet.create({
     padding: 10,
   },
   correctFeedback: {
-    backgroundColor: "#daedf5",
-    borderColor: "#3bc2f5",
+    backgroundColor: generateColors(Colors.success, 0.2).muted,
+    borderColor: Colors.success,
   },
   incorrectFeedback: {
-    backgroundColor: "#ffe7cc",
-    borderColor: "#ff861d",
+    backgroundColor: generateColors(Colors.orange, 0.2).muted,
+    borderColor: Colors.orange,
   },
   revealedFeedback: {
-    backgroundColor: "#f4f4f4",
-    borderColor: "#e0e0e0",
+    backgroundColor: generateColors(Colors.revealed, 0.2).muted,
+    borderColor: Colors.revealed,
   },
   correctTitle: {
-    color: "#3bc2f5",
+    color: Colors.success,
   },
   incorrectTitle: {
     color: "#ff861d",
@@ -188,8 +189,6 @@ export default StyleSheet.create({
   },
   assessmentWrapper: {
 	backgroundColor: "#F4F1FE",
-	marginTop: "auto",
-	marginBottom: "auto",
   },
   assessmentButtonContainer: {
     flexDirection: "row",

@@ -20,8 +20,16 @@ function generateColors(color: string, opacity: number) {
 	return { normal: color1, muted: color2 };
 }
 
+async function loadModules(resources: any, target: Record<string, any>) {
+	for (let prop in resources) {
+		resources[prop].then((r: any) => (target[prop] = r));
+	}
+	return await Promise.all(Object.values(resources));
+}
+
 export {
 	includes,
 	hexToRgbA,
-	generateColors
+	generateColors,
+	loadModules
 }

@@ -32,6 +32,7 @@ export default function DataTable({
   const getItem = useCallback((items: any[], index: number) => items[index], []);
   const getItemCount = useCallback((items: any[]) => items.length, []);
   const keyExtractor = useCallback((item: any, index: number) => index.toString(), []);
+  const padding = 16;
 
   const renderRow = useCallback(
     ({ item, index }: { item: any; index: number }) => (
@@ -46,9 +47,9 @@ export default function DataTable({
   );
 
   return (
-    <View style={[styles.centeredMaxWidth, styles.slideWidth]}>
-      <View style={[localStyles.tableContainer, { width: tableWidth }]}>
-        <ThemedTitle style={[localStyles.boldText, localStyles.title]}>{name}</ThemedTitle>
+    <>
+      <View style={[localStyles.tableContainer, { width: tableWidth-padding }]}>
+        <ThemedTitle style={[localStyles.boldText, localStyles.title]}>Dataset: {name}</ThemedTitle>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={true}
@@ -91,13 +92,13 @@ export default function DataTable({
           {data.length} records
         </Text>
       </View>
-    </View>
+    </>
   );
 }
 
 const localStyles = StyleSheet.create({
   title: {
-    alignSelf: 'center',
+    // alignSelf: 'center',
   },
   boldText: {
     fontWeight: 'bold',
@@ -107,7 +108,6 @@ const localStyles = StyleSheet.create({
   },
   tableContainer: {
     alignSelf: 'center',
-    paddingHorizontal: 8,
     gap: 8,
   },
   scrollViewContent: {

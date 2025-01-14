@@ -127,6 +127,8 @@ interface CourseStore {
 
 	showExplanation: boolean;
 	triggerShowExplanation: () => void;
+	shownExplanations: boolean[];
+	setShownExplanation: (index: number, state: boolean) => void;
 
 	scrollToEnd: boolean;
 	triggerScrollToEnd: () => void;
@@ -143,7 +145,9 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 	submittedAssessments: [],
 	completedSlides: [],
 	hiddenFeedbacks: {},
+	shownExplanations: [],
 	setHiddenFeedback: (index, state) => set({ hiddenFeedbacks: { ...get().hiddenFeedbacks, [index]: state } }),
+	setShownExplanation: (index, state) => set({ shownExplanations: { ...get().shownExplanations, [index]: state } }),
 	isLoading: false,
 	error: null,
 	showIncorrect: false,
@@ -373,7 +377,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
 		if (!slide) return;
 
-		console.log("Checking slide completion", { data, source, slide, currentSlideIndex, currentView, correctnessStates });
+		// console.log("Checking slide completion", { data, source, slide, currentSlideIndex, currentView, correctnessStates });
 
 		switch (slide.type) {
 			case "Assessment":
@@ -382,7 +386,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 				}
 				break;
 			case "Content":
-				if (slide.content_info.type === "Video") {
+				if (slide.content_info?.type === "Video") {
 					if (data?.completed) {
 						markSlideAsCompleted(currentSlideIndex);
 					}

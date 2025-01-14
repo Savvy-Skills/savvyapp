@@ -65,6 +65,9 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentView?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentView.slides[currentSlideIndex].assessment_info?.id);
 	const currentSubmission = submittedAssessments[currentSubmissionIndex];
 
+	const revealedAnswer = currentSubmission?.revealed ?? false;
+
+
 	const handleCheck = useCallback(() => {
 		if (currentAssessmentID !== undefined) {
 			submitAssessment(currentAssessmentID);
@@ -123,6 +126,19 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
 	const currentContents = currentSlide?.contents && currentSlide.contents.length > 0 ? currentSlide.contents.sort((a, b) => a.order - b.order) : [];
 	const lastContent = currentContents[currentContents.length-1]
+
+
+	const moduleViews = currentView?.module_info.views.sort((a, b) => a.order - b.order);
+	const currentViewIndex = moduleViews?.findIndex(view => view.view_id === currentView?.id);
+	const isLastView = moduleViews ? currentViewIndex === moduleViews.length - 1 : false;
+	const isAssessment = currentView?.slides[currentSlideIndex].type === "Assessment";
+	const isCorrect = currentSubmission && currentSubmission.isCorrect;
+
+	const showBackgroundFeedback = isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex];
+
+	const backgroundColor = !showBackgroundFeedback ? "none" : revealedAnswer ? generateColors(Colors.revealed, 0.2).muted : isCorrect ? generateColors(Colors.success, 0.2).muted : generateColors(Colors.error, 0.2).muted;
+	const borderColor = !showBackgroundFeedback ? "none" : revealedAnswer ? generateColors(Colors.revealed, 0.2).normal : isCorrect ? generateColors(Colors.success, 0.2).normal : generateColors(Colors.error, 0.2).normal;
+	const borderWidth = !showBackgroundFeedback ? 0 : 1;
 
 	const MiddleButton = () => {
 		const buttonLabel = currentSlide?.buttonLabel ? currentSlide.buttonLabel : currentSubmission && currentSubmission.revealed ? "GOT IT" : "CONTINUE";
@@ -230,7 +246,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	}
 
 	return (
-		<View style={[localStyles.container]}>
+		<View style={[localStyles.container, { backgroundColor: backgroundColor, borderColor: borderColor, borderWidth: borderWidth, borderTopWidth: 0 }]}>
 			<View style={[localStyles.menusContainer]}>
 				<CustomNavMenu
 					visible={isNavMenuVisible}
@@ -313,14 +329,23 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 				onDismiss={() => setShowFinishDialog(false)}
 				onConfirm={() => {
 					if (currentView && currentView.module_id) {
-						router.dismissTo({
-							pathname: "/modules/[id]",
-							params: { id: currentView.module_id },
-						});
+						if (isLastView) {
+							router.dismissTo({
+								pathname: "/modules/[id]",
+								params: { id: currentView.module_id },
+							});
+						} else {
+							const nextView = currentView?.module_info?.views[currentViewIndex! + 1];
+							console.log({ nextView });
+							router.dismissTo({
+								pathname: "/views/[id]",
+								params: { id: nextView?.view_id },
+							});
+						}
 					}
 				}}
-				title="Are you sure you want to exit this view?"
-				content="You can still check you answers later."
+				title={isLastView ? "This is the last view in this module. Are you sure you want to exit?" : "Are you ready to move on to the next view?"}
+				content={isLastView ? "You can still check you answers later." : "You will go to the next view in this module."}
 			/>
 		</View>
 	);
@@ -328,11 +353,14 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
 const localStyles = StyleSheet.create({
 	navMenu: {
-		maxWidth: SLIDE_MAX_WIDTH,
 	},
 	container: {
 		position: "relative",
 		paddingHorizontal: 8,
+		paddingBottom: 8,
+		maxWidth: SLIDE_MAX_WIDTH,
+		alignSelf: "center",
+		width: "100%",
 	},
 	menusContainer: {
 		position: "absolute",

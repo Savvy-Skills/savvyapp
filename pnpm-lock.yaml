@@ -38,6 +38,9 @@ importers:
       '@tensorflow/tfjs':
         specifier: 4.22.0
         version: 4.22.0(seedrandom@3.0.5)
+      '@tensorflow/tfjs-backend-wasm':
+        specifier: ^4.22.0
+        version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
       '@tensorflow/tfjs-react-native':
         specifier: ^1.0.0
         version: 1.0.0(3la6wp6lf23qtgr7aysdclonqa)

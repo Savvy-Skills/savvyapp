@@ -93,7 +93,6 @@ export default function RootLayout() {
 		return null;
 	}
 
-	console.log({networkState});
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>

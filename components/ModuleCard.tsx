@@ -24,7 +24,6 @@ export default function ModuleCard({ module }: ModuleCardProps) {
   const lessonViews = module.views.filter((l) => l.type === "lesson");
   const quizViews = lessonViews.filter((l) => l.quiz);
 
-  console.log({views: module.views});
 
   return (
     <TouchableOpacity onPress={handlePress} accessibilityRole="button" style={localStyles.container}>

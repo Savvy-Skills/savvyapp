@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: '#ccc',
     overflow: 'hidden',
-    alignItems: 'center',
+    // alignItems: 'center',
   },
   headerText: {
     fontWeight: 'bold',

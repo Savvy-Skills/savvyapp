@@ -13,9 +13,10 @@ const whiteText = '#fff';
 const mutedText = 'grey';
 // States
 
-const errorColor = "#ff0000";
+const errorColor = orangeColor;
 const successColor = blueColor;
 const warningColor = "#ff0000";
+const revealedColor = "#e0e0e0"
 
 //
 
@@ -44,5 +45,6 @@ export const Colors = {
 	navigationOrange: navigationOrange,
 	navigationWhite: navigationWhite,
 	assessment: assessmentLight,
-	primaryLighter: primaryLighter
+	primaryLighter: primaryLighter,
+	revealed: revealedColor
 }
