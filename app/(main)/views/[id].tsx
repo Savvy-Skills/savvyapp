@@ -130,7 +130,6 @@ export default function ModuleDetail() {
 		<ScreenWrapper style={{ overflow: "hidden" }}>
 			<Pressable style={[styles.pressableArea]} onPress={handlePressOutside}>
 				<TopNavBar />
-				(
 				<>
 					{/* TopSheet */}
 					<TopSheet ref={ref}>

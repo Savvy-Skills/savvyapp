@@ -107,7 +107,7 @@ export default function DataTableContainer({
 					title="Data Visualizer"
 				/>
 			}
-			{NN && <NeuralNetworkVisualizer data={filteredData} columns={columns} />}
+			{NN && <NeuralNetworkVisualizer data={filteredData} columns={columns}  />}
 		</View>
 	);
 }
