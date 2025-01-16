@@ -12,8 +12,8 @@ import ConfirmationDialog from "../ConfirmationDialog";
 import { router } from "expo-router";
 import { generateColors } from "@/utils/utilfunctions";
 
-const navButtonColors = generateColors(Colors.navigationOrange, 0.5);
-const checkButtonColors = generateColors(Colors.navigationWhite, 0.5);
+const navButtonColors = generateColors(Colors.navigationWhite, 0.5);
+const checkButtonColors = generateColors(Colors.navigationOrange, 0.5);
 
 type BottomBarNavProps = {
 	onShowTopSheet: () => void;
@@ -285,7 +285,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 					onPress={toggleMenu}
 					mode="contained"
 					iconColor="#000"
-					containerColor="rgb(244, 187, 98)"
+					containerColor={Colors.navigationWhite}	
 					style={styles.navButton}
 				/>
 				<MiddleButton />

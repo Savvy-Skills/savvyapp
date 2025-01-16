@@ -27,9 +27,20 @@ async function loadModules(resources: any, target: Record<string, any>) {
 	return await Promise.all(Object.values(resources));
 }
 
+function groupByColumn(data: any[], key?: string) {
+	if (!data || !key) return {};
+	return data.reduce((acc, item) => {
+		const group = item[key];
+		acc[group] = acc[group] || [];
+		acc[group].push(item);
+		return acc;
+	}, {});
+}
+
 export {
 	includes,
 	hexToRgbA,
 	generateColors,
-	loadModules
+	loadModules,
+	groupByColumn
 }

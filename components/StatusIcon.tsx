@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import FilledIcon from "./FilledIcon";
+import { Colors } from "@/constants/Colors";
 
 interface StatusIconProps {
   isCorrect: boolean | null;
@@ -20,7 +21,7 @@ export default function StatusIcon({
       <FilledIcon
         source="check-circle"
         size={size}
-        color="#23b5ec"
+        color={Colors.success}
         fillColor="white"
       />
     );
@@ -29,7 +30,7 @@ export default function StatusIcon({
       <FilledIcon
         source="close-circle"
         size={size}
-        color="#ff7b09"
+        color={Colors.error}
         fillColor="white"
       />
     );
@@ -38,7 +39,7 @@ export default function StatusIcon({
       <FilledIcon
         source="check-circle"
         size={size}
-        color="#9E9E9E"
+        color={Colors.revealed}
         fillColor="white"
       />
     );

@@ -122,7 +122,7 @@ export interface ActivitySlide extends BaseSlide {
 }
 export interface CustomSlide extends BaseSlide {
   type: "Custom";
-  subtype: "intro" | "outro";
+  subtype: "intro" | "outro" | "mid";
   image?: string;
 }
 

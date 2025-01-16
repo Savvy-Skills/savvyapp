@@ -11,6 +11,7 @@ import RichTextSlide from "./content/RichTextSlide";
 import DataTableContainer from "../DataTableContainer";
 import styles from "@/styles/styles";
 import VideoComponent from "../VideoComponent";
+import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
 
 export interface SlideProps {
 	slide: Slide;
@@ -22,6 +23,22 @@ interface ContentComponentProps {
 	content: ContentInfo;
 	index: number;
 	canComplete: boolean;
+}
+
+const datasetInfo: DatasetInfo = {
+	id: "x",
+	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714014246056x716561261256521100/circular-dataset.json",
+	name: "Circular Dataset",
+	extension: "json",
+	type: "Savvy",
+	description: "A dataset with circular data",
+	image_url: "https://picsum.photos/200/300",
+	disabled: false,
+	metadata: {
+		"rows": 1000,
+		"columns": 3
+	},
+	about: "A dataset with circular data",
 }
 
 const ContentComponent = ({ content, index, canComplete }: ContentComponentProps) => {
@@ -80,6 +97,9 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 				return <ImageSlide url={slide.image} index={index} />;
 			} else if (slide.subtype === "outro") {
 				return <LastSlide />;
+			} else if (slide.subtype === "mid") {
+				return 		<NeuralNetworkVisualizer dataset_info={datasetInfo}  />
+
 			}
 			return <View />;
 		default:

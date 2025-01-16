@@ -6,6 +6,8 @@ import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
+import { generateColors } from "@/utils/utilfunctions";
+import { Colors } from "@/constants/Colors";
 
 function createAnswer(
 	currentOrder: string[],
@@ -41,6 +43,7 @@ export default function ReorderAssessment({
 		setAnswer,
 		tryAgain,
 		revealAnswer,
+		setHiddenFeedback,
 	} = useCourseStore();
 
 	const correctOrder = useMemo(
@@ -114,7 +117,7 @@ export default function ReorderAssessment({
 	const moveItem = useCallback(
 		(itemIndex: number, direction: string) => {
 			if (blocked) return;
-
+			setHiddenFeedback(currentSlideIndex, true);
 			const newOrder = [...currentOrder];
 			const item = newOrder[itemIndex];
 			const newIndex = direction === "up" ? itemIndex - 1 : itemIndex + 1;
@@ -134,6 +137,7 @@ export default function ReorderAssessment({
 			setShowAnswer,
 			setShowFeedback,
 			setSubmittableState,
+			setHiddenFeedback,
 		]
 	);
 
@@ -275,13 +279,13 @@ const localStyles = StyleSheet.create({
 		borderColor: "red",
 	},
 	revealedContainer: {
-		backgroundColor: "rgba(158, 158, 158, 0.1)",
+		backgroundColor: generateColors(Colors.revealed, 0.2).muted,
 		borderWidth: 1,
-		borderColor: "#29e9e9e",
+		borderColor: Colors.revealed,
 	},
 	correctContainer: {
-		backgroundColor: "rgba(35, 181, 236, 0.2)",
+		backgroundColor: generateColors(Colors.success, 0.2).muted,
 		borderWidth: 1,
-		borderColor: "#23b5ec",
+		borderColor: Colors.success,
 	},
 });

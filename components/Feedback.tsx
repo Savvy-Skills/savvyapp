@@ -1,14 +1,14 @@
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import styles from "@/styles/styles";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
 import ConfirmationDialog from "./ConfirmationDialog";
+import { Colors } from "@/constants/Colors";
 
 function FeedbackComponent({
   correctness,
   revealed,
-  onTryAgain,
   onRevealAnswer,
   onShowExplanation,
   quizMode,
@@ -26,21 +26,22 @@ function FeedbackComponent({
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
 
-  const handleShowReveal = () => {
+  const handleShowReveal = useCallback(() => {
     showDialog();
-  };
+  }, [showDialog]);
 
-  const handleReveal = () => {
+  const handleReveal = useCallback(() => {
     onRevealAnswer();
     hideDialog();
-  };
+  }, [onRevealAnswer, hideDialog]);
+
   if (revealed) {
     return (
       <View
         style={[styles.feedbackContainer, styles.revealedFeedback]}
       >
         <View style={styles.feedbackHeader}>
-          <Icon source="check" size={20} color="#666666" />
+          <Icon source="check" size={20} color={Colors.revealedText} />
           <Text style={[styles.feedbackTitle, styles.revealedTitle]}>
             Here's the correct answer
           </Text>
@@ -66,7 +67,7 @@ function FeedbackComponent({
         style={[styles.feedbackContainer, styles.correctFeedback]}
       >
         <View style={styles.feedbackHeader}>
-          <Icon source="star" size={20} color="#3bc2f5" />
+          <Icon source="star" size={20} color={Colors.success} />
           <Text style={[styles.feedbackTitle, styles.correctTitle]}>
             Positive feedback
           </Text>
@@ -91,7 +92,7 @@ function FeedbackComponent({
       style={[styles.feedbackContainer, styles.incorrectFeedback]}
     >
       <View style={styles.feedbackHeader}>
-        <Icon source="alert" size={20} color="#ff861d" />
+        <Icon source="alert" size={20} color={Colors.error} />
         <Text style={[styles.feedbackTitle, styles.incorrectTitle]}>
           Negative feedback text
         </Text>

@@ -25,7 +25,6 @@ export default function NumericalAnswerAssessment({
 	quizMode,
 }: AssessmentProps) {
 	const [value, setValue] = useState("");
-	const [showFeedback, setShowFeedback] = useState(false);
 	const [isWrong, setIsWrong] = useState(false);
 
 	const answer = parseFloat(question.options[0].text);
@@ -38,6 +37,7 @@ export default function NumericalAnswerAssessment({
 		setAnswer,
 		tryAgain,
 		revealAnswer,
+		setHiddenFeedback,
 	} = useCourseStore();
 
 	const isActive = index === currentSlideIndex;
@@ -55,9 +55,9 @@ export default function NumericalAnswerAssessment({
 	const handleChange = (text: string) => {
 		const sanitizedText = text.replace(/[^0-9.]/g, "");
 		setValue(sanitizedText);
-		setShowFeedback(false);
 		setIsWrong(false);
 		setShowAnswer(false);
+		setHiddenFeedback(currentSlideIndex, true);
 	};
 
 	useEffect(() => {
@@ -86,7 +86,6 @@ export default function NumericalAnswerAssessment({
 				setIsWrong(true);
 			}
 			setValue(currentSubmission.answer[0].text);
-			setShowFeedback(true);
 		}
 	}, [submittedAssessments, currentSubmission, quizMode]);
 
@@ -108,7 +107,6 @@ export default function NumericalAnswerAssessment({
 		setValue("");
 		setShowAnswer(false);
 		setIsWrong(false);
-		setShowFeedback(false);
 	};
 
 	const handleRevealAnswer = () => {
@@ -116,7 +114,6 @@ export default function NumericalAnswerAssessment({
 			setValue(answer.toString());
 			setShowAnswer(true);
 			setIsWrong(false);
-			setShowFeedback(true);
 			setCorrectnessState(index, true);
 			const assessmentAnswer = createAnswer(answer.toString(), true);
 			setAnswer(index, assessmentAnswer);

@@ -48,6 +48,7 @@ export default function FillBlankAssessment({
 		setAnswer,
 		tryAgain,
 		revealAnswer,
+		setHiddenFeedback,
 	} = useCourseStore();
 
 	const text = useMemo(() => question.text, [question.text]);
@@ -159,7 +160,7 @@ export default function FillBlankAssessment({
 	const handleOptionPress = useCallback(
 		(option: string) => {
 			if (blocked) return;
-
+			setHiddenFeedback(currentSlideIndex, true);
 			setBlanks((prevBlanks) => {
 				const newBlanks = [...prevBlanks];
 				const blankIndex = newBlanks.findIndex((blank) => blank.filled === "");
@@ -209,6 +210,7 @@ export default function FillBlankAssessment({
 		(blankIndex: number) => {
 			if (blocked) return;
 			if (blanks[blankIndex].filled === "") return;
+			setHiddenFeedback(currentSlideIndex, true);
 			setBlanks((prevBlanks) => {
 				const newBlanks = [...prevBlanks];
 				if (newBlanks[blankIndex].filled) {

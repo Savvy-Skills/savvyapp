@@ -29,7 +29,12 @@ const getDtype = (value: any) => {
 	return "unknown";
 };
 
-export function useDataFetch(source: string, isCSV: boolean = true): DataFetchResult {
+interface DataFetchProps {
+	source?: string;
+	isCSV: boolean;
+}
+
+export function useDataFetch({ source, isCSV }: DataFetchProps): DataFetchResult {
   const [data, setData] = useState<Record<string, any>[]>([]);
   const [columns, setColumns] = useState<Column[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +42,9 @@ export function useDataFetch(source: string, isCSV: boolean = true): DataFetchRe
   const [metadata, setMetadata] = useState<any | null>(null);
 
   useEffect(() => {
+	if (!source) {
+		return;
+	}
     const fetchData = async () => {
       try {
         setIsLoading(true);

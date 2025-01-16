@@ -54,6 +54,18 @@ function createCustomSlide(
 			image: `${view.view_info.intro_image}`,
 			contents: [],
 		};
+	} else if (type ==="mid"){
+		return {
+			name: `Mid: ${view.name}`,
+			order: 998,
+			slide_id: 9999998,
+			created_at: Date.now(),
+			published: true,
+			module_id: module_id,
+			type: "Custom",
+			subtype: "mid",
+			contents: [],
+		};
 	} else {
 		return {
 			name: `Stats`,
@@ -199,6 +211,11 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 				view.module_id,
 				view
 			);
+			const midSlide: CustomSlide = createCustomSlide(
+				"mid",
+				view.module_id,
+				view
+			);
 			const lastSlide: CustomSlide = createCustomSlide(
 				"outro",
 				view.module_id,
@@ -206,6 +223,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			);
 
 			sorted.unshift(firstSlide);
+			sorted.push(midSlide);
 			sorted.push(lastSlide);
 
 			let progressArray = progress.id
