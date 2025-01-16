@@ -46,6 +46,7 @@ export default function TrueFalseQuestion({
 		setAnswer,
 		tryAgain,
 		revealAnswer,
+		setHiddenFeedback,
 	} = useCourseStore();
 
 	const isActive = index === currentSlideIndex;
@@ -138,6 +139,7 @@ export default function TrueFalseQuestion({
 			setIsWrong(false);
 			setShowAnswer(false);
 			setShowFeedback(false);
+			setHiddenFeedback(currentSlideIndex, true);
 		}
 	};
 

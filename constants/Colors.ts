@@ -11,13 +11,15 @@ const orangeColor = "#ff7b09";
 const lightOrangeColor = "#ffb850";
 const whiteText = '#fff';
 const mutedText = 'grey';
+
+const assessmentBackground = "#F4F1FE"
 // States
 
-const errorColor = orangeColor;
-const successColor = blueColor;
+const errorColor = "#f44336";
+const successColor = "#66bb6a";
 const warningColor = "#ff0000";
-const revealedColor = "#e0e0e0"
-
+const revealedColor = "#cccccc"
+const revealedText = "#666666"
 //
 
 const navigationOrange = "#f4bb62";
@@ -46,5 +48,7 @@ export const Colors = {
 	navigationWhite: navigationWhite,
 	assessment: assessmentLight,
 	primaryLighter: primaryLighter,
-	revealed: revealedColor
+	revealed: revealedColor,
+	revealedText: revealedText,
+	assessmentBackground: assessmentBackground
 }

@@ -26,14 +26,15 @@ export interface TrainConfig {
 	shuffle: boolean;
 	validationSplit: number;
 	dataPreparationConfig: DataPreparationConfig;
-
 }
 
-interface DataPreparationConfig {
+export interface DataPreparationConfig {
 	targetColumn: string;
 	disabledColumns: string[];
 	outputsNumber: number;
 	uniqueTargetValues: string[];
+	testSize: number;
+	stratify?: boolean;
 }
 
 
@@ -58,6 +59,11 @@ interface PrepareDataResult {
 	outputsNumber: number;
 	testData?: number[];
 	trainData?: number[];
+	dataPreparationMetadata?: DataPreparationMetadata;
+}
+
+interface DataPreparationMetadata {
+	mappedOutputs?: Record<string, number>;
 }
 
 function getLayers(model: Sequential) {
@@ -97,6 +103,7 @@ export class TFInstance {
 	currentTotalAccuracy: number;
 	transcurredEpochs: number;
 	stopTraining: boolean;
+	dataPreparationMetadata: DataPreparationMetadata;
 
 
 	private constructor() {
@@ -107,6 +114,7 @@ export class TFInstance {
 		this.currentTotalAccuracy = 0;
 		this.transcurredEpochs = 0;
 		this.stopTraining = false;
+		this.dataPreparationMetadata = {};
 	}
 
 	static getInstance(): TFInstance {
@@ -135,10 +143,45 @@ export class TFInstance {
 		// console.log({ data, columns })
 		const lastLayerShape = model.layers[model.layers.length - 1].outputShape[1];
 		const preparedData = this.prepareData(data, columns, trainConfig.dataPreparationConfig, lastLayerShape);
+		this.dataPreparationMetadata = preparedData.dataPreparationMetadata || {};
 		this.trainModel(model, preparedData, trainConfig);
 
 	}
 
+	trainTestSplit(data: any[], columns: Column[], dataPreparationConfig: DataPreparationConfig): { testIndices: number[], trainIndices: number[] } {
+		// Split data into train and test
+		const { testSize, stratify } = dataPreparationConfig;
+		const totalSamples = data.length;
+		const numTestSamples = Math.floor(totalSamples * testSize); // Calculate number of test samples
+		console.log({ testSize, stratify, numTestSamples });
+
+		let testIndices: number[] = [];
+		let trainIndices: number[] = [];
+
+		if (stratify) {
+			const targetColumn = columns.find(column => column.accessor === dataPreparationConfig.targetColumn);
+			const targetValues = data.map(row => row[targetColumn?.accessor!]);
+			const uniqueTargetValues = [...new Set(targetValues)];
+			uniqueTargetValues.forEach(value => {
+				const indices = data.map((_, index) => targetValues[index] === value ? index : null).filter(Boolean);
+				// Shuffle indices
+				this.tf.util.shuffle(indices);
+				const localTestIndices: any[] = indices.slice(0, Math.floor(indices.length * testSize));
+				const localTrainIndices: any[] = indices.slice(Math.floor(indices.length * testSize));
+				localTestIndices.forEach(index => testIndices.push(index));
+				localTrainIndices.forEach(index => trainIndices.push(index));
+			});
+		} else {
+			// Split data into train and test directly but shuffle randomly first
+			const indices = data.map((_, index) => index);
+			this.tf.util.shuffle(indices);
+			const localTestIndices: number[] = indices.slice(0, numTestSamples);
+			const localTrainIndices: number[] = indices.slice(numTestSamples);
+			localTestIndices.forEach(index => testIndices.push(index));
+			localTrainIndices.forEach(index => trainIndices.push(index));
+		}
+		return { testIndices, trainIndices };
+	}
 	async triggerStopTraining() {
 		this.stopTraining = true;
 	}
@@ -244,7 +287,10 @@ export class TFInstance {
 	prepareData(data: any[], columns: Column[], dataPreparationConfig: DataPreparationConfig, lastLayerShape: number): PrepareDataResult {
 		const targetColumn = columns.find(column => column.accessor === dataPreparationConfig.targetColumn);
 		// Features are all columns except the target column and disabled columns
+		const dataPreparationMetadata = {} as DataPreparationMetadata;
 		const featuresColumns = columns.filter(column => column.accessor !== dataPreparationConfig.targetColumn && !dataPreparationConfig.disabledColumns.includes(column.accessor));
+		const { testIndices, trainIndices } = this.trainTestSplit(data, columns, dataPreparationConfig);
+		console.log({ testIndices, trainIndices })
 		const testData: number[] = [];
 		const trainData: number[] = [];
 		// Separate data into inputs and outputs, inputs are all columns except the target column
@@ -258,8 +304,8 @@ export class TFInstance {
 				mappedOutputs[value] = index;
 			});
 			outputs = outputs.map(output => mappedOutputs[output]);
+			dataPreparationMetadata.mappedOutputs = mappedOutputs;
 		}
-		
 		const { inputsTensor, outputsTensor } = this.transformToTensor(inputs, outputs, dataPreparationConfig.outputsNumber, lastLayerShape);
 
 		// Normalize inputs with min max scaler
@@ -279,7 +325,22 @@ export class TFInstance {
 		// Show first 10 rows of normalized inputs and first 10 rows of inputs as numbers not tensors
 		// console.log({ normalizedInputs: normalizedInputs.slice(0, 10).arraySync(), inputs: inputsTensor.slice(0, 10).arraySync() })
 
-		return { features: inputsTensor, target: outputsTensor, outputsNumber: dataPreparationConfig.outputsNumber, testData, trainData };
+		return { features: inputsTensor, target: outputsTensor, outputsNumber: dataPreparationConfig.outputsNumber, testData, trainData, dataPreparationMetadata };
+	}
+
+	predict(inputs: any[]) {
+		if (!this.currentModel) {
+			throw new Error("Model not trained");
+		}
+		const inputsTensor = this.tf.tensor2d(inputs);
+		const predictions = this.currentModel.predict(inputsTensor) as Tensor;
+		const predictionsArray = predictions.argMax(1).arraySync() as number[];
+		// console.log({ inputs, predictionsArray });
+		const predictionsMax = predictionsArray[0];
+
+		const predictionLabel = this.dataPreparationMetadata.mappedOutputs?.[predictionsMax];
+
+		return predictionLabel;
 	}
 
 	createModel(config: ModelConfig) {
@@ -314,6 +375,7 @@ export class TFInstance {
 				});
 			}
 			model.summary();
+			this.currentModel = model;
 			return model;
 		} catch (error) {
 			console.error("Error creating model:", error);

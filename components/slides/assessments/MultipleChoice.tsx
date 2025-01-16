@@ -66,7 +66,7 @@ const getOptionStyles = (
 			return [...baseStyles, styles.revealedOption];
 		}
 		if (question.subtype === "Image") {
-			return [...baseStyles, localStyles.selectedImage];
+			return [...baseStyles, styles.selectedImage];
 		}
 		return [...baseStyles, styles.selectedOption];
 	}
@@ -93,6 +93,7 @@ export default function MultipleChoice({
 		setAnswer,
 		tryAgain,
 		revealAnswer,
+		setHiddenFeedback,
 	} = useCourseStore();
 
 	const options = useMemo(
@@ -166,10 +167,12 @@ export default function MultipleChoice({
 			setShowFeedback(false);
 			const answer = createAnswer(newSelectedValues, false);
 			setAnswer(index, answer);
+			setHiddenFeedback(currentSlideIndex, true);
 			if (newSelectedValues.length === 0) {
 				setSubmittableState(index, false);
 			} else {
 				setSubmittableState(index, true);
+
 			}
 			return newSelectedValues;
 		});
@@ -340,11 +343,7 @@ const localStyles = StyleSheet.create({
 		width: "100%",
 		height: "100%",
 	},
-	selectedImage: {
-		borderWidth: 3,
-		backgroundColor: "rgba(108, 92, 231, 0.1)",
-		borderColor: "#a197f9",
-	},
+
 	imageIconContainer: {
 		position: "absolute",
 		top: 8,

@@ -1,12 +1,10 @@
-import DataTableContainer from "@/components/DataTableContainer";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
+import NeuralNetworkVisualizer from "@/components/neuralnetwork/SimpleNN";
 // import TfjsComponent from "@/components/TfjsComponent";
-import TfjsRegression from "@/components/TFJSRegression";
 import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
 import { DatasetInfo } from "@/types";
 import React, { useCallback, useRef } from "react";
 import { ScrollView, View } from "react-native";
-import { Button, Text } from "react-native-paper";
 
 const datasetInfo: DatasetInfo = {
 	id: "x",
@@ -31,8 +29,8 @@ export default function DebugScreen() {
   }, []);
   return (
     <ScreenWrapper style={{ flex: 1 }}>
-      <ScrollView style={{ flex: 1 }}>
-		<DataTableContainer datasetInfo={datasetInfo} hideVisualizer={true} hideFilter={true} NN={true} />
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+		<NeuralNetworkVisualizer dataset_info={datasetInfo}  />
         {/* <TfjsRegression></TfjsRegression> */}
         {/* <TfjsComponent></TfjsComponent> */}
       </ScrollView>

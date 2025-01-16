@@ -10,6 +10,7 @@ interface TFStore {
 		training: boolean;
 		completed: boolean;
 		paused: boolean;
+		prediction: string | null;
 	}
 	training: {
 		transcurredEpochs: number;
@@ -39,6 +40,7 @@ export const useTFStore = create<TFStore>((set, get) => ({
 		training: false,
 		completed: false,
 		paused: false,
+		prediction: null,
 	},
 	training: {
 		transcurredEpochs: 0,

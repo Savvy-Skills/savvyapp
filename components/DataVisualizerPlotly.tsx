@@ -13,6 +13,7 @@ import {
 } from "react-native-paper";
 import { Data, Layout, Config, PlotType } from "plotly.js";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
+import { groupByColumn } from "@/utils/utilfunctions";
 
 let DataPlotter = lazy(() => import("@/components/DataPlotter"));
 
@@ -21,6 +22,7 @@ export type TraceConfig = {
   y: string;
   name: string;
   type: "scatter" | "bar" | "histogram";
+  groupBy?: string;
 };
 
 export type DataVisualizerProps = {
@@ -235,6 +237,20 @@ export default function DataVisualizerPlotly({
           } as Data,
         ];
       default:
+		// If groupby is provided, then we should only have one trace, and we should group the data by the groupBy column and create new traces for each group
+		if (traces.some(trace => trace.groupBy)) {
+			const groupedData = groupByColumn(dataset, traces[0].groupBy);
+			return Object.entries(groupedData).map(([group, data]) => {
+				return {
+					x: (data as Record<string, any>[]).map((d) => d[traces[0].x]),
+					y: (data as Record<string, any>[]).map((d) => d[traces[0].y]),
+					name: `${traces[0].name} - ${group}`,
+					type: "scatter",
+					mode: "markers",
+					visible: visibleTraces[traces[0].name],
+				};
+			});
+		}
         return traces
           .map((trace, index) => {
             const traceColor = colors[index % colors.length];
@@ -470,15 +486,6 @@ export default function DataVisualizerPlotly({
             </Button>
           ))}
       </ScrollView>
-      {activeChartType === "scatter" && (
-        <Button
-          mode="contained"
-          onPress={showTendencyLine}
-          style={styles.plotTypeButton}
-        >
-          {showLine ? "Show Line" : "Hide Line"}
-        </Button>
-      )}
     </View>
   );
 }

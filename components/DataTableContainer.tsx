@@ -8,9 +8,10 @@ import { filterData } from "../utils/filterData";
 import type { DatasetInfo } from "@/types";
 import type { FilterField, CombinedFilter } from "../types/filter";
 import DataVisualizerPlotly, { TraceConfig } from "@/components/DataVisualizerPlotly";
-import NeuralNetworkVisualizer from "./SimpleNN";
 
 interface DataTableContainerProps {
+	data?: any[];
+	columns?: any[];
 	datasetInfo: DatasetInfo;
 	headerColors?: string[];
 	traces?: TraceConfig[];
@@ -21,30 +22,37 @@ interface DataTableContainerProps {
 
 
 export default function DataTableContainer({
+	data: providedData,
+	columns: providedColumns,
 	datasetInfo,
 	headerColors,
 	traces,
-	NN,
 	hideVisualizer = false,
 	hideFilter = false,
 }: DataTableContainerProps) {
-	const { url, name, extension } = datasetInfo;
-	const { data, columns, isLoading, error } = useDataFetch(
-		url,
-		extension.toLowerCase() === "csv"
+	// Destructure datasetInfo if available
+	const { url, extension } = datasetInfo || {};
+
+	// Use data fetch only if data is not provided
+	const { data, columns, isLoading, error } = useDataFetch({
+		source: url,
+		isCSV: extension?.toLowerCase() === "csv"
+	}
 	);
+
+	// Use provided data and columns if available, otherwise use fetched data
+	const finalData = providedData || data;
+	const finalColumns = providedColumns || columns;
 
 	const [activeFilter, setActiveFilter] = useState<CombinedFilter | null>(null);
 
 	const fields: FilterField[] = useMemo(() => {
-		if (!data || !columns) return [];
+		if (!finalData || !finalColumns) return [];
 
-		return columns.map((column) => {
-			const values = data.map((row) => row[column.accessor]);
-			// Check first value for type inference
+		return finalColumns.map((column) => {
+			const values = finalData.map((row) => row[column.accessor]);
 			const isNumeric = !isNaN(Number(values[0]));
 
-			// Filter out null, undefined, and empty string values
 			const filteredValues = values.filter(
 				(value) =>
 					value !== null &&
@@ -69,14 +77,14 @@ export default function DataTableContainer({
 						.sort(),
 			};
 		});
-	}, [data, columns]);
+	}, [finalData, finalColumns]);
 
 	const filteredData = useMemo(() => {
-		if (!data) return [];
-		return filterData(data, activeFilter);
-	}, [data, activeFilter]);
+		if (!finalData) return [];
+		return filterData(finalData, activeFilter);
+	}, [finalData, activeFilter]);
 
-	if (isLoading) {
+	if (isLoading && !finalData) {
 		return (
 			<View style={styles.centered}>
 				<ActivityIndicator size="large" color="#0000ff" />
@@ -96,18 +104,16 @@ export default function DataTableContainer({
 		<View style={styles.container}>
 			<DataTable
 				data={filteredData}
-				columns={columns}
-				name={name}
+				columns={finalColumns}
+				name={datasetInfo?.name}
 				headerColors={headerColors}
 			/>
 			{!hideFilter && <Filter fields={fields} onFilterChange={setActiveFilter} />}
 			{!hideVisualizer && <DataVisualizerPlotly
 				dataset={filteredData}
 				traces={traces}
-					title="Data Visualizer"
-				/>
-			}
-			{NN && <NeuralNetworkVisualizer data={filteredData} columns={columns}  />}
+				title="Data Visualizer"
+			/>}
 		</View>
 	);
 }

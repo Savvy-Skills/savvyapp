@@ -41,7 +41,6 @@ export default function MatchWordsAssessment({
   const [cards, setCards] = useState<Card[]>([]);
   const [originalCards, setOriginalCards] = useState<Card[]>([]);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [allMatched, setAllMatched] = useState(false);
   const scaleAnims = useRef<Animated.Value[]>([]).current;
   const shakeAnims = useRef<Animated.Value[]>([]).current;
@@ -52,6 +51,7 @@ export default function MatchWordsAssessment({
     submitAssessment,
     currentSlideIndex,
     setAnswer,
+    setHiddenFeedback,
   } = useCourseStore();
 
   const isActive = index === currentSlideIndex;
@@ -122,7 +122,6 @@ export default function MatchWordsAssessment({
       shakeAnims[index].setValue(0);
     });
     initializeCards();
-    setShowFeedback(false);
   };
 
   const shakeAnimation = (index: number) => {
@@ -221,9 +220,8 @@ export default function MatchWordsAssessment({
   useEffect(() => {
     if (currentSubmission) {
       setAllMatched(true);
-      setShowFeedback(true);
     }
-  }, [submittedAssessments, currentSubmission, setAllMatched, setShowFeedback]);
+  }, [submittedAssessments, currentSubmission, setAllMatched]);
 
   useEffect(() => {
     if (cards.length < 1) return;
@@ -233,7 +231,6 @@ export default function MatchWordsAssessment({
     if (allMatched) {
       const answer = createAnswer(question);
       setAnswer(index, answer);
-      setShowFeedback(true);
       if (!currentSubmission) {
         submitAssessment(question.id);
       }

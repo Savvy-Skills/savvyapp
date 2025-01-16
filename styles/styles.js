@@ -18,7 +18,7 @@ export default StyleSheet.create({
   },
 
   feedbackModalContainer: {
-    backgroundColor: "white",
+    backgroundColor: Colors.background,
     padding: 20,
     margin: 20,
     borderRadius: 8,
@@ -42,10 +42,18 @@ export default StyleSheet.create({
     alignItems: "center",
     gap: 16,
   },
+  metricContainer: {
+    flexDirection: "row",
+    gap: 4,
+    alignItems: "center",
+    borderWidth: 1,
+    padding: 8,
+    borderRadius: 4,
+  },
   navBarInfo: {
     flex: 1,
     alignItems: "center",
-	marginRight: 62,
+    marginRight: 62,
   },
   sectionTitle: {
     fontSize: 28,
@@ -58,7 +66,7 @@ export default StyleSheet.create({
     width: "100%",
     alignSelf: "center",
     flex: 1,
-	gap:16,
+    gap: 16,
   },
   customContainer: {
     justifyContent: "center",
@@ -105,7 +113,7 @@ export default StyleSheet.create({
     fontSize: fontSizes.medium,
   },
   card: {
-	width: 320,
+    width: 320,
     backgroundColor: Colors.background,
     borderRadius: 8,
     overflow: "hidden",
@@ -126,7 +134,10 @@ export default StyleSheet.create({
     borderRadius: 16,
     alignSelf: "flex-start",
     fontFamily: "PoppinsBold",
-
+  },
+  networkContainer: {
+    flexDirection: "row",
+    minHeight: 200,
   },
   tag: {
     fontSize: 12,
@@ -134,40 +145,168 @@ export default StyleSheet.create({
     fontFamily: "PoppinsBold",
   },
   // Add more styles as needed
+  layerContainer: {
+    padding: 8,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "#ccc",
+    height: "100%",
+  },
+  hiddenLayerWrapper: {
+    flex: 1,
+    marginHorizontal: 8,
+  },
+  selectedLayer: {
+    borderStyle: "solid",
+    borderWidth: 2,
+    elevation: 2,
+  },
+  inputLayer: {
+    width: "auto",
+  },
+  inputLayerSelected: {
+    borderColor: "#2196f3",
+  },
+  hiddenLayer: {
+    flexDirection: "column",
+  },
+  hiddenLayerSelected: {
+    borderColor: "#4caf50",
+  },
+  outputLayer: {
+    width: "auto",
+  },
+  outputLayerSelected: {
+    borderColor: "#ffa726",
+  },
+  inputNodesContainer: {
+    gap: 16,
+  },
+  inputNode: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#2196f3",
+    justifyContent: "center",
+    alignSelf: "center",
+    alignItems: "center",
+  },
+  inputLabel: {
+    fontSize: 12,
+    textAlign: "center",
+    margin: 0,
+  },
+  hiddenLayerCircle: {
+    width: 100,
+    height: 100,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  neuronsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 4,
+  },
+  neuron: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#7c4dff",
+  },
+  layerInfo: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+  outputBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: "rgba(255, 204, 128, 0.2)",
+    borderColor: "#ffcc80",
+    borderWidth: 2,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  outputLabel: {
+    fontSize: 12,
+    marginTop: 4,
+  },
 
+  unselectedLayer: {
+    backgroundColor: "transparent",
+  },
+  layerTitle: {
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+
+  detailsContainer: {
+    padding: 16,
+    marginTop: 16,
+    borderRadius: 8,
+    elevation: 2,
+    gap: 16,
+  },
   feedbackContainer: {
     padding: 16,
     borderWidth: 1,
-	borderBottomWidth: 0,
+    borderBottomWidth: 0,
     gap: 10,
     maxWidth: SLIDE_MAX_WIDTH,
     alignSelf: "center",
     width: "100%",
     flexDirection: "row",
-	justifyContent:"space-between",
+    justifyContent: "space-between",
   },
   feedbackHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-	flex: 1
+    flex: 1,
   },
   feedbackTitle: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
   buttonContainer: {
     flexDirection: "row",
     gap: 16,
     padding: 10,
   },
+  dropdownMenuButton: {
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  dropdownMenuContainer: {
+    flexDirection: "row-reverse",
+  },
+  problemBadge: {
+    backgroundColor: generateColors(Colors.blue, 0.2).muted,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  badgeText: {
+    fontSize: 12,
+    textTransform: "capitalize",
+    color: Colors.blue,
+  },
   correctFeedback: {
     backgroundColor: generateColors(Colors.success, 0.2).muted,
     borderColor: Colors.success,
   },
   incorrectFeedback: {
-    backgroundColor: generateColors(Colors.orange, 0.2).muted,
-    borderColor: Colors.orange,
+    backgroundColor: generateColors(Colors.error, 0.2).muted,
+    borderColor: Colors.error,
   },
   revealedFeedback: {
     backgroundColor: generateColors(Colors.revealed, 0.2).muted,
@@ -177,10 +316,10 @@ export default StyleSheet.create({
     color: Colors.success,
   },
   incorrectTitle: {
-    color: "#ff861d",
+    color: Colors.error,
   },
   revealedTitle: {
-    color: "#666666",
+    color: Colors.revealedText,
   },
   navigation: {
     flexDirection: "row",
@@ -188,7 +327,7 @@ export default StyleSheet.create({
     marginTop: 16,
   },
   assessmentWrapper: {
-	backgroundColor: "#F4F1FE",
+    backgroundColor: Colors.assessmentBackground,
   },
   assessmentButtonContainer: {
     flexDirection: "row",
@@ -248,23 +387,28 @@ export default StyleSheet.create({
   selectedOption: {
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: "#6c5ce7",
-    backgroundColor: "rgba(108, 92, 231, 0.1)",
+    borderColor: Colors.primary,
+    backgroundColor: generateColors(Colors.primary, 0.2).muted,
+  },
+  selectedImage: {
+    borderWidth: 3,
+    backgroundColor: generateColors(Colors.primary, 0.2).muted,
+    borderColor: Colors.primary,
   },
   correctOption: {
     borderWidth: 2,
-    borderColor: "#23b5ec",
-    backgroundColor: "rgba(35, 181, 236, 0.1)",
+    borderColor: Colors.success,
+    backgroundColor: generateColors(Colors.success, 0.2).muted,
   },
   incorrectOption: {
     borderWidth: 2,
-    borderColor: "#ff7b09",
-    backgroundColor: "rgba(255, 123, 9, 0.1)",
+    borderColor: Colors.error,
+    backgroundColor: generateColors(Colors.error, 0.2).muted,
   },
   revealedOption: {
     borderWidth: 2,
-    borderColor: "#9E9E9E",
-    backgroundColor: "rgba(158, 158, 158, 0.1)",
+    borderColor: Colors.revealed,
+    backgroundColor: generateColors(Colors.revealed, 0.2).muted,
   },
 
   disabledOption: {},
