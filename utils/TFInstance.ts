@@ -244,22 +244,41 @@ export class TFInstance {
 	}
 
 	getTestData(data: any[], testIndices: number[], columns: Column[], trainConfig: TrainConfig) {
-		const testData = data.filter((_, index) => testIndices?.includes(index));
-		// Separate the outputs from the inputs, inputs are all columns except the target column
-		const testOutputs: any[] = [];
-		testData.forEach(row => {
-			const output = row[trainConfig.dataPreparationConfig.targetColumn];
-			testOutputs.push(output);
+		// Create deep copy of data to avoid mutations
+		const copyData: any[] = JSON.parse(JSON.stringify(data));
+		
+		// Get test data subset based on indices
+		const testData = copyData.filter((_, index) => testIndices?.includes(index));
+		const targetColumn = trainConfig.dataPreparationConfig.targetColumn;
+
+		// Extract test outputs and remove target column from test data
+		const testInputs = testData.map(row => {
+			const rowCopy = {...row};
+			delete rowCopy[targetColumn];
+			return Object.values(rowCopy);
 		});
-		testData.forEach(row => {
-			delete row[trainConfig.dataPreparationConfig.targetColumn];
-		});
-		const testInputs = testData.map(row => Object.values(row));
+
+		// Get predictions
 		const { predictionsArray, mappedOutputs } = this.predict(testInputs);
 		const predictionsToLabels = predictionsArray.map(prediction => mappedOutputs?.[prediction]);
-		// Add predictions to test data as a new column named "prediction"
-		const newTestData = testData.map((row, index) => ({ ...row, prediction: predictionsToLabels[index] }));
-		const newColumns = [...columns, { accessor: "prediction", Header: "prediction", dtype: "string", width: 100 }];
+
+		// Add predictions column to data
+		const newTestData = testData.map((row, index) => ({
+			...row,
+			prediction: predictionsToLabels[index]
+		}));
+
+		// Add prediction column definition
+		const newColumns = [
+			...columns,
+			{
+				accessor: "prediction",
+				Header: "prediction",
+				dtype: "string",
+				width: 100
+			}
+		];
+
 		return { testData: newTestData, newColumns };
 	}
 
