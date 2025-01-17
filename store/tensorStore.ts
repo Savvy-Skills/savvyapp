@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import { TFInstance } from '../utils/TFInstance';
+import { Column } from '@/types/table';
 
 interface TFStore {
   tfInstance: TFInstance | null;
@@ -18,6 +19,10 @@ interface TFStore {
 		accuracy: number;
 		modelHistory: any[];
 	}
+	data: {
+		testData: any[];	
+		columns: Column[];
+	}
   }
   setCurrentState: (state: TFStore["currentState"]) => void;
 }
@@ -33,6 +38,15 @@ export const useTFStore = create<TFStore>((set, get) => ({
 			get().initializeTF();
 		}, 1000);
 	}
+	instance.registerStateCallback((newState) => {
+		set((state) => ({
+			...state,
+			currentState: {
+				...state.currentState,
+				...newState
+			}
+		}));
+	});
     set({ tfInstance: instance, tfReady: true });
   },
   currentState:{
@@ -48,6 +62,10 @@ export const useTFStore = create<TFStore>((set, get) => ({
 		accuracy: 0,
 		modelHistory: [],
 	},
+	data: {
+		testData: [],
+		columns: [],
+	}
   },
   setCurrentState: (state: TFStore["currentState"]) => {
 	set({ currentState: state });

@@ -2,40 +2,9 @@ import { data, Sequential, Tensor } from "@tensorflow/tfjs";
 import { loadModules } from "./utilfunctions";
 import { setWasmPaths } from "@tensorflow/tfjs-backend-wasm";
 import { Column } from "@/hooks/useDataFetch";
-import { useTFStore } from "@/store/tensorStore";
+import { DataPreparationConfig, DataPreparationMetadata, ModelConfig, PrepareDataResult, TrainConfig } from "@/types/neuralnetwork";
 
-export interface ModelConfig {
-	neuronsPerLayer: number[];
-	problemType: "classification" | "regression";
-	activationFunction: "relu" | "sigmoid" | "tanh" | "softmax" | "linear";
-	regularization?: "l1" | "l2" | "l1l2";
-	regularizationRate?: number;
-	kernelInitializer?: "glorotUniform" | "glorotNormal" | "heUniform" | "heNormal" | "leCunUniform" | "leCunNormal" | "ones" | "zeros" | "randomUniform" | "randomNormal" | "varianceScaling" | "orthogonal" | "identity" | "zeros" | "ones" | "randomUniform" | "randomNormal" | "varianceScaling" | "orthogonal" | "identity";
-	compileOptions: {
-		optimizer: "sgd" | "adam" | "rmsprop" | "adagrad" | "adadelta" | "adamax";
-		learningRate: number;
-		lossFunction: "meanSquaredError" | "binaryCrossentropy" | "categoricalCrossentropy";
-		metrics: string;
-	}
-	inputSize: number;
-}
 
-export interface TrainConfig {
-	batchSize: number;
-	epochs: number;
-	shuffle: boolean;
-	validationSplit: number;
-	dataPreparationConfig: DataPreparationConfig;
-}
-
-export interface DataPreparationConfig {
-	targetColumn: string;
-	disabledColumns: string[];
-	outputsNumber: number;
-	uniqueTargetValues: string[];
-	testSize: number;
-	stratify?: boolean;
-}
 
 
 function getKernelRegularizer(tf: any, regularization: string | undefined, rate: number | undefined) {
@@ -53,18 +22,7 @@ function getKernelRegularizer(tf: any, regularization: string | undefined, rate:
 	return null;
 }
 
-interface PrepareDataResult {
-	features: Tensor;
-	target: Tensor;
-	outputsNumber: number;
-	testData?: number[];
-	trainData?: number[];
-	dataPreparationMetadata?: DataPreparationMetadata;
-}
 
-interface DataPreparationMetadata {
-	mappedOutputs?: Record<string, number>;
-}
 
 function getLayers(model: Sequential) {
 	let layers = []
@@ -104,6 +62,9 @@ export class TFInstance {
 	transcurredEpochs: number;
 	stopTraining: boolean;
 	dataPreparationMetadata: DataPreparationMetadata;
+	private stateUpdateCallbacks: ((state: any) => void)[] = [];
+
+
 
 
 	private constructor() {
@@ -123,6 +84,17 @@ export class TFInstance {
 		}
 		return TFInstance.instance;
 	}
+
+
+	registerStateCallback(callback: (state: any) => void) {
+		this.stateUpdateCallbacks.push(callback);
+	}
+
+	// Method to notify all registered callbacks
+	private notifyStateUpdate(newState: any) {
+		this.stateUpdateCallbacks.forEach(callback => callback(newState));
+	}
+
 	async debug(data: any[], columns: Column[], modelConfig: ModelConfig, trainConfig: TrainConfig) {
 		// const mockConfig: ModelConfig = {
 		// 	neuronsPerLayer: [4, 2, 1],
@@ -139,13 +111,10 @@ export class TFInstance {
 		// }
 		const model = this.createModel(modelConfig);
 		const layers = getLayers(model);
-		console.log({ layers })
-		// console.log({ data, columns })
 		const lastLayerShape = model.layers[model.layers.length - 1].outputShape[1];
 		const preparedData = this.prepareData(data, columns, trainConfig.dataPreparationConfig, lastLayerShape);
 		this.dataPreparationMetadata = preparedData.dataPreparationMetadata || {};
-		this.trainModel(model, preparedData, trainConfig);
-
+		await this.trainModel(model, preparedData, trainConfig, data, columns);
 	}
 
 	trainTestSplit(data: any[], columns: Column[], dataPreparationConfig: DataPreparationConfig): { testIndices: number[], trainIndices: number[] } {
@@ -186,9 +155,15 @@ export class TFInstance {
 		this.stopTraining = true;
 	}
 
-	async trainModel(model: Sequential, prepareData: PrepareDataResult, trainConfig: TrainConfig) {
+	async trainModel(model: Sequential, preparedData: PrepareDataResult, trainConfig: TrainConfig, data: any[], columns: Column[]) {
 		const { batchSize, epochs, shuffle, validationSplit } = trainConfig;
-		const { features, target, outputsNumber } = prepareData;
+		const { features, target, outputsNumber } = preparedData;
+		this.notifyStateUpdate({
+			model: {
+				completed: false,
+				training: true,
+			},
+		});
 
 		const lastLayerShape = model.layers[model.layers.length - 1].outputShape[1];
 		if (outputsNumber !== lastLayerShape) {
@@ -225,37 +200,67 @@ export class TFInstance {
 						loss: logs?.loss,
 						accuracy: logs?.acc,
 					});
-					useTFStore.getState().setCurrentState({
-						...useTFStore.getState().currentState,
+					const {testData, newColumns} = this.getTestData(data, preparedData.testIndices ?? [], columns, trainConfig);
+					this.notifyStateUpdate({
 						training: {
-							...useTFStore.getState().currentState.training,
 							transcurredEpochs: epoch,
 							loss: this.currentTotalLoss,
 							accuracy: this.currentTotalAccuracy,
 							modelHistory: this.currentModelMetrics,
+						},
+						data: {
+							testData,
+							columns: newColumns,
 						}
-					})
-
+					});
 				},
 				onTrainEnd: () => {
-					console.log("Training completed");
 					const layers = getLayers(model);
-					console.log({ layers })
 					// Dispose Tensors
 					features.dispose();
 					target.dispose();
-					console.log(this.currentModelMetrics)
-					useTFStore.getState().setCurrentState({
-						...useTFStore.getState().currentState,
+
+					const { testData, newColumns } = this.getTestData(data, preparedData.testIndices ?? [], columns, trainConfig);
+
+					this.notifyStateUpdate({
+						training: {
+							transcurredEpochs: this.transcurredEpochs,
+							loss: this.currentTotalLoss,
+							accuracy: this.currentTotalAccuracy,
+							modelHistory: this.currentModelMetrics,
+						},
 						model: {
-							...useTFStore.getState().currentState.model,
-							training: false,
 							completed: true,
+							trainig: false,
+						},
+						data: {
+							testData,
+							columns: newColumns,
 						}
-					})
+					});
 				}
 			}
 		});
+	}
+
+	getTestData(data: any[], testIndices: number[], columns: Column[], trainConfig: TrainConfig) {
+		const testData = data.filter((_, index) => testIndices?.includes(index));
+		// Separate the outputs from the inputs, inputs are all columns except the target column
+		const testOutputs: any[] = [];
+		testData.forEach(row => {
+			const output = row[trainConfig.dataPreparationConfig.targetColumn];
+			testOutputs.push(output);
+		});
+		testData.forEach(row => {
+			delete row[trainConfig.dataPreparationConfig.targetColumn];
+		});
+		const testInputs = testData.map(row => Object.values(row));
+		const { predictionsArray, mappedOutputs } = this.predict(testInputs);
+		const predictionsToLabels = predictionsArray.map(prediction => mappedOutputs?.[prediction]);
+		// Add predictions to test data as a new column named "prediction"
+		const newTestData = testData.map((row, index) => ({ ...row, prediction: predictionsToLabels[index] }));
+		const newColumns = [...columns, { accessor: "prediction", Header: "prediction", dtype: "string", width: 100 }];
+		return { testData: newTestData, newColumns };
 	}
 
 	transformToTensor(inputs: any[], outputs: any[], outputsNumber: number, lastLayerShape: number) {
@@ -290,20 +295,26 @@ export class TFInstance {
 		const dataPreparationMetadata = {} as DataPreparationMetadata;
 		const featuresColumns = columns.filter(column => column.accessor !== dataPreparationConfig.targetColumn && !dataPreparationConfig.disabledColumns.includes(column.accessor));
 		const { testIndices, trainIndices } = this.trainTestSplit(data, columns, dataPreparationConfig);
-		console.log({ testIndices, trainIndices })
-		const testData: number[] = [];
-		const trainData: number[] = [];
+		const trainData = data.filter((_, index) => trainIndices.includes(index));
 		// Separate data into inputs and outputs, inputs are all columns except the target column
-		const inputs = data.map(row => featuresColumns.map(column => row[column.accessor]));
-		let outputs = data.map(row => targetColumn?.accessor ? row[targetColumn.accessor] : null);
-		const mappedOutputs: Record<string, number> = {};
+		const inputs: any[][] = [];
+		trainData.forEach(row => {
+			const input = featuresColumns.map(column => row[column.accessor]);
+			inputs.push(input);
+		});
+		let outputs: any[] = [];
+		trainData.forEach(row => {
+			const output = targetColumn?.accessor ? row[targetColumn.accessor] : null;
+			outputs.push(output);
+		});
+		const mappedOutputs: Record<number, string> = {};
 		// Encode target if target is a string
 		if (dataPreparationConfig.uniqueTargetValues.length > 0) {
 			// Map target values to indices
 			dataPreparationConfig.uniqueTargetValues.forEach((value, index) => {
-				mappedOutputs[value] = index;
+				mappedOutputs[index] = value;
 			});
-			outputs = outputs.map(output => mappedOutputs[output]);
+			outputs = outputs.map(output => Object.keys(mappedOutputs).find(key => mappedOutputs[+key] === output));
 			dataPreparationMetadata.mappedOutputs = mappedOutputs;
 		}
 		const { inputsTensor, outputsTensor } = this.transformToTensor(inputs, outputs, dataPreparationConfig.outputsNumber, lastLayerShape);
@@ -325,30 +336,40 @@ export class TFInstance {
 		// Show first 10 rows of normalized inputs and first 10 rows of inputs as numbers not tensors
 		// console.log({ normalizedInputs: normalizedInputs.slice(0, 10).arraySync(), inputs: inputsTensor.slice(0, 10).arraySync() })
 
-		return { features: inputsTensor, target: outputsTensor, outputsNumber: dataPreparationConfig.outputsNumber, testData, trainData, dataPreparationMetadata };
+		return { features: inputsTensor, target: outputsTensor, outputsNumber: dataPreparationConfig.outputsNumber, testIndices, trainIndices, dataPreparationMetadata };
 	}
 
 	predict(inputs: any[]) {
 		if (!this.currentModel) {
 			throw new Error("Model not trained");
 		}
+		let predictionsArray: number[] = [];
 		const inputsTensor = this.tf.tensor2d(inputs);
 		const predictions = this.currentModel.predict(inputsTensor) as Tensor;
-		const predictionsArray = predictions.argMax(1).arraySync() as number[];
-		// console.log({ inputs, predictionsArray });
-		const predictionsMax = predictionsArray[0];
+		const lastLayerShape = this.currentModel.layers[this.currentModel.layers.length - 1].outputShape[1];
+		const isBinaryClassification = lastLayerShape === 1;
+		if (!isBinaryClassification) {
+			predictionsArray = predictions.argMax(1).arraySync() as number[];
+		} else {
+			const predArray = predictions.arraySync() as number[][];
+			predictionsArray = predArray.map((prediction) => prediction[0] > 0.5 ? 1 : 0);
+		}
+		inputsTensor.dispose();
+		predictions.dispose();
 
-		const predictionLabel = this.dataPreparationMetadata.mappedOutputs?.[predictionsMax];
-
-		return predictionLabel;
+		return { predictionsArray, mappedOutputs: this.dataPreparationMetadata.mappedOutputs };
 	}
 
 	createModel(config: ModelConfig) {
 		try {
+			if (this.currentModel) {
+				this.currentModel.dispose();
+			}
 			this.currentModelMetrics = [];
 			this.currentTotalLoss = 0;
 			this.currentTotalAccuracy = 0;
 			this.transcurredEpochs = 0;
+
 
 			const model = this.tf.sequential();
 			const lastLayerActivation = config.problemType === "classification" ? config.neuronsPerLayer[config.neuronsPerLayer.length - 1] === 1 ? "sigmoid" : "softmax" : null;
@@ -394,6 +415,7 @@ export class TFInstance {
 			);
 			await this.tf.ready();
 			await this.tf.setBackend("wasm")
+			console.log(this.tf.getBackend())
 		}
 	}
 

@@ -50,7 +50,7 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 		case "Rich Text":
 			return <RichTextSlide text={content.state} />;
 		case "Dataset":
-			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.traces} />;
+			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.traces} index={index} />;
 		default:
 			return <View />;
 	}
@@ -58,6 +58,7 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 
 const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 	const sortedContents = slide.contents.sort((a, b) => a.order - b.order);
+	const { currentView } = useCourseStore();
 	switch (slide.type) {
 		case "Assessment":
 			return (
@@ -98,8 +99,7 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 			} else if (slide.subtype === "outro") {
 				return <LastSlide />;
 			} else if (slide.subtype === "mid") {
-				return 		<NeuralNetworkVisualizer dataset_info={datasetInfo}  />
-
+				return <NeuralNetworkVisualizer dataset_info={datasetInfo} index={index} />
 			}
 			return <View />;
 		default:
@@ -170,7 +170,7 @@ export default function SlideRenderer({
 			}}
 			ref={scrollRef}
 		>
-			<View style={{ marginVertical: "auto" }}>
+			<View style={{ marginBottom: "auto", marginTop: slide.subtype === "mid" ? 0 : "auto" }}>
 				<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 			</View>
 		</ScrollView>

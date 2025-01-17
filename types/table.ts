@@ -8,6 +8,7 @@ export interface Column {
 	columns: Column[];
 	name: string;
 	headerColors?: string[];
+	parentWidth?: number;
   }
   
   export interface TableDimensionsProps {

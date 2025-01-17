@@ -1,34 +1,18 @@
-import { Column, useDataFetch } from "@/hooks/useDataFetch";
+import { useDataFetch } from "@/hooks/useDataFetch";
 import { useTFStore } from "@/store/tensorStore";
 import React, { lazy, useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, Pressable, Image } from "react-native";
-import { Text, Surface, IconButton, Button, Menu, TextInput } from "react-native-paper";
+import { View, StyleSheet } from "react-native";
+import { Text, Surface, Button } from "react-native-paper";
 import LoadingIndicator from "../LoadingIndicator";
-import { DataPreparationConfig, ModelConfig, TrainConfig } from "@/utils/TFInstance";
-import ThemedTitle from "../themed/ThemedTitle";
-import { Data } from "plotly.js";
-import { DatasetInfo } from "@/types";
-import DataTableContainer from "../DataTableContainer";
 import { TraceConfig } from "../DataVisualizerPlotly";
 import NNTabs from "./NNTabs";
 import styles from "@/styles/styles";
 import LayerDetails from "./LayerDetails";
+import { useCourseStore } from "@/store/courseStore";
+import { LayerType, ModelConfig, NeuralNetworkVisualizerProps, NNState, TrainConfig } from "@/types/neuralnetwork";
+import { Colors } from "@/constants/Colors";
 
-const DataPlotter = lazy(() => import("@/components/DataPlotter"));
 
-export type LayerType = "input" | "hidden" | "output" | null;
-
-export const dtypeMap = {
-	"number": "numeric",
-	"string": "text",
-	"boolean": "toggle",
-	"object": "toggle",
-};
-
-interface NeuralNetworkVisualizerProps {
-	initialNNState?: NNState;
-	dataset_info: DatasetInfo;
-}
 
 const defaultModelConfig: ModelConfig = {
 	neuronsPerLayer: [4, 2, 1],
@@ -58,11 +42,6 @@ const defaultTrainingConfig: TrainConfig = {
 	}
 }
 
-export interface NNState {
-	modelConfig?: ModelConfig;
-	trainingConfig?: TrainConfig;
-}
-
 const defaultNNState: NNState = {
 	modelConfig: defaultModelConfig,
 	trainingConfig: defaultTrainingConfig,
@@ -78,10 +57,11 @@ const traces: TraceConfig[] = [
 	}
 ]
 
-export default function NeuralNetworkVisualizer({ initialNNState = defaultNNState, dataset_info }: NeuralNetworkVisualizerProps) {
-	const [selectedLayer, setSelectedLayer] = useState<LayerType>(null);
+export default function NeuralNetworkVisualizer({ initialNNState = defaultNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {
+	const [selectedLayer, setSelectedLayer] = useState<LayerType>("input");
 	const { tfInstance, tfReady, initializeTF, currentState, setCurrentState } = useTFStore();
 	const [currentNNState, setCurrentNNState] = useState<NNState>(initialNNState);
+	const {currentSlideIndex} = useCourseStore();
 
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
@@ -112,7 +92,12 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 
 	const handleNeuronCountChange = useCallback((index: number, neuronCount: number) => {
 		const neuronsPerLayer = [...currentNNState.modelConfig!.neuronsPerLayer];
-		neuronsPerLayer[index] = neuronCount;
+		if (index === neuronsPerLayer.length) {
+			neuronsPerLayer.push(neuronCount);
+		} else {
+			neuronsPerLayer[index] = neuronCount;
+		}
+		console.log("Neuron count changed", { neuronsPerLayer, index, neuronCount });
 		setCurrentNNState(prev => ({
 			...prev,
 			modelConfig: {
@@ -123,7 +108,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 	}, [currentNNState]);
 
 	const handleStartTraining = useCallback(() => {
-		console.log("Starting training", { data, columns, currentNNState })
+		// console.log("Starting training", { data, columns, currentNNState })
 		setCurrentState({
 			...currentState,
 			model: {
@@ -155,22 +140,28 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 	}
 	const inputColumns = columns.filter(column => column.accessor !== currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn);
 
-
+	if (currentSlideIndex !== index) {
+		return <View />;
+	}
 
 	return (
-		<View style={localStyles.container}>
+		<View style={[styles.centeredMaxWidth, styles.slideWidth, { gap: 8, flex: 1 }]}>
 			<View style={localStyles.header}>
-				<Text style={styles.title}>Neural Network Architecture</Text>
+				<Text style={styles.title}>Neural Network</Text>
 				<Surface style={styles.problemBadge}>
 					<Text style={styles.badgeText}>{currentNNState.modelConfig?.problemType}</Text>
 				</Surface>
 			</View>
-			<NNTabs selectedLayer={selectedLayer} setSelectedLayer={handleSetSelectedLayer} inputColumns={inputColumns} outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!} />
+			<NNTabs 
+				selectedLayer={selectedLayer} 
+				setSelectedLayer={handleSetSelectedLayer} 
+				inputColumns={inputColumns} 
+				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!} />
 
 			<Button
 				mode="contained"
 				style={localStyles.trainingButton}
-				buttonColor="#ffa726"
+				buttonColor={Colors.orange}
 				onPress={() => {
 					if (currentState.model.training) {
 						tfInstance?.triggerStopTraining();
@@ -190,19 +181,25 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 			>
 				{currentState.model.training ? "Stop training" : currentState.model.completed ? "Train again" : "Start training"}
 			</Button>
-			<LayerDetails selectedLayer={selectedLayer} inputColumns={inputColumns} outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!} handleActivationFunctionChange={handleActivationFunctionChange} handleNeuronCountChange={handleNeuronCountChange} handleEpochsChange={handleEpochsChange} currentNNState={currentNNState} data={data} columns={columns} dataset_info={dataset_info} traces={traces} />
+			<LayerDetails
+				selectedLayer={selectedLayer}
+				inputColumns={inputColumns}
+				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!}
+				handleActivationFunctionChange={handleActivationFunctionChange}
+				handleNeuronCountChange={handleNeuronCountChange}
+				handleEpochsChange={handleEpochsChange}
+				currentNNState={currentNNState}
+				data={data}
+				columns={columns}
+				dataset_info={dataset_info}
+				traces={traces}
+				index={index}
+			/>
 		</View>
 	);
 }
 
 const localStyles = StyleSheet.create({
-	container: {
-		padding: 16,
-		gap: 16,
-		maxWidth: 700,
-		width: "100%",
-		alignSelf: "center",
-	},
 	header: {
 		flexDirection: "row",
 		justifyContent: "space-between",

@@ -9,12 +9,13 @@ import {
 	Card,
 	IconButton,
 	Surface,
+	Button,
 } from "react-native-paper";
 import { useTheme } from "react-native-paper";
 
 export default function LastSlide() {
 	const theme = useTheme();
-	const { currentView, completedSlides, submittedAssessments, currentSlideIndex } =
+	const { currentView, completedSlides, submittedAssessments, currentSlideIndex, setCurrentSlideIndex } =
 		useCourseStore();
 	const currentSlides = currentView?.slides;
 	const imageRef = useRef<Image>(null);
@@ -32,6 +33,10 @@ export default function LastSlide() {
 	const activities = activitiesIndexes.map((index) => completedSlides[index]);
 	const completedActivities = activities.filter((bool) => bool === true);
 
+	// Completed slides is an array of booleans, where each index corresponds with the currentSlideIndex
+	// So we need to find the first index of the completedSlides array that is false
+	const firstIncompleteSlide = completedSlides.findIndex((bool) => bool === false);
+
 	const totalCompletedSlides = completedSlides.filter(
 		(bool) => bool === true
 	).length;
@@ -45,6 +50,7 @@ export default function LastSlide() {
 	const activityProgress =
 		completedActivities.length / (activities.length || 1);
 
+
 	return (
 		<ScrollView>
 			{slideProgress === 1 && (
@@ -52,6 +58,14 @@ export default function LastSlide() {
 					<Image ref={imageRef} source={require("@/assets/animations/completed-once.gif")} style={{ width: 60, height: 60, alignSelf: "center" }} />
 					<Text> Congratulations! </Text>
 				</View>
+			)}
+			{/* TODO: If the progress is not 1, show button to go to the first incomplete slide */}
+			{slideProgress !== 1 && (
+				<Button onPress={() => {
+					if (firstIncompleteSlide !== -1) {
+						setCurrentSlideIndex(firstIncompleteSlide!);
+					}
+				}}>Go to first incomplete slide</Button>
 			)}
 			<Surface style={[styles.container, styles.centeredMaxWidth, styles.slideWidth]} elevation={0}>
 				<Card style={localStyles.card}>

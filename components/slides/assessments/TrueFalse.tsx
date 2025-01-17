@@ -7,6 +7,7 @@ import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { Colors } from "@/constants/Colors";
+import { generateColors } from "@/utils/utilfunctions";
 
 export type TrueFalseQuestionProps = {
 	question: QuestionInfo;
@@ -302,26 +303,24 @@ const styles = StyleSheet.create({
 		borderColor: "#E2E8F0",
 	},
 	selectedButton: {
-		backgroundColor: "#a197f9",
-		borderColor: "#a197f9",
+		backgroundColor: generateColors(Colors.primary, 0.2).muted,
+		borderColor: Colors.primary,
 	},
 	correctButton: {
-		backgroundColor: "rgba(35, 181, 236, 0.2)",
-		borderColor: "#3bc2f5",
-		borderWidth: 1,
+		backgroundColor: generateColors(Colors.success, 0.2).muted,
+		borderColor: Colors.success,
 	},
 	incorrectButton: {
-		backgroundColor: "rgba(252, 129, 129, 0.2)",
-		borderColor: "#FC8181",
-		borderWidth: 1,
+		backgroundColor: generateColors(Colors.error, 0.2).muted,
+		borderColor: Colors.error,
 	},
 	revealedButton: {
-		backgroundColor: "rgba(158, 158, 158, 0.1)",
-		borderColor: "#9E9E9E",
+		backgroundColor: generateColors(Colors.revealed, 0.1).muted,
+		borderColor: Colors.revealed,
 	},
 	disabledButton: {
-		backgroundColor: "#EDF2F7",
-		borderColor: "#E2E8F0",
+		backgroundColor: generateColors(Colors.revealed, 0.1).muted,
+		borderColor: Colors.revealed,
 		opacity: 0.7,
 	},
 });

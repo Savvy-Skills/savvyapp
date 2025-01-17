@@ -16,7 +16,7 @@ const assessmentBackground = "#F4F1FE"
 // States
 
 const errorColor = "#f44336";
-const successColor = "#66bb6a";
+const successColor = "#08ff83";
 const warningColor = "#ff0000";
 const revealedColor = "#cccccc"
 const revealedText = "#666666"

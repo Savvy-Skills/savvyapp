@@ -1,5 +1,5 @@
 import React, { useState, useMemo, lazy, Suspense } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Dimensions } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 import { useDataFetch } from "@/hooks/useDataFetch";
 import DataTable from "./DataTable";
@@ -8,6 +8,7 @@ import { filterData } from "../utils/filterData";
 import type { DatasetInfo } from "@/types";
 import type { FilterField, CombinedFilter } from "../types/filter";
 import DataVisualizerPlotly, { TraceConfig } from "@/components/DataVisualizerPlotly";
+import { useCourseStore } from "@/store/courseStore";
 
 interface DataTableContainerProps {
 	data?: any[];
@@ -18,6 +19,8 @@ interface DataTableContainerProps {
 	NN?: boolean;
 	hideVisualizer?: boolean;
 	hideFilter?: boolean;
+	index: number;
+	padding?: number;
 }
 
 
@@ -29,9 +32,11 @@ export default function DataTableContainer({
 	traces,
 	hideVisualizer = false,
 	hideFilter = false,
+	index,
 }: DataTableContainerProps) {
 	// Destructure datasetInfo if available
 	const { url, extension } = datasetInfo || {};
+	const { currentSlideIndex } = useCourseStore();
 
 	// Use data fetch only if data is not provided
 	const { data, columns, isLoading, error } = useDataFetch({
@@ -45,6 +50,7 @@ export default function DataTableContainer({
 	const finalColumns = providedColumns || columns;
 
 	const [activeFilter, setActiveFilter] = useState<CombinedFilter | null>(null);
+	const [containerWidth, setContainerWidth] = useState(0);
 
 	const fields: FilterField[] = useMemo(() => {
 		if (!finalData || !finalColumns) return [];
@@ -100,13 +106,21 @@ export default function DataTableContainer({
 		);
 	}
 
+	if (currentSlideIndex !== index) {
+		return <View />;
+	}
+
 	return (
-		<View style={styles.container}>
+		<View onLayout={(event) => {
+			const { height, width } = event.nativeEvent.layout;
+			setContainerWidth(width);
+		}} id={`datatable-container-${index}`} style={styles.container}>
 			<DataTable
 				data={filteredData}
 				columns={finalColumns}
 				name={datasetInfo?.name}
 				headerColors={headerColors}
+				parentWidth={containerWidth}
 			/>
 			{!hideFilter && <Filter fields={fields} onFilterChange={setActiveFilter} />}
 			{!hideVisualizer && <DataVisualizerPlotly

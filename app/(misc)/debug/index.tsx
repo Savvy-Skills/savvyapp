@@ -30,7 +30,7 @@ export default function DebugScreen() {
   return (
     <ScreenWrapper style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-		<NeuralNetworkVisualizer dataset_info={datasetInfo}  />
+		<NeuralNetworkVisualizer dataset_info={datasetInfo} index={0} />
         {/* <TfjsRegression></TfjsRegression> */}
         {/* <TfjsComponent></TfjsComponent> */}
       </ScrollView>
