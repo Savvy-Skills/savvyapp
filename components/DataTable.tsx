@@ -11,7 +11,6 @@ import TableHeader from './TableHeader';
 import TableRow from './TableRow';
 import type { DataTableProps } from '../types/table';
 import { useTableDimensions } from '@/hooks/usetableDimensions';
-import styles from '@/styles/styles';
 
 const MAX_VISIBLE_COLUMNS = 4;
 const ROWS_PER_BATCH = 20;
@@ -26,13 +25,14 @@ export default function DataTable({
     'rgba(255, 152, 0, 0.2)',
     'rgba(255, 193, 7, 0.2)',
   ],
+  parentWidth
 }: DataTableProps) {
-  const { tableHeight, tableWidth, columnWidth } = useTableDimensions({ columns });
+  const { tableHeight, tableWidth, columnWidth } = useTableDimensions({ columns, parentWidth });
 
   const getItem = useCallback((items: any[], index: number) => items[index], []);
   const getItemCount = useCallback((items: any[]) => items.length, []);
   const keyExtractor = useCallback((item: any, index: number) => index.toString(), []);
-  const padding = 16;
+
 
   const renderRow = useCallback(
     ({ item, index }: { item: any; index: number }) => (
@@ -48,7 +48,7 @@ export default function DataTable({
 
   return (
     <>
-      <View style={[localStyles.tableContainer, { width: tableWidth-padding }]}>
+      <View style={[localStyles.tableContainer, { width: tableWidth}]}>
         <ThemedTitle style={[localStyles.boldText, localStyles.title]}>Dataset: {name}</ThemedTitle>
         <ScrollView
           horizontal

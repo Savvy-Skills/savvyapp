@@ -168,19 +168,19 @@ export default StyleSheet.create({
     width: "auto",
   },
   inputLayerSelected: {
-    borderColor: "#2196f3",
+    borderColor: Colors.blue,
   },
   hiddenLayer: {
     flexDirection: "column",
   },
   hiddenLayerSelected: {
-    borderColor: "#4caf50",
+    borderColor: Colors.success,
   },
   outputLayer: {
     width: "auto",
   },
   outputLayerSelected: {
-    borderColor: "#ffa726",
+    borderColor: Colors.orange,
   },
   inputNodesContainer: {
     gap: 16,

@@ -463,7 +463,7 @@ export default function DataVisualizerPlotly({
               {columnName}
             </Button>
           ))}
-        {activeChartType === "scatter" &&
+        {activeChartType === "scatter" && traces.length > 1 &&
           traces.map((trace, index) => (
             <Button
               key={trace.name}

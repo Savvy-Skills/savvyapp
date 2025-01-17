@@ -100,11 +100,6 @@ export default function RootLayout() {
 				<SnackbarProvider>
 					<QueryClientProvider client={queryClient}>
 						<SafeAreaProvider>
-							{!networkState.isConnected && (
-								<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-									<Text>No internet connection</Text>
-								</View>
-							)}
 							<Stack screenOptions={{ headerShown: false }}>
 								<Stack.Screen name="index" options={{ title: "Landing Page" }} />
 								<Stack.Screen name="auth" options={{ headerShown: false }} />

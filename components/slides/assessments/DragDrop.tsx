@@ -35,7 +35,6 @@ export default function DragAndDropAssessment({
 	quizMode = false,
 }: DragAndDropAssessmentProps) {
 	const [isWrong, setIsWrong] = useState(false);
-	const [showFeedback, setShowFeedback] = useState(false);
 	const tryAgainRef = useRef(false);
 	const { width } = useWindowDimensions();
 
@@ -47,6 +46,7 @@ export default function DragAndDropAssessment({
 		setAnswer,
 		tryAgain,
 		revealAnswer,
+		setHiddenFeedback,
 	} = useCourseStore();
 
 	const isActive = index === currentSlideIndex;
@@ -94,15 +94,13 @@ export default function DragAndDropAssessment({
 				return acc;
 			}, {});
 			setDroppedItems(droppedItems);
-			setShowFeedback(true);
 		}
-	}, [currentSubmission, quizMode, setShowFeedback]);
+	}, [currentSubmission, quizMode]);
 
 	const handleTryAgain = useCallback(() => {
 		if (!quizMode) {
 			setShowAnswer(false);
 			setIsWrong(false);
-			setShowFeedback(false);
 			tryAgainRef.current = !tryAgainRef.current;
 		}
 	}, [quizMode]);
@@ -111,7 +109,6 @@ export default function DragAndDropAssessment({
 		if (!quizMode) {
 			setShowAnswer(true);
 			setIsWrong(false);
-			setShowFeedback(true);
 			setCorrectnessState(index, true);
 			const correctDroppedItems = items.reduce((acc, item) => {
 				if (!acc[item.match]) {
@@ -129,10 +126,10 @@ export default function DragAndDropAssessment({
 	const handleDrop = useCallback(
 		(droppedItems: Record<string, string[]>) => {
 			setDroppedItems(droppedItems);
-			setShowFeedback(false);
 			setIsWrong(false);
+			setHiddenFeedback(index, true);
 		},
-		[setShowFeedback, setIsWrong]
+		[setIsWrong, setHiddenFeedback, index]
 	);
 
 	useEffect(() => {

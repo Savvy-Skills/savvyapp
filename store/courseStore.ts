@@ -100,6 +100,8 @@ interface CourseStore {
 	setAnswer: (index: number, answer: AssessmentAnswer) => void;
 	hiddenFeedbacks: Record<number, boolean>;
 	setHiddenFeedback: (index: number, state: boolean) => void;
+	skipAssessments: boolean;
+	setSkipAssessments: (state: boolean) => void;
 
 	error: string | null;
 	isLoading: boolean;
@@ -185,6 +187,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			};
 		});
 	},
+	skipAssessments: false,
+	setSkipAssessments: (state) => set({ skipAssessments: state }),
 
 	setShowIncorrect: (show) => set({ showIncorrect: show }),
 
@@ -211,11 +215,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 				view.module_id,
 				view
 			);
-			const midSlide: CustomSlide = createCustomSlide(
-				"mid",
-				view.module_id,
-				view
-			);
+			
 			const lastSlide: CustomSlide = createCustomSlide(
 				"outro",
 				view.module_id,
@@ -223,7 +223,14 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			);
 
 			sorted.unshift(firstSlide);
-			sorted.push(midSlide);
+			if ([1,10].includes(view.id)) {
+				const midSlide: CustomSlide = createCustomSlide(
+					"mid",
+					view.module_id,
+					view
+				);
+				sorted.push(midSlide);
+			}
 			sorted.push(lastSlide);
 
 			let progressArray = progress.id

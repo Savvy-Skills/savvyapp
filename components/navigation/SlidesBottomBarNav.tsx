@@ -38,11 +38,14 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 		triggerTryAgain,
 		triggerScrollToEnd,
 		setSubmittableState,
+		skipAssessments,
+		setSkipAssessments,
 	} = useCourseStore();
 
 	const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
 	const [showRestartViewDialog, setShowRestartViewDialog] = useState(false);
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
+	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 	const showFeedbackModal = () => setFeedbackModalVisible(true);
 
 	const showRestartDialog = () => {
@@ -50,6 +53,10 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	};
 	const hideRestartDialog = () => {
 		setShowRestartViewDialog(false);
+	};
+
+	const hideConfirmationDialog = () => {
+		setShowConfirmationDialog(false);
 	};
 
 	let currentAssessmentID = undefined;
@@ -67,6 +74,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
 	const revealedAnswer = currentSubmission?.revealed ?? false;
 
+	const isCurrentSlideCompleted = completedSlides[currentSlideIndex];
 
 	const handleCheck = useCallback(() => {
 		if (currentAssessmentID !== undefined) {
@@ -107,11 +115,14 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	}, [previousSlide, handleDismissMenu]);
 
 	const handleNextSlide = useCallback(() => {
-		nextSlide();
-		handleDismissMenu();
-	}, [nextSlide, handleDismissMenu]);
+		if (currentSlide?.type === "Assessment" && !isCurrentSlideCompleted && !skipAssessments) {
+			setShowConfirmationDialog(true);
+		} else {
+			nextSlide();
+			handleDismissMenu();
+		}
+	}, [nextSlide, handleDismissMenu, isCurrentSlideCompleted, skipAssessments]);
 
-	const isCurrentSlideCompleted = completedSlides[currentSlideIndex];
 
 	const handleFinish = useCallback(() => {
 		// Implement finish functionality
@@ -346,6 +357,19 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 				}}
 				title={isLastView ? "This is the last view in this module. Are you sure you want to exit?" : "Are you ready to move on to the next view?"}
 				content={isLastView ? "You can still check you answers later." : "You will go to the next view in this module."}
+			/>
+			<ConfirmationDialog
+				visible={showConfirmationDialog}
+				onDismiss={hideConfirmationDialog}
+				onConfirm={(skip) => {
+					nextSlide();
+					if (skip) {
+						setSkipAssessments(true);
+					}
+				}}
+				title="Are you sure?"
+				content="You haven't completed this assessment yet."
+				skip={true}
 			/>
 		</View>
 	);
