@@ -123,7 +123,7 @@ export default function DataTableContainer({
 				parentWidth={containerWidth}
 			/>
 			{!hideFilter && <Filter fields={fields} onFilterChange={setActiveFilter} />}
-			{!hideVisualizer && <DataVisualizerPlotly
+			{(!hideVisualizer && traces && traces.length > 0) && <DataVisualizerPlotly
 				dataset={filteredData}
 				traces={traces}
 				title="Data Visualizer"

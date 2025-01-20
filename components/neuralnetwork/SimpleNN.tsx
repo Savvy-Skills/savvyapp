@@ -93,11 +93,14 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 	const handleNeuronCountChange = useCallback((index: number, neuronCount: number) => {
 		const neuronsPerLayer = [...currentNNState.modelConfig!.neuronsPerLayer];
 		if (index === neuronsPerLayer.length) {
-			neuronsPerLayer.push(neuronCount);
+			if (neuronCount > 0) {
+				neuronsPerLayer.push(neuronCount);
+			} else {
+				neuronsPerLayer.pop();
+			}
 		} else {
 			neuronsPerLayer[index] = neuronCount;
 		}
-		console.log("Neuron count changed", { neuronsPerLayer, index, neuronCount });
 		setCurrentNNState(prev => ({
 			...prev,
 			modelConfig: {
