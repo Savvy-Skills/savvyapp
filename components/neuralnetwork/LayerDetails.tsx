@@ -125,6 +125,18 @@ export default function LayerDetails({
 		handleNeuronCountChange(currentModelConfig?.neuronsPerLayer.length ?? 0, 1);
 	}, [handleNeuronCountChange, currentModelConfig]);
 
+	const handleRemoveLayer = useCallback(() => {
+		handleNeuronCountChange(currentModelConfig?.neuronsPerLayer.length ?? 0, -1);
+	}, [handleNeuronCountChange, currentModelConfig]);
+
+	const handleAddNeuron = useCallback((index: number) => {
+		handleNeuronCountChange(index, (currentModelConfig?.neuronsPerLayer[index] ?? 0) + 1);
+	}, [handleNeuronCountChange, currentModelConfig]);
+
+	const handleRemoveNeuron = useCallback((index: number) => {
+		handleNeuronCountChange(index, (currentModelConfig?.neuronsPerLayer[index] ?? 0) - 1);
+	}, [handleNeuronCountChange, currentModelConfig]);
+
 	useEffect(() => {
 		if (predictionInputs.length === 0) {
 			handleGetRandomInputs();
@@ -214,17 +226,29 @@ export default function LayerDetails({
 							</Menu>
 						</View>
 					</View>
-					<Text style={styles.subtitle}>Hidden Layers:</Text>
+					<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+						<Text style={styles.subtitle}>Hidden Layers:</Text>
+						<IconButton icon="minus" size={24} onPress={() => {
+							handleRemoveLayer();
+						}} />
+						<IconButton icon="plus" size={24} onPress={() => {
+							handleAddLayer();
+						}} />
+
+					</View>
 					{currentModelConfig?.neuronsPerLayer.map((neuronCount, index) => (
 						<View key={index} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
 							<Text>Layer {index + 1}:</Text>
 							<Text>{neuronCount} neurons</Text>
+							<IconButton disabled={neuronCount === 1} icon="minus" size={18} onPress={() => {
+								handleRemoveNeuron(index);
+							}} />
+							<IconButton icon="plus" size={18} onPress={() => {
+								handleAddNeuron(index);
+							}} />
 						</View>
 					))}
-					{/* TODO: Add button to add a new layer */}
-					{/* <IconButton icon="plus" size={24} onPress={() => {
-						handleAddLayer();
-					}} /> */}
+
 				</View>
 			</View>
 

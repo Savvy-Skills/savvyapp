@@ -4,9 +4,6 @@ import { setWasmPaths } from "@tensorflow/tfjs-backend-wasm";
 import { Column } from "@/hooks/useDataFetch";
 import { DataPreparationConfig, DataPreparationMetadata, ModelConfig, PrepareDataResult, TrainConfig } from "@/types/neuralnetwork";
 
-
-
-
 function getKernelRegularizer(tf: any, regularization: string | undefined, rate: number | undefined) {
 	if (!regularization) {
 		return null;
@@ -21,7 +18,6 @@ function getKernelRegularizer(tf: any, regularization: string | undefined, rate:
 	}
 	return null;
 }
-
 
 
 function getLayers(model: Sequential) {
@@ -63,9 +59,6 @@ export class TFInstance {
 	stopTraining: boolean;
 	dataPreparationMetadata: DataPreparationMetadata;
 	private stateUpdateCallbacks: ((state: any) => void)[] = [];
-
-
-
 
 	private constructor() {
 		this.tf = null;
@@ -301,7 +294,7 @@ export class TFInstance {
 				const outputsTensor = this.tf.tensor1d(outputs, 'int32')
 				result = { inputsTensor, outputsTensor }
 			} else {
-				const outputsTensor = this.tf.tensor2d(outputs)
+				const outputsTensor = this.tf.tensor2d(outputs, [outputs.length, outputsNumber])
 				result = { inputsTensor, outputsTensor }
 			}
 			return result

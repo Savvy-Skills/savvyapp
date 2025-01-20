@@ -5,6 +5,7 @@ import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
 import { DatasetInfo } from "@/types";
 import React, { useCallback, useRef } from "react";
 import { ScrollView, View } from "react-native";
+import TensorFlowPoseDetection from "@/components/vision/TfjsPoseComponent";
 
 const datasetInfo: DatasetInfo = {
 	id: "x",
@@ -30,9 +31,9 @@ export default function DebugScreen() {
   return (
     <ScreenWrapper style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-		<NeuralNetworkVisualizer dataset_info={datasetInfo} index={0} />
+		{/* <NeuralNetworkVisualizer dataset_info={datasetInfo} index={0} /> */}
         {/* <TfjsRegression></TfjsRegression> */}
-        {/* <TfjsComponent></TfjsComponent> */}
+        <TensorFlowPoseDetection></TensorFlowPoseDetection>
       </ScrollView>
     </ScreenWrapper>
   );
