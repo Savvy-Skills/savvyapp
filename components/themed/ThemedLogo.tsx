@@ -18,7 +18,7 @@ const ThemedLogo = (props: ThemedLogoProps) => {
         height,
       }}
       tintColor={theme.dark ? "white" : "black"}
-      source={require("@/assets/images/savvyimagotipe.svg")}
+      source={require("@/assets/images/svgs/savvyimagotipe.svg")}
     />
   );
 };

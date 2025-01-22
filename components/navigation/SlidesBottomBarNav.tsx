@@ -147,9 +147,9 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
 	const showBackgroundFeedback = isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex];
 
-	const backgroundColor = !showBackgroundFeedback ? "none" : revealedAnswer ? generateColors(Colors.revealed, 0.2).muted : isCorrect ? generateColors(Colors.success, 0.2).muted : generateColors(Colors.error, 0.2).muted;
+	const backgroundColor = Colors.assessmentBackground;
 	const borderColor = !showBackgroundFeedback ? "none" : revealedAnswer ? generateColors(Colors.revealed, 0.2).normal : isCorrect ? generateColors(Colors.success, 0.2).normal : generateColors(Colors.error, 0.2).normal;
-	const borderWidth = !showBackgroundFeedback ? 0 : 1;
+	const borderWidth = !showBackgroundFeedback ? 0 : 0;
 
 	const MiddleButton = () => {
 		const buttonLabel = currentSlide?.buttonLabel ? currentSlide.buttonLabel : currentSubmission && currentSubmission.revealed ? "GOT IT" : "CONTINUE";

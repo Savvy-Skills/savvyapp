@@ -3,8 +3,8 @@ import { useCourseStore } from "@/store/courseStore";
 import styles from "@/styles/styles";
 import React, { useState } from "react";
 import { View, StyleSheet, useWindowDimensions, Switch } from "react-native";
-import { Dialog, Portal, Button, Icon, Text } from "react-native-paper";
-
+import { Dialog, Portal, Button, Icon, Text, Checkbox } from "react-native-paper";
+import { Image } from "expo-image";
 interface ConfirmationDialogProps {
 	visible: boolean;
 	onDismiss: () => void;
@@ -33,19 +33,21 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 				onDismiss={onDismiss}
 				style={[styles.centeredMaxWidth, styles.slideWidth, { maxWidth }]}
 			>
-				<Dialog.Title>{title}</Dialog.Title>
 				<Dialog.Content style={{ gap: 16 }}>
 					<View style={{ alignItems: "center" }}>
-						<Icon source="alert" size={120} color="#ff861d" />
+						<Image source={require("@/assets/images/svgs/warning.svg")} style={{ width: 120, height: 120 }} />
 					</View>
-					<Text style={{ alignSelf: "center" }}>{content}</Text>
+					<Text style={[styles.subtitle, { textAlign: "center" }]}>{content}</Text>
 					{/* TODO: if skip is true, show toggle with skipAssessments state */}
 					{skip && (
-						<View style={{ flexDirection: "column", alignSelf: "center", justifyContent: "center" }}>
-							<Text>Not show this again.</Text>
-							<Switch value={localSkipAssessments} onValueChange={setLocalSkipAssessments} />
+						<View style={{ flexDirection: "row", alignItems: "center" }}>
+							<Checkbox
+								status={localSkipAssessments ? "checked" : "unchecked"}
+								onPress={() => setLocalSkipAssessments(!localSkipAssessments)}
+							/>
+							<Text>Don't show this message again.</Text>
 						</View>
-					)}	
+					)}
 				</Dialog.Content>
 				<Dialog.Actions>
 					<Button onPress={onDismiss}>No</Button>

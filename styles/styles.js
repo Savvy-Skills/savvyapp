@@ -253,7 +253,7 @@ export default StyleSheet.create({
   },
   feedbackContainer: {
     padding: 16,
-    borderWidth: 1,
+    borderWidth: 0,
     borderBottomWidth: 0,
     gap: 10,
     maxWidth: SLIDE_MAX_WIDTH,
@@ -261,6 +261,8 @@ export default StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
+    backgroundColor: Colors.assessmentBackground,
+	boxShadow: "0 -8px 10px 0 rgba(0, 0, 0, 0.10)",
   },
   feedbackHeader: {
     flexDirection: "row",
@@ -301,15 +303,15 @@ export default StyleSheet.create({
     color: Colors.blue,
   },
   correctFeedback: {
-    backgroundColor: generateColors(Colors.success, 0.2).muted,
+    // backgroundColor: generateColors(Colors.success, 0.2).muted,
     borderColor: Colors.success,
   },
   incorrectFeedback: {
-    backgroundColor: generateColors(Colors.error, 0.2).muted,
+    // backgroundColor: generateColors(Colors.error, 0.2).muted,
     borderColor: Colors.error,
   },
   revealedFeedback: {
-    backgroundColor: generateColors(Colors.revealed, 0.2).muted,
+    // backgroundColor: generateColors(Colors.revealed, 0.2).muted,
     borderColor: Colors.revealed,
   },
   correctTitle: {

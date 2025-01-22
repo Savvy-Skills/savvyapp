@@ -28,7 +28,7 @@ export default function CourseCard({ course }: CourseCardProps) {
     >
       <View style={styles.card}>
         <Image
-          source={require("../assets/images/placeholder.png")}
+          source={require("../assets/images/pngs/placeholder.png")}
           style={localStyles.backgroundPattern}
         />
         <View style={styles.tagContainer}>

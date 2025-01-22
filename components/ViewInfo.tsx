@@ -47,7 +47,7 @@ const ViewInfo = () => {
 		>
 			<View style={localStyles.moduleContainer}>
 				<Image
-					source={require("@/assets/images/savvylogo.svg")}
+					source={require("@/assets/images/svgs/savvylogo.svg")}
 					style={{
 						height: 16,
 						width: 16,

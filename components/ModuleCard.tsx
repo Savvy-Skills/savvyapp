@@ -29,7 +29,7 @@ export default function ModuleCard({ module }: ModuleCardProps) {
     <TouchableOpacity onPress={handlePress} accessibilityRole="button" style={localStyles.container}>
       <View style={styles.card}>
         <Image
-          source={require("../assets/images/placeholder.png")}
+          source={require("../assets/images/pngs/placeholder.png")}
           style={localStyles.backgroundPattern}
         />
         <ThemedTitle style={localStyles.title} numberOfLines={2}>

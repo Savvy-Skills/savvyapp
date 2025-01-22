@@ -30,7 +30,7 @@ const HomeTopNavBar = () => {
     >
       <Image
         style={{ width: 40, height: 40 }}
-        source={require("@/assets/images/savvylogo.svg")}
+        source={require("@/assets/images/svgs/savvylogo.svg")}
       />
 
       <Menu
