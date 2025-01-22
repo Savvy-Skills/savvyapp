@@ -160,7 +160,7 @@ const LandingPage = () => {
         <View style={styles.container}>
           <View style={styles.header}>
             <Image
-              source={require("@/assets/images/savvylogo.svg")}
+              source={require("@/assets/images/svgs/savvylogo.svg")}
               style={styles.logo}
             />
             <Button

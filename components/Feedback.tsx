@@ -5,6 +5,7 @@ import { StyleSheet, View } from "react-native";
 import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { Colors } from "@/constants/Colors";
+import { Image } from "expo-image";
 
 function FeedbackComponent({
   correctness,
@@ -67,7 +68,8 @@ function FeedbackComponent({
         style={[styles.feedbackContainer, styles.correctFeedback]}
       >
         <View style={styles.feedbackHeader}>
-          <Icon source="star" size={20} color={Colors.success} />
+          {/* <Icon source="star" size={20} color={Colors.success} /> */}
+		  <Image source={require('@/assets/animations/correct-still-once.gif')} style={{ width: 60, height: 60 }} />
           <Text style={[styles.feedbackTitle, styles.correctTitle]}>
             Positive feedback
           </Text>
@@ -92,7 +94,7 @@ function FeedbackComponent({
       style={[styles.feedbackContainer, styles.incorrectFeedback]}
     >
       <View style={styles.feedbackHeader}>
-        <Icon source="alert" size={20} color={Colors.error} />
+        <Image source={require('@/assets/animations/incorrect-once.gif')} style={{ width: 60, height: 60 }} />
         <Text style={[styles.feedbackTitle, styles.incorrectTitle]}>
           Negative feedback text
         </Text>

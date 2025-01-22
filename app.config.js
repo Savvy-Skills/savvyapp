@@ -34,7 +34,7 @@ export default {
   scheme: "myapp",
   userInterfaceStyle: "automatic",
   splash: {
-    image: "./assets/images/savvysplash.png",
+    image: "./assets/images/pngs/savvysplash.png",
     resizeMode: "cover",
     backgroundColor: "#ffffff",
   },
