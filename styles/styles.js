@@ -264,6 +264,13 @@ export default StyleSheet.create({
     backgroundColor: Colors.assessmentBackground,
 	boxShadow: "0 -8px 10px 0 rgba(0, 0, 0, 0.10)",
   },
+  lottieContainer: {
+	width: 40,
+	height: 40,
+	display: "flex",
+	justifyContent: "center",
+	alignItems: "center",
+  },
   feedbackHeader: {
     flexDirection: "row",
     alignItems: "center",
