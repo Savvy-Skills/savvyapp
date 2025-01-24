@@ -146,6 +146,9 @@ interface CourseStore {
 
 	scrollToEnd: boolean;
 	triggerScrollToEnd: () => void;
+	
+	checking: boolean;
+	setChecking: (state: boolean) => void;
 }
 
 export const useCourseStore = create<CourseStore>((set, get) => ({
@@ -175,6 +178,8 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 	showExplanation: false,
 	triggerShowExplanation: () => set((state) => ({ showExplanation: !state.showExplanation })),
 	setTryAgain: (state) => set({ tryAgain: state }),
+	checking: false,
+	setChecking: (state) => set({ checking: state }),
 	setAnswer: (index, answers) => {
 		set((state) => {
 			if (state.answers[index] === answers) {
@@ -354,6 +359,7 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			];
 
 		set({ submittedAssessments: newSubmittedAssessments });
+		set({ checking: true });
 
 		if (isCorrect || quizMode) {
 			checkSlideCompletion();

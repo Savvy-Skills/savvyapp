@@ -69,19 +69,21 @@ export default function RootLayout() {
 	useEffect(() => {
 		if (isInitialized && appIsReady) {
 			const inAuthGroup = segments[0] === "auth";
-			const inDebug = segments[0] === "debug";
 			const notInRoot = segments.length > 0;
+			const inCallback = segments[0] === "auth" && segments[1] === "callback";
 
-			if (user && !notInRoot) {
+			if (user && !notInRoot && !inCallback) {
 				router.replace("/home");
 			}
-			if (!token && notInRoot && !excluded.includes(segments[0])) {
-				router.replace("/auth/login");
+			if (!token && notInRoot && (!excluded.includes(segments[0]))) {
+				if (segments[1] !== "login") {
+					router.replace("/auth/login");
+				}
 			} else if (token) {
 				if (!user) {
 					getUser();
 				} else {
-					if (inAuthGroup) {
+					if (inAuthGroup && !inCallback) {
 						router.replace("/home");
 					}
 				}

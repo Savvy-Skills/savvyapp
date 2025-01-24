@@ -69,7 +69,7 @@ export default function Home() {
               )}
             </View>
           </View>
-          <Footer />
+          {/* <Footer /> */}
         </>
       </ScrollView>
     </ScreenWrapper>

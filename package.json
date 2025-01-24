@@ -7,7 +7,7 @@
     "reset-project": "node ./scripts/reset-project.js",
     "android": "APP_VARIANT=development expo start --android",
     "ios": "APP_VARIANT=development expo start --ios",
-    "web": "expo start --web",
+    "web": "npx expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint"
   },

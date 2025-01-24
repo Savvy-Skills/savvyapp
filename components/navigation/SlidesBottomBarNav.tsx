@@ -147,7 +147,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
 	const showBackgroundFeedback = isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex];
 
-	const backgroundColor = Colors.assessmentBackground;
+	const backgroundColor = showBackgroundFeedback ? Colors.assessmentBackground : "transparent";
 	const borderColor = !showBackgroundFeedback ? "none" : revealedAnswer ? generateColors(Colors.revealed, 0.2).normal : isCorrect ? generateColors(Colors.success, 0.2).normal : generateColors(Colors.error, 0.2).normal;
 	const borderWidth = !showBackgroundFeedback ? 0 : 0;
 
