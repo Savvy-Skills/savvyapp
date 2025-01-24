@@ -2,7 +2,7 @@
 import { useCourseStore } from "@/store/courseStore";
 import styles from "@/styles/styles";
 import React, { useState } from "react";
-import { View, StyleSheet, useWindowDimensions, Switch } from "react-native";
+import { View, StyleSheet, useWindowDimensions, Switch, Pressable } from "react-native";
 import { Dialog, Portal, Button, Icon, Text, Checkbox } from "react-native-paper";
 import { Image } from "expo-image";
 interface ConfirmationDialogProps {
@@ -40,13 +40,13 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 					<Text style={[styles.subtitle, { textAlign: "center" }]}>{content}</Text>
 					{/* TODO: if skip is true, show toggle with skipAssessments state */}
 					{skip && (
-						<View style={{ flexDirection: "row", alignItems: "center" }}>
+						<Pressable style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start" }} onPress={() => setLocalSkipAssessments(!localSkipAssessments)}>
 							<Checkbox
 								status={localSkipAssessments ? "checked" : "unchecked"}
 								onPress={() => setLocalSkipAssessments(!localSkipAssessments)}
 							/>
 							<Text>Don't show this message again.</Text>
-						</View>
+						</Pressable>
 					)}
 				</Dialog.Content>
 				<Dialog.Actions>

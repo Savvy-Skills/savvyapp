@@ -11,12 +11,9 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as tf from "@tensorflow/tfjs";
 import * as posedetection from "@tensorflow-models/pose-detection";
 import * as ScreenOrientation from "expo-screen-orientation";
-import { cameraWithTensors, decodeJpeg } from "@tensorflow/tfjs-react-native";
+import { decodeJpeg } from "@tensorflow/tfjs-react-native";
 import Svg, { Circle } from "react-native-svg";
 import { Button, Text } from "react-native-paper";
-
-const TensorCamera = cameraWithTensors(CameraView);
-
 
 const CAM_PREVIEW_WIDTH = Math.min(Dimensions.get("window").width, 640);
 const CAM_PREVIEW_HEIGHT = Math.min(Dimensions.get("window").height, 480);
@@ -134,7 +131,7 @@ export default function TensorFlowPoseDetection() {
 				.map((k) => {
 					const flipX = cameraType === "front";
 					const x = flipX ? CAM_PREVIEW_WIDTH - k.x : k.x;
-					const y = k.y - 40;
+					const y = k.y;
 					const cx = x;
 					const cy = y;
 

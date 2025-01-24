@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { useCallback, useRef } from "react";
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 
 interface ModuleProps {
   module: Module;
@@ -27,7 +28,7 @@ const ModuleTopNavBar = (props: ModuleProps) => {
   }, [props.module.course_id]);
 
   return (
-    <View style={styles.topNavBarInner}>
+    <View style={[styles.topNavBarInner, styles.centeredMaxWidth, {maxWidth: SLIDE_MAX_WIDTH+22}]}>
       <IconButton
         style={{}}
         icon={"keyboard-backspace"}

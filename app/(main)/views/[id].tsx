@@ -173,7 +173,7 @@ export default function ModuleDetail() {
 						))}
 					</View>
 					<View style={{ flexDirection: "column" }}>
-						{isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex] && (
+						{(isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex]) && (
 							<FeedbackComponent
 								correctness={currentSubmission?.isCorrect}
 								revealed={revealedAnswer}
@@ -182,6 +182,7 @@ export default function ModuleDetail() {
 								onShowExplanation={handleToggleExplanation}
 								quizMode={currentView.quiz}
 								showExplanation={shownExplanations[currentSlideIndex]}
+								slideIndex={currentSlideIndex}
 							/>
 						)}
 						<BottomBarNav onShowTopSheet={onPress} />

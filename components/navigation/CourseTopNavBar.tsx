@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/Colors";
+import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import styles from "@/styles/styles";
 import { Course } from "@/types";
 import { router } from "expo-router";
@@ -15,7 +16,7 @@ const CourseTopNavBar = (props: CourseProps) => {
   };
   
   return (
-    <View style={styles.topNavBarInner}>
+    <View style={[styles.topNavBarInner, styles.centeredMaxWidth, {maxWidth: SLIDE_MAX_WIDTH+22}]}>
       <IconButton
         style={{}}
         icon={"keyboard-backspace"}

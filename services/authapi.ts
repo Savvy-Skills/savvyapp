@@ -2,7 +2,7 @@ import { LoginResponse, User } from "@/types";
 import { createAPI } from "./apiConfig";
 
 export const authAPI = createAPI("auth");
-
+export const oauthAPI = createAPI("oauth");
 
 export const login = async (
   email: string,
@@ -17,8 +17,40 @@ export const login = async (
     return response.data;
   } catch (error) {
     console.error("Error at login", error);
-    return {} as LoginResponse;
+    // return {} as LoginResponse;
+	throw error;
   }
+};
+// TODO: change to env variable
+const redirectUri = process.env.EXPO_PUBLIC_DEVMODE === "true" ? "http://localhost:8081/auth/callback" : "https://savvyskills.io/auth/callback";
+
+interface GoogleContinueResponse {
+	accessToken: string;
+	token: string;
+	name: string;
+	email: string;
+}
+
+export const googleContinue = async (code: string): Promise<GoogleContinueResponse> => {
+	try {
+		const url = "/oauth/google/continue"+"?code="+code+"&redirect_uri="+redirectUri;
+		const response = await oauthAPI.get(url);
+		return response.data;
+	} catch (error) {
+		console.error("Error at googleContinue", error);
+		return {} as GoogleContinueResponse;
+	}
+}
+
+export const getGoogleInitUrl = async (): Promise<string> => {
+	try {
+		const url = "/oauth/google/init"+"?redirect_uri="+redirectUri;
+		const response = await oauthAPI.get(url);
+		return response.data.authUrl;
+	} catch (error) {
+		console.error("Error at getGoogleInitUrl", error);
+		return "";
+	}
 };
 
 export const authme = async (token: string): Promise<User> => {

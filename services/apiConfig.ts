@@ -1,7 +1,7 @@
 import axios from "axios";
 import { apiConstants } from "@/constants/API";
 
-type API = "auth" | "courses";
+type API = "auth" | "courses" | "oauth";
 
 export const createAPI = (API: API) => {
   const url =

@@ -1,12 +1,31 @@
-import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import styles from "@/styles/styles";
-import { useCallback, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
 import ConfirmationDialog from "./ConfirmationDialog";
-import { Colors } from "@/constants/Colors";
-import { Image } from "expo-image";
-import LottieView from "lottie-react-native";
+import { useCourseStore } from "@/store/courseStore";
+import { View } from "react-native";
+import { AnimationObject } from "lottie-react-native";
+import { LottieComponentAutoplay } from "./LottieComponentAutoplay";
+
+type AnimationConfig = {
+	source: AnimationObject;
+	inactiveStartFrame: number;
+};
+
+const animations: AnimationConfig[] = [
+	{
+		source: require('@/assets/lottie/incorrect.json'),
+		inactiveStartFrame: 45
+	},
+	{
+		source: require('@/assets/lottie/revealed.json'),
+		inactiveStartFrame: 85
+	},
+	{
+		source: require('@/assets/lottie/correct.json'),
+		inactiveStartFrame: 45
+	}
+];
 
 function FeedbackComponent({
 	correctness,
@@ -15,6 +34,7 @@ function FeedbackComponent({
 	onShowExplanation,
 	quizMode,
 	showExplanation,
+	slideIndex,
 }: {
 	correctness: boolean;
 	revealed: boolean;
@@ -23,11 +43,12 @@ function FeedbackComponent({
 	onShowExplanation: () => void;
 	quizMode: boolean;
 	showExplanation: boolean;
+	slideIndex: number;
 }) {
 	const [visible, setVisible] = useState(false);
 	const showDialog = () => setVisible(true);
 	const hideDialog = () => setVisible(false);
-	const animationRef = useRef<LottieView>(null);
+
 
 	const handleShowReveal = useCallback(() => {
 		showDialog();
@@ -38,106 +59,43 @@ function FeedbackComponent({
 		hideDialog();
 	}, [onRevealAnswer, hideDialog]);
 
-	if (revealed) {
-		return (
-			<View
-				style={[styles.feedbackContainer, styles.revealedFeedback]}
-			>
-				<View style={styles.feedbackHeader}>
-					<LottieView
-						source={require('@/assets/lottie/revealed.json')}
-						webStyle={{ width: 70, height: 60 }}
-						autoPlay
-						loop={false}
-						ref={animationRef}
-					/>
-					<Text style={[styles.feedbackTitle, styles.revealedTitle]}>
-						Here's the correct answer
-					</Text>
-				</View>
-				<View style={styles.buttonContainer}>
-					<Button
-						mode="text"
-						onPress={onShowExplanation}
-						textColor="#321A5F"
-						buttonColor="#E5E3FF"
-						labelStyle={{ fontWeight: 600 }}
-					>
-						{showExplanation ? "Go back to question" : "See explanation"}
-					</Button>
-				</View>
-			</View>
-		);
-	}
+	const getFeedbackStyle = () => {
+		if (revealed) return styles.revealedFeedback;
+		if (correctness) return styles.correctFeedback;
+		return styles.incorrectFeedback;
+	};
 
-	if (correctness) {
-		return (
-			<View
-				style={[styles.feedbackContainer, styles.correctFeedback]}
-			>
-				<View style={styles.feedbackHeader}>
-					<View style={styles.lottieContainer}>
-						<LottieView
-							source={require('@/assets/lottie/correct.json')}
-							webStyle={{ width: "250%", height: "250%" }}
-							style={{ width: "100%", height: "100%" }}
-							autoPlay
-							loop={false}
-							ref={animationRef}
-						/>
-					</View>
-					<Text style={[styles.feedbackTitle, styles.correctTitle]}>
-						Positive feedback
-					</Text>
-				</View>
-				<View style={styles.buttonContainer}>
-					<Button
-						mode="text"
-						onPress={onShowExplanation}
-						textColor="#321A5F"
-						buttonColor="#E5E3FF"
-						labelStyle={{ fontWeight: 600 }}
-					>
-						{showExplanation ? "Go back to question" : "See explanation"}
-					</Button>
-				</View>
-			</View>
-		);
-	}
+	const getFeedbackTextStyle = () => {
+		if (revealed) return styles.revealedTitle;
+		if (correctness) return styles.correctTitle;
+		return styles.incorrectTitle;
+	};
+
+	const getLottieSource = useCallback(() => {
+		if (revealed) return require('@/assets/lottie/revealed.json');
+		if (correctness) return require('@/assets/lottie/correct.json');
+		return require('@/assets/lottie/incorrect.json');
+	}, [revealed, correctness]);
+
+	const getFeedbackTitle = useCallback(() => {
+		if (revealed) return "Here's the correct answer";
+		if (correctness) return "Positive feedback";
+		return "Negative feedback text";
+	}, [revealed, correctness]);
+
 
 	return (
-		<View
-			style={[styles.feedbackContainer, styles.incorrectFeedback]}
-		>
+		<View style={[styles.feedbackContainer, getFeedbackStyle()]}>
 			<View style={styles.feedbackHeader}>
 				<View style={styles.lottieContainer}>
-					<LottieView
-						source={require('@/assets/lottie/incorrect.json')}
-						webStyle={{ width: "250%", height: "250%" }}
-						style={{ width: "100%", height: "100%" }}
-						autoPlay
-						loop={false}
-						ref={animationRef}
-					/>
+					<LottieComponentAutoplay source={getLottieSource()} webStyle={{ width: revealed ? "250%" : "350%", height: revealed ? "250%" : "350%" }} />
 				</View>
-				<Text style={[styles.feedbackTitle, styles.incorrectTitle]}>
-					Negative feedback text
+				<Text style={[styles.feedbackTitle, getFeedbackTextStyle()]}>
+					{getFeedbackTitle()}
 				</Text>
 			</View>
 			<View style={styles.buttonContainer}>
-				{!quizMode ? (
-					<>
-						<Button
-							mode="text"
-							onPress={handleShowReveal}
-							textColor="#321A5F"
-							buttonColor="#E5E3FF"
-							labelStyle={{ fontWeight: 600 }}
-						>
-							See answer
-						</Button>
-					</>
-				) : (
+				{revealed || correctness ? (
 					<Button
 						mode="text"
 						onPress={onShowExplanation}
@@ -147,15 +105,42 @@ function FeedbackComponent({
 					>
 						{showExplanation ? "Go back to question" : "See explanation"}
 					</Button>
+				) : (
+					<>
+						{!quizMode && (
+							<Button
+								mode="text"
+								onPress={handleShowReveal}
+								textColor="#321A5F"
+								buttonColor="#E5E3FF"
+								labelStyle={{ fontWeight: 600 }}
+							>
+								See answer
+							</Button>
+						)}
+						{quizMode && (
+							<Button
+								mode="text"
+								onPress={onShowExplanation}
+								textColor="#321A5F"
+								buttonColor="#E5E3FF"
+								labelStyle={{ fontWeight: 600 }}
+							>
+								{showExplanation ? "Go back to question" : "See explanation"}
+							</Button>
+						)}
+					</>
 				)}
 			</View>
-			<ConfirmationDialog
-				visible={visible}
-				onDismiss={hideDialog}
-				onConfirm={handleReveal}
-				title="Are you sure?"
-				content="This will give you no points for this question."
-			/>
+			{!correctness && !revealed && (
+				<ConfirmationDialog
+					visible={visible}
+					onDismiss={hideDialog}
+					onConfirm={handleReveal}
+					title="Are you sure?"
+					content="This will give you no points for this question."
+				/>
+			)}
 		</View>
 	);
 }
