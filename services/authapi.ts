@@ -22,7 +22,7 @@ export const login = async (
   }
 };
 // TODO: change to env variable
-const redirectUri = process.env.EXPO_PUBLIC_DEVMODE === "true" ? "http://localhost:8081/auth/callback" : "https://savvyskills.io/auth/callback";
+const redirectUri = "https://savvyskills.io/auth/callback";
 
 interface GoogleContinueResponse {
 	accessToken: string;
