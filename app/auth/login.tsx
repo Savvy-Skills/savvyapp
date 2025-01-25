@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { View, StyleSheet, KeyboardAvoidingView, Platform, Pressable } from "react-native";
 import { TextInput, Button, Text, useTheme } from "react-native-paper";
 import { useAuthStore } from "@/store/authStore";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
@@ -7,6 +7,8 @@ import ThemedLogo from "@/components/themed/ThemedLogo";
 import * as WebBrowser from 'expo-web-browser';
 import { getGoogleInitUrl } from "@/services/authapi";
 import { Colors } from "@/constants/Colors";
+import { Image } from "expo-image";
+import { generateColors } from "@/utils/utilfunctions";
 
 const authChannel = new BroadcastChannel("auth_channel");
 
@@ -15,7 +17,7 @@ export default function LoginScreen() {
 	const [password, setPassword] = useState("");
 	const { login, isLoading, token, user, setToken, error } = useAuthStore();
 	const theme = useTheme();
-
+	const [isHovering, setIsHovering] = useState(false);
 	const handleLogin = async () => {
 		await login(email, password);
 	};
@@ -78,9 +80,10 @@ export default function LoginScreen() {
 					>
 						Login
 					</Button>
-					<Button buttonColor={Colors.primary} mode="contained" onPress={handleGoogleLogin} style={styles.defaultButton}>
-						Sign in with Google
-					</Button>
+					<Pressable onPress={handleGoogleLogin} style={{ width: 180, height: 40 }} onHoverIn={() => setIsHovering(true)} onHoverOut={() => setIsHovering(false)}>
+						<Image source={require("@/assets/images/svgs/googlebutton.svg")} contentFit="contain" style={{ width: "100%", height: "100%" }} />
+						{isHovering && <View style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: generateColors(Colors.primary, 0.05).muted }} />}
+					</Pressable>
 					<Button mode="text" onPress={handlePress} style={styles.defaultButton}>
 						Forgot Password?
 					</Button>

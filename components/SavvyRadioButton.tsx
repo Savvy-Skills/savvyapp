@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/Colors";
 import { useThemeStore } from "@/store/themeStore";
+import styles from "@/styles/styles";
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, TouchableRipple } from "react-native-paper";
@@ -23,20 +24,19 @@ const CustomRadioButton: React.FC<CustomRadioButtonProps> = ({
   disabledTouchable,
   style,
 }) => {
-	const {isDarkMode} = useThemeStore();
   return (
     <TouchableRipple onPress={onPress} disabled={disabled||disabledTouchable} >
-      <View style={[styles.container, style]}>
+      <View style={[localStyles.container, style]}>
         <View
           style={[
-            styles.radio,
-            status === "checked" && styles.radioChecked,
-            disabled && styles.radioDisabled,
+            localStyles.radio,
+            status === "checked" && localStyles.radioChecked,
+            disabled && localStyles.radioDisabled,
           ]}
         >
-          {status === "checked" && <View style={[styles.radioInner, {backgroundColor: isDarkMode ? Colors.dark.assessment : Colors.assessment}]} />}
+          {status === "checked" && <View style={[localStyles.radioInner, {backgroundColor: Colors.assessment}]} />}
         </View>
-        <Text style={[styles.label, disabled && styles.labelDisabled]}>
+        <Text style={[styles.optionLabel, disabled && localStyles.labelDisabled]}>
           {label}
         </Text>
       </View>
@@ -44,7 +44,7 @@ const CustomRadioButton: React.FC<CustomRadioButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   container: {},
   radio: {
     width: 24,
@@ -65,10 +65,6 @@ const styles = StyleSheet.create({
   },
   radioDisabled: {
     opacity: 0.5,
-  },
-  label: {
-    fontSize: 14,
-	fontWeight: 500
   },
   labelDisabled: {
     opacity: 0.5,

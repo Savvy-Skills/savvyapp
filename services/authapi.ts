@@ -21,8 +21,8 @@ export const login = async (
 	throw error;
   }
 };
-// TODO: change to env variable
-const redirectUri = "https://savvyskills.io/auth/callback";
+// TODO: change check if we are in dev
+const redirectUri = process.env.NODE_ENV === "development" ? "http://localhost:8081/auth/callback" : "https://savvyskills.io/auth/callback";
 
 interface GoogleContinueResponse {
 	accessToken: string;
@@ -44,7 +44,7 @@ export const googleContinue = async (code: string): Promise<GoogleContinueRespon
 
 export const getGoogleInitUrl = async (): Promise<string> => {
 	try {
-		const url = "/oauth/google/init"+"?redirect_uri="+redirectUri;
+		const url = "/oauth/google/init"+"?redirect_uri="+redirectUri;	
 		const response = await oauthAPI.get(url);
 		return response.data.authUrl;
 	} catch (error) {

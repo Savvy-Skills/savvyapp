@@ -211,17 +211,19 @@ export default function FillBlankAssessment({
 			if (blocked) return;
 			if (blanks[blankIndex].filled === "") return;
 			setHiddenFeedback(currentSlideIndex, true);
+			const filledBlank = blanks[blankIndex].filled;
+			setRemainingOptions((prevOptions) => [
+				...prevOptions,
+				filledBlank,
+			]);
 			setBlanks((prevBlanks) => {
 				const newBlanks = [...prevBlanks];
 				if (newBlanks[blankIndex].filled) {
-					setRemainingOptions((prevOptions) => [
-						...prevOptions,
-						newBlanks[blankIndex].filled,
-					]);
 					newBlanks[blankIndex].filled = "";
 				}
 				return newBlanks;
 			});
+			
 			setSubmittableState(index, false);
 			setIsWrong(false);
 			setShowAnswer(false);
@@ -358,7 +360,11 @@ export default function FillBlankAssessment({
 			question={question}
 			isActive={isActive}
 		>
-			<View style={localStyles.textContainer}>{renderText}</View>
+			<View style={localStyles.textContainer}>
+				<Text style={styles.optionLabel}>
+					{renderText}
+				</Text>
+			</View>
 			<View style={localStyles.optionsContainer}>
 				{remainingOptions.map((option, index) => (
 					<Button
@@ -400,5 +406,6 @@ const localStyles = StyleSheet.create({
 	},
 	optionButton: {
 		margin: 4,
+		fontSize: 16,
 	},
 });

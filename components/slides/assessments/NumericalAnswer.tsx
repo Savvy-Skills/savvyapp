@@ -128,7 +128,7 @@ export default function NumericalAnswerAssessment({
 		>
 			<View style={localStyles.container}>
 				{!!question.extras?.text && (
-					<Text style={localStyles.text}>{question.extras.text}</Text>
+					<Text style={styles.optionLabel}>{question.extras.text}</Text>
 				)}
 				{!!question.extras?.operator && (
 					<OperatorRenderer operator={question.extras.operator} />
@@ -156,7 +156,7 @@ export default function NumericalAnswerAssessment({
 					</View>
 				</View>
 				{!!question.extras?.text2 && (
-					<Text style={localStyles.text}>{question.extras.text2}</Text>
+					<Text style={styles.optionLabel}>{question.extras.text2}</Text>
 				)}
 			</View>
 		</AssessmentWrapper>
