@@ -318,8 +318,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   cardContainer: {
-    width: "45%",
-    aspectRatio: 1.5,
+    maxWidth: "45%",
   },
   card: {
     width: "100%",

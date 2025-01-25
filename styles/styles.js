@@ -262,14 +262,14 @@ export default StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: Colors.assessmentBackground,
-	boxShadow: "0 -8px 10px 0 rgba(0, 0, 0, 0.10)",
+    boxShadow: "0 -8px 10px 0 rgba(0, 0, 0, 0.10)",
   },
   lottieContainer: {
-	width: 40,
-	height: 40,
-	display: "flex",
-	justifyContent: "center",
-	alignItems: "center",
+    width: 40,
+    height: 40,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   },
   feedbackHeader: {
     flexDirection: "row",
@@ -337,6 +337,9 @@ export default StyleSheet.create({
   },
   assessmentWrapper: {
     backgroundColor: Colors.assessmentBackground,
+    flex: 1,
+    gap: 16,
+    padding: 30,
   },
   assessmentButtonContainer: {
     flexDirection: "row",
@@ -379,9 +382,18 @@ export default StyleSheet.create({
     right: -10,
     top: -10,
   },
+  optionsContainer: {
+    flexDirection: "column",
+    gap: 8,
+  },
   optionContainer: {
     flex: 1,
     borderRadius: 4,
+    minHeight: "auto",
+  },
+  optionLabel: {
+    fontSize: 16,
+    fontWeight: 500,
   },
   option: {
     flexDirection: "row",
@@ -392,6 +404,7 @@ export default StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 2,
     borderColor: "rgba(108, 92, 231, 0)",
+    alignItems: "center",
   },
   selectedOption: {
     borderRadius: 4,

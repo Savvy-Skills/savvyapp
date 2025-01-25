@@ -4,6 +4,7 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, TouchableRipple } from "react-native-paper";
 import { Feather } from '@expo/vector-icons';
+import styles from "@/styles/styles";
 
 interface CustomCheckboxProps {
   label: string;
@@ -26,23 +27,23 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({
 
   return (
     <TouchableRipple onPress={onPress} disabled={disabled || disabledTouchable}>
-      <View style={[styles.container, style]}>
+      <View style={[localStyles.container, style]}>
         <View
           style={[
-            styles.checkbox,
-            status === "checked" && styles.checkboxChecked,
-            disabled && styles.checkboxDisabled,
+            localStyles.checkbox,
+            status === "checked" && localStyles.checkboxChecked,
+            disabled && localStyles.checkboxDisabled,
           ]}
         >
           {status === "checked" && (
             <Feather
               name="check"
               size={16}
-              color={isDarkMode ? Colors.dark.assessment : Colors.assessment}
+              color={Colors.assessment}
             />
           )}
         </View>
-        <Text style={[styles.label, disabled && styles.labelDisabled]}>
+        <Text style={[styles.optionLabel, disabled && localStyles.labelDisabled]}>
           {label}
         </Text>
       </View>
@@ -50,7 +51,7 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -71,10 +72,6 @@ const styles = StyleSheet.create({
   },
   checkboxDisabled: {
     opacity: 0.5,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
   },
   labelDisabled: {
     opacity: 0.5,

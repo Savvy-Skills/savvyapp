@@ -36,40 +36,29 @@ export default function AssessmentWrapper({
 			style={[
 				styles.slideWidth,
 				styles.centeredMaxWidth,
-				styles.assessmentWrapper,
+				styles.assessmentWrapper
 			]}
 		>
-			<View style={localStyles.container}>
-				{/* Show title except for untitled assessments */}
-				{!untitledAssessments.includes(question.type) && (
-					<ThemedTitle
-						style={{
-							fontSize: 18,
-							lineHeight: 27,
-							fontWeight: 600,
-							textAlign: "center",
-						}}
-					>
-						{question.text}
-					</ThemedTitle>
-				)}
-				{showExplanationComponent ? (
-					<View style={styles.explanationContainer}>
-						<Text>{question.explanation}</Text>
-					</View>
-				) : (
-					<>{assessment}</>
-				)}
-			</View>
+			{/* Show title except for untitled assessments */}
+			{!untitledAssessments.includes(question.type) && (
+				<ThemedTitle
+					style={{
+						fontSize: 24,
+						lineHeight: 27,
+						fontWeight: 600,
+						textAlign: "center",
+					}}
+				>
+					{question.text}
+				</ThemedTitle>
+			)}
+			{showExplanationComponent ? (
+				<View style={styles.explanationContainer}>
+					<Text>{question.explanation}</Text>
+				</View>
+			) : (
+				<>{assessment}</>
+			)}
 		</View>
 	);
 }
-
-const localStyles = StyleSheet.create({
-	container: {
-		flex: 1,
-		gap: 16,
-		padding: 30,
-		paddingTop: 16,
-	},
-});

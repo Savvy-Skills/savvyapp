@@ -286,14 +286,16 @@ export default function SingleChoice({
 		>
 			{question.subtype === "Image" ? (
 				<View style={localStyles.imageGrid}>
-				{options.map((option, index) => renderImageOption(option, index))}
+					{options.map((option, index) => renderImageOption(option, index))}
 				</View>
 			) : (
 				<RadioButton.Group
 					onValueChange={handleChoiceSelection}
 					value={selectedValue}
 				>
-					{options.map((option, index) => renderTextOption(option, index))}
+					<View style={styles.optionsContainer}>
+						{options.map((option, index) => renderTextOption(option, index))}
+					</View>
 				</RadioButton.Group>
 			)}
 		</AssessmentWrapper>
