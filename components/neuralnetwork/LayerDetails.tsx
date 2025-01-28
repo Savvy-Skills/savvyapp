@@ -14,6 +14,7 @@ import { Data } from "plotly.js";
 
 import { Colors } from "@/constants/Colors";
 import { generateColors } from "@/utils/utilfunctions";
+import React from "react";
 
 const DataPlotter = lazy(() => import("../DataPlotter"));
 
@@ -62,14 +63,14 @@ export default function LayerDetails({
 
 
 	const plotlyAccData: Data[] = [{
-		x: currentState.training.modelHistory.map(history => history.epoch),
-		y: currentState.training.modelHistory.map(history => history.accuracy),
+		x: currentState.training.modelHistory?.map(history => history.epoch),
+		y: currentState.training.modelHistory?.map(history => history.accuracy),
 		type: "scatter",
 		name: "Accuracy",
 	}];
 	const plotlyLossData: Data[] = [{
-		x: currentState.training.modelHistory.map(history => history.epoch),
-		y: currentState.training.modelHistory.map(history => history.loss),
+		x: currentState.training.modelHistory?.map(history => history.epoch),
+		y: currentState.training.modelHistory?.map(history => history.loss),
 		type: "scatter",
 		name: "Loss",
 	}];
@@ -283,8 +284,8 @@ export default function LayerDetails({
 						</View>
 					)}
 					{currentState.model.completed || currentState.model.training ? (
-						<>
-							<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+								<>
+									<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
 										<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
 											<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
 											<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
@@ -294,7 +295,7 @@ export default function LayerDetails({
 											<Text style={[{ color: lossColor }]}>{loss}%</Text>
 										</View>
 									</View>
-									{currentState.training.modelHistory.length > 0 && (
+									{currentState.training.modelHistory?.length > 0 && (
 										<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
 									)}
 								</>
