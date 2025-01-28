@@ -12,6 +12,7 @@ import { useCourseStore } from "@/store/courseStore";
 import { LayerType, ModelConfig, NeuralNetworkVisualizerProps, NNState, TrainConfig } from "@/types/neuralnetwork";
 import { Colors } from "@/constants/Colors";
 import { workerScript } from "@/utils/worker";
+import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
 
 
@@ -58,7 +59,7 @@ const traces: TraceConfig[] = [
 	}
 ]
 
-const workerBroadcastChannel = new BroadcastChannel("tensorflow-worker");
+// const workerBroadcastChannel = new BroadcastChannel("tensorflow-worker");
 
 export default function NeuralNetworkVisualizer({ initialNNState = defaultNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {
 	const [selectedLayer, setSelectedLayer] = useState<LayerType>("input");
@@ -67,36 +68,68 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 	const { currentSlideIndex } = useCourseStore();
 	const [tfReady, setTfReady] = useState(false);
 	const workerRef = useRef<Worker | null>(null);
-
+	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
 	useEffect(() => {
 		if (!workerRef.current) {
 			workerRef.current = new Worker(workerScript);
 		}
-		workerBroadcastChannel.onmessage = (event) => {
-			console.log("Received message from worker", event.data);
-			switch (event.data.type) {
+		// workerBroadcastChannel.onmessage = (event) => {
+		// 	console.log("Received message from worker", event.data);
+		// 	switch (event.data.type) {
+		// 		case "init":
+		// 			setTfReady(true);
+		// 			break;
+		// 		case "train_end":
+		// 			const { data, columns } = event.data.data.testData;
+		// 			setModelState({
+		// 				training: false,
+		// 				completed: true,
+		// 				paused: false,
+		// 				prediction: null,
+		// 			})
+		// 			setDataState({
+		// 				testData: data,
+		// 				columns,
+		// 			})
+
+		// 			break;
+		// 		case "train_update":
+		// 			const { transcurredEpochs, loss, accuracy, modelHistory, testData } = event.data.data;
+		// 			setTrainingState({
+		// 				transcurredEpochs,
+		// 				loss,
+		// 				accuracy,
+		// 				modelHistory,
+		// 			})
+		// 			setDataState({
+		// 				testData: testData.data,
+		// 				columns: testData.columns,
+		// 			})
+		// 			break;
+		// 	}
+		// };
+	}, []);
+
+
+	useEffect(() => {
+		if (message) {
+			console.log("Received message from worker", message);
+			switch (message.type) {
 				case "init":
 					setTfReady(true);
 					break;
 				case "train_end":
-					const { data, columns } = event.data.data.testData;
 					setModelState({
 						training: false,
 						completed: true,
 						paused: false,
 						prediction: null,
 					})
-					setDataState({
-						testData: data,
-						columns,
-					})
-
 					break;
-
 				case "train_update":
-					const { transcurredEpochs, loss, accuracy, modelHistory, testData } = event.data.data;
+					const { transcurredEpochs, loss, accuracy, modelHistory, testData } = message.data;
 					setTrainingState({
 						transcurredEpochs,
 						loss,
@@ -108,10 +141,18 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 						columns: testData.columns,
 					})
 					break;
+				case "prediction_result":
+					const { predictionsArray, mappedOutputs } = message.data;
+					setModelState({
+						training: false,
+						completed: true,
+						paused: false,
+						prediction: mappedOutputs[predictionsArray[0] as number],
+					})
+					break;
 			}
-		};
-	}, []);
-
+		}
+	}, [message]);
 
 
 	const handleActivationFunctionChange = useCallback((activationFunction: string) => {
@@ -211,7 +252,9 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 				selectedLayer={selectedLayer}
 				setSelectedLayer={handleSetSelectedLayer}
 				inputColumns={inputColumns}
-				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!} />
+				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!}
+				problemType={currentNNState.modelConfig?.problemType!}
+			/>
 
 			<Button
 				mode="contained"

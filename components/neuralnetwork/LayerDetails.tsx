@@ -15,6 +15,8 @@ import { Data } from "plotly.js";
 import { Colors } from "@/constants/Colors";
 import { generateColors } from "@/utils/utilfunctions";
 import React from "react";
+import { MESSAGE_TYPE_PREDICT, MESSAGE_TYPE_PREDICTION_RESULT } from "@/constants/Utils";
+import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
 const DataPlotter = lazy(() => import("../DataPlotter"));
 
@@ -52,7 +54,7 @@ export default function LayerDetails({
 	handleActivationFunctionChange,
 	handleNeuronCountChange,
 	handleEpochsChange,
-	index
+	index,
 }: LayerDetailsProps) {
 	const { modelConfig: currentModelConfig, trainingConfig: currentTrainingConfig } = currentNNState;
 	const { tfInstance, currentState } = useTFStore();
@@ -60,6 +62,7 @@ export default function LayerDetails({
 	const [showEpochsMenu, setShowEpochsMenu] = useState(false);
 	const [predictionInputs, setPredictionInputs] = useState<string[]>([]);
 	const [predictionResult, setPredictionResult] = useState<string | null>(null);
+	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 
 
 	const plotlyAccData: Data[] = [{
@@ -98,10 +101,31 @@ export default function LayerDetails({
 		// delete randomRow[outputColumn];
 		// TODO: Convert predictionInputs to number[]
 		const inputs = predictionInputs.map(Number);
-		const { predictionsArray, mappedOutputs } = tfInstance?.predict([inputs]) || {};
-		const label = mappedOutputs?.[predictionsArray?.[0] as number];
-		setPredictionResult(label || null);
-	}, [tfInstance, data, predictionInputs]);
+		// const { predictionsArray, mappedOutputs } = tfInstance?.predict([inputs]) || {};
+		// broadcastChannel.postMessage({
+		// 	type: MESSAGE_TYPE_PREDICT,
+		// 	data: {
+		// 		inputs,
+		// 	},
+		// });
+
+		sendMessage({
+			type: MESSAGE_TYPE_PREDICT,
+			data: {
+				inputs: [inputs],
+			},
+		});
+		// const label = mappedOutputs?.[predictionsArray?.[0] as number];
+		// setPredictionResult(label || null);
+	}, [predictionInputs, sendMessage]);
+
+	useEffect(() => {
+		if (message) {
+			if (message.type === MESSAGE_TYPE_PREDICTION_RESULT) {
+				setPredictionResult(message.data.mappedOutputs[message.data.predictionsArray[0] as number]);
+			}
+		}
+	}, [message]);
 
 	const handleChangePredictionInput = useCallback((text: string, index: number) => {
 		if ((inputColumns[index].dtype === "number" && (isNaN(Number(text)) || text === ""))) {

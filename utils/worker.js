@@ -6,6 +6,8 @@ const workerFunction = function () {
   const MESSAGE_TYPE_TRAIN_UPDATE = "train_update";
   const MESSAGE_TYPE_TRAIN_END = "train_end";
   const MESSAGE_TYPE_INIT = "init";
+  const MESSAGE_TYPE_PREDICT = "predict";
+  const MESSAGE_TYPE_PREDICTION_RESULT = "prediction_result";
 
   let initialized = false;
 
@@ -34,10 +36,10 @@ const workerFunction = function () {
         "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/wasm-out/"
       );
 
-	  tf.ready().then(() => {
-		tf.setBackend("wasm");
-		console.log(tf.getBackend());
-	  });
+      tf.ready().then(() => {
+        tf.setBackend("wasm");
+        console.log(tf.getBackend());
+      });
 
       initialized = true;
       broadcastChannel.postMessage({
@@ -46,6 +48,20 @@ const workerFunction = function () {
           message: "Worker initialized",
         },
       });
+
+	  broadcastChannel.onmessage = async function (event) {
+		if (event.data.type === MESSAGE_TYPE_PREDICT) {
+			const {inputs} = event.data.data;
+			const {predictionsArray, mappedOutputs} = predict(inputs);
+			broadcastChannel.postMessage({
+				type: MESSAGE_TYPE_PREDICTION_RESULT,
+				data: {
+					predictionsArray,
+					mappedOutputs,
+				},
+			});
+		}
+	  };
     } catch (err) {
       console.error("Error:", err);
     }
@@ -60,6 +76,9 @@ const workerFunction = function () {
         break;
       case MESSAGE_TYPE_REMOVE:
         break;
+      case MESSAGE_TYPE_PREDICT:
+        
+        break;
       case MESSAGE_TYPE_STOP:
         trainingStop = true;
         break;
@@ -71,7 +90,6 @@ const workerFunction = function () {
         break;
     }
   };
-
 
   async function loadScriptWithRetry(url, name, retries = 3, delay = 1000) {
     for (let i = 0; i < retries; i++) {
