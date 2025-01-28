@@ -14,6 +14,9 @@ import { Data } from "plotly.js";
 
 import { Colors } from "@/constants/Colors";
 import { generateColors } from "@/utils/utilfunctions";
+import React from "react";
+import { MESSAGE_TYPE_PREDICT, MESSAGE_TYPE_PREDICTION_RESULT } from "@/constants/Utils";
+import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
 const DataPlotter = lazy(() => import("../DataPlotter"));
 
@@ -51,7 +54,7 @@ export default function LayerDetails({
 	handleActivationFunctionChange,
 	handleNeuronCountChange,
 	handleEpochsChange,
-	index
+	index,
 }: LayerDetailsProps) {
 	const { modelConfig: currentModelConfig, trainingConfig: currentTrainingConfig } = currentNNState;
 	const { tfInstance, currentState } = useTFStore();
@@ -59,17 +62,18 @@ export default function LayerDetails({
 	const [showEpochsMenu, setShowEpochsMenu] = useState(false);
 	const [predictionInputs, setPredictionInputs] = useState<string[]>([]);
 	const [predictionResult, setPredictionResult] = useState<string | null>(null);
+	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 
 
 	const plotlyAccData: Data[] = [{
-		x: currentState.training.modelHistory.map(history => history.epoch),
-		y: currentState.training.modelHistory.map(history => history.accuracy),
+		x: currentState.training.modelHistory?.map(history => history.epoch),
+		y: currentState.training.modelHistory?.map(history => history.accuracy),
 		type: "scatter",
 		name: "Accuracy",
 	}];
 	const plotlyLossData: Data[] = [{
-		x: currentState.training.modelHistory.map(history => history.epoch),
-		y: currentState.training.modelHistory.map(history => history.loss),
+		x: currentState.training.modelHistory?.map(history => history.epoch),
+		y: currentState.training.modelHistory?.map(history => history.loss),
 		type: "scatter",
 		name: "Loss",
 	}];
@@ -97,10 +101,31 @@ export default function LayerDetails({
 		// delete randomRow[outputColumn];
 		// TODO: Convert predictionInputs to number[]
 		const inputs = predictionInputs.map(Number);
-		const { predictionsArray, mappedOutputs } = tfInstance?.predict([inputs]) || {};
-		const label = mappedOutputs?.[predictionsArray?.[0] as number];
-		setPredictionResult(label || null);
-	}, [tfInstance, data, predictionInputs]);
+		// const { predictionsArray, mappedOutputs } = tfInstance?.predict([inputs]) || {};
+		// broadcastChannel.postMessage({
+		// 	type: MESSAGE_TYPE_PREDICT,
+		// 	data: {
+		// 		inputs,
+		// 	},
+		// });
+
+		sendMessage({
+			type: MESSAGE_TYPE_PREDICT,
+			data: {
+				inputs: [inputs],
+			},
+		});
+		// const label = mappedOutputs?.[predictionsArray?.[0] as number];
+		// setPredictionResult(label || null);
+	}, [predictionInputs, sendMessage]);
+
+	useEffect(() => {
+		if (message) {
+			if (message.type === MESSAGE_TYPE_PREDICTION_RESULT) {
+				setPredictionResult(message.data.mappedOutputs[message.data.predictionsArray[0] as number]);
+			}
+		}
+	}, [message]);
 
 	const handleChangePredictionInput = useCallback((text: string, index: number) => {
 		if ((inputColumns[index].dtype === "number" && (isNaN(Number(text)) || text === ""))) {
@@ -283,8 +308,8 @@ export default function LayerDetails({
 						</View>
 					)}
 					{currentState.model.completed || currentState.model.training ? (
-						<>
-							<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+								<>
+									<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
 										<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
 											<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
 											<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
@@ -294,7 +319,7 @@ export default function LayerDetails({
 											<Text style={[{ color: lossColor }]}>{loss}%</Text>
 										</View>
 									</View>
-									{currentState.training.modelHistory.length > 0 && (
+									{currentState.training.modelHistory?.length > 0 && (
 										<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
 									)}
 								</>

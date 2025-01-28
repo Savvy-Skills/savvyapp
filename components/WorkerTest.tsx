@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useRef } from 'react'
 import { Button } from 'react-native-paper';
 import { workerScript } from '@/utils/worker';
+import { DatasetInfo } from '@/types';
 
 const WorkerTest = () => {
 	const workerRef = useRef<Worker | null>(null);

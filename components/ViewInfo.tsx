@@ -53,9 +53,9 @@ const ViewInfo = () => {
 						width: 16,
 					}}
 				/>
-				<Text style={localStyles.text}>{currentModuleName}</Text>
+				<Text style={localStyles.text}>{currentModuleName} &gt;</Text>
 				<Text style={[localStyles.text, localStyles.view]}>
-					[{currentView?.name}]
+					{currentView?.name}
 				</Text>
 			</View>
 			<View style={localStyles.moduleContainer}>
@@ -75,7 +75,6 @@ const localStyles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		gap: 8,
 	},
 	moduleContainer: {
 		flexDirection: "row",

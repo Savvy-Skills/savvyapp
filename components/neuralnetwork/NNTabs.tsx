@@ -13,9 +13,13 @@ interface NNTabsProps {
 	setSelectedLayer: (layer: LayerType) => void;
 	inputColumns: Column[];
 	outputColumn: string;
+	problemType: string;
 }
 
-export default function NNTabs({selectedLayer, setSelectedLayer, inputColumns, outputColumn}: NNTabsProps) {
+export default function NNTabs({selectedLayer, setSelectedLayer, inputColumns, outputColumn, problemType}: NNTabsProps) {
+
+	const problemTypeLower = problemType.toLowerCase();
+	const imageSource = problemTypeLower === "classification" ? require("@/assets/images/svgs/nn-classification.svg") : require("@/assets/images/svgs/nn-regression.svg");
 	return (
 		<View style={styles.networkContainer}>
 			<Pressable onPress={() => setSelectedLayer("input")}>
@@ -78,8 +82,10 @@ export default function NNTabs({selectedLayer, setSelectedLayer, inputColumns, o
 					>
 						<Text style={styles.layerTitle}>Output layer</Text>
 						<View style={styles.outputBox}>
+							{/* IF problemType is classification, show nn-classification.svg */}
+							{/* ELSE show nn-regression.svg */}
 							<Image
-								source={require("@/assets/images/pngs/nn-output.png")}
+								source={imageSource}
 								style={{ width: 60, height: 60 }}
 							/>
 						</View>

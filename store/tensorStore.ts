@@ -25,6 +25,9 @@ interface TFStore {
 	}
   }
   setCurrentState: (state: TFStore["currentState"]) => void;
+  setModelState: (state: TFStore["currentState"]["model"]) => void;
+  setTrainingState: (state: TFStore["currentState"]["training"]) => void;
+  setDataState: (state: TFStore["currentState"]["data"]) => void;
 }
 
 export const useTFStore = create<TFStore>((set, get) => ({
@@ -69,5 +72,14 @@ export const useTFStore = create<TFStore>((set, get) => ({
   },
   setCurrentState: (state: TFStore["currentState"]) => {
 	set({ currentState: state });
+  },
+  setModelState: (state: TFStore["currentState"]["model"]) => {
+	set({ currentState: { ...get().currentState, model: state } });
+  },
+  setTrainingState: (state: TFStore["currentState"]["training"]) => {
+	set({ currentState: { ...get().currentState, training: state } });
+  },
+  setDataState: (state: TFStore["currentState"]["data"]) => {
+	set({ currentState: { ...get().currentState, data: state } });
   }
 }));

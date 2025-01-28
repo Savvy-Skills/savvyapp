@@ -53,7 +53,7 @@ export default function DataTableContainer({
 	const [containerWidth, setContainerWidth] = useState(0);
 
 	const fields: FilterField[] = useMemo(() => {
-		if (!finalData || !finalColumns) return [];
+		if (!finalData || !finalColumns || !finalData.length || !finalColumns.length) return [];
 
 		return finalColumns.map((column) => {
 			const values = finalData.map((row) => row[column.accessor]);

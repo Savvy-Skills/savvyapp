@@ -1,6 +1,6 @@
 import { useDataFetch } from "@/hooks/useDataFetch";
 import { useTFStore } from "@/store/tensorStore";
-import React, { lazy, useCallback, useEffect, useState } from "react";
+import React, { lazy, useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Surface, Button } from "react-native-paper";
 import LoadingIndicator from "../LoadingIndicator";
@@ -11,6 +11,8 @@ import LayerDetails from "./LayerDetails";
 import { useCourseStore } from "@/store/courseStore";
 import { LayerType, ModelConfig, NeuralNetworkVisualizerProps, NNState, TrainConfig } from "@/types/neuralnetwork";
 import { Colors } from "@/constants/Colors";
+import { workerScript } from "@/utils/worker";
+import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
 
 
@@ -31,7 +33,7 @@ const defaultTrainingConfig: TrainConfig = {
 	epochs: 50,
 	shuffle: true,
 	validationSplit: 0.2,
-	batchSize: 16,
+	batchSize: 32,
 	dataPreparationConfig: {
 		targetColumn: "label",
 		disabledColumns: [],
@@ -57,19 +59,102 @@ const traces: TraceConfig[] = [
 	}
 ]
 
+// const workerBroadcastChannel = new BroadcastChannel("tensorflow-worker");
+
 export default function NeuralNetworkVisualizer({ initialNNState = defaultNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {
 	const [selectedLayer, setSelectedLayer] = useState<LayerType>("input");
-	const { tfInstance, tfReady, initializeTF, currentState, setCurrentState } = useTFStore();
+	const { currentState, setCurrentState, setModelState, setTrainingState, setDataState } = useTFStore();
 	const [currentNNState, setCurrentNNState] = useState<NNState>(initialNNState);
-	const {currentSlideIndex} = useCourseStore();
-
+	const { currentSlideIndex } = useCourseStore();
+	const [tfReady, setTfReady] = useState(false);
+	const workerRef = useRef<Worker | null>(null);
+	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
 	useEffect(() => {
-		if (!tfReady) {
-			initializeTF();
+		if (!workerRef.current) {
+			workerRef.current = new Worker(workerScript);
 		}
-	}, [tfReady, initializeTF]);
+		// workerBroadcastChannel.onmessage = (event) => {
+		// 	console.log("Received message from worker", event.data);
+		// 	switch (event.data.type) {
+		// 		case "init":
+		// 			setTfReady(true);
+		// 			break;
+		// 		case "train_end":
+		// 			const { data, columns } = event.data.data.testData;
+		// 			setModelState({
+		// 				training: false,
+		// 				completed: true,
+		// 				paused: false,
+		// 				prediction: null,
+		// 			})
+		// 			setDataState({
+		// 				testData: data,
+		// 				columns,
+		// 			})
+
+		// 			break;
+		// 		case "train_update":
+		// 			const { transcurredEpochs, loss, accuracy, modelHistory, testData } = event.data.data;
+		// 			setTrainingState({
+		// 				transcurredEpochs,
+		// 				loss,
+		// 				accuracy,
+		// 				modelHistory,
+		// 			})
+		// 			setDataState({
+		// 				testData: testData.data,
+		// 				columns: testData.columns,
+		// 			})
+		// 			break;
+		// 	}
+		// };
+	}, []);
+
+
+	useEffect(() => {
+		if (message) {
+			console.log("Received message from worker", message);
+			switch (message.type) {
+				case "init":
+					setTfReady(true);
+					break;
+				case "train_end":
+					setModelState({
+						training: false,
+						completed: true,
+						paused: false,
+						prediction: null,
+					})
+					break;
+				case "train_update":
+					const { transcurredEpochs, loss, accuracy, modelHistory, testData } = message.data;
+					setTrainingState({
+						transcurredEpochs,
+						loss,
+						accuracy,
+						modelHistory,
+					})
+					setDataState({
+						testData: testData.data,
+						columns: testData.columns,
+					})
+					break;
+				case "prediction_result":
+					const { predictionsArray, mappedOutputs } = message.data;
+					setModelState({
+						training: false,
+						completed: true,
+						paused: false,
+						prediction: mappedOutputs[predictionsArray[0] as number],
+					})
+					break;
+			}
+		}
+	}, [message]);
+
+
 	const handleActivationFunctionChange = useCallback((activationFunction: string) => {
 		setCurrentNNState(prev => ({
 			...prev,
@@ -111,7 +196,6 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 	}, [currentNNState]);
 
 	const handleStartTraining = useCallback(() => {
-		// console.log("Starting training", { data, columns, currentNNState })
 		setCurrentState({
 			...currentState,
 			model: {
@@ -127,9 +211,18 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 				modelHistory: [],
 			}
 		})
-		tfInstance?.debug(data, columns, currentNNState.modelConfig!, currentNNState.trainingConfig!);
+		// tfInstance?.debug(data, columns, currentNNState.modelConfig!, currentNNState.trainingConfig!);
+		workerRef.current?.postMessage({
+			type: "create_train",
+			data: {
+				data,
+				columns,
+				modelConfig: currentNNState.modelConfig!,
+				trainConfig: currentNNState.trainingConfig!,
+			},
+		});
 		setSelectedLayer("output");
-	}, [data, columns, currentNNState, tfInstance]);
+	}, [data, columns, currentNNState]);
 
 	const handleSetSelectedLayer = useCallback((layer: LayerType) => {
 		setSelectedLayer(layer);
@@ -155,11 +248,13 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 					<Text style={styles.badgeText}>{currentNNState.modelConfig?.problemType}</Text>
 				</Surface>
 			</View>
-			<NNTabs 
-				selectedLayer={selectedLayer} 
-				setSelectedLayer={handleSetSelectedLayer} 
-				inputColumns={inputColumns} 
-				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!} />
+			<NNTabs
+				selectedLayer={selectedLayer}
+				setSelectedLayer={handleSetSelectedLayer}
+				inputColumns={inputColumns}
+				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!}
+				problemType={currentNNState.modelConfig?.problemType!}
+			/>
 
 			<Button
 				mode="contained"
@@ -167,7 +262,9 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 				buttonColor={Colors.orange}
 				onPress={() => {
 					if (currentState.model.training) {
-						tfInstance?.triggerStopTraining();
+						workerRef.current?.postMessage({
+							type: "stop_training",
+						});
 						setCurrentState({
 							...currentState,
 							model: {
