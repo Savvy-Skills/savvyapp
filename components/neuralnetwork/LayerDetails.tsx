@@ -95,19 +95,7 @@ export default function LayerDetails({
 		height: 300,
 	};
 	const handlePredict = useCallback(() => {
-		// Take one random row from data
-		// const randomRow = data[Math.floor(Math.random() * data.length)];
-		// Remove the output column from the row
-		// delete randomRow[outputColumn];
-		// TODO: Convert predictionInputs to number[]
 		const inputs = predictionInputs.map(Number);
-		// const { predictionsArray, mappedOutputs } = tfInstance?.predict([inputs]) || {};
-		// broadcastChannel.postMessage({
-		// 	type: MESSAGE_TYPE_PREDICT,
-		// 	data: {
-		// 		inputs,
-		// 	},
-		// });
 
 		sendMessage({
 			type: MESSAGE_TYPE_PREDICT,
@@ -115,8 +103,6 @@ export default function LayerDetails({
 				inputs: [inputs],
 			},
 		});
-		// const label = mappedOutputs?.[predictionsArray?.[0] as number];
-		// setPredictionResult(label || null);
 	}, [predictionInputs, sendMessage]);
 
 	useEffect(() => {
@@ -182,7 +168,15 @@ export default function LayerDetails({
 		name: "Predicted",
 		groupBy: "prediction",
 	}
-	
+
+	// const predTrace: TraceConfig = {
+	// 	x: "mpg",
+	// 	y: "horsepower",
+	// 	type: "scatter",
+	// 	name: "Predicted",
+	// 	groupBy: "prediction",
+	// }
+
 
 	return (
 		<Surface style={styles.detailsContainer}>
@@ -192,12 +186,7 @@ export default function LayerDetails({
 			</ThemedTitle>
 
 			<View style={{ opacity: selectedLayer === "input" ? 1 : 0, height: selectedLayer === "input" ? "auto" : 0, overflow: "hidden" }}>
-				{inputColumns.map((column) => (
-					<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-						<Text style={styles.subtitle}>{column.accessor}:</Text>
-						<Text>{column.dtype}</Text>
-					</View>
-				))}
+				{/*  */}
 				<DataTableContainer data={data} columns={columns} datasetInfo={dataset_info} hideFilter={true} traces={traces} index={index} />
 			</View>
 
@@ -278,57 +267,49 @@ export default function LayerDetails({
 			</View>
 
 			<View style={{ opacity: selectedLayer === "output" ? 1 : 0, height: selectedLayer === "output" ? "auto" : 0, overflow: "hidden" }}>
-				<View style={{ flexDirection: "column", gap: 16 }}>
-					{(currentState.model.training || currentState.model.completed) && (
-						// TODO: ADD INPUTS TO PREDICT, USE COLUMNS 
-						<View style={{ flexDirection: "column", gap: 8 }}>
-							<DataTableContainer padding={0} data={currentState.data.testData} columns={currentState.data.columns} traces={[predTrace]} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
-							{currentState.model.completed && (
-								<>
-									<View style={{ flexDirection: "row", gap: 8 }}>
-										{inputColumns.map((column, index) => (
-											<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-												<Text style={styles.subtitle}>{column.accessor}:</Text>
-												<TextInput style={{ maxWidth: 100 }} mode="outlined" value={predictionInputs[index]} onChangeText={(text) => handleChangePredictionInput(text, index)} />
-											</View>
-										))}
-										<IconButton iconColor={Colors.orange} icon="dice-6-outline" size={34} onPress={handleGetRandomInputs} />
-									</View>
-									<Button mode="contained" style={{ borderRadius: 4 }} buttonColor={Colors.primary} onPress={handlePredict}>
-										Predict
-									</Button>
-									{predictionResult && (
-										<>
-											<Text style={styles.subtitle}>Predicted Value:</Text>
-											<Text>{predictionResult}</Text>
-										</>
-									)}
-								</>
-							)}
-						</View>
-					)}
-					{currentState.model.completed || currentState.model.training ? (
-								<>
-									<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-										<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
-											<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
-											<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
-										</View>
-										<View style={[styles.metricContainer, { borderColor: lossColor, backgroundColor: generateColors(lossColor, 0.1).muted }]}>
-											<Text style={[{ color: lossColor }]}>Loss:</Text>
-											<Text style={[{ color: lossColor }]}>{loss}%</Text>
-										</View>
-									</View>
-									{currentState.training.modelHistory?.length > 0 && (
-										<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
-									)}
-								</>
-							) : (
-								<Text>No model yet!</Text>
-							)}
 
-
-						</View>
+				{(currentState.model.training || currentState.model.completed) && (
+					<View style={{ flexDirection: "column", gap: 16 }}>
+						<>
+							<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+								<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
+									<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
+									<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
+								</View>
+								<View style={[styles.metricContainer, { borderColor: lossColor, backgroundColor: generateColors(lossColor, 0.1).muted }]}>
+									<Text style={[{ color: lossColor }]}>Loss:</Text>
+									<Text style={[{ color: lossColor }]}>{loss}%</Text>
+								</View>
+							</View>
+							{currentState.training.modelHistory?.length > 0 && (
+								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
+							)}
+						</>
+						<DataTableContainer invert padding={0} data={currentState.data.testData} columns={currentState.data.columns} traces={[predTrace]} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
+						{currentState.model.completed && (
+							<>
+								<View style={{ flexDirection: "row", gap: 8 }}>
+									{inputColumns.map((column, index) => (
+										<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+											<Text style={styles.subtitle}>{column.accessor}:</Text>
+											<TextInput style={{ maxWidth: 100 }} mode="outlined" value={predictionInputs[index]} onChangeText={(text) => handleChangePredictionInput(text, index)} />
+										</View>
+									))}
+									<IconButton iconColor={Colors.orange} icon="dice-6-outline" size={34} onPress={handleGetRandomInputs} />
+								</View>
+								<Button mode="contained" style={{ borderRadius: 4 }} buttonColor={Colors.primary} onPress={handlePredict}>
+									Predict
+								</Button>
+								{predictionResult && (
+									<>
+										<Text style={styles.subtitle}>Predicted Value:</Text>
+										<Text>{predictionResult}</Text>
+									</>
+								)}
+							</>
+						)}
+					</View>
+				)}
 			</View>
 		</Surface>
 	);

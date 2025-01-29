@@ -9,6 +9,7 @@ import type { DatasetInfo } from "@/types";
 import type { FilterField, CombinedFilter } from "../types/filter";
 import DataVisualizerPlotly, { TraceConfig } from "@/components/DataVisualizerPlotly";
 import { useCourseStore } from "@/store/courseStore";
+import styles from "@/styles/styles";
 
 interface DataTableContainerProps {
 	data?: any[];
@@ -21,6 +22,7 @@ interface DataTableContainerProps {
 	hideFilter?: boolean;
 	index: number;
 	padding?: number;
+	invert?: boolean;
 }
 
 
@@ -33,6 +35,7 @@ export default function DataTableContainer({
 	hideVisualizer = false,
 	hideFilter = false,
 	index,
+	invert = false,
 }: DataTableContainerProps) {
 	// Destructure datasetInfo if available
 	const { url, extension } = datasetInfo || {};
@@ -92,7 +95,7 @@ export default function DataTableContainer({
 
 	if (isLoading && !finalData) {
 		return (
-			<View style={styles.centered}>
+			<View style={styles.centeredContainer}>
 				<ActivityIndicator size="large" color="#0000ff" />
 			</View>
 		);
@@ -100,7 +103,7 @@ export default function DataTableContainer({
 
 	if (error) {
 		return (
-			<View style={styles.centered}>
+			<View style={styles.centeredContainer}>
 				<Text>Error: {error.message}</Text>
 			</View>
 		);
@@ -114,7 +117,7 @@ export default function DataTableContainer({
 		<View onLayout={(event) => {
 			const { height, width } = event.nativeEvent.layout;
 			setContainerWidth(width);
-		}} id={`datatable-container-${index}`} style={styles.container}>
+		}} id={`datatable-container-${index}`} style={[{ flexDirection: invert ? "column-reverse" : "column" }]}>
 			<DataTable
 				data={filteredData}
 				columns={finalColumns}
@@ -131,15 +134,3 @@ export default function DataTableContainer({
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		gap: 16,
-	},
-	centered: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-});

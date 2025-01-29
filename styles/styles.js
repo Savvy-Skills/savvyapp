@@ -100,7 +100,6 @@ export default StyleSheet.create({
     fontSize: fontSizes.large,
     fontWeight: "bold",
     textAlign: "center",
-    margin: 10,
   },
   button: {
     padding: 10,
@@ -198,6 +197,7 @@ export default StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
     margin: 0,
+	fontWeight: "bold",
   },
   hiddenLayerCircle: {
     width: 100,
@@ -220,6 +220,7 @@ export default StyleSheet.create({
   layerInfo: {
     fontSize: 12,
     marginTop: 4,
+	fontWeight: "bold",
   },
   outputBox: {
     width: 80,
@@ -234,6 +235,7 @@ export default StyleSheet.create({
   outputLabel: {
     fontSize: 12,
     marginTop: 4,
+	fontWeight: "bold",
   },
 
   unselectedLayer: {

@@ -41,6 +41,22 @@ const datasetInfo: DatasetInfo = {
 	about: "A dataset with circular data",
 }
 
+// const datasetInfo: DatasetInfo = {
+// 	id: "x",
+// 	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714586665910x841095834238341300/carsData.json",
+// 	name: "Auto MPG",
+// 	extension: "json",
+// 	type: "Savvy",
+// 	description: "A dataset with auto mpg data",
+// 	image_url: "https://picsum.photos/200/300",
+// 	disabled: false,
+// 	metadata: {
+// 		"rows": 398,
+// 		"columns": 9
+// 	},
+// 	about: "A dataset with auto mpg data",
+// }
+
 const ContentComponent = ({ content, index, canComplete }: ContentComponentProps) => {
 	switch (content.type) {
 		case "Video":

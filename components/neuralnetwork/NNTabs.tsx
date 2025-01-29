@@ -14,10 +14,10 @@ interface NNTabsProps {
 	inputColumns: Column[];
 	outputColumn: string;
 	problemType: string;
+	neuronsPerLayer: number[];
 }
 
-export default function NNTabs({selectedLayer, setSelectedLayer, inputColumns, outputColumn, problemType}: NNTabsProps) {
-
+export default function NNTabs({selectedLayer, setSelectedLayer, inputColumns, outputColumn, problemType, neuronsPerLayer}: NNTabsProps) {
 	const problemTypeLower = problemType.toLowerCase();
 	const imageSource = problemTypeLower === "classification" ? require("@/assets/images/svgs/nn-classification.svg") : require("@/assets/images/svgs/nn-regression.svg");
 	return (
@@ -66,7 +66,7 @@ export default function NNTabs({selectedLayer, setSelectedLayer, inputColumns, o
 								style={{ width: 100, height: 100 }}
 							/>
 						</View>
-						<Text style={styles.layerInfo}>[3] hidden layers</Text>
+						<Text style={styles.layerInfo}>[{neuronsPerLayer.length}] hidden layers</Text>
 					</Surface>
 				</Pressable>
 

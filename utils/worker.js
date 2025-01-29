@@ -72,7 +72,7 @@ const workerFunction = function () {
     switch (event.data.type) {
       case MESSAGE_TYPE_CREATE_TRAIN:
         const { data, columns, modelConfig, trainConfig } = event.data.data;
-        await debug(data, columns, modelConfig, trainConfig);
+        await createTrain(data, columns, modelConfig, trainConfig);
         break;
       case MESSAGE_TYPE_REMOVE:
         break;
@@ -112,7 +112,7 @@ const workerFunction = function () {
     }
   }
 
-  async function debug(data, columns, modelConfig, trainConfig) {
+  async function createTrain(data, columns, modelConfig, trainConfig) {
     const model = createModel(modelConfig);
     const layers = getLayers(model);
     const lastLayerShape = model.layers[model.layers.length - 1].outputShape[1];
@@ -363,10 +363,7 @@ const workerFunction = function () {
         const outputsTensor = tf.tensor1d(outputs, "int32");
         result = { inputsTensor, outputsTensor };
       } else {
-        const outputsTensor = tf.tensor2d(outputs, [
-          outputs.length,
-          outputsNumber,
-        ]);
+        const outputsTensor = tf.tensor2d(outputs);
         result = { inputsTensor, outputsTensor };
       }
       return result;
@@ -414,10 +411,12 @@ const workerFunction = function () {
       const model = tf.sequential();
       const lastLayerActivation =
         config.problemType === "classification"
-          ? config.neuronsPerLayer[config.neuronsPerLayer.length - 1] === 1
+          ? config.lastLayerSize === 1
             ? "sigmoid"
             : "softmax"
           : null;
+	
+	  config.neuronsPerLayer.push(config.lastLayerSize);
       config.neuronsPerLayer.forEach((neurons, index) => {
         const isLastLayer = index === config.neuronsPerLayer.length - 1;
         const isFirstLayer = index === 0;
@@ -469,7 +468,7 @@ const workerFunction = function () {
     const featuresColumns = columns.filter(
       (column) =>
         column.accessor !== dataPreparationConfig.targetColumn &&
-        !dataPreparationConfig.disabledColumns.includes(column.accessor)
+        dataPreparationConfig.featureConfig.some(feature => feature.field === column.accessor)
     );
     const { testIndices, trainIndices } = trainTestSplit(
       data,
@@ -490,15 +489,16 @@ const workerFunction = function () {
     });
     const mappedOutputs = {};
     // Encode target if target is a string
-    if (dataPreparationConfig.uniqueTargetValues.length > 0) {
-      // Map target values to indices
-      dataPreparationConfig.uniqueTargetValues.forEach((value, index) => {
-        mappedOutputs[index] = value;
-      });
-      outputs = outputs.map((output) =>
-        Object.keys(mappedOutputs).find((key) => mappedOutputs[+key] === output)
-      );
-      dataPreparationMetadata.mappedOutputs = mappedOutputs;
+    if (dataPreparationConfig.targetConfig.encoding !== "none") {
+	//TODO: Implement target encoding with label encoder
+	const uniqueTargetValues = [...new Set(outputs)];
+	uniqueTargetValues.forEach((value, index) => {
+		mappedOutputs[index] = value;
+	  });
+	  outputs = outputs.map((output) =>
+		Object.keys(mappedOutputs).find((key) => mappedOutputs[+key] === output)
+	  );
+	  dataPreparationMetadata.mappedOutputs = mappedOutputs;
     }
     const { inputsTensor, outputsTensor } = transformToTensor(
       inputs,
