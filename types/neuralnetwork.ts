@@ -61,7 +61,6 @@ export interface TrainConfig {
 
 export interface DataPreparationConfig {
 	targetColumn: string;
-	disabledColumns: string[];
 	outputsNumber: number;
 	testSize: number;
 	stratify?: boolean;

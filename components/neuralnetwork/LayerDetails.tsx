@@ -169,6 +169,14 @@ export default function LayerDetails({
 		groupBy: "prediction",
 	}
 
+	// const predTrace: TraceConfig = {
+	// 	x: "mpg",
+	// 	y: "horsepower",
+	// 	type: "scatter",
+	// 	name: "Predicted",
+	// 	groupBy: "prediction",
+	// }
+
 
 	return (
 		<Surface style={styles.detailsContainer}>
@@ -178,12 +186,7 @@ export default function LayerDetails({
 			</ThemedTitle>
 
 			<View style={{ opacity: selectedLayer === "input" ? 1 : 0, height: selectedLayer === "input" ? "auto" : 0, overflow: "hidden" }}>
-				{inputColumns.map((column) => (
-					<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-						<Text style={styles.subtitle}>{column.accessor}:</Text>
-						<Text>{column.dtype}</Text>
-					</View>
-				))}
+				{/*  */}
 				<DataTableContainer data={data} columns={columns} datasetInfo={dataset_info} hideFilter={true} traces={traces} index={index} />
 			</View>
 

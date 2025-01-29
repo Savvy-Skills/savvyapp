@@ -468,7 +468,7 @@ const workerFunction = function () {
     const featuresColumns = columns.filter(
       (column) =>
         column.accessor !== dataPreparationConfig.targetColumn &&
-        !dataPreparationConfig.disabledColumns.includes(column.accessor)
+        dataPreparationConfig.featureConfig.some(feature => feature.field === column.accessor)
     );
     const { testIndices, trainIndices } = trainTestSplit(
       data,

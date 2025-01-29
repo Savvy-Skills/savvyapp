@@ -29,6 +29,19 @@ const defaultModelConfig: ModelConfig = {
 	inputSize: 2,
 	lastLayerSize: 1,
 }
+// const defaultModelConfig: ModelConfig = {
+// 	neuronsPerLayer: [4, 2, 1],
+// 	problemType: "regression",
+// 	activationFunction: "relu",
+// 	compileOptions: {
+// 		optimizer: "adam",
+// 		learningRate: 0.01,
+// 		lossFunction: "meanSquaredError",
+// 		metrics: "mse",
+// 	},
+// 	inputSize: 1,
+// 	lastLayerSize: 1,
+// }
 
 const defaultTrainingConfig: TrainConfig = {
 	epochs: 50,
@@ -37,7 +50,6 @@ const defaultTrainingConfig: TrainConfig = {
 	batchSize: 32,
 	dataPreparationConfig: {
 		targetColumn: "label",
-		disabledColumns: [],
 		outputsNumber: 2,
 		testSize: 0.2,
 		stratify: true,
@@ -58,10 +70,43 @@ const defaultTrainingConfig: TrainConfig = {
 	}
 }
 
+// const defaultTrainingConfig: TrainConfig = {
+// 	epochs: 50,
+// 	shuffle: true,
+// 	validationSplit: 0.2,
+// 	batchSize: 32,
+// 	dataPreparationConfig: {
+// 		targetColumn: "mpg",
+// 		outputsNumber: 1,
+// 		testSize: 0.2,
+// 		stratify: false,
+// 		featureConfig: [
+// 			{
+// 				field: "horsepower",
+// 				encoding: "none",
+// 			}
+// 		],
+// 		targetConfig: {
+// 			field: "mpg",
+// 			encoding: "none",
+// 		},
+// 	}
+// }
+
 const defaultNNState: NNState = {
 	modelConfig: defaultModelConfig,
 	trainingConfig: defaultTrainingConfig,
 }
+
+// const traces: TraceConfig[] = [
+// 	{
+// 		"x": "horsepower",
+// 		"y": "mpg",
+// 		"name": "Horsepower vs MPG",
+// 		"type": "scatter",
+// 		"groupBy": "label"
+// 	}
+// ]
 
 const traces: TraceConfig[] = [
 	{
@@ -72,7 +117,6 @@ const traces: TraceConfig[] = [
 		"groupBy": "label"
 	}
 ]
-
 // const workerBroadcastChannel = new BroadcastChannel("tensorflow-worker");
 
 export default function NeuralNetworkVisualizer({ initialNNState = defaultNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {
@@ -85,6 +129,8 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
+	// Get only the columns that are in the featureConfig
+	const inputColumns = columns.filter(column => currentNNState.trainingConfig?.dataPreparationConfig?.featureConfig?.some(feature => feature.field === column.accessor));
 
 	useEffect(() => {
 		if (!workerRef.current) {
@@ -215,7 +261,6 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 			<LoadingIndicator />
 		);
 	}
-	const inputColumns = columns.filter(column => column.accessor !== currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn);
 
 	if (currentSlideIndex !== index) {
 		return <View />;
@@ -236,6 +281,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 					inputColumns={inputColumns}
 					outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!}
 					problemType={currentNNState.modelConfig?.problemType!}
+					neuronsPerLayer={currentNNState.modelConfig?.neuronsPerLayer!}
 				/>
 
 				<Button
