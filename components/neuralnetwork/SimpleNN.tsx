@@ -26,7 +26,8 @@ const defaultModelConfig: ModelConfig = {
 		lossFunction: "binaryCrossentropy",
 		metrics: "acc",
 	},
-	inputSize: 2
+	inputSize: 2,
+	lastLayerSize: 1,
 }
 
 const defaultTrainingConfig: TrainConfig = {
@@ -38,9 +39,22 @@ const defaultTrainingConfig: TrainConfig = {
 		targetColumn: "label",
 		disabledColumns: [],
 		outputsNumber: 2,
-		uniqueTargetValues: ["Blue", "Yellow"],
 		testSize: 0.2,
 		stratify: true,
+		featureConfig: [
+			{
+				field: "x",
+				encoding: "none",
+			},
+			{
+				field: "y",
+				encoding: "none",
+			},
+		],
+		targetConfig: {
+			field: "label",
+			encoding: "label",
+		},
 	}
 }
 
@@ -71,45 +85,11 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
+
 	useEffect(() => {
 		if (!workerRef.current) {
 			workerRef.current = new Worker(workerScript);
 		}
-		// workerBroadcastChannel.onmessage = (event) => {
-		// 	console.log("Received message from worker", event.data);
-		// 	switch (event.data.type) {
-		// 		case "init":
-		// 			setTfReady(true);
-		// 			break;
-		// 		case "train_end":
-		// 			const { data, columns } = event.data.data.testData;
-		// 			setModelState({
-		// 				training: false,
-		// 				completed: true,
-		// 				paused: false,
-		// 				prediction: null,
-		// 			})
-		// 			setDataState({
-		// 				testData: data,
-		// 				columns,
-		// 			})
-
-		// 			break;
-		// 		case "train_update":
-		// 			const { transcurredEpochs, loss, accuracy, modelHistory, testData } = event.data.data;
-		// 			setTrainingState({
-		// 				transcurredEpochs,
-		// 				loss,
-		// 				accuracy,
-		// 				modelHistory,
-		// 			})
-		// 			setDataState({
-		// 				testData: testData.data,
-		// 				columns: testData.columns,
-		// 			})
-		// 			break;
-		// 	}
-		// };
 	}, []);
 
 
@@ -195,7 +175,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 		}));
 	}, [currentNNState]);
 
-	const handleStartTraining = useCallback(() => {
+	const handleStartTraining = useCallback((data: any[], columns: any[]) => {
 		setCurrentState({
 			...currentState,
 			model: {
@@ -212,6 +192,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 			}
 		})
 		// tfInstance?.debug(data, columns, currentNNState.modelConfig!, currentNNState.trainingConfig!);
+
 		workerRef.current?.postMessage({
 			type: "create_train",
 			data: {
@@ -222,7 +203,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 			},
 		});
 		setSelectedLayer("output");
-	}, [data, columns, currentNNState]);
+	}, [currentNNState]);
 
 	const handleSetSelectedLayer = useCallback((layer: LayerType) => {
 		setSelectedLayer(layer);
@@ -242,45 +223,47 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 
 	return (
 		<View style={[styles.centeredMaxWidth, styles.slideWidth, { gap: 8, flex: 1 }]}>
-			<View style={localStyles.header}>
-				<Text style={styles.title}>Neural Network</Text>
-				<Surface style={styles.problemBadge}>
-					<Text style={styles.badgeText}>{currentNNState.modelConfig?.problemType}</Text>
-				</Surface>
-			</View>
-			<NNTabs
-				selectedLayer={selectedLayer}
-				setSelectedLayer={handleSetSelectedLayer}
-				inputColumns={inputColumns}
-				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!}
-				problemType={currentNNState.modelConfig?.problemType!}
-			/>
+			<View style={[styles.container, { gap: 16 }]}>
+				<View style={localStyles.header}>
+					<Text style={styles.title}>Neural Network</Text>
+					<Surface style={styles.problemBadge}>
+						<Text style={styles.badgeText}>{currentNNState.modelConfig?.problemType}</Text>
+					</Surface>
+				</View>
+				<NNTabs
+					selectedLayer={selectedLayer}
+					setSelectedLayer={handleSetSelectedLayer}
+					inputColumns={inputColumns}
+					outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!}
+					problemType={currentNNState.modelConfig?.problemType!}
+				/>
 
-			<Button
-				mode="contained"
-				style={localStyles.trainingButton}
-				buttonColor={Colors.orange}
-				onPress={() => {
-					if (currentState.model.training) {
-						workerRef.current?.postMessage({
-							type: "stop_training",
-						});
-						setCurrentState({
-							...currentState,
-							model: {
-								training: false,
-								completed: true,
-								paused: false,
-								prediction: null,
-							},
-						})
-					} else {
-						handleStartTraining();
-					}
-				}}
-			>
-				{currentState.model.training ? "Stop training" : currentState.model.completed ? "Train again" : "Start training"}
-			</Button>
+				<Button
+					mode="contained"
+					style={localStyles.trainingButton}
+					buttonColor={Colors.orange}
+					onPress={() => {
+						if (currentState.model.training) {
+							workerRef.current?.postMessage({
+								type: "stop_training",
+							});
+							setCurrentState({
+								...currentState,
+								model: {
+									training: false,
+									completed: true,
+									paused: false,
+									prediction: null,
+								},
+							})
+						} else {
+							handleStartTraining(data, columns);
+						}
+					}}
+				>
+					{currentState.model.training ? "Stop training" : currentState.model.completed ? "Train again" : "Start training"}
+				</Button>
+			</View>
 			<LayerDetails
 				selectedLayer={selectedLayer}
 				inputColumns={inputColumns}
@@ -304,10 +287,8 @@ const localStyles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: 16,
 	},
 	trainingButton: {
-		marginTop: 16,
 		alignSelf: "flex-end",
 		borderRadius: 4,
 	},

@@ -48,6 +48,7 @@ export interface ModelConfig {
 		metrics: string;
 	}
 	inputSize: number;
+	lastLayerSize: number;
 }
 
 export interface TrainConfig {
@@ -62,7 +63,18 @@ export interface DataPreparationConfig {
 	targetColumn: string;
 	disabledColumns: string[];
 	outputsNumber: number;
-	uniqueTargetValues: string[];
 	testSize: number;
 	stratify?: boolean;
+	featureConfig: FeatureConfig[];
+	targetConfig: TargetConfig;
+}
+
+export interface FeatureConfig {
+	field: string;
+	encoding: "oneHot" | "label" | "none";
+}
+
+export interface TargetConfig {
+	field: string;
+	encoding: "oneHot" | "label" | "none";
 }

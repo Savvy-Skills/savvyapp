@@ -35,7 +35,6 @@ export default function DebugScreen() {
 		{/* <NeuralNetworkVisualizer dataset_info={datasetInfo} index={0} /> */}
         {/* <TfjsRegression></TfjsRegression> */}
         {/* <TensorFlowPoseDetection></TensorFlowPoseDetection> */}
-		<WorkerTest />
       </ScrollView>
     </ScreenWrapper>
   );
