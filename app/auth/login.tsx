@@ -10,7 +10,7 @@ import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
 import { generateColors } from "@/utils/utilfunctions";
 
-const authChannel = new BroadcastChannel("auth_channel");
+const authChannel = Platform.OS === "web" ? new BroadcastChannel("auth_channel") : null;
 
 export default function LoginScreen() {
 	const [email, setEmail] = useState("");
@@ -32,11 +32,13 @@ export default function LoginScreen() {
 	};
 
 	useEffect(() => {
-		authChannel.onmessage = (event) => {
-			if (event.data.type === "token") {
-				setToken(event.data.token);
-			}
-		};
+		if (authChannel) {
+			authChannel.onmessage = (event) => {
+				if (event.data.type === "token") {
+					setToken(event.data.token);
+				}
+			};
+		}
 	}, []);
 
 	return (

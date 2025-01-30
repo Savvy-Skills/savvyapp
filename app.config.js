@@ -30,7 +30,7 @@ export default {
   slug: "savvyskills",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/images/pngs/savvylogo.png",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
   splash: {

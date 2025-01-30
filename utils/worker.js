@@ -1,3 +1,4 @@
+
 const workerFunction = function () {
   const MESSAGE_TYPE_CREATE_TRAIN = "create_train";
   const MESSAGE_TYPE_REMOVE = "remove";
