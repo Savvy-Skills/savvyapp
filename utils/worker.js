@@ -49,19 +49,19 @@ const workerFunction = function () {
         },
       });
 
-	  broadcastChannel.onmessage = async function (event) {
-		if (event.data.type === MESSAGE_TYPE_PREDICT) {
-			const {inputs} = event.data.data;
-			const {predictionsArray, mappedOutputs} = predict(inputs);
-			broadcastChannel.postMessage({
-				type: MESSAGE_TYPE_PREDICTION_RESULT,
-				data: {
-					predictionsArray,
-					mappedOutputs,
-				},
-			});
-		}
-	  };
+      broadcastChannel.onmessage = async function (event) {
+        if (event.data.type === MESSAGE_TYPE_PREDICT) {
+          const { inputs } = event.data.data;
+          const { predictionsArray, mappedOutputs } = predict(inputs);
+          broadcastChannel.postMessage({
+            type: MESSAGE_TYPE_PREDICTION_RESULT,
+            data: {
+              predictionsArray,
+              mappedOutputs,
+            },
+          });
+        }
+      };
     } catch (err) {
       console.error("Error:", err);
     }
@@ -77,7 +77,6 @@ const workerFunction = function () {
       case MESSAGE_TYPE_REMOVE:
         break;
       case MESSAGE_TYPE_PREDICT:
-        
         break;
       case MESSAGE_TYPE_STOP:
         trainingStop = true;
@@ -123,7 +122,14 @@ const workerFunction = function () {
       lastLayerShape
     );
     dataPreparationMetadata = preparedData.dataPreparationMetadata || {};
-    await trainModel(model, preparedData, trainConfig, data, columns);
+    await trainModel(
+      model,
+      preparedData,
+      trainConfig,
+      data,
+      columns,
+      modelConfig
+    );
   }
 
   function getKernelRegularizer(regularization, rate) {
@@ -141,23 +147,28 @@ const workerFunction = function () {
     return null;
   }
 
-  function predict(inputs) {
+  function predict(inputs, modelConfig) {
     if (!currentModel) {
       throw new Error("Model not trained");
     }
     let predictionsArray = [];
     const inputsTensor = tf.tensor2d(inputs);
     const predictions = currentModel.predict(inputsTensor);
-    const lastLayerShape =
-      currentModel.layers[currentModel.layers.length - 1].outputShape[1];
-    const isBinaryClassification = lastLayerShape === 1;
-    if (!isBinaryClassification) {
-      predictionsArray = predictions.argMax(1).arraySync();
-    } else {
-      const predArray = predictions.arraySync();
-      predictionsArray = predArray.map((prediction) =>
-        prediction[0] > 0.5 ? 1 : 0
-      );
+    const lastLayerShape = modelConfig.lastLayerSize;
+    if (modelConfig.problemType === "classification") {
+      const isBinaryClassification = lastLayerShape === 1;
+      if (!isBinaryClassification) {
+        predictionsArray = predictions.argMax(1).arraySync();
+      } else {
+        const predArray = predictions.arraySync();
+        predictionsArray = predArray.map((prediction) =>
+          prediction[0] > 0.5 ? 1 : 0
+        );
+      }
+    } else if (modelConfig.problemType === "regression") {
+      predictionsArray = predictions
+        .arraySync()
+        .map((prediction) => prediction[0]);
     }
     inputsTensor.dispose();
     predictions.dispose();
@@ -212,7 +223,14 @@ const workerFunction = function () {
     return { testIndices, trainIndices };
   }
 
-  async function trainModel(model, preparedData, trainConfig, data, columns) {
+  async function trainModel(
+    model,
+    preparedData,
+    trainConfig,
+    data,
+    columns,
+    modelConfig
+  ) {
     const { batchSize, epochs, shuffle, validationSplit } = trainConfig;
     const { features, target, outputsNumber } = preparedData;
 
@@ -244,17 +262,23 @@ const workerFunction = function () {
           }
           transcurredEpochs = epoch;
           currentTotalLoss += logs?.loss || 0;
-          currentTotalAccuracy += logs?.acc || 0;
+
+          if (logs?.acc) {
+            currentTotalAccuracy += logs?.acc || 0;
+          }
           currentModelMetrics.push({
             epoch,
             loss: logs?.loss,
-            accuracy: logs?.acc,
+            accuracy: logs?.acc ? logs?.acc : null,
+            val_loss: logs?.val_loss,
+            val_acc: logs?.val_acc ? logs?.val_acc : null,
           });
           const { testData, newColumns } = getTestData(
             data,
             preparedData.testIndices ?? [],
             columns,
-            trainConfig
+            trainConfig,
+            modelConfig
           );
           broadcastChannel.postMessage({
             type: MESSAGE_TYPE_TRAIN_UPDATE,
@@ -280,7 +304,8 @@ const workerFunction = function () {
             data,
             preparedData.testIndices ?? [],
             columns,
-            trainConfig
+            trainConfig,
+            modelConfig
           );
 
           broadcastChannel.postMessage({
@@ -301,7 +326,7 @@ const workerFunction = function () {
     });
   }
 
-  function getTestData(data, testIndices, columns, trainConfig) {
+  function getTestData(data, testIndices, columns, trainConfig, modelConfig) {
     // Create deep copy of data to avoid mutations
     const copyData = JSON.parse(JSON.stringify(data));
 
@@ -310,36 +335,74 @@ const workerFunction = function () {
       testIndices?.includes(index)
     );
     const targetColumn = trainConfig.dataPreparationConfig.targetColumn;
-
-    // Extract test outputs and remove target column from test data
-    const testInputs = testData.map((row) => {
-      const rowCopy = { ...row };
-      delete rowCopy[targetColumn];
-      return Object.values(rowCopy);
-    });
-
-    // Get predictions
-    const { predictionsArray, mappedOutputs } = predict(testInputs);
-    const predictionsToLabels = predictionsArray.map(
-      (prediction) => mappedOutputs?.[prediction]
+    const featureColumns = columns.filter((column) =>
+      trainConfig.dataPreparationConfig.featureConfig.some(
+        (feature) => feature.field === column.accessor
+      )
     );
 
-    // Add predictions column to data
-    const newTestData = testData.map((row, index) => ({
-      ...row,
-      prediction: predictionsToLabels[index],
-    }));
+    // Extract test outputs and remove target column from test data
+    let testInputs = testData.map((row) => {
+      const rowCopy = { ...row };
+      delete rowCopy[targetColumn];
+      return rowCopy;
+    });
 
-    // Add prediction column definition
-    const newColumns = [
-      ...columns,
-      {
-        accessor: "prediction",
-        Header: "prediction",
-        dtype: "string",
-        width: 100,
-      },
-    ];
+    // Keep only columns that are in featureColumns
+    testInputs = testInputs.map((row) =>
+      featureColumns.map((column) => row[column.accessor])
+    );
+
+    let newTestData = [];
+    let newColumns = [];
+
+    // TODO: ADD DIFFERENT HANDLING FOR REGRESSION AND CLASSIFICATION
+    if (modelConfig.problemType === "classification") {
+      // Binary classification case
+      // Get predictions
+      const { predictionsArray, mappedOutputs } = predict(testInputs);
+      const predictionsToLabels = predictionsArray.map(
+        (prediction) => mappedOutputs?.[prediction]
+      );
+
+      // Add predictions column to data
+      newTestData = testData.map((row, index) => ({
+        ...row,
+        prediction: predictionsToLabels[index],
+      }));
+      newColumns = [
+        ...columns,
+        {
+          accessor: "prediction",
+          Header: "prediction",
+          dtype: "string",
+          width: 100,
+        },
+      ];
+    } else {
+      // Regression case
+      const { predictionsArray } = predict(testInputs, modelConfig);
+      newTestData = testData.map((row, index) => ({
+        ...row,
+        prediction: predictionsArray[index],
+        diff: (predictionsArray[index] - row[targetColumn]).toFixed(2),
+      }));
+      newColumns = [
+        ...columns,
+        {
+          accessor: "prediction",
+          Header: "prediction",
+          dtype: "number",
+          width: 100,
+        },
+        {
+          accessor: "diff",
+          Header: "diff",
+          dtype: "number",
+          width: 100,
+        },
+      ];
+    }
 
     return { testData: newTestData, newColumns };
   }
@@ -350,7 +413,12 @@ const workerFunction = function () {
       // Step 1. Shuffle the data
       tf.util.shuffleCombo(inputs, outputs);
       // Step 2. Convert data to Tensor
-      const inputsTensor = tf.tensor2d(inputs);
+      let inputsTensor;
+      if (!inputs[0].length) {
+        inputsTensor = tf.tensor2d(inputs, [inputs.length, 1]);
+      } else {
+        inputsTensor = tf.tensor2d(inputs);
+      }
 
       if (outputsNumber === 1) {
         const outputTensor = tf.tensor2d(outputs, [outputs.length, 1]);
@@ -415,8 +483,8 @@ const workerFunction = function () {
             ? "sigmoid"
             : "softmax"
           : null;
-	
-	  config.neuronsPerLayer.push(config.lastLayerSize);
+
+      config.neuronsPerLayer.push(config.lastLayerSize);
       config.neuronsPerLayer.forEach((neurons, index) => {
         const isLastLayer = index === config.neuronsPerLayer.length - 1;
         const isFirstLayer = index === 0;
@@ -463,69 +531,134 @@ const workerFunction = function () {
     const targetColumn = columns.find(
       (column) => column.accessor === dataPreparationConfig.targetColumn
     );
-    // Features are all columns except the target column and disabled columns
     const dataPreparationMetadata = {};
+
+   
+
     const featuresColumns = columns.filter(
       (column) =>
         column.accessor !== dataPreparationConfig.targetColumn &&
-        dataPreparationConfig.featureConfig.some(feature => feature.field === column.accessor)
+        dataPreparationConfig.featureConfig.some(
+          (feature) => feature.field === column.accessor
+        )
     );
+
     const { testIndices, trainIndices } = trainTestSplit(
       data,
       columns,
       dataPreparationConfig
     );
+
     const trainData = data.filter((_, index) => trainIndices.includes(index));
-    // Separate data into inputs and outputs, inputs are all columns except the target column
-    const inputs = [];
-    trainData.forEach((row) => {
-      const input = featuresColumns.map((column) => row[column.accessor]);
-      inputs.push(input);
-    });
-    let outputs = [];
-    trainData.forEach((row) => {
-      const output = targetColumn?.accessor ? row[targetColumn.accessor] : null;
-      outputs.push(output);
-    });
-    const mappedOutputs = {};
-    // Encode target if target is a string
-    if (dataPreparationConfig.targetConfig.encoding !== "none") {
-	//TODO: Implement target encoding with label encoder
-	const uniqueTargetValues = [...new Set(outputs)];
-	uniqueTargetValues.forEach((value, index) => {
-		mappedOutputs[index] = value;
-	  });
-	  outputs = outputs.map((output) =>
-		Object.keys(mappedOutputs).find((key) => mappedOutputs[+key] === output)
-	  );
-	  dataPreparationMetadata.mappedOutputs = mappedOutputs;
-    }
-    const { inputsTensor, outputsTensor } = transformToTensor(
-      inputs,
-      outputs,
-      dataPreparationConfig.outputsNumber,
-      lastLayerShape
+
+    const inputs = trainData.map((row) =>
+      featuresColumns.map((column) => row[column.accessor])
     );
 
-    // Normalize inputs with min max scaler
-    // const normalizedInputs = tf.tidy(() => {
-    // 	const min = tf.min(inputsTensor);
-    // 	const max = tf.max(inputsTensor);
-    // 	return tf.tidy(() => tf.div(tf.sub(inputsTensor, min), tf.sub(max, min)));
-    // });
-    // Normalize inputs with z-score
-    // const normalizedInputs = tf.tidy(() => {
-    // 	const mean = tf.mean(inputsTensor);
-    // 	// Calculate standard deviation, tf.std does not exist
-    // 	const std = tf.tidy(() => tf.sqrt(tf.mean(tf.square(tf.sub(inputsTensor, mean)))));
-    // 	return tf.tidy(() => tf.div(tf.sub(inputsTensor, mean), std));
-    // });
+    let outputs = trainData.map((row) => row[targetColumn?.accessor]);
+    const mappedOutputs = {};
 
-    // Show first 10 rows of normalized inputs and first 10 rows of inputs as numbers not tensors
-    // console.log({ normalizedInputs: normalizedInputs.slice(0, 10).arraySync(), inputs: inputsTensor.slice(0, 10).arraySync() })
+    if (dataPreparationConfig.targetConfig.encoding !== "none") {
+      const uniqueTargetValues = [...new Set(outputs)];
+      uniqueTargetValues.forEach((value, index) => {
+        mappedOutputs[index] = value;
+      });
+      outputs = outputs.map((output) =>
+        Object.keys(mappedOutputs).find((key) => mappedOutputs[+key] === output)
+      );
+      dataPreparationMetadata.mappedOutputs = mappedOutputs;
+    }
+
+    const normalizationMetadata = {};
+    let featuresInputs = tf.tensor2d(inputs);
+
+
+	// TODO: Check for undefined or null values in output, get index and remove from featuresInputs and outputs
+	if (outputs.some((value) => value === null || value === undefined)) {
+		const index = outputs.findIndex((value) => value === null || value === undefined);
+		featuresInputs = featuresInputs.slice(0, index).concat(featuresInputs.slice(index + 1));
+		outputs = outputs.slice(0, index).concat(outputs.slice(index + 1));
+	}
+
+    dataPreparationConfig.featureConfig.forEach((feature) => {
+      if (feature.normalization === "min_max") {
+        featuresInputs = tf.tidy(() => {
+          const min = tf.min(featuresInputs, 0);
+          const max = tf.max(featuresInputs, 0);
+
+          console.log("Feature Min:", min.arraySync());
+          console.log("Feature Max:", max.arraySync());
+
+          normalizationMetadata[feature.field] = {
+            min: min.arraySync()[0],
+            max: max.arraySync()[0],
+          };
+          return tf.div(tf.sub(featuresInputs, min), tf.sub(max, min));
+        });
+        console.log(
+          "Feature normalization applied",
+          featuresInputs.arraySync().slice(0, 10)
+        );
+      } else if (feature.normalization === "z_score") {
+        featuresInputs = tf.tidy(() => {
+          const mean = tf.mean(featuresInputs, 0);
+          const std = tf.sqrt(
+            tf.mean(tf.square(tf.sub(featuresInputs, mean)), 0)
+          );
+          console.log("Feature Mean:", mean.arraySync());
+          console.log("Feature Std:", std.arraySync());
+          normalizationMetadata[feature.field] = {
+            mean: mean.arraySync()[0],
+            std: std.arraySync()[0],
+          };
+          return tf.div(tf.sub(featuresInputs, mean), std);
+        });
+        console.log(
+          "Feature normalization applied",
+          featuresInputs.arraySync().slice(0, 10)
+        );
+      }
+    });
+
+    let outputsTensor = tf.tensor2d(outputs, [outputs.length, 1]);
+    if (dataPreparationConfig.targetConfig.normalization === "min_max") {
+      outputsTensor = tf.tidy(() => {
+        const min = tf.min(outputsTensor, 0);
+        const max = tf.max(outputsTensor, 0);
+        console.log("Target Min:", min.arraySync());
+        console.log("Target Max:", max.arraySync());
+        normalizationMetadata.target = {
+          min: min.arraySync()[0],
+          max: max.arraySync()[0],
+        };
+        return tf.div(tf.sub(outputsTensor, min), tf.sub(max, min));
+      });
+      console.log(
+        "Target normalization applied",
+        outputsTensor.arraySync().slice(0, 10)
+      );
+    } else if (dataPreparationConfig.targetConfig.normalization === "z_score") {
+      outputsTensor = tf.tidy(() => {
+        const mean = tf.mean(outputsTensor);
+        const std = tf.sqrt(tf.mean(tf.square(tf.sub(outputsTensor, mean))));
+        console.log("Target Mean:", mean.arraySync());
+        console.log("Target Std:", std.arraySync());
+        normalizationMetadata.target = {
+          mean: mean.arraySync()[0],
+          std: std.arraySync()[0],
+        };
+        return tf.div(tf.sub(outputsTensor, mean), std);
+      });
+      console.log(
+        "Target normalization applied",
+        outputsTensor.arraySync().slice(0, 10)
+      );
+    }
+
+    dataPreparationMetadata.normalizationMetadata = normalizationMetadata;
 
     return {
-      features: inputsTensor,
+      features: featuresInputs,
       target: outputsTensor,
       outputsNumber: dataPreparationConfig.outputsNumber,
       testIndices,

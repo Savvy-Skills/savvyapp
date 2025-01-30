@@ -19,6 +19,7 @@ import { ActivityIndicator, FAB, Text } from "react-native-paper";
 import SlideListItem from "@/components/slides/SlideListItem";
 import FeedbackComponent from "@/components/Feedback";
 import LoadingIndicator from "@/components/LoadingIndicator";
+import { CopilotProvider } from "react-native-copilot";
 
 export default function ModuleDetail() {
 	const ref = useRef<TopSheetRefProps>(null);
@@ -128,9 +129,9 @@ export default function ModuleDetail() {
 
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
-			<Pressable style={[styles.pressableArea]} onPress={handlePressOutside}>
-				<TopNavBar />
-				<>
+				<Pressable style={[styles.pressableArea]} onPress={handlePressOutside}>
+					<TopNavBar />
+					<>
 					{/* TopSheet */}
 					<TopSheet ref={ref}>
 						<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
@@ -187,8 +188,7 @@ export default function ModuleDetail() {
 						)}
 						<BottomBarNav onShowTopSheet={onPress} />
 					</View>
-				</>
-
+					</>
 			</Pressable>
 		</ScreenWrapper>
 	);

@@ -12,62 +12,35 @@ import { useCourseStore } from "@/store/courseStore";
 import { LayerType, ModelConfig, NeuralNetworkVisualizerProps, NNState, TrainConfig } from "@/types/neuralnetwork";
 import { Colors } from "@/constants/Colors";
 import { workerScript } from "@/utils/worker";
+import { CopilotProvider, CopilotStep, useCopilot } from "react-native-copilot";
 import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
 
-
-const defaultModelConfig: ModelConfig = {
-	neuronsPerLayer: [4, 2, 1],
-	problemType: "classification",
-	activationFunction: "relu",
-	compileOptions: {
-		optimizer: "adam",
-		learningRate: 0.01,
-		lossFunction: "binaryCrossentropy",
-		metrics: "acc",
-	},
-	inputSize: 2,
-	lastLayerSize: 1,
-}
 // const defaultModelConfig: ModelConfig = {
 // 	neuronsPerLayer: [4, 2, 1],
-// 	problemType: "regression",
+// 	problemType: "classification",
 // 	activationFunction: "relu",
 // 	compileOptions: {
 // 		optimizer: "adam",
 // 		learningRate: 0.01,
-// 		lossFunction: "meanSquaredError",
-// 		metrics: "mse",
+// 		lossFunction: "binaryCrossentropy",
+// 		metrics: "acc",
 // 	},
-// 	inputSize: 1,
+// 	inputSize: 2,
 // 	lastLayerSize: 1,
 // }
-
-const defaultTrainingConfig: TrainConfig = {
-	epochs: 50,
-	shuffle: true,
-	validationSplit: 0.2,
-	batchSize: 32,
-	dataPreparationConfig: {
-		targetColumn: "label",
-		outputsNumber: 2,
-		testSize: 0.2,
-		stratify: true,
-		featureConfig: [
-			{
-				field: "x",
-				encoding: "none",
-			},
-			{
-				field: "y",
-				encoding: "none",
-			},
-		],
-		targetConfig: {
-			field: "label",
-			encoding: "label",
-		},
-	}
+const defaultModelConfig: ModelConfig = {
+	neuronsPerLayer: [4, 2, 1],
+	problemType: "regression",
+	activationFunction: "relu",
+	compileOptions: {
+		optimizer: "adam",
+		learningRate: 0.01,
+		lossFunction: "meanSquaredError",
+		metrics: "mse",
+	},
+	inputSize: 1,
+	lastLayerSize: 1,
 }
 
 // const defaultTrainingConfig: TrainConfig = {
@@ -76,47 +49,76 @@ const defaultTrainingConfig: TrainConfig = {
 // 	validationSplit: 0.2,
 // 	batchSize: 32,
 // 	dataPreparationConfig: {
-// 		targetColumn: "mpg",
-// 		outputsNumber: 1,
+// 		targetColumn: "label",
+// 		outputsNumber: 2,
 // 		testSize: 0.2,
-// 		stratify: false,
+// 		stratify: true,
 // 		featureConfig: [
 // 			{
-// 				field: "horsepower",
+// 				field: "x",
 // 				encoding: "none",
-// 			}
+// 			},
+// 			{
+// 				field: "y",
+// 				encoding: "none",
+// 			},
 // 		],
 // 		targetConfig: {
-// 			field: "mpg",
-// 			encoding: "none",
+// 			field: "label",
+// 			encoding: "label",
 // 		},
 // 	}
 // }
+
+const defaultTrainingConfig: TrainConfig = {
+	epochs: 50,
+	shuffle: true,
+	validationSplit: 0.2,
+	batchSize: 16,
+	dataPreparationConfig: {
+		targetColumn: "mpg",
+		outputsNumber: 1,
+		testSize: 0.2,
+		stratify: false,
+		featureConfig: [
+			{
+				field: "horsepower",
+				encoding: "none",
+				normalization: "min_max"
+			}
+		],
+		targetConfig: {
+			field: "mpg",
+			encoding: "none",
+			normalization: "min_max"
+		},
+	}
+}
 
 const defaultNNState: NNState = {
 	modelConfig: defaultModelConfig,
 	trainingConfig: defaultTrainingConfig,
 }
 
-// const traces: TraceConfig[] = [
-// 	{
-// 		"x": "horsepower",
-// 		"y": "mpg",
-// 		"name": "Horsepower vs MPG",
-// 		"type": "scatter",
-// 		"groupBy": "label"
-// 	}
-// ]
-
 const traces: TraceConfig[] = [
 	{
-		"x": "x",
-		"y": "y",
-		"name": "X vs Y",
+		"x": "horsepower",
+		"y": "mpg",
+		"name": "Horsepower vs MPG",
 		"type": "scatter",
 		"groupBy": "label"
 	}
 ]
+
+// const traces: TraceConfig[] = [
+// 	{
+// 		"x": "x",
+// 		"y": "y",
+// 		"name": "X vs Y",
+// 		"type": "scatter",
+// 		"groupBy": "label"
+// 	}
+// ]
 // const workerBroadcastChannel = new BroadcastChannel("tensorflow-worker");
 
 export default function NeuralNetworkVisualizer({ initialNNState = defaultNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {

@@ -65,15 +65,11 @@ export interface DataPreparationConfig {
 	testSize: number;
 	stratify?: boolean;
 	featureConfig: FeatureConfig[];
-	targetConfig: TargetConfig;
+	targetConfig: FeatureConfig;
 }
 
 export interface FeatureConfig {
 	field: string;
 	encoding: "oneHot" | "label" | "none";
-}
-
-export interface TargetConfig {
-	field: string;
-	encoding: "oneHot" | "label" | "none";
+	normalization?: "min_max" | "z_score" | "none";
 }

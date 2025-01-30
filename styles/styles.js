@@ -153,6 +153,13 @@ export default StyleSheet.create({
     borderStyle: "dashed",
     borderColor: "#ccc",
     height: "100%",
+	shadowColor: "grey",
+	shadowOffset: {
+		width: 0,
+		height: 2,
+	},
+	shadowRadius: 4,
+	shadowOpacity: 0.2,
   },
   hiddenLayerWrapper: {
     flex: 1,

@@ -5,13 +5,14 @@ import ActivitySlide from "./ActivitySlide";
 import { ContentInfo, DatasetInfo, Slide } from "../../types";
 import { useCourseStore } from "@/store/courseStore";
 import LastSlide from "./LastSlide";
-import VideoSlide from "./content/VideoSlide";
 import ImageSlide from "./content/ImageSlide";
 import RichTextSlide from "./content/RichTextSlide";
 import DataTableContainer from "../DataTableContainer";
 import styles from "@/styles/styles";
 import VideoComponent from "../VideoComponent";
 import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
+import { CopilotProvider, useCopilot } from "react-native-copilot";
+import { Button } from "react-native-paper";
 
 export interface SlideProps {
 	slide: Slide;
@@ -25,37 +26,37 @@ interface ContentComponentProps {
 	canComplete: boolean;
 }
 
-const datasetInfo: DatasetInfo = {
-	id: "x",
-	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714014246056x716561261256521100/circular-dataset.json",
-	name: "Circular Dataset",
-	extension: "json",
-	type: "Savvy",
-	description: "A dataset with circular data",
-	image_url: "https://picsum.photos/200/300",
-	disabled: false,
-	metadata: {
-		"rows": 1000,
-		"columns": 3
-	},
-	about: "A dataset with circular data",
-}
-
 // const datasetInfo: DatasetInfo = {
 // 	id: "x",
-// 	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714586665910x841095834238341300/carsData.json",
-// 	name: "Auto MPG",
+// 	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714014246056x716561261256521100/circular-dataset.json",
+// 	name: "Circular Dataset",
 // 	extension: "json",
 // 	type: "Savvy",
-// 	description: "A dataset with auto mpg data",
+// 	description: "A dataset with circular data",
 // 	image_url: "https://picsum.photos/200/300",
 // 	disabled: false,
 // 	metadata: {
-// 		"rows": 398,
-// 		"columns": 9
+// 		"rows": 1000,
+// 		"columns": 3
 // 	},
-// 	about: "A dataset with auto mpg data",
+// 	about: "A dataset with circular data",
 // }
+
+const datasetInfo: DatasetInfo = {
+	id: "x",
+	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714586665910x841095834238341300/carsData.json",
+	name: "Auto MPG",
+	extension: "json",
+	type: "Savvy",
+	description: "A dataset with auto mpg data",
+	image_url: "https://picsum.photos/200/300",
+	disabled: false,
+	metadata: {
+		"rows": 398,
+		"columns": 9
+	},
+	about: "A dataset with auto mpg data",
+}
 
 const ContentComponent = ({ content, index, canComplete }: ContentComponentProps) => {
 	switch (content.type) {
@@ -140,6 +141,7 @@ export default function SlideRenderer({
 	const isActive = currentSlideIndex === index;
 	const scrollRef = useRef<ScrollView>(null);
 
+
 	const currentContents = slide?.contents && slide.contents.length > 0 ? slide.contents.sort((a, b) => a.order - b.order) : [];
 	const lastContent = currentContents[currentContents.length - 1]
 
@@ -171,9 +173,12 @@ export default function SlideRenderer({
 	}, [currentSlideIndex]);
 
 
+
 	if ((slide.type === "Content" && currentContents.length === 1) || slide.subtype === "intro") {
 		return (
-			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
+			<CopilotProvider overlay="svg">
+				<SlideComponent slide={slide} index={index} quizMode={quizMode} />
+			</CopilotProvider>
 		);
 	}
 

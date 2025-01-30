@@ -53,7 +53,7 @@ const ViewInfo = () => {
 						width: 16,
 					}}
 				/>
-				<Text style={localStyles.text}>{currentModuleName} &gt;</Text>
+				<Text style={localStyles.text}>{currentModuleName}:</Text>
 				<Text style={[localStyles.text, localStyles.view]}>
 					{currentView?.name}
 				</Text>
@@ -80,7 +80,7 @@ const localStyles = StyleSheet.create({
 		flexDirection: "row",
 		marginBottom: 10,
 		alignItems: "center",
-		gap: 8,
+		gap: 4,
 	},
 	text: {
 		fontSize: 12,
