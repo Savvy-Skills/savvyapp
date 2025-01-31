@@ -40,7 +40,7 @@ export default {
   },
   ios: {
     supportsTablet: true,
-    bundlerIdentifier: "com.SavvySkills.dev",
+    bundlerIdentifier: getUniqueIdentifier(),
   },
   android: {
     adaptiveIcon: {
