@@ -1,3 +1,4 @@
+import React from "react";
 import styles from "@/styles/styles";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
@@ -59,11 +60,6 @@ function FeedbackComponent({
 		hideDialog();
 	}, [onRevealAnswer, hideDialog]);
 
-	const getFeedbackStyle = () => {
-		if (revealed) return styles.revealedFeedback;
-		if (correctness) return styles.correctFeedback;
-		return styles.incorrectFeedback;
-	};
 
 	const getFeedbackTextStyle = () => {
 		if (revealed) return styles.revealedTitle;
@@ -85,7 +81,7 @@ function FeedbackComponent({
 
 
 	return (
-		<View style={[styles.feedbackContainer, getFeedbackStyle()]}>
+		<View style={[styles.feedbackContainer]}>
 			<View style={styles.feedbackHeader}>
 				<View style={styles.lottieContainer}>
 					<LottieComponentAutoplay source={getLottieSource()} webStyle={{ width: revealed ? "250%" : "350%", height: revealed ? "250%" : "350%" }} />

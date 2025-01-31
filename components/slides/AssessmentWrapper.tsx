@@ -5,6 +5,8 @@ import { View, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
 import { useCourseStore } from "@/store/courseStore";
 import ThemedTitle from "../themed/ThemedTitle";
+import { useThemeStore } from "@/store/themeStore";
+import { Colors } from "@/constants/Colors";
 
 interface AssessmentWrapperProps {
 	children: React.ReactNode;
@@ -21,6 +23,7 @@ export default function AssessmentWrapper({
 	const {
 		showExplanation,
 	} = useCourseStore();
+	const { backgroundAssessment } = useThemeStore();
 
 
 	const untitledAssessments = ["Fill in the Blank", "True or False"];
@@ -36,7 +39,8 @@ export default function AssessmentWrapper({
 			style={[
 				styles.slideWidth,
 				styles.centeredMaxWidth,
-				styles.assessmentWrapper
+				styles.assessmentWrapper,
+				{ backgroundColor: backgroundAssessment ? Colors.assessmentBackground : "transparent" }
 			]}
 		>
 			{/* Show title except for untitled assessments */}

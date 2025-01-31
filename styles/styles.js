@@ -2,6 +2,7 @@ import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { generateColors } from "@/utils/utilfunctions";
 import { StyleSheet, Dimensions } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { useThemeStore } from "@/store/themeStore";
 const { width, height } = Dimensions.get("window");
 
 const fontSizes = {
@@ -265,13 +266,17 @@ export default StyleSheet.create({
     borderWidth: 0,
     borderBottomWidth: 0,
     gap: 10,
-    maxWidth: SLIDE_MAX_WIDTH,
+	borderRadius: 8,
     alignSelf: "center",
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: Colors.assessmentBackground,
-    boxShadow: "0 -8px 10px 0 rgba(0, 0, 0, 0.10)",
+  },
+  bottomBarWrapper: {
+	flexDirection: "column",
+	borderTopLeftRadius: 8,
+	borderTopRightRadius: 8,
+	marginTop: 8,
   },
   lottieContainer: {
     width: 40,
@@ -318,17 +323,20 @@ export default StyleSheet.create({
     textTransform: "capitalize",
     color: Colors.blue,
   },
-  correctFeedback: {
-    // backgroundColor: generateColors(Colors.success, 0.2).muted,
+  correctWrapper: {
+    backgroundColor: generateColors(Colors.success, 0.2).muted,
     borderColor: Colors.success,
+	borderWidth: 1,
   },
-  incorrectFeedback: {
-    // backgroundColor: generateColors(Colors.error, 0.2).muted,
+  incorrectWrapper: {
+    backgroundColor: generateColors(Colors.error, 0.2).muted,
     borderColor: Colors.error,
+	borderWidth: 1,
   },
-  revealedFeedback: {
-    // backgroundColor: generateColors(Colors.revealed, 0.2).muted,
+  revealedWrapper: {
+    backgroundColor: generateColors(Colors.revealed, 0.2).muted,
     borderColor: Colors.revealed,
+	borderWidth: 1,
   },
   correctTitle: {
     color: Colors.success,
@@ -345,7 +353,6 @@ export default StyleSheet.create({
     marginTop: 16,
   },
   assessmentWrapper: {
-    backgroundColor: Colors.assessmentBackground,
     flex: 1,
     gap: 16,
     padding: 30,
