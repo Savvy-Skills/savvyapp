@@ -60,10 +60,13 @@ export default {
   },
   plugins: [
     "expo-router",
-    "@react-native-google-signin/google-signin",
-	{
-		"iosUrlScheme": "com.googleusercontent.apps.175190225211-bcbvqfu9e9ltvbdnaevrvr9dk731sop6"
-	},
+    [
+      "@react-native-google-signin/google-signin",
+      {
+        iosUrlScheme:
+          "com.googleusercontent.apps.175190225211-bcbvqfu9e9ltvbdnaevrvr9dk731sop6",
+      },
+    ],
     [
       "expo-camera",
       {
