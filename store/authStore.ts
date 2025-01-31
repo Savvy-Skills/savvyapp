@@ -5,6 +5,7 @@ import { User } from "../types";
 import { login, authme, authAPI } from "../services/authapi";
 import { courses_api } from "@/services/coursesApi";
 import { Platform } from "react-native";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 // Create a cross-platform storage object
 const crossPlatformStorage = {
@@ -75,8 +76,15 @@ export const useAuthStore = create<AuthStore>()(
 					set({ isLoading: false, error: "Invalid email or password" });
 				}
 			},
-			logout: () => {
-				set({ token: null, user: null });
+			logout: async () => {
+				try {
+					set({ token: null, user: null });
+					if (Platform.OS !== "web") {
+						await GoogleSignin.signOut();
+					}
+				} catch (error) {
+					console.error("Logout error:", error);
+				}
 			},
 			getUser: async () => {
 				set({ isLoading: true });

@@ -4,7 +4,6 @@ import { IconButton, Button } from "react-native-paper";
 import { useCourseStore } from "@/store/courseStore";
 import styles from "@/styles/styles";
 import CustomNavMenu from "../CustomNavMenu";
-import { hexToRgbA } from "@/utils/utilfunctions";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { Colors } from "@/constants/Colors";
 import { FeedbackModal } from "../FeedbackModal";
@@ -175,8 +174,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 					<>
 						{!currentAssessmentID || isCurrentSlideCompleted ? (
 							<>
-								{currentSlide?.type === "Content" &&
-									lastContent.type === "Video" ? (
+								{currentSlide?.type === "Content" || currentSlide?.type === "Custom" ? (
 									<Button
 										mode="contained"
 										disabled={!isCurrentSlideCompleted}
@@ -208,15 +206,9 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 										mode="contained"
 										disabled={!isCurrentSlideCompleted}
 										onPress={handleNextSlide}
-										style={[styles.checkButton]}
-										labelStyle={localStyles.checkButtonLabel}
+										style={[styles.checkButton, revealedAnswer ? localStyles.revealedButton : styles.correctButton]}
+										labelStyle={[localStyles.checkButtonLabel, revealedAnswer ? localStyles.revealedLabel : styles.correctLabel]}
 										dark={false}
-										theme={{
-											colors: {
-												primary: checkButtonColors.normal,
-												surfaceDisabled: checkButtonColors.muted,
-											},
-										}}
 									>
 										{buttonLabel}
 									</Button>
@@ -257,7 +249,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	}
 
 	return (
-		<View style={[localStyles.container, { backgroundColor: backgroundColor, borderColor: borderColor, borderWidth: borderWidth, borderTopWidth: 0 }]}>
+		<View style={[localStyles.container]}>
 			<View style={[localStyles.menusContainer]}>
 				<CustomNavMenu
 					visible={isNavMenuVisible}
@@ -390,7 +382,6 @@ const localStyles = StyleSheet.create({
 		position: "absolute",
 		bottom: 80,
 		gap: 16,
-		maxWidth: 300,
 		alignSelf: "center",
 		zIndex: 2,
 	},
@@ -400,16 +391,28 @@ const localStyles = StyleSheet.create({
 		fontWeight: "bold",
 		letterSpacing: 1,
 	},
+	revealedLabel: {
+		fontSize: 18,
+		lineHeight: 18,
+		fontWeight: "bold",
+		letterSpacing: 1,
+		color: Colors.revealedText,
+	},
+	revealedButton: {
+		flex: 1,
+		backgroundColor: "#f5f5f5",
+		borderRadius: 4,
+	},
 	incorrectLabel: {
 		fontSize: 18,
 		lineHeight: 18,
 		fontWeight: "bold",
 		letterSpacing: 1,
-		color: Colors.orange,
+		color: Colors.error,
 	},
 	incorrectButton: {
 		flex: 1,
-		backgroundColor: "#ffe7cc",
+		backgroundColor: "#fdd9d7",
 		borderRadius: 4,
 	},
 });

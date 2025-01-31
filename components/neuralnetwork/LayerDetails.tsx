@@ -64,13 +64,23 @@ export default function LayerDetails({
 	const [predictionResult, setPredictionResult] = useState<string | null>(null);
 	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 
+	const problemType = currentNNState.modelConfig?.problemType;
 
-	const plotlyAccData: Data[] = [{
+	const plotlyAccData: Data[] =problemType === "classification" ? [{
 		x: currentState.training.modelHistory?.map(history => history.epoch),
 		y: currentState.training.modelHistory?.map(history => history.accuracy),
 		type: "scatter",
 		name: "Accuracy",
-	}];
+	}] : [];
+
+	const plotlyValAccData: Data[] =problemType === "classification" ? [{
+		x: currentState.training.modelHistory?.map(history => history.epoch),
+		y: currentState.training.modelHistory?.map(history => history.val_acc),
+		type: "scatter",
+		name: "Validation Accuracy",
+	}] : [];
+
+	
 	const plotlyLossData: Data[] = [{
 		x: currentState.training.modelHistory?.map(history => history.epoch),
 		y: currentState.training.modelHistory?.map(history => history.loss),
@@ -78,10 +88,17 @@ export default function LayerDetails({
 		name: "Loss",
 	}];
 
+	const plotlyValLossData: Data[] = [{
+		x: currentState.training.modelHistory?.map(history => history.epoch),
+		y: currentState.training.modelHistory?.map(history => history.val_loss),
+		type: "scatter",
+		name: "Validation Loss",
+	}];
+
 	const layout = {
-		title: "Accuracy and Loss",
+		title:problemType === "classification" ? "Accuracy and Loss" : "Loss",
 		xaxis: { title: "Epoch", hovermode: false, autosize: true, bargap: 0.1 },
-		yaxis: { title: "Accuracy/Loss", hovermode: false, autosize: true, bargap: 0.1 },
+		yaxis: { title:problemType === "classification" ? "Accuracy" : "Loss", hovermode: false, autosize: true, bargap: 0.1 },
 	};
 
 	const config = {
@@ -161,21 +178,20 @@ export default function LayerDetails({
 	const accuracyColor = Number(accuracy) > 90 ? Colors.success : Number(accuracy) > 50 ? Colors.orange : Colors.error;
 	const lossColor = Number(loss) < 10 ? Colors.success : Number(loss) > 10 && Number(loss) < 20 ? Colors.orange : Colors.error;
 
-	const predTrace: TraceConfig = {
-		x: "x",
-		y: "y",
-		type: "scatter",
-		name: "Predicted",
-		groupBy: "prediction",
-	}
-
 	// const predTrace: TraceConfig = {
-	// 	x: "mpg",
-	// 	y: "horsepower",
+	// 	x: "x",
+	// 	y: "y",
 	// 	type: "scatter",
 	// 	name: "Predicted",
 	// 	groupBy: "prediction",
 	// }
+
+	const predTrace: TraceConfig = {
+		x: "mpg",
+		y: "prediction",
+		type: "scatter",
+		name: "Predicted",
+	}
 
 
 	return (
@@ -272,17 +288,19 @@ export default function LayerDetails({
 					<View style={{ flexDirection: "column", gap: 16 }}>
 						<>
 							<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+								{currentNNState.modelConfig?.problemType === "classification" && (
 								<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
 									<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
 									<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
-								</View>
+									</View>
+								)}
 								<View style={[styles.metricContainer, { borderColor: lossColor, backgroundColor: generateColors(lossColor, 0.1).muted }]}>
 									<Text style={[{ color: lossColor }]}>Loss:</Text>
 									<Text style={[{ color: lossColor }]}>{loss}%</Text>
 								</View>
 							</View>
 							{currentState.training.modelHistory?.length > 0 && (
-								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
+								<DataPlotter data={[...plotlyLossData, ...plotlyAccData, ...plotlyValLossData, ...plotlyValAccData]} layout={layout} config={config} style={style} />
 							)}
 						</>
 						<DataTableContainer invert padding={0} data={currentState.data.testData} columns={currentState.data.columns} traces={[predTrace]} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />

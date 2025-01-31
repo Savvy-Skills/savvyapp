@@ -30,7 +30,7 @@ export default {
   slug: "savvyskills",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/images/pngs/savvylogo.png",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
   splash: {
@@ -44,7 +44,7 @@ export default {
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/images/adaptive-icon.png",
+      foregroundImage: "./assets/images/pngs/savvylogo.png",
       backgroundColor: "#ffffff",
     },
     package: getUniqueIdentifier(),
@@ -60,7 +60,13 @@ export default {
   },
   plugins: [
     "expo-router",
-    "@react-native-google-signin/google-signin",
+    [
+      "@react-native-google-signin/google-signin",
+      {
+        iosUrlScheme:
+          "com.googleusercontent.apps.175190225211-bcbvqfu9e9ltvbdnaevrvr9dk731sop6",
+      },
+    ],
     [
       "expo-camera",
       {

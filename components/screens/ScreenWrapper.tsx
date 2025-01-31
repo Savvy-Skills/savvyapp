@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/Colors";
 import React from "react";
 import { useWindowDimensions, View, ViewStyle } from "react-native";
 import { useTheme } from "react-native-paper";
@@ -9,12 +10,11 @@ interface ScreenWrapperProps {
 }
 
 export default function ScreenWrapper({ children, style }: ScreenWrapperProps) {
-  const theme = useTheme();
 
   return (
     <SafeAreaView
 	id="ScreenWrapperSafeAreaView"
-      style={[{ backgroundColor: theme.colors.background, flex: 1 }, style]}
+      style={[{ backgroundColor: Colors.background, flex: 1 }, style]}
     >
       {children}
     </SafeAreaView>

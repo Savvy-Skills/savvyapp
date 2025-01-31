@@ -7,6 +7,7 @@ import React, { useCallback, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import TensorFlowPoseDetection from "@/components/vision/TfjsPoseComponent";
 import WorkerTest from "@/components/WorkerTest";
+import { Text } from "react-native-paper";
 
 const datasetInfo: DatasetInfo = {
 	id: "x",
@@ -35,6 +36,7 @@ export default function DebugScreen() {
 		{/* <NeuralNetworkVisualizer dataset_info={datasetInfo} index={0} /> */}
         {/* <TfjsRegression></TfjsRegression> */}
         {/* <TensorFlowPoseDetection></TensorFlowPoseDetection> */}
+		<Text>Hello</Text>
       </ScrollView>
     </ScreenWrapper>
   );

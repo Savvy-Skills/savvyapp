@@ -15,11 +15,11 @@ import AnimatedSlide from "@/components/slides/AnimatedSlide";
 import { useCourseStore } from "@/store/courseStore";
 import { useKeyPress } from "@/hooks/useKeyboard";
 import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
-import { ActivityIndicator, FAB, Text } from "react-native-paper";
 import SlideListItem from "@/components/slides/SlideListItem";
 import FeedbackComponent from "@/components/Feedback";
 import LoadingIndicator from "@/components/LoadingIndicator";
-
+import styles from "@/styles/styles";
+import { Colors } from "@/constants/Colors";
 export default function ModuleDetail() {
 	const ref = useRef<TopSheetRefProps>(null);
 
@@ -58,7 +58,7 @@ export default function ModuleDetail() {
 
 	const revealedAnswer = currentSubmission?.revealed ?? false;
 
-	const onPress = useCallback(() => {
+	const openTopDrawer = useCallback(() => {
 		ref?.current?.scrollToEnd();
 	}, []);
 
@@ -126,11 +126,19 @@ export default function ModuleDetail() {
 		return <LoadingIndicator />
 	}
 
+	const getWrapperStyle = () => {
+		if (hiddenFeedbacks[currentSlideIndex]) return null;
+		if (revealedAnswer) return styles.revealedWrapper;
+		if (currentSubmission?.isCorrect) return styles.correctWrapper;
+		if (currentSubmission?.isCorrect === false) return styles.incorrectWrapper;	
+		return null
+	};
+
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
-			<Pressable style={[styles.pressableArea]} onPress={handlePressOutside}>
-				<TopNavBar />
-				<>
+				<Pressable style={[localStyles.pressableArea]} onPress={handlePressOutside}>
+					<TopNavBar />
+					<>
 					{/* TopSheet */}
 					<TopSheet ref={ref}>
 						<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
@@ -154,7 +162,7 @@ export default function ModuleDetail() {
 						</ScrollView>
 					</TopSheet>
 					{/* Slides */}
-					<View style={styles.slidesContainer}>
+					<View style={localStyles.slidesContainer}>
 						{currentView.slides.map((slide, index) => (
 							<AnimatedSlide
 								key={`${slide.slide_id}-${index}`}
@@ -172,7 +180,7 @@ export default function ModuleDetail() {
 							</AnimatedSlide>
 						))}
 					</View>
-					<View style={{ flexDirection: "column" }}>
+					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper, getWrapperStyle()]}>
 						{(isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex]) && (
 							<FeedbackComponent
 								correctness={currentSubmission?.isCorrect}
@@ -185,16 +193,15 @@ export default function ModuleDetail() {
 								slideIndex={currentSlideIndex}
 							/>
 						)}
-						<BottomBarNav onShowTopSheet={onPress} />
+						<BottomBarNav onShowTopSheet={openTopDrawer} />
 					</View>
-				</>
-
+					</>
 			</Pressable>
 		</ScreenWrapper>
 	);
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
 	pressableArea: {
 		flex: 1,
 		cursor: "auto",

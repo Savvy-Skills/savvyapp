@@ -5,12 +5,29 @@ import { useAuthStore } from "@/store/authStore";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import ThemedLogo from "@/components/themed/ThemedLogo";
 import * as WebBrowser from 'expo-web-browser';
-import { getGoogleInitUrl } from "@/services/authapi";
+import { getGoogleInitUrl, googleContinue } from "@/services/authapi";
 import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
 import { generateColors } from "@/utils/utilfunctions";
 
-const authChannel = new BroadcastChannel("auth_channel");
+import {
+	GoogleSignin,
+	GoogleSigninButton,
+	statusCodes,
+	User,
+} from '@react-native-google-signin/google-signin';
+import { signIn } from "@/utils/signin";
+import { ScrollView } from "react-native-gesture-handler";
+
+const authChannel = Platform.OS === "web" ? new BroadcastChannel("auth_channel") : null;
+
+GoogleSignin.configure({
+	webClientId: '175190225211-47pur7e7dhs9i00gj9rb9fk3tnheun6o.apps.googleusercontent.com', // client ID of type WEB for your server. Required to get the `idToken` on the user object, and for offline access.
+	scopes: ['https://www.googleapis.com/auth/drive.readonly'], // what API you want to access on behalf of the user, default is email and profile
+	offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
+	forceCodeForRefreshToken: false, // [Android] related to `serverAuthCode`, read the docs link below *.
+	iosClientId: '175190225211-bcbvqfu9e9ltvbdnaevrvr9dk731sop6.apps.googleusercontent.com', // [iOS] if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
+});
 
 export default function LoginScreen() {
 	const [email, setEmail] = useState("");
@@ -32,18 +49,31 @@ export default function LoginScreen() {
 	};
 
 	useEffect(() => {
-		authChannel.onmessage = (event) => {
-			if (event.data.type === "token") {
-				setToken(event.data.token);
-			}
-		};
+		if (authChannel) {
+			authChannel.onmessage = (event) => {
+				if (event.data.type === "token") {
+					setToken(event.data.token);
+				}
+			};
+		}
 	}, []);
+
+	const handleGoogleSignIn = async () => {
+		const user: User | null = await signIn();
+		if (user && user.serverAuthCode) {
+			const response = await googleContinue({ code: user.serverAuthCode });
+			if (response.token) {
+				setToken(response.token);
+			}
+		}
+	};
 
 	return (
 		<ScreenWrapper>
-			<KeyboardAvoidingView
-				behavior={Platform.OS === "ios" ? "padding" : "height"}
-				style={[styles.keyboardAvoidingView]}
+			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+				<KeyboardAvoidingView
+					behavior={Platform.OS === "ios" ? "padding" : "height"}
+					style={[styles.keyboardAvoidingView]}
 			>
 				<View style={styles.logoContainer}>
 					<ThemedLogo width={140} height={140} />
@@ -80,16 +110,28 @@ export default function LoginScreen() {
 					>
 						Login
 					</Button>
-					<Pressable onPress={handleGoogleLogin} style={{ width: 180, height: 40 }} onHoverIn={() => setIsHovering(true)} onHoverOut={() => setIsHovering(false)}>
-						<Image source={require("@/assets/images/svgs/googlebutton.svg")} contentFit="contain" style={{ width: "100%", height: "100%" }} />
-						{isHovering && <View style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: generateColors(Colors.primary, 0.05).muted }} />}
-					</Pressable>
+					{Platform.OS === "web" ? (
+
+						<Pressable onPress={handleGoogleLogin} style={{ width: 180, height: 40 }} onHoverIn={() => setIsHovering(true)} onHoverOut={() => setIsHovering(false)}>
+							<Image source={require("@/assets/images/svgs/googlebutton.svg")} contentFit="contain" style={{ width: "100%", height: "100%" }} />
+							{isHovering && <View style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: generateColors(Colors.primary, 0.05).muted }} />}
+						</Pressable>
+					) : (
+						<>
+							<GoogleSigninButton
+								size={GoogleSigninButton.Size.Standard}
+								color={GoogleSigninButton.Color.Light}
+								onPress={handleGoogleSignIn}
+							/>
+						</>
+					)}
 					<Button mode="text" onPress={handlePress} style={styles.defaultButton}>
 						Forgot Password?
 					</Button>
-				</View>
-			</KeyboardAvoidingView>
-		</ScreenWrapper>
+					</View>
+				</KeyboardAvoidingView>
+			</ScrollView>
+		</ScreenWrapper >
 	);
 }
 

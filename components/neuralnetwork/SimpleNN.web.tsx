@@ -126,10 +126,60 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 	const [currentNNState, setCurrentNNState] = useState<NNState>(initialNNState);
 	const { currentSlideIndex } = useCourseStore();
 	const [tfReady, setTfReady] = useState(false);
+	const workerRef = useRef<Worker | null>(null);
+	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
 	// Get only the columns that are in the featureConfig
 	const inputColumns = columns.filter(column => currentNNState.trainingConfig?.dataPreparationConfig?.featureConfig?.some(feature => feature.field === column.accessor));
+
+	useEffect(() => {
+		if (!workerRef.current) {
+			workerRef.current = new Worker(workerScript);
+		}
+	}, []);
+
+
+	useEffect(() => {
+		if (message) {
+			console.log("Received message from worker", message);
+			switch (message.type) {
+				case "init":
+					setTfReady(true);
+					break;
+				case "train_end":
+					setModelState({
+						training: false,
+						completed: true,
+						paused: false,
+						prediction: null,
+					})
+					break;
+				case "train_update":
+					const { transcurredEpochs, loss, accuracy, modelHistory, testData } = message.data;
+					setTrainingState({
+						transcurredEpochs,
+						loss,
+						accuracy,
+						modelHistory,
+					})
+					setDataState({
+						testData: testData.data,
+						columns: testData.columns,
+					})
+					break;
+				case "prediction_result":
+					const { predictionsArray, mappedOutputs } = message.data;
+					setModelState({
+						training: false,
+						completed: true,
+						paused: false,
+						prediction: mappedOutputs[predictionsArray[0] as number],
+					})
+					break;
+			}
+		}
+	}, [message]);
 
 
 	const handleActivationFunctionChange = useCallback((activationFunction: string) => {
@@ -189,6 +239,16 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 			}
 		})
 		// tfInstance?.debug(data, columns, currentNNState.modelConfig!, currentNNState.trainingConfig!);
+
+		workerRef.current?.postMessage({
+			type: "create_train",
+			data: {
+				data,
+				columns,
+				modelConfig: currentNNState.modelConfig!,
+				trainConfig: currentNNState.trainingConfig!,
+			},
+		});
 		setSelectedLayer("output");
 	}, [currentNNState]);
 
@@ -231,7 +291,9 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 					buttonColor={Colors.orange}
 					onPress={() => {
 						if (currentState.model.training) {
-
+							workerRef.current?.postMessage({
+								type: "stop_training",
+							});
 							setCurrentState({
 								...currentState,
 								model: {

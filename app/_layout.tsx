@@ -18,7 +18,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useThemeManager } from "@/hooks/useThemeManager";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider } from "@/components/providers/SnackBarProvider";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -75,6 +75,13 @@ export default function RootLayout() {
 			if (user && !notInRoot && !inCallback) {
 				router.replace("/home");
 			}
+
+			if (Platform.OS !== "web") {
+				if (!token && (!excluded.includes(segments[0]))) {
+					router.replace("/auth/login");
+				}
+			}
+
 			if (!token && notInRoot && (!excluded.includes(segments[0]))) {
 				if (segments[1] !== "login") {
 					router.replace("/auth/login");

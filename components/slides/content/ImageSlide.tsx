@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-	padding: 8,
 	minHeight: 300,
   },
   image: {
