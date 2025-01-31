@@ -208,8 +208,8 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 										mode="contained"
 										disabled={!isCurrentSlideCompleted}
 										onPress={handleNextSlide}
-										style={[styles.checkButton]}
-										labelStyle={localStyles.checkButtonLabel}
+										style={[styles.checkButton, styles.correctButton]}
+										labelStyle={[localStyles.checkButtonLabel, styles.correctLabel]}
 										dark={false}
 										theme={{
 											colors: {
@@ -405,11 +405,11 @@ const localStyles = StyleSheet.create({
 		lineHeight: 18,
 		fontWeight: "bold",
 		letterSpacing: 1,
-		color: Colors.orange,
+		color: Colors.error,
 	},
 	incorrectButton: {
 		flex: 1,
-		backgroundColor: "#ffe7cc",
+		backgroundColor: "#f4ced6",
 		borderRadius: 4,
 	},
 });

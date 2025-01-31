@@ -441,6 +441,12 @@ export default StyleSheet.create({
     borderColor: Colors.revealed,
     backgroundColor: generateColors(Colors.revealed, 0.2).muted,
   },
+  correctButton: {
+    backgroundColor: "#d0ecdf",
+  },
+  correctLabel: {
+    color: Colors.success,
+  },
 
   disabledOption: {},
 });

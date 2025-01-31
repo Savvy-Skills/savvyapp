@@ -31,9 +31,14 @@ interface GoogleContinueResponse {
 	email: string;
 }
 
-export const googleContinue = async (code: string): Promise<GoogleContinueResponse> => {
+export const googleContinue = async ({code, idToken}: {code?: string, idToken?: string}): Promise<GoogleContinueResponse> => {
 	try {
-		const url = "/oauth/google/continue"+"?code="+code+"&redirect_uri="+redirectUri;
+		let url = ``;
+		if (code) {
+			url = `/oauth/google/continue?code=${code}&redirect_uri=${redirectUri}`;
+		} else if (idToken) {
+			url = `/oauth/google/continue?oauth_token=${idToken}&redirect_uri=${redirectUri}`;
+		}
 		const response = await oauthAPI.get(url);
 		return response.data;
 	} catch (error) {

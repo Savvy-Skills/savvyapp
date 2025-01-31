@@ -16,7 +16,7 @@ const GoogleOauthRedirect = () => {
 		const handleAuth = async () => {
 			if (code) {
 				try {
-					const response = await googleContinue(code as string);
+					const response = await googleContinue({ code: code as string });
 					if (response.token) {
 						setToken(response.token);
 						if (authChannel) {
