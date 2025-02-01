@@ -74,8 +74,7 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 };
 
 const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
-	const sortedContents = slide.contents.sort((a, b) => a.order - b.order);
-	const { currentView } = useCourseStore();
+	const sortedContents = slide.contents?.length > 0 ? slide.contents.sort((a, b) => a.order - b.order) : [];
 	switch (slide.type) {
 		case "Assessment":
 			return (
