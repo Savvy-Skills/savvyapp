@@ -10,6 +10,7 @@ import { FeedbackModal } from "../FeedbackModal";
 import ConfirmationDialog from "../ConfirmationDialog";
 import { router } from "expo-router";
 import { generateColors } from "@/utils/utilfunctions";
+import { useAudioStore } from "@/store/audioStore";
 
 const navButtonColors = generateColors(Colors.navigationWhite, 0.5);
 const checkButtonColors = generateColors(Colors.navigationOrange, 0.5);
@@ -39,7 +40,10 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 		setSubmittableState,
 		skipAssessments,
 		setSkipAssessments,
+		correctnessStates
 	} = useCourseStore();
+
+	const { playSound } = useAudioStore();
 
 	const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
 	const [showRestartViewDialog, setShowRestartViewDialog] = useState(false);
@@ -77,11 +81,12 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
 	const handleCheck = useCallback(() => {
 		if (currentAssessmentID !== undefined) {
+			playSound(correctnessStates[currentSlideIndex] ? "success" : "failVariant", 0.6);
 			submitAssessment(currentAssessmentID);
 			setHiddenFeedback(currentSlideIndex, false);
 			triggerScrollToEnd();
 		}
-	}, [currentAssessmentID, submitAssessment, triggerScrollToEnd]);
+	}, [currentAssessmentID, submitAssessment, triggerScrollToEnd, correctnessStates, currentSlideIndex]);
 
 	const toggleMenu = useCallback(
 		() => setNavMenuVisible(!isNavMenuVisible),
@@ -134,21 +139,10 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 		setSubmittableState(currentSlideIndex, false);
 	}, [triggerTryAgain, setHiddenFeedback, currentSlideIndex]);
 
-	const currentContents = currentSlide?.contents && currentSlide.contents.length > 0 ? currentSlide.contents.sort((a, b) => a.order - b.order) : [];
-	const lastContent = currentContents[currentContents.length-1]
-
 
 	const moduleViews = currentView?.module_info.views.sort((a, b) => a.order - b.order);
 	const currentViewIndex = moduleViews?.findIndex(view => view.view_id === currentView?.id);
 	const isLastView = moduleViews ? currentViewIndex === moduleViews.length - 1 : false;
-	const isAssessment = currentView?.slides[currentSlideIndex].type === "Assessment";
-	const isCorrect = currentSubmission && currentSubmission.isCorrect;
-
-	const showBackgroundFeedback = isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex];
-
-	const backgroundColor = showBackgroundFeedback ? Colors.assessmentBackground : "transparent";
-	const borderColor = !showBackgroundFeedback ? "none" : revealedAnswer ? generateColors(Colors.revealed, 0.2).normal : isCorrect ? generateColors(Colors.success, 0.2).normal : generateColors(Colors.error, 0.2).normal;
-	const borderWidth = !showBackgroundFeedback ? 0 : 0;
 
 	const MiddleButton = () => {
 		const buttonLabel = currentSlide?.buttonLabel ? currentSlide.buttonLabel : currentSubmission && currentSubmission.revealed ? "GOT IT" : "CONTINUE";
