@@ -326,9 +326,9 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 			(submission) => submission.assessment_id === assessment_id
 		);
 
-		useAudioStore
-			.getState()
-			.playSound(isCorrect ? "success" : "failVariant", 0.6);
+		// useAudioStore
+		// 	.getState()
+		// 	.playSound(isCorrect ? "success" : "failVariant", 0.6);
 
 		const placeHolderSubmission = createSubmission(
 			assessment_id,

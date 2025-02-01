@@ -7,6 +7,7 @@ import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
 import CustomRadioButton from "@/components/SavvyRadioButton";
+import { useAudioStore } from "@/store/audioStore";
 
 export type AssessmentProps = {
 	question: QuestionInfo;
@@ -94,7 +95,6 @@ export default function SingleChoice({
 		revealAnswer,
 		setHiddenFeedback,
 	} = useCourseStore();
-
 	const currentSubmissionIndex = submittedAssessments.findIndex(
 		(submission) => submission.assessment_id === question.id
 	);

@@ -223,7 +223,7 @@ export default function FillBlankAssessment({
 				}
 				return newBlanks;
 			});
-			
+
 			setSubmittableState(index, false);
 			setIsWrong(false);
 			setShowAnswer(false);
@@ -322,38 +322,24 @@ export default function FillBlankAssessment({
 		return result;
 	}, [text, blanks, handleBlankPress, blocked, showAnswer, quizMode, isWrong]);
 
-	const renderStatusIcon = useCallback(
-		(blank: BlankItem) => {
-			if (quizMode && isWrong) {
-				return (
-					<StatusIcon
-						isCorrect={
-							blank.original.toLowerCase() === blank.filled.toLowerCase()
-						}
-						isWrong={
-							blank.original.toLowerCase() !== blank.filled.toLowerCase()
-						}
-						showAnswer={false}
-					/>
-				);
-			}
+	const renderStatusIcon = () => {
+		if (isWrong) {
+			return <StatusIcon isCorrect={false} isWrong={true} showAnswer={false} />;
+		}
 
-			if (showAnswer || currentSubmission?.isCorrect) {
-				return (
-					<StatusIcon
-						isCorrect={
-							blank.original.toLowerCase() === blank.filled.toLowerCase()
-						}
-						isWrong={false}
-						showAnswer={showAnswer}
-					/>
-				);
-			}
+		if (showAnswer || currentSubmission?.isCorrect) {
+			return (
+				<StatusIcon
+					isCorrect={true}
+					isWrong={false}
+					showAnswer={showAnswer}
+				/>
+			);
+		}
 
-			return null;
-		},
-		[quizMode, isWrong, showAnswer, currentSubmission]
-	);
+		return null;
+	};
+
 
 	return (
 		<AssessmentWrapper
@@ -364,6 +350,9 @@ export default function FillBlankAssessment({
 				<Text style={styles.optionLabel}>
 					{renderText}
 				</Text>
+				<View style={styles.iconContainer}>
+					{renderStatusIcon()}
+				</View>
 			</View>
 			<View style={localStyles.optionsContainer}>
 				{remainingOptions.map((option, index) => (
@@ -378,11 +367,6 @@ export default function FillBlankAssessment({
 					</Button>
 				))}
 			</View>
-			{blanks.map((blank, index) => (
-				<View key={index} style={styles.iconContainer}>
-					{renderStatusIcon(blank)}
-				</View>
-			))}
 		</AssessmentWrapper>
 	);
 }

@@ -7,6 +7,7 @@ import { useCourseStore } from "@/store/courseStore";
 import { View } from "react-native";
 import { AnimationObject } from "lottie-react-native";
 import { LottieComponentAutoplay } from "./LottieComponentAutoplay";
+import { useAudioStore } from "@/store/audioStore";
 
 type AnimationConfig = {
 	source: AnimationObject;
@@ -50,15 +51,18 @@ function FeedbackComponent({
 	const showDialog = () => setVisible(true);
 	const hideDialog = () => setVisible(false);
 
+	const { playSound } = useAudioStore();
+
 
 	const handleShowReveal = useCallback(() => {
 		showDialog();
 	}, [showDialog]);
 
 	const handleReveal = useCallback(() => {
+		playSound("success", 0.6);
 		onRevealAnswer();
 		hideDialog();
-	}, [onRevealAnswer, hideDialog]);
+	}, [onRevealAnswer, hideDialog, playSound]);
 
 
 	const getFeedbackTextStyle = () => {
