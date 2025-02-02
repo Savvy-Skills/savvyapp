@@ -22,13 +22,13 @@
       "channel": "preview"
     },
     "production": {
-      "environment": "production",
-      "autoIncrement": true,
-      "channel": "production",
-      "distribution": "store",
-      "env": {
-        "APP_VARIANT": "production"
-      }
+  "autoIncrement": true,
+  "channel": "production",
+  "distribution": "store",
+  "env": {},
+  "credentialsSource": "remote"
+}
+
     }
   },
   "submit": {
