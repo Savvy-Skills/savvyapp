@@ -28,7 +28,7 @@ const getAppName = () => {
 export default {
   name: getAppName(),
   slug: "savvy-skills",
-  version: "2.0.0",
+  version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/pngs/savvylogo.png",
   scheme: "myapp",
