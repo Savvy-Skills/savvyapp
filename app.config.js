@@ -105,12 +105,12 @@ export default {
       origin: false,
     },
     eas: {
-      projectId: "c7584a9c-5ef8-4cae-96b8-00bd1bcc4dc7",
+      projectId: "f0200142-2e46-4d8c-8d01-2759418c00e3",
     },
   },
-  owner: "samuel-savvy",
+  owner: "savvyskills",
   updates: {
-    url: "https://u.expo.dev/c7584a9c-5ef8-4cae-96b8-00bd1bcc4dc7",
+    url: "https://u.expo.dev/f0200142-2e46-4d8c-8d01-2759418c00e3",
   },
   runtimeVersion: {
     policy: "appVersion",

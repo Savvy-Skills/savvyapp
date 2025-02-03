@@ -21,7 +21,10 @@
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "distribution": "store",
+      "env": {},
+      "credentialsSource": "remote"
     }
   },
   "submit": {
