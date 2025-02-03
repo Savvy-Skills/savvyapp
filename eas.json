@@ -5,7 +5,6 @@
   },
   "build": {
     "development": {
-      "environment": "development",
       "developmentClient": true,
       "distribution": "internal",
       "env": {
@@ -14,21 +13,19 @@
       "channel": "development"
     },
     "preview": {
-      "environment": "preview",
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "preview"
       },
       "channel": "preview"
     },
-"production": {
-  "autoIncrement": true,
-  "channel": "production",
-  "distribution": "store",
-  "env": {},
-  "credentialsSource": "remote"
-}
-
+    "production": {
+      "autoIncrement": true,
+      "channel": "production",
+      "distribution": "store",
+      "env": {},
+      "credentialsSource": "remote"
+    }
   },
   "submit": {
     "production": {}
