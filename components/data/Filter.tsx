@@ -8,9 +8,8 @@ import {
   Icon,
   IconButton,
 } from "react-native-paper";
-import { useFilters } from "../hooks/useFilters";
-import type { FilterProps } from "../types/filter";
-import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
+import { useFilters } from "@/hooks/useFilters";
+import type { FilterProps } from "@/types/filter";
 import { Colors } from "@/constants/Colors";
 import styles from "@/styles/styles";
 import { generateColors } from "@/utils/utilfunctions";

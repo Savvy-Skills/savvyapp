@@ -16,7 +16,7 @@ import { useCourseStore } from "@/store/courseStore";
 import { useKeyPress } from "@/hooks/useKeyboard";
 import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
 import SlideListItem from "@/components/slides/SlideListItem";
-import FeedbackComponent from "@/components/Feedback";
+import FeedbackComponent from "@/components/slides/Feedback";
 import LoadingIndicator from "@/components/LoadingIndicator";
 import styles from "@/styles/styles";
 import { Colors } from "@/constants/Colors";

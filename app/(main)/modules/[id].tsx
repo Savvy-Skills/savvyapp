@@ -7,7 +7,7 @@ import { getModule } from "@/services/coursesApi";
 import { useLocalSearchParams } from "expo-router";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import ThemedTitle from "@/components/themed/ThemedTitle";
-import ViewCard from "@/components/ViewCard";
+import ViewCard from "@/components/cards/ViewCard";
 import ProgressPath from "@/components/ProgressPath";
 import { SegmentedButtons } from "react-native-paper";
 

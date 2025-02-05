@@ -61,7 +61,6 @@ export interface TrainConfig {
 
 export interface DataPreparationConfig {
 	targetColumn: string;
-	outputsNumber: number;
 	testSize: number;
 	stratify?: boolean;
 	featureConfig: FeatureConfig[];
@@ -71,5 +70,6 @@ export interface DataPreparationConfig {
 export interface FeatureConfig {
 	field: string;
 	encoding: "oneHot" | "label" | "none";
-	normalization?: "min_max" | "z_score" | "none";
+	normalization?: "minmax" | "zscore" | "none";
+	ordinalConfig?: string[];
 }

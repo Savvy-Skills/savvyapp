@@ -1,11 +1,11 @@
 import React from "react";
 import { FlatList, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
-import ModuleCard from "../../../components/ModuleCard";
+import ModuleCard from "../../../components/cards/ModuleCard";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import { getCourses, getModules } from "@/services/coursesApi";
 import { Course, Module } from "@/types";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import { useQuery } from "@tanstack/react-query";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import { ScrollView } from "react-native-gesture-handler";

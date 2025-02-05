@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import type { TableRowProps } from '../types/table';
+import type { TableRowProps } from '@/types/table';
 
 function TableRow({ item, columns, columnWidth }: TableRowProps) {
   return (

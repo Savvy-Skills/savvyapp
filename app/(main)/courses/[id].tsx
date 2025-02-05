@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FlatList, ScrollView, StyleSheet, View } from "react-native";
-import ModuleCard from "../../../components/ModuleCard";
+import ModuleCard from "../../../components/cards/ModuleCard";
 import styles from "@/styles/styles";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import { useLocalSearchParams } from "expo-router";
@@ -21,7 +21,7 @@ export default function ModulesList() {
   }, []);
   return (
     <ScreenWrapper>
-      <TopNavBar course={courseInfo} />
+	<TopNavBar course={courseInfo} />
       <ScrollView contentContainerStyle={styles.innerSection}>
         <View>
           <ThemedTitle style={styles.sectionTitle}>Modules</ThemedTitle>
@@ -31,6 +31,7 @@ export default function ModulesList() {
             keyExtractor={(item) => item.id.toString()}
             horizontal
             showsHorizontalScrollIndicator={false}
+			style={{ paddingHorizontal: 4 }}
           />
         </View>
       </ScrollView>

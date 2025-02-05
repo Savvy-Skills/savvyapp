@@ -1,0 +1,848 @@
+const workerFunction = function () {
+  const MESSAGE_TYPE_CREATE_TRAIN = "create_train";
+  const MESSAGE_TYPE_REMOVE = "remove";
+  const MESSAGE_TYPE_STOP = "stop_training";
+  const MESSAGE_TYPE_ERROR = "error";
+  const MESSAGE_TYPE_TRAIN_UPDATE = "train_update";
+  const MESSAGE_TYPE_TRAIN_END = "train_end";
+  const MESSAGE_TYPE_INIT = "init";
+  const MESSAGE_TYPE_PREDICT = "predict";
+  const MESSAGE_TYPE_PREDICTION_RESULT = "prediction_result";
+
+  let initialized = false;
+
+  let currentModel = null;
+  let currentModelMetrics = [];
+  let currentTotalLoss = 0;
+  let currentTotalAccuracy = 0;
+  let transcurredEpochs = 0;
+  let currentDataPreparationConfig = null;
+  let currentModelConfig = null;
+
+  let preprocessorState = {
+    featureColumns: [],
+    targetColumn: null,
+    encoders: [],
+    scalers: [],
+    trainIndices: null,
+    testIndices: null,
+    targetEncoder: null,
+    targetScaler: null,
+  };
+
+  let trainingStop = false;
+
+  let broadcastChannel = null;
+
+  function createScaler(column, data) {
+    let scaler = null;
+    const columnData = data.map((row) => row[column.field]);
+    if (column.normalization === "minmax") {
+      tf.tidy(() => {
+        const min = tf.min(columnData).arraySync();
+        const max = tf.max(columnData).arraySync();
+        scaler = {
+          type: "minmax",
+          field: column.field,
+          min,
+          max,
+          decode: (value) => value * (max - min) + min,
+        };
+      });
+    } else if (column.normalization === "zscore") {
+      tf.tidy(() => {
+        const mean = tf.mean(columnData, 0).arraySync();
+        const std = tf
+          .sqrt(tf.mean(tf.square(tf.sub(columnData, mean)), 0))
+          .arraySync();
+        scaler = {
+          type: "zscore",
+          field: column.field,
+          mean,
+          std,
+          decode: (value) => value * std + mean,
+        };
+      });
+    }
+    return scaler;
+  }
+
+  function scaleColumn(columnData, scaler) {
+    if (scaler.type === "minmax") {
+      return tf.tidy(() => {
+        return tf
+          .div(tf.sub(columnData, scaler.min), tf.sub(scaler.max, scaler.min))
+          .expandDims(1);
+      });
+    } else if (scaler.type === "zscore") {
+      return tf.tidy(() => {
+        return tf
+          .div(tf.sub(columnData, scaler.mean), scaler.std)
+          .expandDims(1);
+      });
+    }
+  }
+
+  function createEncoder(column, data) {
+    let encoder = {
+      field: column.field,
+      type: column.encoding,
+      map: new Map(),
+      inverseMap: new Map(),
+      encode: (value) => encoder.map.get(value),
+      decode: (index) => encoder.inverseMap.get(index),
+    };
+
+    if (column.ordinalConfig) {
+      // If column ordinalConfig, this mean this columns is type ordinal and ordinalConfig are the unique values in order from lowest to highest indexes.
+      column.ordinalConfig.forEach((value, index) => {
+        encoder.map.set(value, index);
+        encoder.inverseMap.set(index, value);
+      });
+    } else {
+      const uniqueValues = [...new Set(data.map((row) => row[column.field]))];
+      // TensorflowJs doesn't have a encoder, so we need to create one, encoder will be an object with a map of value to index, an inverse map of index to value, and a method to encode and decode
+      // And the type of the encoder.
+
+      uniqueValues.forEach((value, index) => {
+        encoder.map.set(value, index);
+        encoder.inverseMap.set(index, value);
+      });
+    }
+    // Create a label encoder for the column, using the unique values as labels
+    return encoder;
+  }
+
+  function encodeColumn(columnData, encoder, target = false) {
+    if (encoder.type === "label") {
+      if (target) {
+        return tf.tensor1d(columnData.map((value) => encoder.encode(value)));
+      } else {
+        return tf
+          .tensor(columnData.map((value) => encoder.encode(value)))
+          .expandDims(1);
+      }
+    } else if (encoder.type === "oneHot") {
+      // From encoder, we have a map of value to index, so we can create a one-hot encoded column for each value
+      // Create array with index values
+      const labelEncoded = columnData.map((value) => encoder.encode(value));
+      // Use tf.oneHot to create the one-hot encoded column, convert back to array
+      const oneHotEncoded = tf.oneHot(labelEncoded, encoder.map.size);
+      return oneHotEncoded;
+    }
+    return columnData;
+  }
+
+  function cleanData(data, dataPreparationConfig) {
+    // Check target column for null or undefined, get indices, remove from data.
+    const targetColumn = dataPreparationConfig.targetConfig.field;
+    const targetColumnIndices = data
+      .map((row, index) =>
+        !row[targetColumn] ||
+        row[targetColumn] === null ||
+        row[targetColumn] === undefined ||
+        row[targetColumn] === ""
+          ? index
+          : null
+      )
+      .filter(Boolean);
+    data = data.filter((_, index) => !targetColumnIndices.includes(index));
+    return data;
+  }
+
+  function preprocessData(data, columns, dataPreparationConfig) {
+    let processedData = [];
+    let targetData = [];
+    // 1. Remove null values
+    const cleanedData = cleanData(data, dataPreparationConfig);
+    // 2. Get Split Indices
+    const { trainIndices, testIndices } = trainTestSplit(
+      cleanedData,
+      columns,
+      dataPreparationConfig
+    );
+    // Save indices
+    preprocessorState.trainIndices = trainIndices;
+    preprocessorState.testIndices = testIndices;
+
+    // 3. Get target Column
+    const target = cleanedData.map(
+      (row) => row[dataPreparationConfig.targetConfig.field]
+    );
+
+    // 4. Get features
+    const features = cleanedData.map((row) => {
+      const featureRow = {};
+      dataPreparationConfig.featureConfig.forEach((column) => {
+        featureRow[column.field] = row[column.field];
+      });
+      return featureRow;
+    });
+
+    // From columns, get all the fields that are in features
+    const featureColumns = columns.filter((column) =>
+      features.some((feature) => feature[column.field])
+    );
+    preprocessorState.featureColumns = featureColumns;
+    console.log({ featureColumns });
+    // Get all non-encoded and non-normalized columns
+    const nonEncodedNonNormalizedColumns = dataPreparationConfig.featureConfig
+      .filter(
+        (column) =>
+          !column.encoding ||
+          (column.encoding === "none" && !column.normalization) ||
+          column.normalization === "none"
+      )
+      .map((column) => column.field);
+    const nonEncodedNonNormalizedFeatures = features.map((obj) =>
+      nonEncodedNonNormalizedColumns.reduce((acc, key) => {
+        acc[key] = obj[key];
+        return acc;
+      }, {})
+    );
+
+    // Get values into 2D tensor
+    const nonEncodedNonNormalizedFeaturesTensor = tf.tensor2d(
+      nonEncodedNonNormalizedFeatures.map((feature) => Object.values(feature))
+    );
+    processedData = nonEncodedNonNormalizedFeaturesTensor;
+
+    // 5. Scale features that need scaling: column.normalization !== "none"
+    const scaledColumns = dataPreparationConfig.featureConfig.filter(
+      (column) => column.normalization && column.normalization !== "none"
+    );
+    if (scaledColumns.length > 0) {
+      // Create scalers for each column
+      const scalers = scaledColumns.map((column) => createScaler(column, data));
+      //   Save scalers
+      preprocessorState.scalers = scalers;
+      // Scale each column
+      const scaledFeatures = scaledColumns.map((column) => {
+        const columnData = features.map((row) => row[column.field]);
+        return scaleColumn(
+          columnData,
+          scalers.find((scaler) => scaler.field === column.field)
+        );
+      });
+      const mergedScaledFeatures = tf.concat([...scaledFeatures], 1);
+      processedData = tf.concat([processedData, mergedScaledFeatures], 1);
+    }
+
+    // 6. Encode features that need encoding: column.encoding !== "none"
+    const encodedColumns = dataPreparationConfig.featureConfig.filter(
+      (column) => column.encoding && column.encoding !== "none"
+    );
+
+    if (encodedColumns.length > 0) {
+      // Create encoders for each column
+      const encoders = encodedColumns.map((column) =>
+        createEncoder(column, data)
+      );
+      //   Save encoders
+      preprocessorState.encoders = encoders;
+      //   Encode each column
+      let encodedFeatures = encodedColumns.map((column) => {
+        const encoder = encoders.find(
+          (encoder) => encoder.field === column.field
+        );
+        const columnData = features.map((row) => row[column.field]);
+        return {
+          field: column.field,
+          type: column.encoding,
+          data: encodeColumn(columnData, encoder),
+        };
+      });
+      // Encoded features is an array of objects with field and data, data is a tensor, concatenate all tensors into a single tensor
+      const featuresData = encodedFeatures.map((feature) => feature.data);
+      const mergedFeatures = tf.concat([...featuresData], 1);
+      processedData = tf.concat([processedData, mergedFeatures], 1);
+    }
+
+    // 7. Encode / Scale target if needed
+    if (
+      dataPreparationConfig.targetConfig.encoding &&
+      dataPreparationConfig.targetConfig.encoding !== "none"
+    ) {
+      // Create encoder
+      const encoder = createEncoder(dataPreparationConfig.targetConfig, data);
+      // Encode target
+      const encodedTarget = encodeColumn(target, encoder, true);
+      // Save encoder
+      preprocessorState.targetEncoder = encoder;
+      targetData = encodedTarget;
+    } else if (
+      dataPreparationConfig.targetConfig.normalization &&
+      dataPreparationConfig.targetConfig.normalization !== "none"
+    ) {
+      // Create scaler
+      const scaler = createScaler(dataPreparationConfig.targetConfig, data);
+      // Scale target
+      const scaledTarget = scaleColumn(target, scaler);
+      // Save scaler
+      preprocessorState.targetScaler = scaler;
+      targetData = scaledTarget;
+    } else {
+      targetData = tf.tensor2d(target, [target.length, 1]);
+    }
+
+    const trainFeatures = tf.gather(processedData, trainIndices);
+    const testFeatures = tf.gather(processedData, testIndices);
+    const trainTarget = tf.gather(targetData, trainIndices);
+
+    // console.log({
+    //   trainFeatures: trainFeatures.arraySync(),
+    //   trainTarget: trainTarget.arraySync(),
+    //   testFeatures: testFeatures.arraySync(),
+    // });
+
+    return {
+      trainFeatures,
+      trainTarget,
+      testFeatures,
+    };
+  }
+
+  function createPredictionData({
+    originalData,
+    predictions,
+    modelConfig,
+    columns,
+  }) {
+    const { testIndices, targetEncoder, targetScaler } = preprocessorState;
+    const targetColumn = currentDataPreparationConfig.targetConfig.field;
+    const testData = testIndices.map((index) => originalData[index]);
+    // TODO: Handle classification and regression predictions
+    let result = {};
+    if (modelConfig.problemType === "classification") {
+      // TODO: Handle classification predictions
+      // Check lastLayerSize, if its 1, then its a binary classification, otherwise its a multi-class classification
+      const lastLayerSize = modelConfig.lastLayerSize;
+      result["newColumns"] = [
+        ...columns,
+        {
+          accessor: "prediction",
+          Header: "prediction",
+          dtype: "string",
+          width: 100,
+        },
+      ];
+
+      if (lastLayerSize === 1) {
+        // Binary classification
+        const predictionsToBinary = predictions
+          .arraySync()
+          .map((prediction) => (prediction > 0.5 ? 1 : 0));
+        const predictionsData = testData.map((data, index) => ({
+          ...data,
+          prediction: targetEncoder.decode(predictionsToBinary[index]),
+        }));
+        result["predictions"] = predictionsData;
+      } else {
+        // Multi-class classification, predictions is one-hot tensor, so we need to convert it to an index
+        const predictionsToIndex = predictions.argMax(1).arraySync();
+        const predictionsData = testData.map((data, index) => ({
+          ...data,
+          prediction: targetEncoder.decode(predictionsToIndex[index]),
+        }));
+        result["predictions"] = predictionsData;
+      }
+    } else if (modelConfig.problemType === "regression") {
+      // TODO: Handle regression predictions
+      // Check if target is scaled, if it is, then we need to unscale it
+      result["newColumns"] = [
+        ...columns,
+        {
+          accessor: "prediction",
+          Header: "prediction",
+          dtype: "number",
+          width: 100,
+        },
+        {
+          accessor: "difference",
+          Header: "difference",
+          dtype: "number",
+          width: 100,
+        },
+      ];
+      if (targetScaler) {
+        const predictionsArray = predictions.arraySync();
+        const predictionsData = testData.map((data, index) => {
+          const prediction = targetScaler.decode(predictionsArray[index]);
+          return {
+            ...data,
+            prediction,
+            difference: Math.abs(prediction - data[targetColumn]),
+          };
+        });
+        result["predictions"] = predictionsData;
+      } else {
+        const predictionsArray = predictions.arraySync();
+        const predictionsData = testData.map((data, index) => ({
+          ...data,
+          prediction: predictionsArray[index],
+          difference: Math.abs(predictionsArray[index] - data[targetColumn]),
+        }));
+        result["predictions"] = predictionsData;
+      }
+    }
+    return result;
+  }
+  
+
+  function handleInference(inputData) {
+    const { encoders, scalers, targetEncoder, targetScaler } =
+      preprocessorState;
+
+    const dataPreparationConfig = currentDataPreparationConfig;
+
+    let processedData = [];
+
+    const features = inputData.map((row) => {
+      const featureRow = {};
+      dataPreparationConfig.featureConfig.forEach((column) => {
+        featureRow[column.field] = row[column.field];
+      });
+      return featureRow;
+    });
+    const inputColumns = Object.keys(features[0]);
+
+    const encodedColumns = encoders.filter((encoder) =>
+      inputColumns.includes(encoder.field)
+    );
+    // 1. Check scalers
+    const scaledColumns = scalers.filter((scaler) =>
+      inputColumns.includes(scaler.field)
+    );
+
+    // 0. Get non-encoded and non-scaled columns
+    const nonEncodedNonScaledColumns = inputColumns.filter(
+      (column) =>
+        !encodedColumns.map((encoder) => encoder.field).includes(column) &&
+        !scaledColumns.map((scaler) => scaler.field).includes(column)
+    );
+    if (nonEncodedNonScaledColumns.length > 0) {
+      const nonEncodedNonScaledData = nonEncodedNonScaledColumns.map(
+        (column) => features[0][column]
+      );
+      processedData = tf.tensor2d([nonEncodedNonScaledData]);
+    }
+
+    // 1.1 Scale columns
+    if (scaledColumns.length > 0) {
+      const scaledData = scaledColumns.map((column) => {
+        const scaler = scalers.find((scaler) => scaler.field === column.field);
+        return scaleColumn([Number(features[0][column.field])], scaler);
+      });
+      processedData =
+        processedData.length > 0
+          ? tf.concat([...processedData, ...scaledData], 1)
+          : scaledData[0];
+    }
+    // 2.1 Encode columns
+    if (encodedColumns.length > 0) {
+      const encodedData = encodedColumns.map((column) => {
+        const encoder = encoders.find(
+          (encoder) => encoder.field === column.field
+        );
+        return encodeColumn([features[0][column.field]], encoder);
+      });
+      processedData =
+        processedData.length > 0
+          ? tf.concat([...processedData, ...encodedData], 1)
+          : encodedData;
+    }
+    const predictions = currentModel.predict(processedData);
+    let predictionResult = null;
+    if (currentModelConfig.problemType === "classification") {
+      if (currentModelConfig.lastLayerSize === 1) {
+        // Binary classification
+        const predictionsToBinary = predictions
+          .arraySync()
+          .map((prediction) => (prediction > 0.5 ? 1 : 0));
+        const predictionLabel = targetEncoder.decode(predictionsToBinary[0]);
+        predictionResult = predictionLabel;
+      } else {
+        // Multi-class classification
+        const predictionsToIndex = predictions.argMax(1).arraySync();
+        const predictionLabel = targetEncoder.decode(predictionsToIndex[0]);
+        predictionResult = predictionLabel;
+      }
+    } else if (currentModelConfig.problemType === "regression") {
+      if (targetScaler) {
+        const predictionsArray = predictions.arraySync();
+        const prediction = targetScaler.decode(predictionsArray[0]);
+        predictionResult = prediction;
+      } else {
+        const predictionsArray = predictions.arraySync();
+        predictionResult = predictionsArray[0];
+      }
+    }
+    broadcastChannel.postMessage({
+      type: MESSAGE_TYPE_PREDICTION_RESULT,
+      data: {
+        predictionResult,
+      },
+    });
+  }
+
+  async function trainModel({
+    model,
+    preparedData,
+    originalData,
+    trainConfig,
+    modelConfig,
+    columns,
+  }) {
+    const { trainFeatures, trainTarget, testFeatures } = preparedData;
+
+    await model.fit(trainFeatures, trainTarget, {
+      epochs: trainConfig.epochs,
+      shuffle: trainConfig.shuffle,
+      batchSize: trainConfig.batchSize,
+      validationSplit: trainConfig.validationSplit,
+      callbacks: {
+        onEpochEnd: (epoch, logs) => {
+          if (trainingStop) {
+            model.stopTraining = true;
+            trainingStop = false;
+            return;
+          }
+          console.log({
+            epoch,
+            logs,
+          });
+          transcurredEpochs = epoch;
+          currentTotalLoss += logs.loss || 0;
+          if (logs.acc) {
+            currentTotalAccuracy += logs.acc;
+          }
+          currentModelMetrics.push({
+            epoch,
+            loss: logs?.loss,
+            accuracy: logs?.acc ? logs.acc : null,
+            val_loss: logs?.val_loss,
+            val_accuracy: logs?.val_acc ? logs.val_acc : null,
+          });
+          const predictions = model.predict(testFeatures);
+          const { newColumns, predictions: predictionsData } =
+            createPredictionData({
+              originalData,
+              predictions,
+              testFeatures,
+              modelConfig,
+              columns,
+            });
+          broadcastChannel.postMessage({
+            type: MESSAGE_TYPE_TRAIN_UPDATE,
+            data: {
+              transcurredEpochs: epoch,
+              loss: currentTotalLoss,
+              accuracy: currentTotalAccuracy,
+              modelHistory: currentModelMetrics,
+              testData: {
+                data: predictionsData,
+                columns: newColumns,
+              },
+            },
+          });
+        },
+        onTrainEnd: () => {
+          const predictions = model.predict(testFeatures);
+          const { newColumns, predictions: predictionsData } =
+            createPredictionData({
+              originalData,
+              predictions,
+              testFeatures,
+              modelConfig,
+              columns,
+            });
+          broadcastChannel.postMessage({
+            type: MESSAGE_TYPE_TRAIN_END,
+            data: {
+              transcurredEpochs: transcurredEpochs,
+              loss: currentTotalLoss,
+              accuracy: currentTotalAccuracy,
+              modelHistory: currentModelMetrics,
+              testData: {
+                data: predictionsData,
+                columns: newColumns,
+              },
+            },
+          });
+          trainFeatures.dispose();
+          trainTarget.dispose();
+          testFeatures.dispose();
+          predictions.dispose();
+        },
+      },
+    });
+  }
+
+  async function createTrain(data, columns, modelConfig, trainConfig) {
+    // 1. Preprocess data
+    const preparedData = preprocessData(
+      data,
+      columns,
+      trainConfig.dataPreparationConfig
+    );
+
+    // 2. Create model
+    const model = createModel(modelConfig);
+
+    // 3. Train model
+    await trainModel({
+      model,
+      preparedData,
+      originalData: data,
+      trainConfig,
+      modelConfig,
+      columns,
+    });
+  }
+
+  async function init() {
+    const scripts = {
+      tfjs: "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js",
+      wasm: "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js",
+    };
+    try {
+      await loadScriptWithRetry(scripts.tfjs, "tfjs");
+      await loadScriptWithRetry(scripts.wasm, "wasm");
+
+      broadcastChannel = new BroadcastChannel("tensorflow-worker");
+
+      tf.wasm.setWasmPaths(
+        "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/wasm-out/"
+      );
+
+      tf.ready().then(() => {
+        tf.setBackend("wasm");
+        console.log(tf.getBackend());
+      });
+
+      initialized = true;
+      broadcastChannel.postMessage({
+        type: MESSAGE_TYPE_INIT,
+        data: {
+          message: "Worker initialized",
+        },
+      });
+
+      broadcastChannel.onmessage = async function (event) {
+        if (event.data.type === MESSAGE_TYPE_PREDICT) {
+          const { inputs } = event.data.data;
+          handleInference([inputs]);
+        }
+      };
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  }
+
+  self.onmessage = async function (event) {
+    console.log("Message received:", event.data);
+    switch (event.data.type) {
+      case MESSAGE_TYPE_CREATE_TRAIN:
+        const { data, columns, modelConfig, trainConfig } = event.data.data;
+        currentDataPreparationConfig = trainConfig.dataPreparationConfig;
+        currentModelConfig = modelConfig;
+        await createTrain(data, columns, modelConfig, trainConfig);
+        break;
+      case MESSAGE_TYPE_REMOVE:
+        break;
+      case MESSAGE_TYPE_PREDICT:
+        const { inputs } = event.data.data;
+        await handleInference(inputs);
+        break;
+      case MESSAGE_TYPE_STOP:
+        trainingStop = true;
+        break;
+      default:
+        self.postMessage({
+          type: MESSAGE_TYPE_ERROR,
+          message: "Unknown message type!",
+        });
+        break;
+    }
+  };
+
+  async function loadScriptWithRetry(url, name, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        importScripts(url);
+        console.log("Successfully loaded: " + name);
+        return;
+      } catch (err) {
+        console.error(
+          "Failed to load: " + name + ", attempt " + (i + 1) + " of " + retries
+        );
+        if (i < retries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          throw new Error(
+            "Failed to load script after " + retries + " attempts: " + name
+          );
+        }
+      }
+    }
+  }
+
+  function getKernelRegularizer(regularization, rate) {
+    if (!regularization) {
+      return null;
+    }
+    regularization = regularization.toLowerCase();
+    if (regularization === "l1") {
+      return tf.regularizers.l1({ l1: rate });
+    } else if (regularization === "l2") {
+      return tf.regularizers.l2({ l2: rate });
+    } else if (regularization === "l1l2") {
+      return tf.regularizers.l1l2({ l1: rate, l2: rate });
+    }
+    return null;
+  }
+
+  function trainTestSplit(data, columns, dataPreparationConfig) {
+    // Split data into train and test
+    const { testSize, stratify } = dataPreparationConfig;
+    const totalSamples = data.length;
+    const numTestSamples = Math.floor(totalSamples * testSize); // Calculate number of test samples
+    console.log({ testSize, stratify, numTestSamples });
+
+    let testIndices = [];
+    let trainIndices = [];
+
+    if (stratify) {
+      const targetColumn = columns.find(
+        (column) => column.accessor === dataPreparationConfig.targetColumn
+      );
+      const targetValues = data.map((row) => row[targetColumn?.accessor]);
+      const uniqueTargetValues = [...new Set(targetValues)];
+      uniqueTargetValues.forEach((value) => {
+        const indices = data
+          .map((_, index) => (targetValues[index] === value ? index : null))
+          .filter(Boolean);
+        // Shuffle indices
+        tf.util.shuffle(indices);
+        const localTestIndices = indices.slice(
+          0,
+          Math.floor(indices.length * testSize)
+        );
+        const localTrainIndices = indices.slice(
+          Math.floor(indices.length * testSize)
+        );
+        localTestIndices.forEach((index) => testIndices.push(index));
+        localTrainIndices.forEach((index) => trainIndices.push(index));
+      });
+    } else {
+      // Split data into train and test directly but shuffle randomly first
+      const indices = data.map((_, index) => index);
+      tf.util.shuffle(indices);
+      const localTestIndices = indices.slice(0, numTestSamples);
+      const localTrainIndices = indices.slice(numTestSamples);
+      localTestIndices.forEach((index) => testIndices.push(index));
+      localTrainIndices.forEach((index) => trainIndices.push(index));
+    }
+    return { testIndices, trainIndices };
+  }
+
+  function getLayers(model) {
+    let layers = [];
+    // Iterate through each layer to get the weights and biases
+    for (let i = 0; i < model.layers.length; i++) {
+      const layer = model.layers[i];
+      const weightsTensors = layer.getWeights();
+      let weights = null;
+      let biases = null;
+
+      if (weightsTensors.length > 0) {
+        weights = weightsTensors[0].arraySync(); // Get the weights
+      }
+      if (weightsTensors.length > 1) {
+        biases = weightsTensors[1].arraySync(); // Get the biases
+      }
+
+      // Structure to store layer information
+      let currentLayer = {
+        layer: i + 1,
+        config: layer.getConfig(),
+        weights: weights,
+        biases: biases,
+      };
+      layers.push(currentLayer);
+    }
+    return layers;
+  }
+
+  function createModel(config) {
+    try {
+      if (currentModel) {
+        currentModel.dispose();
+      }
+      currentModelMetrics = [];
+      currentTotalLoss = 0;
+      currentTotalAccuracy = 0;
+      transcurredEpochs = 0;
+
+      const model = tf.sequential();
+      const lastLayerActivation =
+        config.problemType === "classification"
+          ? config.lastLayerSize === 1
+            ? "sigmoid"
+            : "softmax"
+          : null;
+
+      config.neuronsPerLayer.push(config.lastLayerSize);
+      config.neuronsPerLayer.forEach((neurons, index) => {
+        const isLastLayer = index === config.neuronsPerLayer.length - 1;
+        const isFirstLayer = index === 0;
+        const layerConfig = {
+          units: neurons,
+          activation: isLastLayer
+            ? config.problemType === "classification"
+              ? lastLayerActivation
+              : null
+            : config.activationFunction,
+          inputShape: isFirstLayer ? [config.inputSize] : null,
+          kernelInitializer: config.kernelInitializer,
+          name: `layer_${index}`,
+          kernelRegularizer: !isLastLayer
+            ? getKernelRegularizer(
+                config.regularization,
+                config.regularizationRate
+              )
+            : null,
+        };
+        model.add(tf.layers.dense(layerConfig));
+      });
+      console.log("Model structure created.");
+      if (config.compileOptions) {
+        const opt = tf.train[config.compileOptions.optimizer](
+          config.compileOptions.learningRate
+        );
+        model.compile({
+          optimizer: opt,
+          loss: config.compileOptions.lossFunction,
+          metrics: config.compileOptions.metrics,
+        });
+      }
+      model.summary();
+      currentModel = model;
+      return model;
+    } catch (error) {
+      console.error("Error creating model:", error);
+      throw error;
+    }
+  }
+
+  if (!initialized) {
+    init();
+  }
+};
+
+let code = workerFunction.toString();
+code = code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"));
+const blob = new Blob([code], { type: "application/javascriptssky" });
+const workerScript = URL.createObjectURL(blob);
+
+export { workerScript };

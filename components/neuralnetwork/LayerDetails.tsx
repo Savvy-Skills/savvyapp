@@ -7,8 +7,8 @@ import { LayerType, NNState } from "@/types/neuralnetwork";
 import styles from "@/styles/styles";
 import { lazy, useCallback, useEffect, useState } from "react";
 import { DatasetInfo } from "@/types";
-import { TraceConfig } from "../DataVisualizerPlotly";
-import DataTableContainer from "../DataTableContainer";
+import { TraceConfig } from "../data/DataVisualizerPlotly";
+import DataTableContainer from "../data/DataTableContainer";
 import { useTFStore } from "@/store/tensorStore";
 import { Data } from "plotly.js";
 
@@ -18,7 +18,7 @@ import React from "react";
 import { MESSAGE_TYPE_PREDICT, MESSAGE_TYPE_PREDICTION_RESULT } from "@/constants/Utils";
 import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
-const DataPlotter = lazy(() => import("../DataPlotter"));
+const DataPlotter = lazy(() => import("../data/DataPlotter"));
 
 interface LayerDetailsProps {
 	selectedLayer: LayerType;
@@ -42,6 +42,10 @@ const activationFunctionsMap = {
 	"softmax": "Softmax",
 }
 
+interface PredictionInputs {
+	[key: string]: string | undefined;
+}
+
 export default function LayerDetails({
 	selectedLayer,
 	inputColumns,
@@ -60,7 +64,7 @@ export default function LayerDetails({
 	const { tfInstance, currentState } = useTFStore();
 	const [showActivationMenu, setShowActivationMenu] = useState(false);
 	const [showEpochsMenu, setShowEpochsMenu] = useState(false);
-	const [predictionInputs, setPredictionInputs] = useState<string[]>([]);
+	const [predictionInputs, setPredictionInputs] = useState<PredictionInputs>({} as PredictionInputs);
 	const [predictionResult, setPredictionResult] = useState<string | null>(null);
 	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 
@@ -73,12 +77,12 @@ export default function LayerDetails({
 		name: "Accuracy",
 	}] : [];
 
-	const plotlyValAccData: Data[] =problemType === "classification" ? [{
-		x: currentState.training.modelHistory?.map(history => history.epoch),
-		y: currentState.training.modelHistory?.map(history => history.val_acc),
-		type: "scatter",
-		name: "Validation Accuracy",
-	}] : [];
+	// const plotlyValAccData: Data[] =problemType === "classification" ? [{
+	// 	x: currentState.training.modelHistory?.map(history => history.epoch),
+	// 	y: currentState.training.modelHistory?.map(history => history.val_acc),
+	// 	type: "scatter",
+	// 	name: "Validation Accuracy",
+	// }] : [];
 
 	
 	const plotlyLossData: Data[] = [{
@@ -88,12 +92,12 @@ export default function LayerDetails({
 		name: "Loss",
 	}];
 
-	const plotlyValLossData: Data[] = [{
-		x: currentState.training.modelHistory?.map(history => history.epoch),
-		y: currentState.training.modelHistory?.map(history => history.val_loss),
-		type: "scatter",
-		name: "Validation Loss",
-	}];
+	// const plotlyValLossData: Data[] = [{
+	// 	x: currentState.training.modelHistory?.map(history => history.epoch),
+	// 	y: currentState.training.modelHistory?.map(history => history.val_loss),
+	// 	type: "scatter",
+	// 	name: "Validation Loss",
+	// }];
 
 	const layout = {
 		title:problemType === "classification" ? "Accuracy and Loss" : "Loss",
@@ -112,12 +116,10 @@ export default function LayerDetails({
 		height: 300,
 	};
 	const handlePredict = useCallback(() => {
-		const inputs = predictionInputs.map(Number);
-
 		sendMessage({
 			type: MESSAGE_TYPE_PREDICT,
 			data: {
-				inputs: [inputs],
+				inputs: predictionInputs,
 			},
 		});
 	}, [predictionInputs, sendMessage]);
@@ -125,29 +127,31 @@ export default function LayerDetails({
 	useEffect(() => {
 		if (message) {
 			if (message.type === MESSAGE_TYPE_PREDICTION_RESULT) {
-				setPredictionResult(message.data.mappedOutputs[message.data.predictionsArray[0] as number]);
+				setPredictionResult(message.data.predictionResult);
 			}
 		}
 	}, [message]);
 
-	const handleChangePredictionInput = useCallback((text: string, index: number) => {
-		if ((inputColumns[index].dtype === "number" && (isNaN(Number(text)) || text === ""))) {
+	const handleChangePredictionInput = useCallback((text: string, key: string) => {
+		// if ((inputColumns[index].dtype === "number" && (isNaN(Number(text)) || text === ""))) {
+		// 	return;
+		// }
+		if (inputColumns.find(column => column.accessor === key)?.dtype === "number" && (isNaN(Number(text)) || text === "")) {
 			return;
 		}
 		text = text.trim();
 		setPredictionInputs(prev => {
-			const newInputs = [...prev];
-			newInputs[index] = text;
+			const newInputs = { ...prev };
+			newInputs[key] = text;
 			return newInputs;
 		});
 	}, []);
 
 	const handleGetRandomInputs = useCallback(() => {
-		const randomRow = data[Math.floor(Math.random() * data.length)];
+		const randomRow = {...data[Math.floor(Math.random() * data.length)]};
 		delete randomRow[outputColumn];
-		const inputs = Object.values(randomRow);
-		setPredictionInputs(inputs as string[]);
-	}, [data]);
+		setPredictionInputs(randomRow);
+	}, [data, outputColumn]);
 
 	const handleAddLayer = useCallback(() => {
 		handleNeuronCountChange(currentModelConfig?.neuronsPerLayer.length ?? 0, 1);
@@ -166,7 +170,7 @@ export default function LayerDetails({
 	}, [handleNeuronCountChange, currentModelConfig]);
 
 	useEffect(() => {
-		if (predictionInputs.length === 0) {
+		if (Object.keys(predictionInputs).length === 0) {
 			handleGetRandomInputs();
 		}
 	}, [handleGetRandomInputs]);
@@ -187,7 +191,7 @@ export default function LayerDetails({
 	// }
 
 	const predTrace: TraceConfig = {
-		x: "mpg",
+		x: "horsepower",
 		y: "prediction",
 		type: "scatter",
 		name: "Predicted",
@@ -300,7 +304,7 @@ export default function LayerDetails({
 								</View>
 							</View>
 							{currentState.training.modelHistory?.length > 0 && (
-								<DataPlotter data={[...plotlyLossData, ...plotlyAccData, ...plotlyValLossData, ...plotlyValAccData]} layout={layout} config={config} style={style} />
+								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
 							)}
 						</>
 						<DataTableContainer invert padding={0} data={currentState.data.testData} columns={currentState.data.columns} traces={[predTrace]} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
@@ -310,7 +314,7 @@ export default function LayerDetails({
 									{inputColumns.map((column, index) => (
 										<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
 											<Text style={styles.subtitle}>{column.accessor}:</Text>
-											<TextInput style={{ maxWidth: 100 }} mode="outlined" value={predictionInputs[index]} onChangeText={(text) => handleChangePredictionInput(text, index)} />
+											<TextInput style={{ maxWidth: 100 }} mode="outlined" value={predictionInputs[column.accessor]} onChangeText={(text) => handleChangePredictionInput(text, column.accessor)} />
 										</View>
 									))}
 									<IconButton iconColor={Colors.orange} icon="dice-6-outline" size={34} onPress={handleGetRandomInputs} />

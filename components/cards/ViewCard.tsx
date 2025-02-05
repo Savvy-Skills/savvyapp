@@ -2,9 +2,9 @@ import React from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Card, Title, Paragraph, ProgressBar } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { ViewType } from "../types";
-import ThemedTitle from "./themed/ThemedTitle";
-import ThemedParagraph from "./themed/ThemedParagraph";
+import { ViewType } from "../../types";
+import ThemedTitle from "../themed/ThemedTitle";
+import ThemedParagraph from "../themed/ThemedParagraph";
 
 interface ViewCardProps {
   view: ViewType;

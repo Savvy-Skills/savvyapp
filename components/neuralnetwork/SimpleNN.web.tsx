@@ -4,20 +4,19 @@ import React, { lazy, useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Surface, Button } from "react-native-paper";
 import LoadingIndicator from "../LoadingIndicator";
-import { TraceConfig } from "../DataVisualizerPlotly";
+import { TraceConfig } from "../data/DataVisualizerPlotly";
 import NNTabs from "./NNTabs";
 import styles from "@/styles/styles";
 import LayerDetails from "./LayerDetails";
 import { useCourseStore } from "@/store/courseStore";
 import { LayerType, ModelConfig, NeuralNetworkVisualizerProps, NNState, TrainConfig } from "@/types/neuralnetwork";
 import { Colors } from "@/constants/Colors";
-import { workerScript } from "@/utils/worker";
-import { CopilotProvider, CopilotStep, useCopilot } from "react-native-copilot";
+import { workerScript } from "@/utils/tfworker";
 import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
 
 // const defaultModelConfig: ModelConfig = {
-// 	neuronsPerLayer: [4, 2, 1],
+// 	neuronsPerLayer: [4, 2, 2],
 // 	problemType: "classification",
 // 	activationFunction: "relu",
 // 	compileOptions: {
@@ -49,23 +48,65 @@ const defaultModelConfig: ModelConfig = {
 // 	validationSplit: 0.2,
 // 	batchSize: 32,
 // 	dataPreparationConfig: {
-// 		targetColumn: "label",
-// 		outputsNumber: 2,
+// 		targetColumn: "Drug",
 // 		testSize: 0.2,
 // 		stratify: true,
 // 		featureConfig: [
 // 			{
 // 				field: "x",
+// 				normalization: "none",
 // 				encoding: "none",
 // 			},
 // 			{
 // 				field: "y",
+// 				normalization: "none",
 // 				encoding: "none",
 // 			},
 // 		],
 // 		targetConfig: {
 // 			field: "label",
 // 			encoding: "label",
+// 		},
+// 	}
+// }
+// const defaultTrainingConfig: TrainConfig = {
+// 	epochs: 80,
+// 	shuffle: true,
+// 	validationSplit: 0.2,
+// 	batchSize: 16,
+// 	dataPreparationConfig: {
+// 		targetColumn: "Drug",
+// 		testSize: 0.2,
+// 		stratify: true,
+// 		featureConfig: [
+// 			{
+// 				field: "Age",
+// 				encoding: "none",
+// 				normalization: "minmax",
+// 			},
+// 			{
+// 				field: "Sex",
+// 				encoding: "label",
+// 			},
+// 			{
+// 				field: "BP",
+// 				encoding: "label",
+// 				ordinalConfig: ["LOW", "NORMAL", "HIGH"],
+// 			},
+// 			{
+// 				field: "Cholesterol",
+// 				encoding: "label",
+// 				ordinalConfig: ["NORMAL", "HIGH"],
+// 			},
+// 			{
+// 				field: "Na_to_K",
+// 				encoding: "none",
+// 				normalization: "minmax",
+// 			},
+// 		],
+// 		targetConfig: {
+// 			field: "Drug",
+// 			encoding: "oneHot",
 // 		},
 // 	}
 // }
@@ -77,20 +118,19 @@ const defaultTrainingConfig: TrainConfig = {
 	batchSize: 16,
 	dataPreparationConfig: {
 		targetColumn: "mpg",
-		outputsNumber: 1,
 		testSize: 0.2,
 		stratify: false,
 		featureConfig: [
 			{
 				field: "horsepower",
 				encoding: "none",
-				normalization: "min_max"
-			}
+				normalization: "minmax"
+			},
 		],
 		targetConfig: {
 			field: "mpg",
 			encoding: "none",
-			normalization: "min_max"
+			normalization: "minmax"
 		},
 	}
 }
@@ -106,7 +146,6 @@ const traces: TraceConfig[] = [
 		"y": "mpg",
 		"name": "Horsepower vs MPG",
 		"type": "scatter",
-		"groupBy": "label"
 	}
 ]
 
@@ -142,7 +181,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 
 	useEffect(() => {
 		if (message) {
-			console.log("Received message from worker", message);
+			console.log("Received message in workerchannel", message);
 			switch (message.type) {
 				case "init":
 					setTfReady(true);
@@ -168,15 +207,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 						columns: testData.columns,
 					})
 					break;
-				case "prediction_result":
-					const { predictionsArray, mappedOutputs } = message.data;
-					setModelState({
-						training: false,
-						completed: true,
-						paused: false,
-						prediction: mappedOutputs[predictionsArray[0] as number],
-					})
-					break;
+
 			}
 		}
 	}, [message]);

@@ -1,4 +1,4 @@
-import { TraceConfig } from "@/components/DataVisualizerPlotly";
+import { TraceConfig } from "@/components/data/DataVisualizerPlotly";
 
 export interface Course {
   readonly id: number;

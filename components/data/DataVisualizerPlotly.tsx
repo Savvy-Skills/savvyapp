@@ -15,7 +15,7 @@ import { Data, Layout, Config, PlotType } from "plotly.js";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { groupByColumn } from "@/utils/utilfunctions";
 
-let DataPlotter = lazy(() => import("@/components/DataPlotter"));
+let DataPlotter = lazy(() => import("@/components/data/DataPlotter"));
 
 export type TraceConfig = {
   x: string;

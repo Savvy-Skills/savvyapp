@@ -7,12 +7,12 @@ import { useCourseStore } from "@/store/courseStore";
 import LastSlide from "./LastSlide";
 import ImageSlide from "./content/ImageSlide";
 import RichTextSlide from "./content/RichTextSlide";
-import DataTableContainer from "../DataTableContainer";
+import DataTableContainer from "../data/DataTableContainer";
 import styles from "@/styles/styles";
 import VideoComponent from "../VideoComponent";
 import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
 import { CopilotProvider, useCopilot } from "react-native-copilot";
-import { Button } from "react-native-paper";
+// import { Button } from "react-native-paper";
 
 export interface SlideProps {
 	slide: Slide;
@@ -57,6 +57,22 @@ const datasetInfo: DatasetInfo = {
 	},
 	about: "A dataset with auto mpg data",
 }
+
+// const datasetInfo: DatasetInfo = {
+// 	id: "x",
+// 	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1721684075620x403131934444525440/drug200.csv",
+// 	name: "Drug 200",
+// 	extension: "csv",
+// 	type: "Savvy",
+// 	description: "A dataset with drug data",
+// 	image_url: "https://picsum.photos/200/300",
+// 	disabled: false,
+// 	metadata: {
+// 		"rows": 200,
+// 		"columns": 6
+// 	},
+// 	about: "A dataset with drug data",
+// }
 
 const ContentComponent = ({ content, index, canComplete }: ContentComponentProps) => {
 	switch (content.type) {
