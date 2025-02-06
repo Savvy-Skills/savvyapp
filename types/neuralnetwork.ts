@@ -1,5 +1,7 @@
 import { Tensor } from "@tensorflow/tfjs";
 import { DatasetInfo } from ".";
+import { TraceConfig } from "@/components/data/DataVisualizerPlotly";
+import { Column } from "./table";
 
 export type LayerType = "input" | "hidden" | "output" | null;
 
@@ -19,6 +21,8 @@ export interface NeuralNetworkVisualizerProps {
 export interface NNState {
 	modelConfig?: ModelConfig;
 	trainingConfig?: TrainConfig;
+	initialTraces?: TraceConfig[];
+	predictionTraces?: TraceConfig[];
 }
 
 
@@ -60,11 +64,35 @@ export interface TrainConfig {
 }
 
 export interface DataPreparationConfig {
-	targetColumn: string;
 	testSize: number;
 	stratify?: boolean;
 	featureConfig: FeatureConfig[];
 	targetConfig: FeatureConfig;
+}
+
+export interface ModelState {
+	training: boolean;
+	completed: boolean;
+	paused: boolean;
+	prediction: string | null;
+}
+
+export interface TrainingState {
+	transcurredEpochs: number;
+	loss: number;
+	accuracy: number;
+	modelHistory: any[];
+}
+
+export interface DataState {
+	testData: any[];
+	columns: Column[];
+}
+
+export interface TFState {
+	model: ModelState;
+	training: TrainingState;
+	data: DataState;
 }
 
 export interface FeatureConfig {

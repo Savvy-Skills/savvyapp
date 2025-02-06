@@ -32,8 +32,6 @@ const workerFunction = function () {
 
   let trainingStop = false;
 
-  let broadcastChannel = null;
-
   function createScaler(column, data) {
     let scaler = null;
     const columnData = data.map((row) => row[column.field]);
@@ -150,27 +148,37 @@ const workerFunction = function () {
     return data;
   }
 
+  /**
+   * Preprocesses data for machine learning model training by:
+   * 1. Cleaning data
+   * 2. Splitting into train/test sets
+   * 3. Processing features (normalization, encoding)
+   * 4. Processing target variable
+   * 5. Returning formatted tensors for model training
+   */
   function preprocessData(data, columns, dataPreparationConfig) {
     let processedData = [];
     let targetData = [];
-    // 1. Remove null values
+
+    // 1. Data Cleaning: Remove rows with invalid target values
     const cleanedData = cleanData(data, dataPreparationConfig);
-    // 2. Get Split Indices
+
+    // 2. Train-Test Split: Get indices for data splitting
     const { trainIndices, testIndices } = trainTestSplit(
       cleanedData,
       columns,
       dataPreparationConfig
     );
-    // Save indices
+    // Store split indices for later use in predictions
     preprocessorState.trainIndices = trainIndices;
     preprocessorState.testIndices = testIndices;
 
-    // 3. Get target Column
+    // 3. Extract Target Column: Get the values we're trying to predict
     const target = cleanedData.map(
       (row) => row[dataPreparationConfig.targetConfig.field]
     );
 
-    // 4. Get features
+    // 4. Extract Feature Columns: Create feature objects from raw data
     const features = cleanedData.map((row) => {
       const featureRow = {};
       dataPreparationConfig.featureConfig.forEach((column) => {
@@ -179,44 +187,41 @@ const workerFunction = function () {
       return featureRow;
     });
 
-    // From columns, get all the fields that are in features
-    const featureColumns = columns.filter((column) =>
-      features.some((feature) => feature[column.field])
-    );
+    // Identify columns that need no transformation
+    const featureColumns = Object.keys(features[0]);
     preprocessorState.featureColumns = featureColumns;
-    console.log({ featureColumns });
-    // Get all non-encoded and non-normalized columns
+
+    // 5. Handle Untransformed Features: Process columns that don't need encoding/normalization
     const nonEncodedNonNormalizedColumns = dataPreparationConfig.featureConfig
       .filter(
         (column) =>
-          !column.encoding ||
-          (column.encoding === "none" && !column.normalization) ||
-          column.normalization === "none"
+          (!column.encoding || column.encoding === "none") &&
+          (!column.normalization || column.normalization === "none")
       )
       .map((column) => column.field);
+
+    // Create tensor from raw values of untransformed columns
     const nonEncodedNonNormalizedFeatures = features.map((obj) =>
       nonEncodedNonNormalizedColumns.reduce((acc, key) => {
         acc[key] = obj[key];
         return acc;
       }, {})
     );
-
-    // Get values into 2D tensor
     const nonEncodedNonNormalizedFeaturesTensor = tf.tensor2d(
       nonEncodedNonNormalizedFeatures.map((feature) => Object.values(feature))
     );
     processedData = nonEncodedNonNormalizedFeaturesTensor;
 
-    // 5. Scale features that need scaling: column.normalization !== "none"
+    // 6. Feature Scaling: Apply normalization to specified columns
     const scaledColumns = dataPreparationConfig.featureConfig.filter(
       (column) => column.normalization && column.normalization !== "none"
     );
     if (scaledColumns.length > 0) {
-      // Create scalers for each column
+      // Create and store scalers for each column
       const scalers = scaledColumns.map((column) => createScaler(column, data));
-      //   Save scalers
       preprocessorState.scalers = scalers;
-      // Scale each column
+
+      // Scale features and merge with existing processed data
       const scaledFeatures = scaledColumns.map((column) => {
         const columnData = features.map((row) => row[column.field]);
         return scaleColumn(
@@ -228,19 +233,18 @@ const workerFunction = function () {
       processedData = tf.concat([processedData, mergedScaledFeatures], 1);
     }
 
-    // 6. Encode features that need encoding: column.encoding !== "none"
+    // 7. Feature Encoding: Convert categorical data to numerical representations
     const encodedColumns = dataPreparationConfig.featureConfig.filter(
       (column) => column.encoding && column.encoding !== "none"
     );
-
     if (encodedColumns.length > 0) {
-      // Create encoders for each column
+      // Create and store encoders for each column
       const encoders = encodedColumns.map((column) =>
         createEncoder(column, data)
       );
-      //   Save encoders
       preprocessorState.encoders = encoders;
-      //   Encode each column
+
+      // Encode features and merge with existing processed data
       let encodedFeatures = encodedColumns.map((column) => {
         const encoder = encoders.find(
           (encoder) => encoder.field === column.field
@@ -252,48 +256,43 @@ const workerFunction = function () {
           data: encodeColumn(columnData, encoder),
         };
       });
-      // Encoded features is an array of objects with field and data, data is a tensor, concatenate all tensors into a single tensor
       const featuresData = encodedFeatures.map((feature) => feature.data);
       const mergedFeatures = tf.concat([...featuresData], 1);
       processedData = tf.concat([processedData, mergedFeatures], 1);
     }
 
-    // 7. Encode / Scale target if needed
+    // 8. Target Variable Processing: Handle encoding/scaling of prediction target
     if (
       dataPreparationConfig.targetConfig.encoding &&
       dataPreparationConfig.targetConfig.encoding !== "none"
     ) {
-      // Create encoder
+      // Label encode target variable
       const encoder = createEncoder(dataPreparationConfig.targetConfig, data);
-      // Encode target
       const encodedTarget = encodeColumn(target, encoder, true);
-      // Save encoder
       preprocessorState.targetEncoder = encoder;
       targetData = encodedTarget;
     } else if (
       dataPreparationConfig.targetConfig.normalization &&
       dataPreparationConfig.targetConfig.normalization !== "none"
     ) {
-      // Create scaler
+      // Scale target variable
       const scaler = createScaler(dataPreparationConfig.targetConfig, data);
-      // Scale target
       const scaledTarget = scaleColumn(target, scaler);
-      // Save scaler
       preprocessorState.targetScaler = scaler;
       targetData = scaledTarget;
     } else {
+      // Use raw target values
       targetData = tf.tensor2d(target, [target.length, 1]);
     }
 
+    // 9. Create Final Datasets: Split processed data into train/test sets
     const trainFeatures = tf.gather(processedData, trainIndices);
     const testFeatures = tf.gather(processedData, testIndices);
     const trainTarget = tf.gather(targetData, trainIndices);
 
-    // console.log({
-    //   trainFeatures: trainFeatures.arraySync(),
-    //   trainTarget: trainTarget.arraySync(),
-    //   testFeatures: testFeatures.arraySync(),
-    // });
+    // Dispose of tensors to free memory
+    processedData.dispose();
+    targetData.dispose();
 
     return {
       trainFeatures,
@@ -385,18 +384,19 @@ const workerFunction = function () {
         result["predictions"] = predictionsData;
       }
     }
+	// Dispose of tensors to free memory
+	predictions.dispose();
     return result;
   }
-  
 
   function handleInference(inputData) {
     const { encoders, scalers, targetEncoder, targetScaler } =
       preprocessorState;
 
     const dataPreparationConfig = currentDataPreparationConfig;
-
     let processedData = [];
 
+    // Extract features from input data based on data preparation config
     const features = inputData.map((row) => {
       const featureRow = {};
       dataPreparationConfig.featureConfig.forEach((column) => {
@@ -406,83 +406,86 @@ const workerFunction = function () {
     });
     const inputColumns = Object.keys(features[0]);
 
-    const encodedColumns = encoders.filter((encoder) =>
-      inputColumns.includes(encoder.field)
-    );
-    // 1. Check scalers
-    const scaledColumns = scalers.filter((scaler) =>
-      inputColumns.includes(scaler.field)
-    );
-
-    // 0. Get non-encoded and non-scaled columns
+    // 1. Process raw numerical columns (no encoding/scaling needed)
     const nonEncodedNonScaledColumns = inputColumns.filter(
       (column) =>
-        !encodedColumns.map((encoder) => encoder.field).includes(column) &&
-        !scaledColumns.map((scaler) => scaler.field).includes(column)
+        !encoders.map(encoder => encoder.field).includes(column) &&
+        !scalers.map(scaler => scaler.field).includes(column)
     );
+    
     if (nonEncodedNonScaledColumns.length > 0) {
       const nonEncodedNonScaledData = nonEncodedNonScaledColumns.map(
-        (column) => features[0][column]
+        column => features[0][column]
       );
       processedData = tf.tensor2d([nonEncodedNonScaledData]);
     }
 
-    // 1.1 Scale columns
+    // 2. Process scaled numerical columns
+    const scaledColumns = scalers.filter(scaler => 
+      inputColumns.includes(scaler.field)
+    );
+    
     if (scaledColumns.length > 0) {
       const scaledData = scaledColumns.map((column) => {
-        const scaler = scalers.find((scaler) => scaler.field === column.field);
+        const scaler = scalers.find(scaler => scaler.field === column.field);
         return scaleColumn([Number(features[0][column.field])], scaler);
       });
-      processedData =
-        processedData.length > 0
-          ? tf.concat([...processedData, ...scaledData], 1)
-          : scaledData[0];
+      processedData = processedData.length > 0 
+        ? tf.concat([...processedData, ...scaledData], 1)
+        : scaledData[0];
     }
-    // 2.1 Encode columns
+
+    // 3. Process encoded categorical columns
+    const encodedColumns = encoders.filter(encoder =>
+      inputColumns.includes(encoder.field)
+    );
+    
     if (encodedColumns.length > 0) {
       const encodedData = encodedColumns.map((column) => {
-        const encoder = encoders.find(
-          (encoder) => encoder.field === column.field
-        );
+        const encoder = encoders.find(encoder => encoder.field === column.field);
         return encodeColumn([features[0][column.field]], encoder);
       });
-      processedData =
-        processedData.length > 0
-          ? tf.concat([...processedData, ...encodedData], 1)
-          : encodedData;
+      processedData = processedData.length > 0
+        ? tf.concat([...processedData, ...encodedData], 1)
+        : encodedData;
     }
+
+    // Make prediction using processed input tensor
     const predictions = currentModel.predict(processedData);
     let predictionResult = null;
+
+    // Process prediction based on problem type
     if (currentModelConfig.problemType === "classification") {
       if (currentModelConfig.lastLayerSize === 1) {
-        // Binary classification
-        const predictionsToBinary = predictions
-          .arraySync()
-          .map((prediction) => (prediction > 0.5 ? 1 : 0));
-        const predictionLabel = targetEncoder.decode(predictionsToBinary[0]);
-        predictionResult = predictionLabel;
+        // Binary classification: convert probability to 0/1 using 0.5 threshold
+        const predictionsToBinary = predictions.arraySync()
+          .map(prediction => prediction > 0.5 ? 1 : 0);
+        predictionResult = targetEncoder.decode(predictionsToBinary[0]);
       } else {
-        // Multi-class classification
+        // Multi-class classification: take argmax of predictions
         const predictionsToIndex = predictions.argMax(1).arraySync();
-        const predictionLabel = targetEncoder.decode(predictionsToIndex[0]);
-        predictionResult = predictionLabel;
+        predictionResult = targetEncoder.decode(predictionsToIndex[0]);
       }
     } else if (currentModelConfig.problemType === "regression") {
+      // Reverse scaling if target was scaled during preprocessing
       if (targetScaler) {
         const predictionsArray = predictions.arraySync();
-        const prediction = targetScaler.decode(predictionsArray[0]);
-        predictionResult = prediction;
+        predictionResult = targetScaler.decode(predictionsArray[0]);
       } else {
-        const predictionsArray = predictions.arraySync();
-        predictionResult = predictionsArray[0];
+        predictionResult = predictions.arraySync()[0];
       }
     }
-    broadcastChannel.postMessage({
+
+    // Send prediction result back to main thread
+    self.postMessage({
+      from: "worker",
       type: MESSAGE_TYPE_PREDICTION_RESULT,
-      data: {
-        predictionResult,
-      },
+      data: { predictionResult },
     });
+
+	// Dispose of tensors to free memory
+	processedData.dispose();
+	predictions.dispose();
   }
 
   async function trainModel({
@@ -532,7 +535,8 @@ const workerFunction = function () {
               modelConfig,
               columns,
             });
-          broadcastChannel.postMessage({
+          self.postMessage({
+            from: "worker",
             type: MESSAGE_TYPE_TRAIN_UPDATE,
             data: {
               transcurredEpochs: epoch,
@@ -556,7 +560,8 @@ const workerFunction = function () {
               modelConfig,
               columns,
             });
-          broadcastChannel.postMessage({
+          self.postMessage({
+            from: "worker",
             type: MESSAGE_TYPE_TRAIN_END,
             data: {
               transcurredEpochs: transcurredEpochs,
@@ -609,8 +614,6 @@ const workerFunction = function () {
       await loadScriptWithRetry(scripts.tfjs, "tfjs");
       await loadScriptWithRetry(scripts.wasm, "wasm");
 
-      broadcastChannel = new BroadcastChannel("tensorflow-worker");
-
       tf.wasm.setWasmPaths(
         "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/wasm-out/"
       );
@@ -619,52 +622,46 @@ const workerFunction = function () {
         tf.setBackend("wasm");
         console.log(tf.getBackend());
       });
+      self.onmessage = async function (event) {
+        console.log("Message received:", event.data);
+        switch (event.data.type) {
+          case MESSAGE_TYPE_CREATE_TRAIN:
+            const { data, columns, modelConfig, trainConfig } = event.data.data;
+            currentDataPreparationConfig = trainConfig.dataPreparationConfig;
+            currentModelConfig = modelConfig;
+            await createTrain(data, columns, modelConfig, trainConfig);
+            break;
+          case MESSAGE_TYPE_REMOVE:
+            break;
+          case MESSAGE_TYPE_PREDICT:
+            const { inputs } = event.data.data;
+            handleInference([inputs]);
+            break;
+          case MESSAGE_TYPE_STOP:
+            trainingStop = true;
+            break;
+          default:
+            self.postMessage({
+              from: "worker",
+              type: MESSAGE_TYPE_ERROR,
+              message: "Unknown message type!",
+            });
+            break;
+        }
+      };
 
       initialized = true;
-      broadcastChannel.postMessage({
+      self.postMessage({
+        from: "worker",
         type: MESSAGE_TYPE_INIT,
         data: {
           message: "Worker initialized",
         },
       });
-
-      broadcastChannel.onmessage = async function (event) {
-        if (event.data.type === MESSAGE_TYPE_PREDICT) {
-          const { inputs } = event.data.data;
-          handleInference([inputs]);
-        }
-      };
     } catch (err) {
       console.error("Error:", err);
     }
   }
-
-  self.onmessage = async function (event) {
-    console.log("Message received:", event.data);
-    switch (event.data.type) {
-      case MESSAGE_TYPE_CREATE_TRAIN:
-        const { data, columns, modelConfig, trainConfig } = event.data.data;
-        currentDataPreparationConfig = trainConfig.dataPreparationConfig;
-        currentModelConfig = modelConfig;
-        await createTrain(data, columns, modelConfig, trainConfig);
-        break;
-      case MESSAGE_TYPE_REMOVE:
-        break;
-      case MESSAGE_TYPE_PREDICT:
-        const { inputs } = event.data.data;
-        await handleInference(inputs);
-        break;
-      case MESSAGE_TYPE_STOP:
-        trainingStop = true;
-        break;
-      default:
-        self.postMessage({
-          type: MESSAGE_TYPE_ERROR,
-          message: "Unknown message type!",
-        });
-        break;
-    }
-  };
 
   async function loadScriptWithRetry(url, name, retries = 3, delay = 1000) {
     for (let i = 0; i < retries; i++) {
@@ -714,7 +711,7 @@ const workerFunction = function () {
 
     if (stratify) {
       const targetColumn = columns.find(
-        (column) => column.accessor === dataPreparationConfig.targetColumn
+        (column) => column.accessor === dataPreparationConfig.targetConfig.field
       );
       const targetValues = data.map((row) => row[targetColumn?.accessor]);
       const uniqueTargetValues = [...new Set(targetValues)];

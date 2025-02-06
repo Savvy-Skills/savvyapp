@@ -15,72 +15,7 @@ import {
 	Submission,
 	Answer,
 } from "../types";
-import { useAudioStore } from "./audioStore";
-
-const createSubmission = (
-	assessment_id: number,
-	correct: boolean,
-	answer: AssessmentAnswer,
-	view_id: number,
-	submission_id: number
-): Submission => {
-	return {
-		id: submission_id,
-		created_at: Date.now(),
-		assessment_id,
-		views_id: view_id,
-		submissionTime: Date.now(),
-		isCorrect: correct,
-		answer: answer.answer,
-		revealed: answer.revealed,
-	};
-};
-
-function createCustomSlide(
-	type: string,
-	module_id: number,
-	view: ViewWithSlides
-): CustomSlide {
-	if (type === "intro") {
-		return {
-			name: `Intro: ${view.name}`,
-			order: 0,
-			slide_id: 0,
-			created_at: Date.now(),
-			published: true,
-			module_id: module_id,
-			type: "Custom",
-			subtype: "intro",
-			image: `${view.view_info.intro_image}`,
-			contents: [],
-		};
-	} else if (type ==="mid"){
-		return {
-			name: `Mid: ${view.name}`,
-			order: 998,
-			slide_id: 9999998,
-			created_at: Date.now(),
-			published: true,
-			module_id: module_id,
-			type: "Custom",
-			subtype: "mid",
-			contents: [],
-		};
-	} else {
-		return {
-			name: `Stats`,
-			order: 999,
-			slide_id: 999999,
-			created_at: Date.now(),
-			published: true,
-			module_id: module_id,
-			type: "Custom",
-			subtype: "outro",
-			image: `${view.view_info.intro_image}`,
-			contents: [],
-		};
-	}
-}
+import { createSubmission, createCustomSlide } from "@/utils/utilfunctions";
 
 export interface AssessmentAnswer {
 	answer: Answer[];
@@ -215,27 +150,12 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
 
 			const sorted = view.slides.sort((a, b) => a.order - b.order);
 
-			const firstSlide: CustomSlide = createCustomSlide(
-				"intro",
-				view.module_id,
-				view
-			);
-			
 			const lastSlide: CustomSlide = createCustomSlide(
 				"outro",
 				view.module_id,
 				view
 			);
 
-			sorted.unshift(firstSlide);
-			if ([1,10].includes(view.id)) {
-				const midSlide: CustomSlide = createCustomSlide(
-					"mid",
-					view.module_id,
-					view
-				);
-				sorted.push(midSlide);
-			}
 			sorted.push(lastSlide);
 
 			let progressArray = progress.id

@@ -42,7 +42,6 @@ export default function FillBlankAssessment({
 		submittedAssessments,
 		submitAssessment,
 		completedSlides,
-		checkSlideCompletion,
 		submittableStates,
 		currentSlideIndex,
 		setAnswer,
@@ -149,7 +148,6 @@ export default function FillBlankAssessment({
 		quizMode,
 		completedSlides,
 		index,
-		checkSlideCompletion,
 	]);
 
 	const isActive = index === currentSlideIndex;

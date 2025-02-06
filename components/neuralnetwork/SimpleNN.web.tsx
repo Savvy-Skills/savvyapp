@@ -4,213 +4,26 @@ import React, { lazy, useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Surface, Button } from "react-native-paper";
 import LoadingIndicator from "../LoadingIndicator";
-import { TraceConfig } from "../data/DataVisualizerPlotly";
 import NNTabs from "./NNTabs";
 import styles from "@/styles/styles";
 import LayerDetails from "./LayerDetails";
 import { useCourseStore } from "@/store/courseStore";
-import { LayerType, ModelConfig, NeuralNetworkVisualizerProps, NNState, TrainConfig } from "@/types/neuralnetwork";
+import { LayerType, ModelConfig, NeuralNetworkVisualizerProps, NNState } from "@/types/neuralnetwork";
 import { Colors } from "@/constants/Colors";
-import { workerScript } from "@/utils/tfworker";
-import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
-
-// const defaultModelConfig: ModelConfig = {
-// 	neuronsPerLayer: [4, 2, 2],
-// 	problemType: "classification",
-// 	activationFunction: "relu",
-// 	compileOptions: {
-// 		optimizer: "adam",
-// 		learningRate: 0.01,
-// 		lossFunction: "binaryCrossentropy",
-// 		metrics: "acc",
-// 	},
-// 	inputSize: 2,
-// 	lastLayerSize: 1,
-// }
-const defaultModelConfig: ModelConfig = {
-	neuronsPerLayer: [4, 2, 1],
-	problemType: "regression",
-	activationFunction: "relu",
-	compileOptions: {
-		optimizer: "adam",
-		learningRate: 0.01,
-		lossFunction: "meanSquaredError",
-		metrics: "mse",
-	},
-	inputSize: 1,
-	lastLayerSize: 1,
-}
-
-// const defaultTrainingConfig: TrainConfig = {
-// 	epochs: 50,
-// 	shuffle: true,
-// 	validationSplit: 0.2,
-// 	batchSize: 32,
-// 	dataPreparationConfig: {
-// 		targetColumn: "Drug",
-// 		testSize: 0.2,
-// 		stratify: true,
-// 		featureConfig: [
-// 			{
-// 				field: "x",
-// 				normalization: "none",
-// 				encoding: "none",
-// 			},
-// 			{
-// 				field: "y",
-// 				normalization: "none",
-// 				encoding: "none",
-// 			},
-// 		],
-// 		targetConfig: {
-// 			field: "label",
-// 			encoding: "label",
-// 		},
-// 	}
-// }
-// const defaultTrainingConfig: TrainConfig = {
-// 	epochs: 80,
-// 	shuffle: true,
-// 	validationSplit: 0.2,
-// 	batchSize: 16,
-// 	dataPreparationConfig: {
-// 		targetColumn: "Drug",
-// 		testSize: 0.2,
-// 		stratify: true,
-// 		featureConfig: [
-// 			{
-// 				field: "Age",
-// 				encoding: "none",
-// 				normalization: "minmax",
-// 			},
-// 			{
-// 				field: "Sex",
-// 				encoding: "label",
-// 			},
-// 			{
-// 				field: "BP",
-// 				encoding: "label",
-// 				ordinalConfig: ["LOW", "NORMAL", "HIGH"],
-// 			},
-// 			{
-// 				field: "Cholesterol",
-// 				encoding: "label",
-// 				ordinalConfig: ["NORMAL", "HIGH"],
-// 			},
-// 			{
-// 				field: "Na_to_K",
-// 				encoding: "none",
-// 				normalization: "minmax",
-// 			},
-// 		],
-// 		targetConfig: {
-// 			field: "Drug",
-// 			encoding: "oneHot",
-// 		},
-// 	}
-// }
-
-const defaultTrainingConfig: TrainConfig = {
-	epochs: 50,
-	shuffle: true,
-	validationSplit: 0.2,
-	batchSize: 16,
-	dataPreparationConfig: {
-		targetColumn: "mpg",
-		testSize: 0.2,
-		stratify: false,
-		featureConfig: [
-			{
-				field: "horsepower",
-				encoding: "none",
-				normalization: "minmax"
-			},
-		],
-		targetConfig: {
-			field: "mpg",
-			encoding: "none",
-			normalization: "minmax"
-		},
-	}
-}
-
-const defaultNNState: NNState = {
-	modelConfig: defaultModelConfig,
-	trainingConfig: defaultTrainingConfig,
-}
-
-const traces: TraceConfig[] = [
-	{
-		"x": "horsepower",
-		"y": "mpg",
-		"name": "Horsepower vs MPG",
-		"type": "scatter",
-	}
-]
-
-// const traces: TraceConfig[] = [
-// 	{
-// 		"x": "x",
-// 		"y": "y",
-// 		"name": "X vs Y",
-// 		"type": "scatter",
-// 		"groupBy": "label"
-// 	}
-// ]
-
-export default function NeuralNetworkVisualizer({ initialNNState = defaultNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {
+export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {
 	const [selectedLayer, setSelectedLayer] = useState<LayerType>("input");
-	const { currentState, setCurrentState, setModelState, setTrainingState, setDataState } = useTFStore();
-	const [currentNNState, setCurrentNNState] = useState<NNState>(initialNNState);
+	const { currentState, setCurrentState, tfWorker, initializeWorker, workerReady } = useTFStore();
+	const [currentNNState, setCurrentNNState] = useState<NNState>(initialNNState ?? {} as NNState);
 	const { currentSlideIndex } = useCourseStore();
-	const [tfReady, setTfReady] = useState(false);
-	const workerRef = useRef<Worker | null>(null);
-	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
 	// Get only the columns that are in the featureConfig
 	const inputColumns = columns.filter(column => currentNNState.trainingConfig?.dataPreparationConfig?.featureConfig?.some(feature => feature.field === column.accessor));
 
 	useEffect(() => {
-		if (!workerRef.current) {
-			workerRef.current = new Worker(workerScript);
-		}
-	}, []);
-
-
-	useEffect(() => {
-		if (message) {
-			console.log("Received message in workerchannel", message);
-			switch (message.type) {
-				case "init":
-					setTfReady(true);
-					break;
-				case "train_end":
-					setModelState({
-						training: false,
-						completed: true,
-						paused: false,
-						prediction: null,
-					})
-					break;
-				case "train_update":
-					const { transcurredEpochs, loss, accuracy, modelHistory, testData } = message.data;
-					setTrainingState({
-						transcurredEpochs,
-						loss,
-						accuracy,
-						modelHistory,
-					})
-					setDataState({
-						testData: testData.data,
-						columns: testData.columns,
-					})
-					break;
-
-			}
-		}
-	}, [message]);
+		initializeWorker();
+	}, [initializeWorker]);
 
 
 	const handleActivationFunctionChange = useCallback((activationFunction: string) => {
@@ -269,9 +82,9 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 				modelHistory: [],
 			}
 		})
-		// tfInstance?.debug(data, columns, currentNNState.modelConfig!, currentNNState.trainingConfig!);
 
-		workerRef.current?.postMessage({
+		tfWorker?.postMessage({
+			from: "main",
 			type: "create_train",
 			data: {
 				data,
@@ -281,14 +94,14 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 			},
 		});
 		setSelectedLayer("output");
-	}, [currentNNState]);
+	}, [currentNNState, tfWorker]);
 
 	const handleSetSelectedLayer = useCallback((layer: LayerType) => {
 		setSelectedLayer(layer);
 	}, [setSelectedLayer]);
 
 
-	if (!tfReady || !data || !columns || columns.length === 0) {
+	if (!workerReady || !data || !columns || columns.length === 0) {
 		return (
 			<LoadingIndicator />
 		);
@@ -311,7 +124,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 					selectedLayer={selectedLayer}
 					setSelectedLayer={handleSetSelectedLayer}
 					inputColumns={inputColumns}
-					outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!}
+					outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetConfig.field!}
 					problemType={currentNNState.modelConfig?.problemType!}
 					neuronsPerLayer={currentNNState.modelConfig?.neuronsPerLayer!}
 				/>
@@ -322,7 +135,8 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 					buttonColor={Colors.orange}
 					onPress={() => {
 						if (currentState.model.training) {
-							workerRef.current?.postMessage({
+							tfWorker?.postMessage({
+								from: "main",
 								type: "stop_training",
 							});
 							setCurrentState({
@@ -345,7 +159,7 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 			<LayerDetails
 				selectedLayer={selectedLayer}
 				inputColumns={inputColumns}
-				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetColumn!}
+				outputColumn={currentNNState.trainingConfig?.dataPreparationConfig?.targetConfig.field!}
 				handleActivationFunctionChange={handleActivationFunctionChange}
 				handleNeuronCountChange={handleNeuronCountChange}
 				handleEpochsChange={handleEpochsChange}
@@ -353,7 +167,8 @@ export default function NeuralNetworkVisualizer({ initialNNState = defaultNNStat
 				data={data}
 				columns={columns}
 				dataset_info={dataset_info}
-				traces={traces}
+				initialTraces={currentNNState.initialTraces ?? []}
+				predictionTraces={currentNNState.predictionTraces ?? []}
 				index={index}
 			/>
 		</View>

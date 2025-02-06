@@ -12,6 +12,7 @@ import styles from "@/styles/styles";
 import VideoComponent from "../VideoComponent";
 import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
 import { CopilotProvider, useCopilot } from "react-native-copilot";
+import { NNState } from "@/types/neuralnetwork";
 // import { Button } from "react-native-paper";
 
 export interface SlideProps {
@@ -44,7 +45,7 @@ interface ContentComponentProps {
 
 const datasetInfo: DatasetInfo = {
 	id: "x",
-	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714586665910x841095834238341300/carsData.json",
+	url: "https://api.savvyskills.io/vault/JS-TssR_/xHThL0ZHBR8g1knlOw94-9--iJY/ol7Izw../carsDataFiltered.json",
 	name: "Auto MPG",
 	extension: "json",
 	type: "Savvy",
@@ -53,7 +54,7 @@ const datasetInfo: DatasetInfo = {
 	disabled: false,
 	metadata: {
 		"rows": 398,
-		"columns": 9
+		"columns": 2
 	},
 	about: "A dataset with auto mpg data",
 }
@@ -84,6 +85,8 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 			return <RichTextSlide text={content.state} />;
 		case "Dataset":
 			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.traces} index={index} />;
+		case "Neural Network":
+			return <NeuralNetworkVisualizer initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
 		default:
 			return <View />;
 	}
@@ -156,7 +159,6 @@ export default function SlideRenderer({
 	const isActive = currentSlideIndex === index;
 	const scrollRef = useRef<ScrollView>(null);
 
-
 	const currentContents = slide?.contents && slide.contents.length > 0 ? slide.contents.sort((a, b) => a.order - b.order) : [];
 	const lastContent = currentContents[currentContents.length - 1]
 
@@ -189,11 +191,9 @@ export default function SlideRenderer({
 
 
 
-	if ((slide.type === "Content" && currentContents.length === 1) || slide.subtype === "intro") {
+	if ((slide.type === "Content" && currentContents.length === 1) && slide.subtype == "Neural Network") {
 		return (
-			<CopilotProvider overlay="svg">
-				<SlideComponent slide={slide} index={index} quizMode={quizMode} />
-			</CopilotProvider>
+			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 		);
 	}
 
