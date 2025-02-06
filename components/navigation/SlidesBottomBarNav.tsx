@@ -12,7 +12,7 @@ import { router } from "expo-router";
 import { generateColors } from "@/utils/utilfunctions";
 import { useAudioStore } from "@/store/audioStore";
 
-const navButtonColors = generateColors(Colors.navigationWhite, 0.5);
+const navButtonColors = generateColors(Colors.navigationPurple, 0.5);
 const checkButtonColors = generateColors(Colors.navigationOrange, 0.5);
 
 type BottomBarNavProps = {
@@ -145,7 +145,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 	const isLastView = moduleViews ? currentViewIndex === moduleViews.length - 1 : false;
 
 	const MiddleButton = () => {
-		const buttonLabel = currentSlide?.buttonLabel ? currentSlide.buttonLabel : currentSubmission && currentSubmission.revealed ? "GOT IT" : "CONTINUE";
+		const buttonLabel = currentSlide?.buttonLabel ? currentSlide.buttonLabel : currentSubmission && currentSubmission.revealed ? "Got it" : "Continue";
 		return (
 			<>
 				{isLastSlide ? (
@@ -153,7 +153,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 						mode="contained"
 						onPress={handleFinish}
 						style={[styles.checkButton]}
-						labelStyle={localStyles.checkButtonLabel}
+						labelStyle={styles.buttonLabel}
 						dark={false}
 						theme={{
 							colors: {
@@ -174,7 +174,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 										disabled={!isCurrentSlideCompleted}
 										onPress={handleNextSlide}
 										style={[styles.checkButton]}
-										labelStyle={localStyles.checkButtonLabel}
+										labelStyle={styles.buttonLabel}
 										dark={false}
 										theme={{
 											colors: {
@@ -188,20 +188,20 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 								) : (currentSubmission && !currentSubmission.isCorrect) ? (
 									<Button
 										mode="contained"
-										style={[localStyles.incorrectButton]}
-										labelStyle={localStyles.incorrectLabel}
+										style={[styles.checkButton, styles.incorrectButton]}
+										labelStyle={[styles.buttonLabel, styles.incorrectLabel]}
 										dark={false}
 										onPress={handleNextSlide}
 									>
-										GOT IT
+										Got it
 									</Button>
 								) : (
 									<Button
 										mode="contained"
 										disabled={!isCurrentSlideCompleted}
 										onPress={handleNextSlide}
-										style={[styles.checkButton, revealedAnswer ? localStyles.revealedButton : styles.correctButton]}
-										labelStyle={[localStyles.checkButtonLabel, revealedAnswer ? localStyles.revealedLabel : styles.correctLabel]}
+										style={[styles.checkButton, revealedAnswer ? styles.revealedButton : styles.correctButton]}
+										labelStyle={[styles.buttonLabel, revealedAnswer ? styles.revealedLabel : styles.correctLabel]}
 										dark={false}
 									>
 										{buttonLabel}
@@ -211,12 +211,12 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 						) : (currentSubmission && !currentSubmission.isCorrect && !hiddenFeedbacks[currentSlideIndex]) ? (
 							<Button
 								mode="contained"
-								style={[localStyles.incorrectButton]}
-								labelStyle={localStyles.incorrectLabel}
+								style={[styles.checkButton, styles.incorrectButton]}
+								labelStyle={[styles.buttonLabel, styles.incorrectLabel]}
 								dark={false}
 								onPress={handleTryAgain}
 							>
-								TRY AGAIN
+								Try again
 							</Button>
 						) : (
 							<Button
@@ -224,7 +224,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 								disabled={!isCurrentSlideSubmittable()}
 								onPress={handleCheck}
 								style={[styles.checkButton]}
-								labelStyle={localStyles.checkButtonLabel}
+								labelStyle={styles.buttonLabel}
 								dark={false}
 								theme={{
 									colors: {
@@ -233,7 +233,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 									},
 								}}
 							>
-								CHECK
+								Check
 							</Button>
 						)}
 					</>
@@ -267,7 +267,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 					disabled={currentSlideIndex === 0}
 					style={styles.navButton}
 					mode="contained"
-					iconColor="#000"
+					iconColor={Colors.primaryDarker}
 					theme={{
 						colors: {
 							surfaceVariant: navButtonColors.normal,
@@ -281,8 +281,8 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 					size={20}
 					onPress={toggleMenu}
 					mode="contained"
-					iconColor="#000"
-					containerColor={Colors.navigationWhite}	
+					iconColor={Colors.primaryDarker}
+					containerColor={Colors.navigationPurple}	
 					style={styles.navButton}
 				/>
 				<MiddleButton />
@@ -294,7 +294,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 					onPress={handleNextSlide}
 					disabled={isLastSlide}
 					style={styles.navButton}
-					iconColor="#000"
+					iconColor={Colors.primaryDarker}
 					mode="contained"
 					theme={{
 						colors: {
@@ -378,36 +378,6 @@ const localStyles = StyleSheet.create({
 		gap: 16,
 		alignSelf: "center",
 		zIndex: 2,
-	},
-	checkButtonLabel: {
-		fontSize: 18,
-		lineHeight: 18,
-		fontWeight: "bold",
-		letterSpacing: 1,
-	},
-	revealedLabel: {
-		fontSize: 18,
-		lineHeight: 18,
-		fontWeight: "bold",
-		letterSpacing: 1,
-		color: Colors.revealedText,
-	},
-	revealedButton: {
-		flex: 1,
-		backgroundColor: "#f5f5f5",
-		borderRadius: 4,
-	},
-	incorrectLabel: {
-		fontSize: 18,
-		lineHeight: 18,
-		fontWeight: "bold",
-		letterSpacing: 1,
-		color: Colors.error,
-	},
-	incorrectButton: {
-		flex: 1,
-		backgroundColor: "#fdd9d7",
-		borderRadius: 4,
 	},
 });
 

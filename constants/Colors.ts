@@ -5,6 +5,7 @@
 
 const tintColorLight = '#0a7ea4';
 const primaryColor = '#664acc';
+const primaryDarker = "#330b6a"
 const primaryLighter= '#a197f9'
 const blueColor = '#1d9dc9';
 const orangeColor = "#ff7b09";
@@ -16,14 +17,20 @@ const assessmentBackground = "#F4F1FE"
 // States
 
 const errorColor = "#f44336";
+const errorText = "#470c08"
 const successColor = "#3fd965";
+const successText = "#00361d"
+const successBackground = "#01e979"
 const warningColor = "#ff0000";
 const revealedColor = "#cccccc"
-const revealedText = "#666666"
+const revealedText = "#292929"
+const revealedBackground = "#7c7c7c"
 //
 
 const navigationOrange = "#f4bb62";
 const navigationWhite = "#d9f0fb";
+const navigationPurple = "#dfd4ff";
+const navigationBackground = "#f9f9f9"
 
 const assessmentLight = "#F4F1FE"
 
@@ -50,5 +57,12 @@ export const Colors = {
 	primaryLighter: primaryLighter,
 	revealed: revealedColor,
 	revealedText: revealedText,
-	assessmentBackground: assessmentBackground
+	assessmentBackground: assessmentBackground,
+	navigationPurple: navigationPurple,
+	navigationBackground: navigationBackground,
+	primaryDarker: primaryDarker,
+	errorText: errorText,
+	successText: successText,
+	revealedBackground: revealedBackground,
+	successBackground: successBackground
 }
