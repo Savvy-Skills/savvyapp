@@ -259,7 +259,7 @@ export default StyleSheet.create({
   },
   feedbackContainer: {
     paddingHorizontal: 16,
-	paddingTop: 16,
+    paddingTop: 16,
     borderWidth: 0,
     gap: 10,
     alignSelf: "center",
@@ -287,7 +287,7 @@ export default StyleSheet.create({
     flex: 1,
   },
   feedbackTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
   },
   subtitle: {
@@ -319,13 +319,13 @@ export default StyleSheet.create({
     color: Colors.blue,
   },
   correctWrapper: {
-    backgroundColor: generateColors(Colors.success, 0.2).muted,
+    backgroundColor: Colors.successBackground,
   },
   incorrectWrapper: {
-    backgroundColor: generateColors(Colors.error, 0.2).muted,
+    backgroundColor: Colors.errorBackground,
   },
   revealedWrapper: {
-    backgroundColor: generateColors(Colors.revealed, 0.2).muted,
+    backgroundColor: Colors.revealedBackground,
   },
   correctTitle: {
     color: Colors.successText,
@@ -361,6 +361,81 @@ export default StyleSheet.create({
     flex: 1,
     justifyContent: "center",
   },
+  imageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 16,
+    justifyContent: "center",
+  },
+  imageContainer: {
+    width: "45%",
+    aspectRatio: 1,
+  },
+  imageOption: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#cccccc",
+    overflow: "hidden",
+    position: "relative",
+    padding: 10,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  selectedImage: {
+    borderWidth: 1,
+    backgroundColor: "rgba(108, 92, 231, 0.1)",
+    borderColor: "#a197f9",
+  },
+  imageIconContainer: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 1,
+  },
+  trueFalseTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: Colors.text,
+  },
+  trueFalseButton: {
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    borderRadius: 4,
+  },
+  operatorContainer: {
+    backgroundColor: "#ff7b09",
+    borderRadius: 4,
+    padding: 8,
+  },
+  operator: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  inputContainer: {
+    position: "relative",
+    width: 80,
+  },
+  input: {
+    height: 40,
+    textAlign: "center",
+    backgroundColor: "white",
+    borderRadius: 4,
+    color: "black",
+    borderWidth: 1,
+    borderColor: "grey",
+  },
+  trueFalseButtonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: Colors.text,
+  },
   bottomNavigation: {
     flexDirection: "row",
     gap: 10,
@@ -387,6 +462,26 @@ export default StyleSheet.create({
     right: -10,
     top: -10,
   },
+  ftbOptionsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  ftbTextContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  ftbBlankButton: {
+    minWidth: 100,
+    marginHorizontal: 4,
+  },
+  ftbOptionButton: {
+    margin: 4,
+    fontSize: 16,
+  },
   optionsContainer: {
     flexDirection: "column",
     gap: 8,
@@ -407,43 +502,43 @@ export default StyleSheet.create({
     flex: 1,
     paddingHorizontal: 5,
     paddingVertical: 10,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "rgba(108, 92, 231, 0)",
     alignItems: "center",
   },
   selectedOption: {
     borderRadius: 4,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.primary,
     backgroundColor: generateColors(Colors.primary, 0.2).muted,
   },
   selectedImage: {
-    borderWidth: 3,
+    borderWidth: 1,
     backgroundColor: generateColors(Colors.primary, 0.2).muted,
     borderColor: Colors.primary,
   },
   correctOption: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.success,
-    backgroundColor: generateColors(Colors.success, 0.2).muted,
+    backgroundColor: Colors.successBackground,
   },
   incorrectOption: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.error,
-    backgroundColor: generateColors(Colors.error, 0.2).muted,
+    backgroundColor: Colors.errorBackground,
   },
   revealedOption: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.revealed,
-    backgroundColor: generateColors(Colors.revealed, 0.2).muted,
+    backgroundColor: Colors.revealedBackground,
   },
   buttonLabel: {
     fontSize: 16,
     lineHeight: 20,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
   correctButton: {
-    backgroundColor: Colors.successBackground,
+    backgroundColor: Colors.success,
   },
   correctLabel: {
     color: Colors.successText,
@@ -455,7 +550,7 @@ export default StyleSheet.create({
     color: Colors.whiteText,
   },
   revealedButton: {
-    backgroundColor: Colors.revealedBackground,
+    backgroundColor: Colors.revealedButton,
   },
   revealedLabel: {
     color: Colors.whiteText,

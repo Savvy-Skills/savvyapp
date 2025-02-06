@@ -17,14 +17,16 @@ const assessmentBackground = "#F4F1FE"
 // States
 
 const errorColor = "#f44336";
+const errorBackground = "#ffe3e1";
 const errorText = "#470c08"
-const successColor = "#3fd965";
+const successColor = "#01e979";
 const successText = "#00361d"
-const successBackground = "#01e979"
+const successBackground = "#d6ffeb"
 const warningColor = "#ff0000";
 const revealedColor = "#cccccc"
 const revealedText = "#292929"
-const revealedBackground = "#7c7c7c"
+const revealedButton = "#7c7c7c"
+const revealedBackground = "#f5f5f5"
 //
 
 const navigationOrange = "#f4bb62";
@@ -64,5 +66,7 @@ export const Colors = {
 	errorText: errorText,
 	successText: successText,
 	revealedBackground: revealedBackground,
-	successBackground: successBackground
+	successBackground: successBackground,
+	errorBackground: errorBackground,
+	revealedButton: revealedButton
 }

@@ -137,17 +137,17 @@ export default function NumericalAnswerAssessment({
 				{!!question.extras?.operator && (
 					<OperatorRenderer operator={question.extras.operator} />
 				)}
-				<View style={localStyles.inputContainer}>
+				<View style={styles.inputContainer}>
 					<TextInput
 						value={value}
 						onChangeText={handleChange}
 						disabled={blocked}
 						textColor="black"
 						style={[
-							localStyles.input,
-							currentSubmission?.isCorrect && localStyles.correctInput,
-							isWrong && localStyles.incorrectInput,
-							showAnswer && localStyles.revealedInput,
+							styles.input,
+							currentSubmission?.isCorrect && styles.correctOption,
+							isWrong && styles.incorrectOption,
+							showAnswer && styles.revealedOption,
 						]}
 						keyboardType="numeric"
 					/>
@@ -174,46 +174,5 @@ const localStyles = StyleSheet.create({
 		gap: 12,
 		justifyContent: "center",
 		padding: 16,
-	},
-	text: {
-		fontSize: 16,
-	},
-	operatorContainer: {
-		backgroundColor: "#ff7b09",
-		borderRadius: 4,
-		padding: 8,
-	},
-	operator: {
-		color: "white",
-		fontSize: 16,
-		fontWeight: "bold",
-	},
-	inputContainer: {
-		position: "relative",
-		width: 80,
-	},
-	input: {
-		height: 40,
-		textAlign: "center",
-		backgroundColor: "white",
-		borderRadius: 4,
-		color: "black",
-		borderWidth: 1,
-		borderColor: "grey",
-	},
-	correctInput: {
-		borderColor: "#23b5ec",
-		borderWidth: 1,
-		backgroundColor: "rgba(35, 181, 236, 0.1)",
-	},
-	incorrectInput: {
-		borderColor: "#ff7b09",
-		borderWidth: 1,
-		backgroundColor: "rgba(255, 123, 9, 0.1)",
-	},
-	revealedInput: {
-		borderColor: "#9E9E9E",
-		borderWidth: 1,
-		backgroundColor: "rgba(158, 158, 158, 0.1)",
 	},
 });

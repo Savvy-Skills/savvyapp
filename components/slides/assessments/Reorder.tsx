@@ -230,11 +230,11 @@ export default function ReorderAssessment({
 				style={[
 					localStyles.container,
 					isWrong
-						? localStyles.wrongContainer
+						? styles.incorrectOption
 						: currentSubmission?.isCorrect
-							? localStyles.correctContainer
+							? styles.correctOption
 							: {},
-					showAnswer && localStyles.revealedContainer,
+					showAnswer && styles.revealedOption,
 				]}
 			>
 				{currentOrder.map((item, index) => (
@@ -275,21 +275,5 @@ const localStyles = StyleSheet.create({
 	container: {
 		borderRadius: 4,
 		gap: 4,
-	},
-
-	wrongContainer: {
-		backgroundColor: "rgba(255, 0, 0, 0.1)",
-		borderWidth: 1,
-		borderColor: "red",
-	},
-	revealedContainer: {
-		backgroundColor: generateColors(Colors.revealed, 0.2).muted,
-		borderWidth: 1,
-		borderColor: Colors.revealed,
-	},
-	correctContainer: {
-		backgroundColor: generateColors(Colors.success, 0.2).muted,
-		borderWidth: 1,
-		borderColor: Colors.success,
 	},
 });

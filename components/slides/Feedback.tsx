@@ -8,6 +8,8 @@ import { View } from "react-native";
 import { AnimationObject } from "lottie-react-native";
 import { LottieComponentAutoplay } from "../LottieComponentAutoplay";
 import { useAudioStore } from "@/store/audioStore";
+import { generateColors } from "@/utils/utilfunctions";
+import { Colors } from "@/constants/Colors";
 
 type AnimationConfig = {
 	source: AnimationObject;
@@ -100,9 +102,8 @@ function FeedbackComponent({
 						mode="text"
 						onPress={onShowExplanation}
 						textColor="#321A5F"
-						buttonColor="#E5E3FF"
+						buttonColor={generateColors(Colors.assessmentBackground, 0.4).muted}
 						style={{ borderRadius: 4 }}
-						labelStyle={{ fontWeight: 600 }}
 					>
 						{showExplanation ? "Go back to question" : "See explanation"}
 					</Button>
@@ -113,9 +114,8 @@ function FeedbackComponent({
 								mode="text"
 								onPress={handleShowReveal}
 								textColor="#321A5F"
-								buttonColor="#E5E3FF"
+								buttonColor={generateColors(Colors.assessmentBackground, 0.4).muted}
 								style={{ borderRadius: 4 }}
-								labelStyle={{ fontWeight: 600 }}
 							>
 								See answer
 							</Button>
@@ -125,9 +125,8 @@ function FeedbackComponent({
 								mode="text"
 								onPress={onShowExplanation}
 								textColor="#321A5F"
-								buttonColor="#E5E3FF"
+								buttonColor={generateColors(Colors.assessmentBackground, 0.4).muted}
 								style={{ borderRadius: 4 }}
-								labelStyle={{ fontWeight: 600 }}
 							>
 								{showExplanation ? "Go back to question" : "See explanation"}
 							</Button>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { Button, Icon, Text, useTheme } from "react-native-paper";
+import { Button, Icon, Surface, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { QuestionInfo } from "@/types";
 import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
@@ -8,6 +8,7 @@ import StatusIcon from "@/components/StatusIcon";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { Colors } from "@/constants/Colors";
 import { generateColors } from "@/utils/utilfunctions";
+import styles from "@/styles/styles";
 
 export type TrueFalseQuestionProps = {
 	question: QuestionInfo;
@@ -106,31 +107,31 @@ export default function TrueFalseQuestion({
 
 
 	const getButtonStyle = (value: string) => {
-		const baseStyle = [styles.button];
+		const baseStyle = [styles.trueFalseButton];
 
 		if (showAnswer && value === correctAnswer) {
-			return [...baseStyle, styles.revealedButton];
+			return [...baseStyle, styles.revealedOption];
 		}
 		if (quizMode && isWrong) {
 			if (value === correctAnswer) {
-				return [...baseStyle, styles.correctButton];
+				return [...baseStyle, styles.correctOption];
 			}
 			if (value === selectedValue) {
-				return [...baseStyle, styles.incorrectButton];
+				return [...baseStyle, styles.incorrectOption];
 			}
-			return [...baseStyle, styles.disabledButton];
+			return [...baseStyle];
 		}
 		if (value === selectedValue) {
 			if (currentSubmission?.isCorrect) {
-				return [...baseStyle, styles.correctButton];
+				return [...baseStyle, styles.correctOption];
 			} else if (isWrong) {
-				return [...baseStyle, styles.incorrectButton];
+				return [...baseStyle, styles.incorrectOption];
 			} else if (showAnswer) {
-				return [...baseStyle, styles.revealedButton];
+				return [...baseStyle, styles.revealedOption];
 			}
-			return [...baseStyle, styles.selectedButton];
+			return [...baseStyle, styles.selectedOption];
 		}
-		return [...baseStyle, styles.defaultButton];
+		return [...baseStyle];
 	};
 
 	const handleChoiceSelection = (value: string) => {
@@ -219,22 +220,22 @@ export default function TrueFalseQuestion({
 			question={question}
 			isActive={isActive}
 		>
-			<View style={styles.container}>
-				<View style={styles.buttonContainer}>
+			<View style={localStyles.container}>
+				<Surface style={localStyles.buttonContainer}>
 					<Button
 						mode="contained"
 						onPress={() => handleChoiceSelection(options[0])}
 						disabled={blocked}
 						style={getButtonStyle(options[0])}
-						labelStyle={styles.buttonLabel}
+						labelStyle={styles.trueFalseButtonText}
 						contentStyle={{ paddingVertical: 8 }}
 					>
 						{options[0]}
 					</Button>
-					<View style={styles.iconContainer}>
+					<View style={localStyles.iconContainer}>
 						{renderStatusIcon(options[0])}
 					</View>
-				</View>
+				</Surface>
 				<View style={{ alignSelf: "center" }}>
 					<Icon
 						source="chevron-double-up"
@@ -242,7 +243,7 @@ export default function TrueFalseQuestion({
 						color={Colors.primary}
 					/>
 				</View>
-				<Text style={styles.questionText}>{question.text}</Text>
+				<Text style={styles.trueFalseTitle}>{question.text}</Text>
 				<View style={{ alignSelf: "center" }}>
 					<Icon
 						source="chevron-double-down"
@@ -250,27 +251,27 @@ export default function TrueFalseQuestion({
 						color={Colors.primary}
 					/>
 				</View>
-				<View style={styles.buttonContainer}>
+				<Surface style={localStyles.buttonContainer}>
 					<Button
 						mode="contained"
 						onPress={() => handleChoiceSelection(options[1])}
 						disabled={blocked}
 						style={getButtonStyle(options[1])}
-						labelStyle={styles.buttonLabel}
+						labelStyle={styles.trueFalseButtonText}
 						contentStyle={{ paddingVertical: 8 }}
 					>
 						{options[1]}
 					</Button>
-					<View style={styles.iconContainer}>
+					<View style={localStyles.iconContainer}>
 						{renderStatusIcon(options[1])}
 					</View>
-				</View>
+				</Surface>
 			</View>
 		</AssessmentWrapper>
 	);
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
 	iconContainer: {
 		position: "absolute",
 		right: -10,
@@ -281,50 +282,5 @@ const styles = StyleSheet.create({
 		width: "100%",
 		gap: 32,
 		paddingVertical: 16,
-	},
-	questionText: {
-		fontSize: 18,
-		fontWeight: "bold",
-		textAlign: "center",
-		color: "#2D3748",
-	},
-	button: {
-		justifyContent: "center",
-		borderRadius: 4,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
-	},
-	buttonLabel: {
-		fontSize: 16,
-		fontWeight: "600",
-		color: "#2D3748",
-	},
-	defaultButton: {
-		backgroundColor: "#FFFFFF",
-		borderWidth: 1,
-		borderColor: "#E2E8F0",
-	},
-	selectedButton: {
-		backgroundColor: generateColors(Colors.primary, 0.2).muted,
-		borderColor: Colors.primary,
-	},
-	correctButton: {
-		backgroundColor: generateColors(Colors.success, 0.2).muted,
-		borderColor: Colors.success,
-	},
-	incorrectButton: {
-		backgroundColor: generateColors(Colors.error, 0.2).muted,
-		borderColor: Colors.error,
-	},
-	revealedButton: {
-		backgroundColor: generateColors(Colors.revealed, 0.1).muted,
-		borderColor: Colors.revealed,
-	},
-	disabledButton: {
-		backgroundColor: generateColors(Colors.revealed, 0.1).muted,
-		borderColor: Colors.revealed,
-		opacity: 0.7,
 	},
 });

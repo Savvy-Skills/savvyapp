@@ -350,11 +350,11 @@ const styles = StyleSheet.create({
 	},
 	correctCard: {
 		borderWidth: 2,
-		borderColor: "#2196F3",
+		borderColor: Colors.success,
 	},
 	incorrectCard: {
 		borderWidth: 2,
-		borderColor: "#FF0000",
+		borderColor: Colors.error,
 	},
 	cardText: {
 		textAlign: "center",

@@ -35,7 +35,7 @@ const getOptionStyles = (
 	isCorrect: boolean
 ) => {
 	const baseStyles =
-		question.subtype === "Image" ? [localStyles.imageOption] : [styles.option];
+		question.subtype === "Image" ? [styles.imageOption] : [styles.option];
 
 	const correctAnswers = question.options
 		.filter((option) => option.isCorrect)
@@ -250,7 +250,7 @@ export default function MultipleChoice({
 	const renderImageOption = (option: string, index: number) => (
 		<TouchableOpacity
 			key={index}
-			style={localStyles.imageContainer}
+			style={styles.imageContainer}
 			onPress={() => handleChoiceSelection(option)}
 			disabled={blocked}
 			accessibilityRole="checkbox"
@@ -269,10 +269,10 @@ export default function MultipleChoice({
 			>
 				<Image
 					source={{ uri: option }}
-					style={localStyles.image}
+					style={styles.image}
 					resizeMode="contain"
 				/>
-				<View style={localStyles.imageIconContainer}>
+				<View style={styles.imageIconContainer}>
 					{renderStatusIcon(option)}
 				</View>
 			</View>
@@ -307,51 +307,14 @@ export default function MultipleChoice({
 			isActive={isActive}
 		>
 			{question.subtype === "Image" ? (
-				<View style={localStyles.imageGrid}>
+				<View style={styles.imageGrid}>
 					{options.map((option, index) => renderImageOption(option, index))}
 				</View>
 			) : (
-				<View style={localStyles.options}>
+				<View style={styles.optionsContainer}>
 					{options.map((option, index) => renderTextOption(option, index))}
 				</View>
 			)}
 		</AssessmentWrapper>
 	);
 }
-
-const localStyles = StyleSheet.create({
-	imageGrid: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		gap: 16,
-		justifyContent: "center",
-	},
-	options: {
-		gap: 4,
-	},
-	imageContainer: {
-		width: "45%",
-		aspectRatio: 1,
-	},
-	imageOption: {
-		width: "100%",
-		height: "100%",
-		borderRadius: 8,
-		borderWidth: 2,
-		borderColor: "#cccccc",
-		overflow: "hidden",
-		position: "relative",
-		padding: 10,
-	},
-	image: {
-		width: "100%",
-		height: "100%",
-	},
-
-	imageIconContainer: {
-		position: "absolute",
-		top: 8,
-		right: 8,
-		zIndex: 1,
-	},
-});

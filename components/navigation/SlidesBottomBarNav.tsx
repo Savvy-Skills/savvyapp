@@ -275,7 +275,6 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 						},
 					}}
 				/>
-				<VerticalSeparator />
 				<IconButton
 					icon="dots-vertical"
 					size={20}
@@ -287,7 +286,6 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 				/>
 				<MiddleButton />
 
-				<VerticalSeparator />
 				<IconButton
 					icon="arrow-right"
 					size={20}
