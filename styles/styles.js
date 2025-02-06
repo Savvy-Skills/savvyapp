@@ -258,11 +258,10 @@ export default StyleSheet.create({
     gap: 16,
   },
   feedbackContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+	paddingTop: 16,
     borderWidth: 0,
-    borderBottomWidth: 0,
     gap: 10,
-    borderRadius: 8,
     alignSelf: "center",
     width: "100%",
     flexDirection: "row",
@@ -270,8 +269,8 @@ export default StyleSheet.create({
   },
   bottomBarWrapper: {
     flexDirection: "column",
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     marginTop: 8,
   },
   lottieContainer: {
@@ -288,7 +287,7 @@ export default StyleSheet.create({
     flex: 1,
   },
   feedbackTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
   },
   subtitle: {
@@ -321,24 +320,18 @@ export default StyleSheet.create({
   },
   correctWrapper: {
     backgroundColor: generateColors(Colors.success, 0.2).muted,
-    borderColor: Colors.success,
-    borderWidth: 1,
   },
   incorrectWrapper: {
     backgroundColor: generateColors(Colors.error, 0.2).muted,
-    borderColor: Colors.error,
-    borderWidth: 1,
   },
   revealedWrapper: {
     backgroundColor: generateColors(Colors.revealed, 0.2).muted,
-    borderColor: Colors.revealed,
-    borderWidth: 1,
   },
   correctTitle: {
-    color: Colors.success,
+    color: Colors.successText,
   },
   incorrectTitle: {
-    color: Colors.error,
+    color: Colors.errorText,
   },
   revealedTitle: {
     color: Colors.revealedText,
@@ -372,7 +365,7 @@ export default StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     alignItems: "center",
-    backgroundColor: "#4a148c",
+    backgroundColor: generateColors(Colors.assessmentBackground, 0.4).muted,
     borderRadius: 10,
     padding: 10,
   },
@@ -444,11 +437,28 @@ export default StyleSheet.create({
     borderColor: Colors.revealed,
     backgroundColor: generateColors(Colors.revealed, 0.2).muted,
   },
+  buttonLabel: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: "bold",
+  },
   correctButton: {
-    backgroundColor: "#d0ecdf",
+    backgroundColor: Colors.successBackground,
   },
   correctLabel: {
-    color: Colors.success,
+    color: Colors.successText,
+  },
+  incorrectButton: {
+    backgroundColor: Colors.error,
+  },
+  incorrectLabel: {
+    color: Colors.whiteText,
+  },
+  revealedButton: {
+    backgroundColor: Colors.revealedBackground,
+  },
+  revealedLabel: {
+    color: Colors.whiteText,
   },
 
   disabledOption: {},

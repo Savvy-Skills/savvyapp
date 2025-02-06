@@ -78,9 +78,9 @@ function FeedbackComponent({
 	}, [revealed, correctness]);
 
 	const getFeedbackTitle = useCallback(() => {
-		if (revealed) return "Here's the correct answer";
-		if (correctness) return "Positive feedback";
-		return "Negative feedback text";
+		if (revealed) return "Answer revealed";
+		if (correctness) return "Correct!";
+		return "Not quite!";
 	}, [revealed, correctness]);
 
 
@@ -101,6 +101,7 @@ function FeedbackComponent({
 						onPress={onShowExplanation}
 						textColor="#321A5F"
 						buttonColor="#E5E3FF"
+						style={{ borderRadius: 4 }}
 						labelStyle={{ fontWeight: 600 }}
 					>
 						{showExplanation ? "Go back to question" : "See explanation"}
@@ -113,6 +114,7 @@ function FeedbackComponent({
 								onPress={handleShowReveal}
 								textColor="#321A5F"
 								buttonColor="#E5E3FF"
+								style={{ borderRadius: 4 }}
 								labelStyle={{ fontWeight: 600 }}
 							>
 								See answer
@@ -124,6 +126,7 @@ function FeedbackComponent({
 								onPress={onShowExplanation}
 								textColor="#321A5F"
 								buttonColor="#E5E3FF"
+								style={{ borderRadius: 4 }}
 								labelStyle={{ fontWeight: 600 }}
 							>
 								{showExplanation ? "Go back to question" : "See explanation"}
