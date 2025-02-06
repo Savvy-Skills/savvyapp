@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, KeyboardAvoidingView, Platform, Pressable } from "react-native";
-import { TextInput, Button, Text, useTheme } from "react-native-paper";
+import { TextInput, Button, Text, useTheme, HelperText } from "react-native-paper";
 import { useAuthStore } from "@/store/authStore";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import ThemedLogo from "@/components/themed/ThemedLogo";
@@ -13,6 +13,7 @@ import { generateColors } from "@/utils/utilfunctions";
 import {
 	GoogleSignin,
 	GoogleSigninButton,
+	NativeModuleError,
 	statusCodes,
 	User,
 } from '@react-native-google-signin/google-signin';
@@ -35,6 +36,7 @@ export default function LoginScreen() {
 	const { login, isLoading, token, user, setToken, error } = useAuthStore();
 	const theme = useTheme();
 	const [isHovering, setIsHovering] = useState(false);
+	const [errorMessage, setErrorMessage] = useState("");
 	const handleLogin = async () => {
 		await login(email, password);
 	};
@@ -59,12 +61,14 @@ export default function LoginScreen() {
 	}, []);
 
 	const handleGoogleSignIn = async () => {
-		const user: User | null = await signIn();
-		if (user && user.serverAuthCode) {
-			const response = await googleContinue({ code: user.serverAuthCode });
-			if (response.token) {
-				setToken(response.token);
+		const response: User | NativeModuleError = await signIn();
+		if (response && 'serverAuthCode' in response) {
+			const continueResponse = await googleContinue({ code: response.serverAuthCode as string });
+			if (continueResponse.token) {
+				setToken(continueResponse.token);
 			}
+		} else {
+			setErrorMessage(JSON.stringify(response));
 		}
 	};
 
@@ -128,6 +132,7 @@ export default function LoginScreen() {
 					<Button mode="text" onPress={handlePress} style={styles.defaultButton}>
 						Forgot Password?
 					</Button>
+					{errorMessage && <HelperText type="error">{errorMessage}</HelperText>}
 					</View>
 				</KeyboardAvoidingView>
 			</ScrollView>

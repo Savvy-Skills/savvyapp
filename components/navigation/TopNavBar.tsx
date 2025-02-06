@@ -1,13 +1,12 @@
 import { router, useSegments } from "expo-router";
 import React from "react";
 import { View, StyleSheet, Image, useWindowDimensions } from "react-native";
-import SlideNavigation from "../slides/SlideNavigation";
-import HomeTopNavBar from "./HomeTopNavBar";
-import CourseTopNavBar from "./CourseTopNavBar";
+import SlideNavigation from "@/components/navigation/SlideTopNavigation";
+import HomeTopNavBar from "@/components/navigation/HomeTopNavBar";
+import CourseTopNavBar from "@/components/navigation/CourseTopNavBar";
 import { Course, Module } from "@/types";
-import ModuleTopNavBar from "./ModuleTopNavBar";
-import { Text } from "react-native-paper";
-import ViewInfo from "../ViewInfo";
+import ModuleTopNavBar from "@/components/navigation/ModuleTopNavBar";
+import ViewInfo from "@/components/navigation/ViewInfo";
 import { Colors } from "@/constants/Colors";
 
 interface NavBarProps {

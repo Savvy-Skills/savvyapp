@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import type { TableHeaderProps } from '../types/table';
+import type { TableHeaderProps } from '@/types/table';
 
 function TableHeader({ columns, columnWidth, headerColors }: TableHeaderProps) {
   return (

@@ -4,7 +4,7 @@ import React, { lazy, useCallback, useEffect, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Surface, Button } from "react-native-paper";
 import LoadingIndicator from "../LoadingIndicator";
-import { TraceConfig } from "../DataVisualizerPlotly";
+import { TraceConfig } from "../data/DataVisualizerPlotly";
 import NNTabs from "./NNTabs";
 import styles from "@/styles/styles";
 import LayerDetails from "./LayerDetails";

@@ -7,8 +7,8 @@ import { LayerType, NNState } from "@/types/neuralnetwork";
 import styles from "@/styles/styles";
 import { lazy, useCallback, useEffect, useState } from "react";
 import { DatasetInfo } from "@/types";
-import { TraceConfig } from "../DataVisualizerPlotly";
-import DataTableContainer from "../DataTableContainer";
+import { TraceConfig } from "../data/DataVisualizerPlotly";
+import DataTableContainer from "../data/DataTableContainer";
 import { useTFStore } from "@/store/tensorStore";
 import { Data } from "plotly.js";
 
@@ -16,9 +16,8 @@ import { Colors } from "@/constants/Colors";
 import { generateColors } from "@/utils/utilfunctions";
 import React from "react";
 import { MESSAGE_TYPE_PREDICT, MESSAGE_TYPE_PREDICTION_RESULT } from "@/constants/Utils";
-import useBroadcastChannel from "@/hooks/useBroadcastChannel";
 
-const DataPlotter = lazy(() => import("../DataPlotter"));
+const DataPlotter = lazy(() => import("../data/DataPlotter"));
 
 interface LayerDetailsProps {
 	selectedLayer: LayerType;
@@ -28,11 +27,13 @@ interface LayerDetailsProps {
 	data: any[];
 	columns: Column[];
 	dataset_info: DatasetInfo;
-	traces: TraceConfig[];
+	initialTraces: TraceConfig[];
+	predictionTraces: TraceConfig[];
 	handleActivationFunctionChange: (activationFunction: string) => void;
 	handleNeuronCountChange: (neuronCount: number, index: number) => void;
 	handleEpochsChange: (epochs: number) => void;
 	index: number;
+	modelId: string;
 }
 
 const activationFunctionsMap = {
@@ -40,6 +41,10 @@ const activationFunctionsMap = {
 	"sigmoid": "Sigmoid",
 	"tanh": "Tanh",
 	"softmax": "Softmax",
+}
+
+interface PredictionInputs {
+	[key: string]: string | undefined;
 }
 
 export default function LayerDetails({
@@ -50,55 +55,56 @@ export default function LayerDetails({
 	data,
 	columns,
 	dataset_info,
-	traces,
+	initialTraces,
+	predictionTraces,
 	handleActivationFunctionChange,
 	handleNeuronCountChange,
 	handleEpochsChange,
 	index,
+	modelId,
 }: LayerDetailsProps) {
 	const { modelConfig: currentModelConfig, trainingConfig: currentTrainingConfig } = currentNNState;
-	const { tfInstance, currentState } = useTFStore();
+	const { currentState, tfWorker, currentModelId } = useTFStore();
 	const [showActivationMenu, setShowActivationMenu] = useState(false);
 	const [showEpochsMenu, setShowEpochsMenu] = useState(false);
-	const [predictionInputs, setPredictionInputs] = useState<string[]>([]);
+	const [predictionInputs, setPredictionInputs] = useState<PredictionInputs>({} as PredictionInputs);
 	const [predictionResult, setPredictionResult] = useState<string | null>(null);
-	const { message, sendMessage } = useBroadcastChannel("tensorflow-worker");
 
 	const problemType = currentNNState.modelConfig?.problemType;
 
-	const plotlyAccData: Data[] =problemType === "classification" ? [{
-		x: currentState.training.modelHistory?.map(history => history.epoch),
-		y: currentState.training.modelHistory?.map(history => history.accuracy),
+	const plotlyAccData: Data[] = problemType === "classification" ? [{
+		x: currentState[modelId]?.training.modelHistory?.map(history => history.epoch),
+		y: currentState[modelId]?.training.modelHistory?.map(history => history.accuracy),
 		type: "scatter",
 		name: "Accuracy",
 	}] : [];
 
-	const plotlyValAccData: Data[] =problemType === "classification" ? [{
-		x: currentState.training.modelHistory?.map(history => history.epoch),
-		y: currentState.training.modelHistory?.map(history => history.val_acc),
-		type: "scatter",
-		name: "Validation Accuracy",
-	}] : [];
+	// const plotlyValAccData: Data[] =problemType === "classification" ? [{
+	// 	x: currentState.training.modelHistory?.map(history => history.epoch),
+	// 	y: currentState.training.modelHistory?.map(history => history.val_acc),
+	// 	type: "scatter",
+	// 	name: "Validation Accuracy",
+	// }] : [];
 
-	
+
 	const plotlyLossData: Data[] = [{
-		x: currentState.training.modelHistory?.map(history => history.epoch),
-		y: currentState.training.modelHistory?.map(history => history.loss),
+		x: currentState[modelId]?.training.modelHistory?.map(history => history.epoch),
+		y: currentState[modelId]?.training.modelHistory?.map(history => history.loss),
 		type: "scatter",
 		name: "Loss",
 	}];
 
-	const plotlyValLossData: Data[] = [{
-		x: currentState.training.modelHistory?.map(history => history.epoch),
-		y: currentState.training.modelHistory?.map(history => history.val_loss),
-		type: "scatter",
-		name: "Validation Loss",
-	}];
+	// const plotlyValLossData: Data[] = [{
+	// 	x: currentState.training.modelHistory?.map(history => history.epoch),
+	// 	y: currentState.training.modelHistory?.map(history => history.val_loss),
+	// 	type: "scatter",
+	// 	name: "Validation Loss",
+	// }];
 
 	const layout = {
-		title:problemType === "classification" ? "Accuracy and Loss" : "Loss",
+		title: problemType === "classification" ? "Accuracy and Loss" : "Loss",
 		xaxis: { title: "Epoch", hovermode: false, autosize: true, bargap: 0.1 },
-		yaxis: { title:problemType === "classification" ? "Accuracy" : "Loss", hovermode: false, autosize: true, bargap: 0.1 },
+		yaxis: { title: problemType === "classification" ? "Accuracy" : "Loss", hovermode: false, autosize: true, bargap: 0.1 },
 	};
 
 	const config = {
@@ -112,42 +118,36 @@ export default function LayerDetails({
 		height: 300,
 	};
 	const handlePredict = useCallback(() => {
-		const inputs = predictionInputs.map(Number);
-
-		sendMessage({
+		tfWorker?.postMessage({
+			from: "main",
 			type: MESSAGE_TYPE_PREDICT,
 			data: {
-				inputs: [inputs],
+				inputs: predictionInputs,
 			},
 		});
-	}, [predictionInputs, sendMessage]);
+	}, [predictionInputs, tfWorker]);
 
-	useEffect(() => {
-		if (message) {
-			if (message.type === MESSAGE_TYPE_PREDICTION_RESULT) {
-				setPredictionResult(message.data.mappedOutputs[message.data.predictionsArray[0] as number]);
-			}
-		}
-	}, [message]);
 
-	const handleChangePredictionInput = useCallback((text: string, index: number) => {
-		if ((inputColumns[index].dtype === "number" && (isNaN(Number(text)) || text === ""))) {
+	const handleChangePredictionInput = useCallback((text: string, key: string) => {
+		// if ((inputColumns[index].dtype === "number" && (isNaN(Number(text)) || text === ""))) {
+		// 	return;
+		// }
+		if (inputColumns.find(column => column.accessor === key)?.dtype === "number" && (isNaN(Number(text)) || text === "")) {
 			return;
 		}
 		text = text.trim();
 		setPredictionInputs(prev => {
-			const newInputs = [...prev];
-			newInputs[index] = text;
+			const newInputs = { ...prev };
+			newInputs[key] = text;
 			return newInputs;
 		});
 	}, []);
 
 	const handleGetRandomInputs = useCallback(() => {
-		const randomRow = data[Math.floor(Math.random() * data.length)];
+		const randomRow = { ...data[Math.floor(Math.random() * data.length)] };
 		delete randomRow[outputColumn];
-		const inputs = Object.values(randomRow);
-		setPredictionInputs(inputs as string[]);
-	}, [data]);
+		setPredictionInputs(randomRow);
+	}, [data, outputColumn]);
 
 	const handleAddLayer = useCallback(() => {
 		handleNeuronCountChange(currentModelConfig?.neuronsPerLayer.length ?? 0, 1);
@@ -166,33 +166,17 @@ export default function LayerDetails({
 	}, [handleNeuronCountChange, currentModelConfig]);
 
 	useEffect(() => {
-		if (predictionInputs.length === 0) {
+		if (Object.keys(predictionInputs).length === 0) {
 			handleGetRandomInputs();
 		}
 	}, [handleGetRandomInputs]);
 
 	if (!selectedLayer) return null;
 
-	const accuracy = (currentState.training.modelHistory?.[currentState.training.modelHistory.length - 1]?.accuracy * 100).toFixed(2);
-	const loss = (currentState.training.modelHistory?.[currentState.training.modelHistory.length - 1]?.loss * 100).toFixed(2);
+	const accuracy = (currentState[modelId]?.training.modelHistory?.[currentState[modelId]?.training.modelHistory.length - 1]?.accuracy * 100).toFixed(2);
+	const loss = (currentState[modelId]?.training.modelHistory?.[currentState[modelId]?.training.modelHistory.length - 1]?.loss * 100).toFixed(2);
 	const accuracyColor = Number(accuracy) > 90 ? Colors.success : Number(accuracy) > 50 ? Colors.orange : Colors.error;
 	const lossColor = Number(loss) < 10 ? Colors.success : Number(loss) > 10 && Number(loss) < 20 ? Colors.orange : Colors.error;
-
-	// const predTrace: TraceConfig = {
-	// 	x: "x",
-	// 	y: "y",
-	// 	type: "scatter",
-	// 	name: "Predicted",
-	// 	groupBy: "prediction",
-	// }
-
-	const predTrace: TraceConfig = {
-		x: "mpg",
-		y: "prediction",
-		type: "scatter",
-		name: "Predicted",
-	}
-
 
 	return (
 		<Surface style={styles.detailsContainer}>
@@ -203,7 +187,7 @@ export default function LayerDetails({
 
 			<View style={{ opacity: selectedLayer === "input" ? 1 : 0, height: selectedLayer === "input" ? "auto" : 0, overflow: "hidden" }}>
 				{/*  */}
-				<DataTableContainer data={data} columns={columns} datasetInfo={dataset_info} hideFilter={true} traces={traces} index={index} />
+				<DataTableContainer data={data} columns={columns} datasetInfo={dataset_info} hideFilter={true} traces={initialTraces} index={index} />
 			</View>
 
 			<View style={{ opacity: selectedLayer === "hidden" ? 1 : 0, height: selectedLayer === "hidden" ? "auto" : 0, overflow: "hidden" }}>
@@ -258,10 +242,10 @@ export default function LayerDetails({
 					</View>
 					<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
 						<Text style={styles.subtitle}>Hidden Layers:</Text>
-						<IconButton icon="minus" size={24} onPress={() => {
+						<IconButton disabled={currentModelConfig?.neuronsPerLayer.length === 1} icon="minus" size={24} onPress={() => {
 							handleRemoveLayer();
 						}} />
-						<IconButton icon="plus" size={24} onPress={() => {
+						<IconButton disabled={currentModelConfig?.neuronsPerLayer.length === 10} icon="plus" size={24} onPress={() => {
 							handleAddLayer();
 						}} />
 
@@ -284,14 +268,14 @@ export default function LayerDetails({
 
 			<View style={{ opacity: selectedLayer === "output" ? 1 : 0, height: selectedLayer === "output" ? "auto" : 0, overflow: "hidden" }}>
 
-				{(currentState.model.training || currentState.model.completed) && (
+				{(currentState[modelId]?.model.training || currentState[modelId]?.model.completed) && (
 					<View style={{ flexDirection: "column", gap: 16 }}>
 						<>
 							<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
 								{currentNNState.modelConfig?.problemType === "classification" && (
-								<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
-									<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
-									<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
+									<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
+										<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
+										<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
 									</View>
 								)}
 								<View style={[styles.metricContainer, { borderColor: lossColor, backgroundColor: generateColors(lossColor, 0.1).muted }]}>
@@ -299,29 +283,34 @@ export default function LayerDetails({
 									<Text style={[{ color: lossColor }]}>{loss}%</Text>
 								</View>
 							</View>
-							{currentState.training.modelHistory?.length > 0 && (
-								<DataPlotter data={[...plotlyLossData, ...plotlyAccData, ...plotlyValLossData, ...plotlyValAccData]} layout={layout} config={config} style={style} />
+							{currentState[modelId]?.training.modelHistory?.length > 0 && (
+								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
 							)}
 						</>
-						<DataTableContainer invert padding={0} data={currentState.data.testData} columns={currentState.data.columns} traces={[predTrace]} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
-						{currentState.model.completed && (
+						{currentState[modelId]?.data?.testData && currentState[modelId]?.data.testData.length > 0 && (
+							<DataTableContainer invert padding={0} data={currentState[modelId]?.data.testData} columns={currentState[modelId]?.data.columns} traces={predictionTraces} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
+						)}
+						{currentState[modelId]?.model.completed && (
 							<>
 								<View style={{ flexDirection: "row", gap: 8 }}>
 									{inputColumns.map((column, index) => (
 										<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
 											<Text style={styles.subtitle}>{column.accessor}:</Text>
-											<TextInput style={{ maxWidth: 100 }} mode="outlined" value={predictionInputs[index]} onChangeText={(text) => handleChangePredictionInput(text, index)} />
+											<TextInput style={{ maxWidth: 100 }} mode="outlined" value={predictionInputs[column.accessor]} onChangeText={(text) => handleChangePredictionInput(text, column.accessor)} />
 										</View>
 									))}
 									<IconButton iconColor={Colors.orange} icon="dice-6-outline" size={34} onPress={handleGetRandomInputs} />
 								</View>
-								<Button mode="contained" style={{ borderRadius: 4 }} buttonColor={Colors.primary} onPress={handlePredict}>
-									Predict
-								</Button>
-								{predictionResult && (
+								{/* TODO: PREDICT BUTTON SHOULD ONLY BE AVAILABLE IF THE CURRENT MODEL ID IS THIS PROPS modelID */}
+								{ currentModelId === modelId && (
+									<Button mode="contained" style={{ borderRadius: 4 }} buttonColor={Colors.primary} onPress={handlePredict}>
+										Predict
+									</Button>
+								)}
+								{currentState[modelId]?.model.prediction && (
 									<>
 										<Text style={styles.subtitle}>Predicted Value:</Text>
-										<Text>{predictionResult}</Text>
+										<Text>{currentState[modelId]?.model.prediction}</Text>
 									</>
 								)}
 							</>

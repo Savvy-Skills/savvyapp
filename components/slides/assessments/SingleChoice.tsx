@@ -94,6 +94,8 @@ export default function SingleChoice({
 		tryAgain,
 		revealAnswer,
 		setHiddenFeedback,
+		triggerRevealAnswer,
+		triggerTryAgain,
 	} = useCourseStore();
 	const currentSubmissionIndex = submittedAssessments.findIndex(
 		(submission) => submission.assessment_id === question.id
@@ -156,14 +158,16 @@ export default function SingleChoice({
 	};
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && revealAnswer) {
 			handleRevealAnswer();
+			triggerRevealAnswer();
 		}
 	}, [revealAnswer]);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && tryAgain) {
 			handleTryAgain();
+			triggerTryAgain();
 		}
 	}, [tryAgain]);
 

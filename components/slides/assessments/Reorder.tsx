@@ -44,6 +44,8 @@ export default function ReorderAssessment({
 		tryAgain,
 		revealAnswer,
 		setHiddenFeedback,
+		triggerTryAgain,
+		triggerRevealAnswer,
 	} = useCourseStore();
 
 	const correctOrder = useMemo(
@@ -188,14 +190,16 @@ export default function ReorderAssessment({
 	]);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && tryAgain) {
 			handleTryAgain();
+			triggerTryAgain();
 		}
 	}, [tryAgain]);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && revealAnswer) {
 			handleRevealAnswer();
+			triggerRevealAnswer();
 		}
 	}, [revealAnswer]);
 

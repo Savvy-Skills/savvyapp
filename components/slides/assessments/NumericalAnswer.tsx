@@ -38,6 +38,8 @@ export default function NumericalAnswerAssessment({
 		tryAgain,
 		revealAnswer,
 		setHiddenFeedback,
+		triggerTryAgain,
+		triggerRevealAnswer,
 	} = useCourseStore();
 
 	const isActive = index === currentSlideIndex;
@@ -92,14 +94,16 @@ export default function NumericalAnswerAssessment({
 	const blocked = currentSubmission?.isCorrect || showAnswer;
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && revealAnswer) {
 			handleRevealAnswer();
+			triggerRevealAnswer();
 		}
 	}, [revealAnswer]);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && tryAgain) {
 			handleTryAgain();
+			triggerTryAgain();
 		}
 	}, [tryAgain]);
 

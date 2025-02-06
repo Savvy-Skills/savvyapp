@@ -6,10 +6,10 @@ import {
   VirtualizedList,
 } from 'react-native';
 import { Text } from 'react-native-paper';
-import ThemedTitle from './themed/ThemedTitle';
-import TableHeader from './TableHeader';
-import TableRow from './TableRow';
-import type { DataTableProps } from '../types/table';
+import ThemedTitle from '@/components/themed/ThemedTitle';
+import TableHeader from '@/components/data/TableHeader';
+import TableRow from '@/components/data/TableRow';
+import type { DataTableProps } from '@/types/table';
 import { useTableDimensions } from '@/hooks/usetableDimensions';
 
 const MAX_VISIBLE_COLUMNS = 4;

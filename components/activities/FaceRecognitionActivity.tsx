@@ -12,7 +12,6 @@ import { useCourseStore } from "@/store/courseStore";
 import { useThemeStore } from "@/store/themeStore";
 import ThemedTitle from "../themed/ThemedTitle";
 import { useAudioStore } from "@/store/audioStore";
-import RichTextRendererExample from "../RichTextRenderer";
 
 
 const employeeImages = {

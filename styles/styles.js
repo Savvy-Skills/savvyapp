@@ -118,14 +118,10 @@ export default StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
     marginVertical: 6,
-    padding: 10,
+  },
+  touchable: {
     gap: 10,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowRadius: 4,
-    shadowColor: "grey",
+    padding: 10,
   },
   tagContainer: {
     backgroundColor: generateColors(Colors.primary, 0.2).muted,
@@ -154,13 +150,13 @@ export default StyleSheet.create({
     borderStyle: "dashed",
     borderColor: "#ccc",
     height: "100%",
-	shadowColor: "grey",
-	shadowOffset: {
-		width: 0,
-		height: 2,
-	},
-	shadowRadius: 4,
-	shadowOpacity: 0.2,
+    shadowColor: "grey",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowRadius: 4,
+    shadowOpacity: 0.2,
   },
   hiddenLayerWrapper: {
     flex: 1,
@@ -205,7 +201,7 @@ export default StyleSheet.create({
     fontSize: 12,
     textAlign: "center",
     margin: 0,
-	fontWeight: "bold",
+    fontWeight: "bold",
   },
   hiddenLayerCircle: {
     width: 100,
@@ -228,7 +224,7 @@ export default StyleSheet.create({
   layerInfo: {
     fontSize: 12,
     marginTop: 4,
-	fontWeight: "bold",
+    fontWeight: "bold",
   },
   outputBox: {
     width: 80,
@@ -243,7 +239,7 @@ export default StyleSheet.create({
   outputLabel: {
     fontSize: 12,
     marginTop: 4,
-	fontWeight: "bold",
+    fontWeight: "bold",
   },
 
   unselectedLayer: {
@@ -266,17 +262,17 @@ export default StyleSheet.create({
     borderWidth: 0,
     borderBottomWidth: 0,
     gap: 10,
-	borderRadius: 8,
+    borderRadius: 8,
     alignSelf: "center",
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
   },
   bottomBarWrapper: {
-	flexDirection: "column",
-	borderTopLeftRadius: 8,
-	borderTopRightRadius: 8,
-	marginTop: 8,
+    flexDirection: "column",
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    marginTop: 8,
   },
   lottieContainer: {
     width: 40,
@@ -326,17 +322,17 @@ export default StyleSheet.create({
   correctWrapper: {
     backgroundColor: generateColors(Colors.success, 0.2).muted,
     borderColor: Colors.success,
-	borderWidth: 1,
+    borderWidth: 1,
   },
   incorrectWrapper: {
     backgroundColor: generateColors(Colors.error, 0.2).muted,
     borderColor: Colors.error,
-	borderWidth: 1,
+    borderWidth: 1,
   },
   revealedWrapper: {
     backgroundColor: generateColors(Colors.revealed, 0.2).muted,
     borderColor: Colors.revealed,
-	borderWidth: 1,
+    borderWidth: 1,
   },
   correctTitle: {
     color: Colors.success,

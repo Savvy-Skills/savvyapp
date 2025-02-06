@@ -1,4 +1,5 @@
-import { TraceConfig } from "@/components/DataVisualizerPlotly";
+import { TraceConfig } from "@/components/data/DataVisualizerPlotly";
+import { NNState } from "./neuralnetwork";
 
 export interface Course {
   readonly id: number;
@@ -184,6 +185,7 @@ export interface ContentInfo {
   dataset_id?: string;
   dataset_info?: DatasetInfo;
   traces?: TraceConfig[];
+  nnState?: NNState;
 }
 
 type QuestionTypes =

@@ -55,8 +55,10 @@ export function useDataFetch({ source, isCSV }: DataFetchProps): DataFetchResult
         if (isCSV) {
           Papa.parse(response.data, {
             header: true,
+			skipEmptyLines: true,
+			dynamicTyping: true,
             complete: (result) => {
-              const parsedData = result.data as Record<string, any>[];	
+              const parsedData = result.data as Record<string, any>[];
               setData(parsedData);
               setColumns(
                 Object.keys(parsedData[0]).map((key) => ({

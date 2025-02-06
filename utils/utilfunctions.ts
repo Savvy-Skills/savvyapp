@@ -1,3 +1,6 @@
+import { AssessmentAnswer } from "@/store/courseStore";
+import { CustomSlide, Submission, ViewWithSlides } from "@/types";
+
 const includes = <T>(arr: readonly T[], x: T): boolean => arr.includes(x)
 
 function hexToRgbA(hex: string): string {
@@ -37,11 +40,65 @@ function groupByColumn(data: any[], key?: string) {
 	}, {});
 }
 
+function createCustomSlide(
+	type: string,
+	module_id: number,
+	view: ViewWithSlides
+): CustomSlide {
+	if (type === "intro") {
+		return {
+			name: `Intro: ${view.name}`,
+			order: 0,
+			slide_id: 0,
+			created_at: Date.now(),
+			published: true,
+			module_id: module_id,
+			type: "Custom",
+			subtype: "intro",
+			image: `${view.view_info.intro_image}`,
+			contents: [],
+		};
+	} else {
+		return {
+			name: `Stats`,
+			order: 999,
+			slide_id: 999999,
+			created_at: Date.now(),
+			published: true,
+			module_id: module_id,
+			type: "Custom",
+			subtype: "outro",
+			image: `${view.view_info.intro_image}`,
+			contents: [],
+		};
+	}
+}
+
+const createSubmission = (
+	assessment_id: number,
+	correct: boolean,
+	answer: AssessmentAnswer,
+	view_id: number,
+	submission_id: number
+): Submission => {
+	return {
+		id: submission_id,
+		created_at: Date.now(),
+		assessment_id,
+		views_id: view_id,
+		submissionTime: Date.now(),
+		isCorrect: correct,
+		answer: answer.answer,
+		revealed: answer.revealed,
+	};
+};
 
 export {
 	includes,
 	hexToRgbA,
 	generateColors,
 	loadModules,
-	groupByColumn
+	groupByColumn,
+	createCustomSlide,
+	createSubmission
 }

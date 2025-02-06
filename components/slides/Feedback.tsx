@@ -2,11 +2,11 @@ import React from "react";
 import styles from "@/styles/styles";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
-import ConfirmationDialog from "./ConfirmationDialog";
+import ConfirmationDialog from "../modals/ConfirmationDialog";
 import { useCourseStore } from "@/store/courseStore";
 import { View } from "react-native";
 import { AnimationObject } from "lottie-react-native";
-import { LottieComponentAutoplay } from "./LottieComponentAutoplay";
+import { LottieComponentAutoplay } from "../LottieComponentAutoplay";
 import { useAudioStore } from "@/store/audioStore";
 
 type AnimationConfig = {
