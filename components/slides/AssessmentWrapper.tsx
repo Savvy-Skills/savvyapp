@@ -22,6 +22,8 @@ export default function AssessmentWrapper({
 	const [showExplanationComponent, setShowExplanationComponent] = useState(false);
 	const {
 		showExplanation,
+		setShownExplanation,
+		triggerShowExplanation
 	} = useCourseStore();
 	const { backgroundAssessment } = useThemeStore();
 
@@ -29,10 +31,11 @@ export default function AssessmentWrapper({
 	const untitledAssessments = ["Fill in the Blank", "True or False"];
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && showExplanation) {
 			setShowExplanationComponent((state) => !state);
+			triggerShowExplanation();
 		}
-	}, [showExplanation]);
+	}, [showExplanation, isActive, triggerShowExplanation]);
 
 	return (
 		<View

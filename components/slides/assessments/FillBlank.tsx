@@ -48,6 +48,8 @@ export default function FillBlankAssessment({
 		tryAgain,
 		revealAnswer,
 		setHiddenFeedback,
+		triggerTryAgain,
+		triggerRevealAnswer,
 	} = useCourseStore();
 
 	const text = useMemo(() => question.text, [question.text]);
@@ -272,14 +274,16 @@ export default function FillBlankAssessment({
 	}, [quizMode, index, setCorrectnessState, submitAssessment, question.id]);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && tryAgain) {
 			handleTryAgain();
+			triggerTryAgain();
 		}
 	}, [tryAgain]);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && revealAnswer) {
 			handleRevealAnswer();
+			triggerRevealAnswer();
 		}
 	}, [revealAnswer]);
 

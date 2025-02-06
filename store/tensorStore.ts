@@ -11,38 +11,42 @@ const MESSAGE_TYPE_PREDICTION_RESULT = "prediction_result";
 
 
 interface TFStore {
-	//   tfInstance: TFInstance | null;
 	tfWorker: Worker | null;
 	workerReady: boolean;
 	initializeWorker: () => Promise<void>;
 	error: string | null;
+	currentModelId: string | null;
 	currentState: {
-		model: {
-			training: boolean;
-			completed: boolean;
-			paused: boolean;
-			prediction: string | null;
-		}
-		training: {
-			transcurredEpochs: number;
-			loss: number;
-			accuracy: number;
-			modelHistory: any[];
-		}
-		data: {
-			testData: any[];
-			columns: Column[];
+		[key: string]: {
+			model: {
+				training: boolean;
+				completed: boolean;
+				paused: boolean;
+				prediction: string | null;
+			}
+			training: {
+				transcurredEpochs: number;
+				loss: number;
+				accuracy: number;
+				modelHistory: any[];
+			}
+			data: {
+				testData: any[];
+				columns: Column[];
+			}
 		}
 	}
-	setCurrentState: (state: TFStore["currentState"]) => void;
-	setModelState: (state: TFStore["currentState"]["model"]) => void;
-	setTrainingState: (state: TFStore["currentState"]["training"]) => void;
-	setDataState: (state: TFStore["currentState"]["data"]) => void;
+	setCurrentState: (modelId: string, state: TFStore["currentState"][string]) => void;
+	setModelState: (modelId: string, state: TFStore["currentState"][string]["model"]) => void;
+	setTrainingState: (modelId: string, state: TFStore["currentState"][string]["training"]) => void;
+	setDataState: (modelId: string, state: TFStore["currentState"][string]["data"]) => void;
+	setCurrentModelId: (modelId: string) => void;
 }
 
 interface WorkerMessage {
 	from: "worker" | "main";
 	type: typeof MESSAGE_TYPE_INIT | typeof MESSAGE_TYPE_ERROR | typeof MESSAGE_TYPE_TRAIN_UPDATE | typeof MESSAGE_TYPE_TRAIN_END | typeof MESSAGE_TYPE_PREDICTION_RESULT;
+	modelId: string;
 	data?: any;
 }
 
@@ -50,6 +54,10 @@ export const useTFStore = create<TFStore>((set, get) => ({
 	tfWorker: null,
 	workerReady: false,
 	error: null,
+	currentModelId: null,
+	setCurrentModelId: (modelId: string) => {
+		set({ currentModelId: modelId });
+	},
 	initializeWorker: async () => {
 		if (!get().tfWorker) {
 			const worker = new Worker(workerScript);
@@ -65,18 +73,22 @@ export const useTFStore = create<TFStore>((set, get) => ({
 							break;
 						case MESSAGE_TYPE_TRAIN_UPDATE:
 							const { transcurredEpochs, loss, accuracy, modelHistory, testData } = message.data;
+							const modelId = message.modelId;
 							set({
 								currentState: {
 									...get().currentState,
-									training: {
-										transcurredEpochs,
-										loss,
-										accuracy,
-										modelHistory,
-									},
-									data: {
-										testData: testData.data,
-										columns: testData.columns,
+									[modelId]: {
+										...get().currentState[modelId],
+										training: {
+											transcurredEpochs,
+											loss,
+											accuracy,
+											modelHistory,
+										},
+										data: {
+											testData: testData.data,
+											columns: testData.columns,
+										}
 									}
 								}
 							})
@@ -85,33 +97,28 @@ export const useTFStore = create<TFStore>((set, get) => ({
 							set({
 								currentState: {
 									...get().currentState,
-									model: {
-										...get().currentState.model,
-										training: false,
-										completed: true,
-									},
-									training: {
-										...get().currentState.training,
-									},
-									data: {
-										...get().currentState.data,
+									[message.modelId]: {
+										...get().currentState[message.modelId],
+										model: {
+											...get().currentState[message.modelId]?.model,
+											training: false,
+											completed: true,
+										}
 									}
 								}
 							})
 							break;
 						case MESSAGE_TYPE_PREDICTION_RESULT:
+							console.log({message})
 							set({
 								currentState: {
 									...get().currentState,
-									model: {
-										...get().currentState.model,
-										prediction: message.data.predictionResult,
-									},
-									training: {
-										...get().currentState.training,
-									},
-									data: {
-										...get().currentState.data,
+									[message.modelId]: {
+										...get().currentState[message.modelId],
+										model: {
+											...get().currentState[message.modelId]?.model,
+											prediction: message.data.predictionResult,
+										},
 									}
 								}
 							})
@@ -122,34 +129,46 @@ export const useTFStore = create<TFStore>((set, get) => ({
 			set({ tfWorker: worker });
 		}
 	},
-	currentState: {
-		model: {
-			training: false,
-			completed: false,
-			paused: false,
-			prediction: null,
-		},
-		training: {
-			transcurredEpochs: 0,
-			loss: 0,
-			accuracy: 0,
-			modelHistory: [],
-		},
-		data: {
-			testData: [],
-			columns: [],
-		}
+	currentState: {},
+	setCurrentState: (modelId: string, state: TFStore["currentState"][string]) => {
+		set({ 
+			currentState: {
+				...get().currentState,
+				[modelId]: state
+			}
+		});
 	},
-	setCurrentState: (state: TFStore["currentState"]) => {
-		set({ currentState: state });
+	setModelState: (modelId: string, state: TFStore["currentState"][string]["model"]) => {
+		set({ 
+			currentState: {
+				...get().currentState,
+				[modelId]: {
+					...get().currentState[modelId],
+					model: state
+				}
+			}
+		});
 	},
-	setModelState: (state: TFStore["currentState"]["model"]) => {
-		set({ currentState: { ...get().currentState, model: state } });
+	setTrainingState: (modelId: string, state: TFStore["currentState"][string]["training"]) => {
+		set({ 
+			currentState: {
+				...get().currentState,
+				[modelId]: {
+					...get().currentState[modelId],
+					training: state
+				}
+			}
+		});
 	},
-	setTrainingState: (state: TFStore["currentState"]["training"]) => {
-		set({ currentState: { ...get().currentState, training: state } });
-	},
-	setDataState: (state: TFStore["currentState"]["data"]) => {
-		set({ currentState: { ...get().currentState, data: state } });
+	setDataState: (modelId: string, state: TFStore["currentState"][string]["data"]) => {
+		set({ 
+			currentState: {
+				...get().currentState,
+				[modelId]: {
+					...get().currentState[modelId],
+					data: state
+				}
+			}
+		});
 	}
 }));

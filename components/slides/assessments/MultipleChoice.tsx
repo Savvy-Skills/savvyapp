@@ -94,6 +94,8 @@ export default function MultipleChoice({
 		tryAgain,
 		revealAnswer,
 		setHiddenFeedback,
+		triggerTryAgain,
+		triggerRevealAnswer,
 	} = useCourseStore();
 
 	const options = useMemo(
@@ -205,14 +207,16 @@ export default function MultipleChoice({
 	};
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && tryAgain) {
 			handleTryAgain();
+			triggerTryAgain();
 		}
 	}, [tryAgain]);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && revealAnswer) {
 			handleRevealAnswer();
+			triggerRevealAnswer();
 		}
 	}, [revealAnswer]);
 

@@ -191,7 +191,7 @@ export default function SlideRenderer({
 
 
 
-	if ((slide.type === "Content" && currentContents.length === 1) && slide.subtype == "Neural Network") {
+	if ((slide.type === "Content" && currentContents.length === 1) && slide.contents[0].type !== "Neural Network") {
 		return (
 			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 		);

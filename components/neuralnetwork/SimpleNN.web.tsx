@@ -1,6 +1,6 @@
 import { useDataFetch } from "@/hooks/useDataFetch";
 import { useTFStore } from "@/store/tensorStore";
-import React, { lazy, useCallback, useEffect, useRef, useState } from "react";
+import React, { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Surface, Button } from "react-native-paper";
 import LoadingIndicator from "../LoadingIndicator";
@@ -13,10 +13,14 @@ import { Colors } from "@/constants/Colors";
 
 export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {
 	const [selectedLayer, setSelectedLayer] = useState<LayerType>("input");
-	const { currentState, setCurrentState, tfWorker, initializeWorker, workerReady } = useTFStore();
+	const { currentState, setCurrentState, tfWorker, initializeWorker, workerReady, setCurrentModelId } = useTFStore();
 	const [currentNNState, setCurrentNNState] = useState<NNState>(initialNNState ?? {} as NNState);
 	const { currentSlideIndex } = useCourseStore();
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
+
+	const modelId = useMemo(() => {
+		return `${dataset_info?.id}-${index}`;
+	}, [dataset_info, index]);
 
 	// Get only the columns that are in the featureConfig
 	const inputColumns = columns.filter(column => currentNNState.trainingConfig?.dataPreparationConfig?.featureConfig?.some(feature => feature.field === column.accessor));
@@ -67,8 +71,9 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 	}, [currentNNState]);
 
 	const handleStartTraining = useCallback((data: any[], columns: any[]) => {
-		setCurrentState({
-			...currentState,
+		setCurrentModelId(modelId);
+		setCurrentState(modelId, {
+			...currentState[modelId],
 			model: {
 				training: true,
 				completed: false,
@@ -86,6 +91,7 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 		tfWorker?.postMessage({
 			from: "main",
 			type: "create_train",
+			modelId,
 			data: {
 				data,
 				columns,
@@ -134,13 +140,13 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 					style={localStyles.trainingButton}
 					buttonColor={Colors.orange}
 					onPress={() => {
-						if (currentState.model.training) {
+						if (currentState[modelId]?.model.training) {
 							tfWorker?.postMessage({
 								from: "main",
 								type: "stop_training",
 							});
-							setCurrentState({
-								...currentState,
+							setCurrentState(modelId, {
+								...currentState[modelId],
 								model: {
 									training: false,
 									completed: true,
@@ -153,7 +159,7 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 						}
 					}}
 				>
-					{currentState.model.training ? "Stop training" : currentState.model.completed ? "Train again" : "Start training"}
+					{currentState[modelId]?.model.training ? "Stop training" : currentState[modelId]?.model.completed ? "Train again" : "Start training"}
 				</Button>
 			</View>
 			<LayerDetails
@@ -170,6 +176,7 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 				initialTraces={currentNNState.initialTraces ?? []}
 				predictionTraces={currentNNState.predictionTraces ?? []}
 				index={index}
+				modelId={modelId}
 			/>
 		</View>
 	);

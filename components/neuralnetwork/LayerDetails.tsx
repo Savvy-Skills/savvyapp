@@ -33,6 +33,7 @@ interface LayerDetailsProps {
 	handleNeuronCountChange: (neuronCount: number, index: number) => void;
 	handleEpochsChange: (epochs: number) => void;
 	index: number;
+	modelId: string;
 }
 
 const activationFunctionsMap = {
@@ -60,9 +61,10 @@ export default function LayerDetails({
 	handleNeuronCountChange,
 	handleEpochsChange,
 	index,
+	modelId,
 }: LayerDetailsProps) {
 	const { modelConfig: currentModelConfig, trainingConfig: currentTrainingConfig } = currentNNState;
-	const { currentState, tfWorker } = useTFStore();
+	const { currentState, tfWorker, currentModelId } = useTFStore();
 	const [showActivationMenu, setShowActivationMenu] = useState(false);
 	const [showEpochsMenu, setShowEpochsMenu] = useState(false);
 	const [predictionInputs, setPredictionInputs] = useState<PredictionInputs>({} as PredictionInputs);
@@ -71,8 +73,8 @@ export default function LayerDetails({
 	const problemType = currentNNState.modelConfig?.problemType;
 
 	const plotlyAccData: Data[] = problemType === "classification" ? [{
-		x: currentState.training.modelHistory?.map(history => history.epoch),
-		y: currentState.training.modelHistory?.map(history => history.accuracy),
+		x: currentState[modelId]?.training.modelHistory?.map(history => history.epoch),
+		y: currentState[modelId]?.training.modelHistory?.map(history => history.accuracy),
 		type: "scatter",
 		name: "Accuracy",
 	}] : [];
@@ -86,8 +88,8 @@ export default function LayerDetails({
 
 
 	const plotlyLossData: Data[] = [{
-		x: currentState.training.modelHistory?.map(history => history.epoch),
-		y: currentState.training.modelHistory?.map(history => history.loss),
+		x: currentState[modelId]?.training.modelHistory?.map(history => history.epoch),
+		y: currentState[modelId]?.training.modelHistory?.map(history => history.loss),
 		type: "scatter",
 		name: "Loss",
 	}];
@@ -117,6 +119,7 @@ export default function LayerDetails({
 	};
 	const handlePredict = useCallback(() => {
 		tfWorker?.postMessage({
+			from: "main",
 			type: MESSAGE_TYPE_PREDICT,
 			data: {
 				inputs: predictionInputs,
@@ -170,8 +173,8 @@ export default function LayerDetails({
 
 	if (!selectedLayer) return null;
 
-	const accuracy = (currentState.training.modelHistory?.[currentState.training.modelHistory.length - 1]?.accuracy * 100).toFixed(2);
-	const loss = (currentState.training.modelHistory?.[currentState.training.modelHistory.length - 1]?.loss * 100).toFixed(2);
+	const accuracy = (currentState[modelId]?.training.modelHistory?.[currentState[modelId]?.training.modelHistory.length - 1]?.accuracy * 100).toFixed(2);
+	const loss = (currentState[modelId]?.training.modelHistory?.[currentState[modelId]?.training.modelHistory.length - 1]?.loss * 100).toFixed(2);
 	const accuracyColor = Number(accuracy) > 90 ? Colors.success : Number(accuracy) > 50 ? Colors.orange : Colors.error;
 	const lossColor = Number(loss) < 10 ? Colors.success : Number(loss) > 10 && Number(loss) < 20 ? Colors.orange : Colors.error;
 
@@ -265,7 +268,7 @@ export default function LayerDetails({
 
 			<View style={{ opacity: selectedLayer === "output" ? 1 : 0, height: selectedLayer === "output" ? "auto" : 0, overflow: "hidden" }}>
 
-				{(currentState.model.training || currentState.model.completed) && (
+				{(currentState[modelId]?.model.training || currentState[modelId]?.model.completed) && (
 					<View style={{ flexDirection: "column", gap: 16 }}>
 						<>
 							<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -280,12 +283,14 @@ export default function LayerDetails({
 									<Text style={[{ color: lossColor }]}>{loss}%</Text>
 								</View>
 							</View>
-							{currentState.training.modelHistory?.length > 0 && (
+							{currentState[modelId]?.training.modelHistory?.length > 0 && (
 								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
 							)}
 						</>
-						<DataTableContainer invert padding={0} data={currentState.data.testData} columns={currentState.data.columns} traces={predictionTraces} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
-						{currentState.model.completed && (
+						{currentState[modelId]?.data?.testData && currentState[modelId]?.data.testData.length > 0 && (
+							<DataTableContainer invert padding={0} data={currentState[modelId]?.data.testData} columns={currentState[modelId]?.data.columns} traces={predictionTraces} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
+						)}
+						{currentState[modelId]?.model.completed && (
 							<>
 								<View style={{ flexDirection: "row", gap: 8 }}>
 									{inputColumns.map((column, index) => (
@@ -296,13 +301,16 @@ export default function LayerDetails({
 									))}
 									<IconButton iconColor={Colors.orange} icon="dice-6-outline" size={34} onPress={handleGetRandomInputs} />
 								</View>
-								<Button mode="contained" style={{ borderRadius: 4 }} buttonColor={Colors.primary} onPress={handlePredict}>
-									Predict
-								</Button>
-								{currentState.model.prediction && (
+								{/* TODO: PREDICT BUTTON SHOULD ONLY BE AVAILABLE IF THE CURRENT MODEL ID IS THIS PROPS modelID */}
+								{ currentModelId === modelId && (
+									<Button mode="contained" style={{ borderRadius: 4 }} buttonColor={Colors.primary} onPress={handlePredict}>
+										Predict
+									</Button>
+								)}
+								{currentState[modelId]?.model.prediction && (
 									<>
 										<Text style={styles.subtitle}>Predicted Value:</Text>
-										<Text>{currentState.model.prediction}</Text>
+										<Text>{currentState[modelId]?.model.prediction}</Text>
 									</>
 								)}
 							</>

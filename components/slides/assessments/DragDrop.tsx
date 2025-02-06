@@ -47,6 +47,8 @@ export default function DragAndDropAssessment({
 		tryAgain,
 		revealAnswer,
 		setHiddenFeedback,
+		triggerTryAgain,
+		triggerRevealAnswer,
 	} = useCourseStore();
 
 	const isActive = index === currentSlideIndex;
@@ -133,14 +135,16 @@ export default function DragAndDropAssessment({
 	);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && tryAgain) {
 			handleTryAgain();
+			triggerTryAgain();
 		}
 	}, [tryAgain]);
 
 	useEffect(() => {
-		if (isActive) {
+		if (isActive && revealAnswer) {
 			handleRevealAnswer();
+			triggerRevealAnswer();
 		}
 	}, [revealAnswer]);
 

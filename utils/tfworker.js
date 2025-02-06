@@ -18,7 +18,7 @@ const workerFunction = function () {
   let transcurredEpochs = 0;
   let currentDataPreparationConfig = null;
   let currentModelConfig = null;
-
+  let currentModelId = null;
   let preprocessorState = {
     featureColumns: [],
     targetColumn: null,
@@ -480,6 +480,7 @@ const workerFunction = function () {
     self.postMessage({
       from: "worker",
       type: MESSAGE_TYPE_PREDICTION_RESULT,
+	  modelId: currentModelId,
       data: { predictionResult },
     });
 
@@ -537,6 +538,7 @@ const workerFunction = function () {
             });
           self.postMessage({
             from: "worker",
+			modelId: currentModelId,
             type: MESSAGE_TYPE_TRAIN_UPDATE,
             data: {
               transcurredEpochs: epoch,
@@ -561,6 +563,7 @@ const workerFunction = function () {
               columns,
             });
           self.postMessage({
+			modelId: currentModelId,
             from: "worker",
             type: MESSAGE_TYPE_TRAIN_END,
             data: {
@@ -624,11 +627,15 @@ const workerFunction = function () {
       });
       self.onmessage = async function (event) {
         console.log("Message received:", event.data);
+		if (event.data.from !== "main") {
+			return;
+		}
         switch (event.data.type) {
           case MESSAGE_TYPE_CREATE_TRAIN:
             const { data, columns, modelConfig, trainConfig } = event.data.data;
             currentDataPreparationConfig = trainConfig.dataPreparationConfig;
             currentModelConfig = modelConfig;
+			currentModelId = event.data.modelId;
             await createTrain(data, columns, modelConfig, trainConfig);
             break;
           case MESSAGE_TYPE_REMOVE:
