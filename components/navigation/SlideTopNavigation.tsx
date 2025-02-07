@@ -5,6 +5,7 @@ import { IconButton, useTheme } from "react-native-paper";
 import { router } from "expo-router";
 import styles from "@/styles/styles";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
+import { Colors } from "@/constants/Colors";
 
 interface SlideNavigationProps {
   wideScreen: boolean;
@@ -66,16 +67,15 @@ const localStyles = StyleSheet.create({
     flex: 1,
     height: 4,
     borderRadius: 4,
-    backgroundColor: "#ccc",
+    backgroundColor: Colors.revealed,
     marginHorizontal: 2,
     width: "100%",
   },
   completed: {
-    backgroundColor: "#664acc",
+    backgroundColor: Colors.primary,
   },
   current: {
     flex: 1.5,
-    borderWidth: 1,
     height: 10,
   },
 });

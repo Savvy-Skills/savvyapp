@@ -99,6 +99,16 @@ export default function ModuleDetail() {
 			ArrowLeft: () => handleArrowLeft(),
 		});
 	}
+	const handleBottomSheetOpen = () => {
+		setIsBottomSheetOpen(true);
+		bottomSheetRef.current?.expand();
+	}
+
+	const handleBottomSheetClose = () => {
+		setIsBottomSheetOpen(false);
+		bottomSheetRef.current?.close();
+	}
+
 
 	useEffect(() => {
 		if (currentSlideIndex !== prevIndexRef.current) {
@@ -113,11 +123,18 @@ export default function ModuleDetail() {
 		}
 	}, [currentSlideIndex]);
 
-	const handlePressOutside = useCallback(() => {
+	const handlePressOutside = useCallback((event: any) => {
 		if (isNavMenuVisible) {
 			setNavMenuVisible(false);
+		} 
+		if (isBottomSheetOpen) {
+			// TODO: Check if the user is tapping on the bottom sheet view, 
+			// To do this we need to check the event.target children, if it has the id "bottom-sheet-view" then we don't close the bottom sheet
+			if (event.target && event.target.firstElementChild && event.target.firstElementChild.id !== "bottom-sheet-view") {
+				handleBottomSheetClose();
+			}
 		}
-	}, [isNavMenuVisible, setNavMenuVisible]);
+	}, [isNavMenuVisible, setNavMenuVisible, isBottomSheetOpen, handleBottomSheetClose]);
 
 	const handleTryAgain = useCallback(() => {
 		triggerTryAgain();
@@ -135,16 +152,7 @@ export default function ModuleDetail() {
 		return <LoadingIndicator />
 	}
 
-	const handleBottomSheetOpen = () => {
-		setIsBottomSheetOpen(true);
-		bottomSheetRef.current?.expand();
-	}
-
-	const handleBottomSheetClose = () => {
-		setIsBottomSheetOpen(false);
-		bottomSheetRef.current?.close();
-	}
-
+	
 	const getWrapperStyle = () => {
 		if (hiddenFeedbacks[currentSlideIndex]) return null;
 		if (revealedAnswer) return styles.revealedWrapper;
@@ -199,23 +207,7 @@ export default function ModuleDetail() {
 							</AnimatedSlide>
 						))}
 					</View>
-					<BottomSheet
-						ref={bottomSheetRef}
-						onChange={handleSheetChanges}
-						index={-1}
-						snapPoints={["30%"]}
-						enableContentPanningGesture={false}
-						enableHandlePanningGesture={false}
-						enablePanDownToClose={false}
-						handleStyle={{ display: "none" }}
-						containerStyle={{ maxWidth: 600, width: "100%", marginHorizontal: "auto" }}
-						backgroundStyle={{ borderColor: "rgba(0, 0, 0, 0.1)", borderWidth: 1 }}
-					>
-						<BottomSheetView style={{ padding: 16 }}>
-							<Text>The answer is not a valid answer, please try again.</Text>
-							<Button onPress={() => bottomSheetRef.current?.close()}>Close</Button>
-						</BottomSheetView>
-					</BottomSheet>
+
 					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper, getWrapperStyle()]}>
 						{(isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex]) && (
 							<FeedbackComponent
@@ -231,6 +223,22 @@ export default function ModuleDetail() {
 						)}
 						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} onCloseBottomSheet={handleBottomSheetClose} showBottomSheet={isBottomSheetOpen} />
 					</View>
+					<BottomSheet
+						ref={bottomSheetRef}
+						onChange={handleSheetChanges}
+						index={-1}
+						snapPoints={["30%"]}
+						enableContentPanningGesture={false}
+						enableHandlePanningGesture={false}
+						enablePanDownToClose={false}
+						handleStyle={{ display: "none" }}
+						containerStyle={{ maxWidth: 600, width: "100%", marginHorizontal: "auto" }}
+						backgroundStyle={{ borderColor: "rgba(0, 0, 0, 0.1)", borderWidth: 1 }}
+					>
+						<BottomSheetView id="bottom-sheet-view" style={{ padding: 16 }}>
+							<Text>The answer is not a valid answer, please try again.</Text>
+						</BottomSheetView>
+					</BottomSheet>
 				</>
 			</Pressable>
 		</ScreenWrapper>
