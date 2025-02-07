@@ -18,10 +18,12 @@ const checkButtonColors = generateColors(Colors.navigationOrange, 0.5);
 type BottomBarNavProps = {
 	onShowTopSheet: () => void;
 	onShowBottomSheet: () => void;
+	showBottomSheet: boolean;
+	onCloseBottomSheet: () => void;
 };
 
 
-const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet }: BottomBarNavProps) => {
+const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCloseBottomSheet }: BottomBarNavProps) => {
 	const {
 		previousSlide,
 		currentView,
@@ -83,6 +85,9 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet }: BottomBarNavProps) 
 	const handleCheck = useCallback(() => {
 		if (currentAssessmentID !== undefined) {
 			if (isCurrentSlideSubmittable()) {
+				if (showBottomSheet) {
+					onCloseBottomSheet();
+				}
 				playSound(correctnessStates[currentSlideIndex] ? "success" : "failVariant", 0.6);
 				submitAssessment(currentAssessmentID);
 				setHiddenFeedback(currentSlideIndex, false);
@@ -91,7 +96,7 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet }: BottomBarNavProps) 
 				onShowBottomSheet();
 			}
 		}
-	}, [currentAssessmentID, submitAssessment, triggerScrollToEnd, correctnessStates, currentSlideIndex]);
+	}, [currentAssessmentID, submitAssessment, triggerScrollToEnd, correctnessStates, currentSlideIndex, showBottomSheet]);
 
 	const toggleMenu = useCallback(
 		() => setNavMenuVisible(!isNavMenuVisible),

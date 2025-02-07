@@ -229,7 +229,7 @@ export default function ModuleDetail() {
 								slideIndex={currentSlideIndex}
 							/>
 						)}
-						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} />
+						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} onCloseBottomSheet={handleBottomSheetClose} showBottomSheet={isBottomSheetOpen} />
 					</View>
 				</>
 			</Pressable>
