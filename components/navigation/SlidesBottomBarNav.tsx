@@ -17,10 +17,11 @@ const checkButtonColors = generateColors(Colors.navigationOrange, 0.5);
 
 type BottomBarNavProps = {
 	onShowTopSheet: () => void;
+	onShowBottomSheet: () => void;
 };
 
 
-const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
+const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet }: BottomBarNavProps) => {
 	const {
 		previousSlide,
 		currentView,
@@ -81,10 +82,14 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 
 	const handleCheck = useCallback(() => {
 		if (currentAssessmentID !== undefined) {
-			playSound(correctnessStates[currentSlideIndex] ? "success" : "failVariant", 0.6);
-			submitAssessment(currentAssessmentID);
-			setHiddenFeedback(currentSlideIndex, false);
-			triggerScrollToEnd();
+			if (isCurrentSlideSubmittable()) {
+				playSound(correctnessStates[currentSlideIndex] ? "success" : "failVariant", 0.6);
+				submitAssessment(currentAssessmentID);
+				setHiddenFeedback(currentSlideIndex, false);
+				triggerScrollToEnd();
+			} else {
+				onShowBottomSheet();
+			}
 		}
 	}, [currentAssessmentID, submitAssessment, triggerScrollToEnd, correctnessStates, currentSlideIndex]);
 
@@ -221,7 +226,7 @@ const BottomBarNav = ({ onShowTopSheet }: BottomBarNavProps) => {
 						) : (
 							<Button
 								mode="contained"
-								disabled={!isCurrentSlideSubmittable()}
+								// disabled={!isCurrentSlideSubmittable()}
 								onPress={handleCheck}
 								style={[styles.checkButton]}
 								labelStyle={styles.buttonLabel}
@@ -369,6 +374,7 @@ const localStyles = StyleSheet.create({
 		maxWidth: SLIDE_MAX_WIDTH,
 		alignSelf: "center",
 		width: "100%",
+		zIndex: 11,
 	},
 	menusContainer: {
 		position: "absolute",
