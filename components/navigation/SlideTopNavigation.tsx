@@ -75,8 +75,7 @@ const localStyles = StyleSheet.create({
   },
   current: {
     flex: 1.5,
-    backgroundColor: "#f4bb62",
-    borderWidth: 2,
+    borderWidth: 1,
     height: 10,
   },
 });

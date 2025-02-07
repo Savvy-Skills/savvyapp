@@ -28,7 +28,7 @@ const getOptionStyles = (
 		question.options.find((option) => option.isCorrect)?.text || "";
 
 	const baseStyles =
-		question.subtype === "Image" ? [localStyles.imageOption] : [styles.option];
+		question.subtype === "Image" ? [styles.imageOption] : [styles.option];
 
 	if (showAnswer && option === correctAnswer) {
 		if (!quizMode) {
@@ -55,7 +55,7 @@ const getOptionStyles = (
 			return [...baseStyles, styles.revealedOption];
 		}
 		if (question.subtype === "Image") {
-			return [...baseStyles, localStyles.selectedImage];
+			return [...baseStyles, styles.selectedImage];
 		}
 		return [...baseStyles, styles.selectedOption];
 	}
@@ -231,7 +231,7 @@ export default function SingleChoice({
 	const renderImageOption = (option: string, index: number) => (
 		<TouchableOpacity
 			key={index}
-			style={localStyles.imageContainer}
+			style={styles.imageContainer}
 			onPress={() => handleChoiceSelection(option)}
 			disabled={blocked}
 			accessibilityRole="radio"
@@ -250,10 +250,10 @@ export default function SingleChoice({
 			>
 				<Image
 					source={{ uri: option }}
-					style={localStyles.image}
+					style={styles.image}
 					resizeMode="contain"
 				/>
-				<View style={localStyles.imageIconContainer}>
+				<View style={styles.imageIconContainer}>
 					{renderStatusIcon(option)}
 				</View>
 			</View>
@@ -289,7 +289,7 @@ export default function SingleChoice({
 			isActive={isActive}
 		>
 			{question.subtype === "Image" ? (
-				<View style={localStyles.imageGrid}>
+				<View style={styles.imageGrid}>
 					{options.map((option, index) => renderImageOption(option, index))}
 				</View>
 			) : (
@@ -305,41 +305,3 @@ export default function SingleChoice({
 		</AssessmentWrapper>
 	);
 }
-
-const localStyles = StyleSheet.create({
-	imageGrid: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		gap: 16,
-		justifyContent: "center",
-	},
-	imageContainer: {
-		width: "45%",
-		aspectRatio: 1,
-	},
-	imageOption: {
-		width: "100%",
-		height: "100%",
-		borderRadius: 8,
-		borderWidth: 2,
-		borderColor: "#cccccc",
-		overflow: "hidden",
-		position: "relative",
-		padding: 10,
-	},
-	image: {
-		width: "100%",
-		height: "100%",
-	},
-	selectedImage: {
-		borderWidth: 3,
-		backgroundColor: "rgba(108, 92, 231, 0.1)",
-		borderColor: "#a197f9",
-	},
-	imageIconContainer: {
-		position: "absolute",
-		top: 8,
-		right: 8,
-		zIndex: 1,
-	},
-});

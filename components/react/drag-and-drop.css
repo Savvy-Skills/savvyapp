@@ -15,7 +15,7 @@
 }
 
 .drop-zone {
-  border: 2px dashed #ccc;
+  border: 1px dashed #ccc;
   border-radius: 0.5rem;
   padding: 1rem;
   min-height: 100px;
@@ -25,8 +25,8 @@
 }
 
 .drop-zone.hover {
-  background-color: #941fb105;
-  border-color: #941fb1;
+  background-color: #664acc13;
+  border-color: #664acc;
 }
 .status-icon-container {
   position: absolute;
@@ -36,18 +36,18 @@
 }
 
 .drop-zone.correct {
-  border-color: #3fd965;
+  border-color: #01e979;
 
   border-style: solid;
 }
 .drop-zone.show-answer {
-  border-color: #9e9e9e;
+  border-color: #cccccc;
 
   border-style: solid;
 }
 
 .drop-zone.wrong {
-  border-color: #ff4d4f;
+  border-color: #f44336;
   border-style: solid;
 }
 

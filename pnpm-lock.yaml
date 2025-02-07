@@ -14,6 +14,9 @@ importers:
       '@expo/vector-icons':
         specifier: ^14.0.2
         version: 14.0.4
+      '@gorhom/bottom-sheet':
+        specifier: ^5
+        version: 5.1.0(@types/react@18.3.18)(react-native-gesture-handler@2.20.2(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1))(react-native-reanimated@3.16.7(@babel/core@7.25.8)(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1))(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
       '@lottiefiles/dotlottie-react':
         specifier: ^0.12.1
         version: 0.12.1(react@18.3.1)
@@ -1114,6 +1117,27 @@ packages:
   '@expo/xcpretty@4.3.2':
     resolution: {integrity: sha512-ReZxZ8pdnoI3tP/dNnJdnmAk7uLT4FjsKDGW7YeDdvdOMz2XCQSmSCM9IWlrXuWtMF9zeSB6WJtEhCQ41gQOfw==}
     hasBin: true
+
+  '@gorhom/bottom-sheet@5.1.0':
+    resolution: {integrity: sha512-GcVR/nEztP28ulqDMnMcI9J4dmW1BRtyqsYTTIcAyDJgL6FmCBqhwSff5FxNfBzEdxfgEkBwHN46eXnIN/YomA==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-native': '*'
+      react: '*'
+      react-native: '*'
+      react-native-gesture-handler: '>=2.16.1'
+      react-native-reanimated: '>=3.16.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-native':
+        optional: true
+
+  '@gorhom/portal@1.0.14':
+    resolution: {integrity: sha512-MXyL4xvCjmgaORr/rtryDNFy3kU4qUbKlwtQqqsygd0xX3mhKjOLn6mQK8wfu0RkoE0pBE0nAasRoHua+/QZ7A==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -7819,6 +7843,23 @@ snapshots:
       chalk: 4.1.2
       find-up: 5.0.0
       js-yaml: 4.1.0
+
+  '@gorhom/bottom-sheet@5.1.0(@types/react@18.3.18)(react-native-gesture-handler@2.20.2(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1))(react-native-reanimated@3.16.7(@babel/core@7.25.8)(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1))(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@gorhom/portal': 1.0.14(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
+      invariant: 2.2.4
+      react: 18.3.1
+      react-native: 0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1)
+      react-native-gesture-handler: 2.20.2(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
+      react-native-reanimated: 3.16.7(@babel/core@7.25.8)(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.18
+
+  '@gorhom/portal@1.0.14(react-native@0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      nanoid: 3.3.8
+      react: 18.3.1
+      react-native: 0.76.6(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1)
 
   '@isaacs/cliui@8.0.2':
     dependencies:

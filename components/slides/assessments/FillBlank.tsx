@@ -299,7 +299,7 @@ export default function FillBlankAssessment({
 					onPress={() => handleBlankPress(index)}
 					disabled={blocked}
 					style={[
-						localStyles.blankButton,
+						styles.ftbBlankButton,
 						showAnswer && styles.revealedOption,
 						quizMode &&
 						isWrong &&
@@ -348,7 +348,7 @@ export default function FillBlankAssessment({
 			question={question}
 			isActive={isActive}
 		>
-			<View style={localStyles.textContainer}>
+			<View style={styles.ftbTextContainer}>
 				<Text style={styles.optionLabel}>
 					{renderText}
 				</Text>
@@ -356,14 +356,14 @@ export default function FillBlankAssessment({
 					{renderStatusIcon()}
 				</View>
 			</View>
-			<View style={localStyles.optionsContainer}>
+			<View style={styles.ftbOptionsContainer}>
 				{remainingOptions.map((option, index) => (
 					<Button
 						key={index}
 						mode="contained"
 						onPress={() => handleOptionPress(option)}
 						disabled={blocked}
-						style={[localStyles.optionButton, blocked && styles.disabledOption]}
+						style={[styles.ftbOptionButton, blocked && styles.disabledOption]}
 					>
 						{option}
 					</Button>
@@ -372,26 +372,3 @@ export default function FillBlankAssessment({
 		</AssessmentWrapper>
 	);
 }
-
-const localStyles = StyleSheet.create({
-	textContainer: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		alignItems: "center",
-		marginBottom: 16,
-	},
-	blankButton: {
-		minWidth: 100,
-		marginHorizontal: 4,
-	},
-	optionsContainer: {
-		flexDirection: "row",
-		flexWrap: "wrap",
-		justifyContent: "center",
-		marginTop: 16,
-	},
-	optionButton: {
-		margin: 4,
-		fontSize: 16,
-	},
-});

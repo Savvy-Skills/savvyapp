@@ -59,8 +59,8 @@ const ViewInfo = () => {
 				</Text>
 			</View>
 			<View style={localStyles.moduleContainer}>
-				<Icon source={icon} size={16} color={Colors.orange} />
-				<Text style={[localStyles.text, localStyles.slideInfo, { color: Colors.orange }]}>
+				<Icon source={icon} size={16} color={Colors.text} />
+				<Text style={[localStyles.text, localStyles.slideInfo]}>
 					{text}
 				</Text>
 			</View>
@@ -84,10 +84,10 @@ const localStyles = StyleSheet.create({
 	},
 	text: {
 		fontSize: 12,
-		fontWeight: "bold",
+		fontWeight: 600,
 	},
 	slideInfo: {
-		color: Colors.orange,
+		color: Colors.text,
 		fontSize: 14,
 		textTransform: "capitalize",
 	},

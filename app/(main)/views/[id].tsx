@@ -19,10 +19,12 @@ import SlideListItem from "@/components/slides/SlideListItem";
 import FeedbackComponent from "@/components/slides/Feedback";
 import LoadingIndicator from "@/components/LoadingIndicator";
 import styles from "@/styles/styles";
-import { Colors } from "@/constants/Colors";
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { Button, Text } from "react-native-paper";
+
 export default function ModuleDetail() {
 	const ref = useRef<TopSheetRefProps>(null);
-
+	const bottomSheetRef = useRef<BottomSheet>(null);
 	const { id } = useLocalSearchParams();
 	const {
 		getViewById,
@@ -52,6 +54,7 @@ export default function ModuleDetail() {
 	);
 	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentView?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentView.slides[currentSlideIndex].assessment_info?.id);
 	const currentSubmission = submittedAssessments[currentSubmissionIndex];
+	const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
 	const prevIndexRef = useRef(currentSlideIndex);
 	const [isInitialRender, setIsInitialRender] = useState(true);
@@ -60,6 +63,9 @@ export default function ModuleDetail() {
 
 	const openTopDrawer = useCallback(() => {
 		ref?.current?.scrollToEnd();
+	}, []);
+
+	const handleSheetChanges = useCallback((index: number) => {
 	}, []);
 
 
@@ -96,6 +102,9 @@ export default function ModuleDetail() {
 
 	useEffect(() => {
 		if (currentSlideIndex !== prevIndexRef.current) {
+			if (isBottomSheetOpen) {
+				handleBottomSheetClose();
+			}
 			setDirection(
 				currentSlideIndex > prevIndexRef.current ? "forward" : "backward"
 			);
@@ -126,19 +135,29 @@ export default function ModuleDetail() {
 		return <LoadingIndicator />
 	}
 
+	const handleBottomSheetOpen = () => {
+		setIsBottomSheetOpen(true);
+		bottomSheetRef.current?.expand();
+	}
+
+	const handleBottomSheetClose = () => {
+		setIsBottomSheetOpen(false);
+		bottomSheetRef.current?.close();
+	}
+
 	const getWrapperStyle = () => {
 		if (hiddenFeedbacks[currentSlideIndex]) return null;
 		if (revealedAnswer) return styles.revealedWrapper;
 		if (currentSubmission?.isCorrect) return styles.correctWrapper;
-		if (currentSubmission?.isCorrect === false) return styles.incorrectWrapper;	
+		if (currentSubmission?.isCorrect === false) return styles.incorrectWrapper;
 		return null
 	};
 
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
-				<Pressable style={[localStyles.pressableArea]} onPress={handlePressOutside}>
-					<TopNavBar />
-					<>
+			<Pressable style={[localStyles.pressableArea]} onPress={handlePressOutside}>
+				<TopNavBar />
+				<>
 					{/* TopSheet */}
 					<TopSheet ref={ref}>
 						<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
@@ -180,6 +199,23 @@ export default function ModuleDetail() {
 							</AnimatedSlide>
 						))}
 					</View>
+					<BottomSheet
+						ref={bottomSheetRef}
+						onChange={handleSheetChanges}
+						index={-1}
+						snapPoints={["30%"]}
+						enableContentPanningGesture={false}
+						enableHandlePanningGesture={false}
+						enablePanDownToClose={false}
+						handleStyle={{ display: "none" }}
+						containerStyle={{ maxWidth: 600, width: "100%", marginHorizontal: "auto" }}
+						backgroundStyle={{ borderColor: "rgba(0, 0, 0, 0.1)", borderWidth: 1 }}
+					>
+						<BottomSheetView style={{ padding: 16 }}>
+							<Text>The answer is not a valid answer, please try again.</Text>
+							<Button onPress={() => bottomSheetRef.current?.close()}>Close</Button>
+						</BottomSheetView>
+					</BottomSheet>
 					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper, getWrapperStyle()]}>
 						{(isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex]) && (
 							<FeedbackComponent
@@ -193,9 +229,9 @@ export default function ModuleDetail() {
 								slideIndex={currentSlideIndex}
 							/>
 						)}
-						<BottomBarNav onShowTopSheet={openTopDrawer} />
+						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} />
 					</View>
-					</>
+				</>
 			</Pressable>
 		</ScreenWrapper>
 	);
