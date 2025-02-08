@@ -11,9 +11,7 @@ import DataTableContainer from "../data/DataTableContainer";
 import styles from "@/styles/styles";
 import VideoComponent from "../VideoComponent";
 import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
-import { CopilotProvider, useCopilot } from "react-native-copilot";
 import { NNState } from "@/types/neuralnetwork";
-// import { Button } from "react-native-paper";
 
 export interface SlideProps {
 	slide: Slide;
@@ -27,53 +25,6 @@ interface ContentComponentProps {
 	canComplete: boolean;
 }
 
-// const datasetInfo: DatasetInfo = {
-// 	id: "x",
-// 	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714014246056x716561261256521100/circular-dataset.json",
-// 	name: "Circular Dataset",
-// 	extension: "json",
-// 	type: "Savvy",
-// 	description: "A dataset with circular data",
-// 	image_url: "https://picsum.photos/200/300",
-// 	disabled: false,
-// 	metadata: {
-// 		"rows": 1000,
-// 		"columns": 3
-// 	},
-// 	about: "A dataset with circular data",
-// }
-
-const datasetInfo: DatasetInfo = {
-	id: "x",
-	url: "https://api.savvyskills.io/vault/JS-TssR_/xHThL0ZHBR8g1knlOw94-9--iJY/ol7Izw../carsDataFiltered.json",
-	name: "Auto MPG",
-	extension: "json",
-	type: "Savvy",
-	description: "A dataset with auto mpg data",
-	image_url: "https://picsum.photos/200/300",
-	disabled: false,
-	metadata: {
-		"rows": 398,
-		"columns": 2
-	},
-	about: "A dataset with auto mpg data",
-}
-
-// const datasetInfo: DatasetInfo = {
-// 	id: "x",
-// 	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1721684075620x403131934444525440/drug200.csv",
-// 	name: "Drug 200",
-// 	extension: "csv",
-// 	type: "Savvy",
-// 	description: "A dataset with drug data",
-// 	image_url: "https://picsum.photos/200/300",
-// 	disabled: false,
-// 	metadata: {
-// 		"rows": 200,
-// 		"columns": 6
-// 	},
-// 	about: "A dataset with drug data",
-// }
 
 const ContentComponent = ({ content, index, canComplete }: ContentComponentProps) => {
 	switch (content.type) {
@@ -133,8 +84,6 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 				return <ImageSlide url={slide.image} index={index} />;
 			} else if (slide.subtype === "outro") {
 				return <LastSlide />;
-			} else if (slide.subtype === "mid") {
-				return <NeuralNetworkVisualizer dataset_info={datasetInfo} index={index} />
 			}
 			return <View />;
 		default:
@@ -161,7 +110,6 @@ export default function SlideRenderer({
 
 	const currentContents = slide?.contents && slide.contents.length > 0 ? slide.contents.sort((a, b) => a.order - b.order) : [];
 	const lastContent = currentContents[currentContents.length - 1]
-
 
 	useEffect(() => {
 		if (currentSlideIndex === index) {

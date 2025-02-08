@@ -25,8 +25,9 @@ export default StyleSheet.create({
     borderRadius: 8,
   },
   listContainer: {
-    padding: 8,
+    padding: 4,
     flexGrow: 1,
+	gap: 16
   },
   overlay: {
     alignItems: "center",
@@ -62,7 +63,7 @@ export default StyleSheet.create({
     marginBottom: 16,
   },
   innerSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 8,
     maxWidth: 1080,
     width: "100%",
     alignSelf: "center",
@@ -119,9 +120,16 @@ export default StyleSheet.create({
     overflow: "hidden",
     marginVertical: 6,
   },
+  viewCard: {
+    backgroundColor: Colors.assessmentBackground,
+    display: "flex",
+    flexDirection: "column",
+	borderRadius: 8,
+  },
   touchable: {
     gap: 10,
     padding: 10,
+	borderRadius: 8,
   },
   tagContainer: {
     backgroundColor: generateColors(Colors.primary, 0.2).muted,
