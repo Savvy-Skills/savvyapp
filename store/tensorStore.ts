@@ -1,13 +1,17 @@
 import { create } from 'zustand';
 import { TFInstance } from '../utils/TFInstance';
 import { Column } from '@/types/table';
-import { workerScript } from '@/utils/tfworker';
+// import { workerScript } from '@/utils/tfworker';
+import { Platform } from 'react-native';
 
 const MESSAGE_TYPE_ERROR = "error";
 const MESSAGE_TYPE_TRAIN_UPDATE = "train_update";
 const MESSAGE_TYPE_TRAIN_END = "train_end";
 const MESSAGE_TYPE_INIT = "init";
 const MESSAGE_TYPE_PREDICTION_RESULT = "prediction_result";
+
+// If Platform.OS is web, use the workerScript from the utils folder
+const workerScript = Platform.OS === "web" ? require("@/utils/tfworker").workerScript : null;
 
 
 interface TFStore {
@@ -59,6 +63,9 @@ export const useTFStore = create<TFStore>((set, get) => ({
 		set({ currentModelId: modelId });
 	},
 	initializeWorker: async () => {
+		if (Platform.OS !== "web") {
+			return;
+		}
 		if (!get().tfWorker) {
 			const worker = new Worker(workerScript);
 			worker.onmessage = (event: MessageEvent<WorkerMessage>) => {

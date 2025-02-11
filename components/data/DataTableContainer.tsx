@@ -130,6 +130,8 @@ export default function DataTableContainer({
 				dataset={filteredData}
 				traces={traces}
 				title="Data Visualizer"
+				xAxisLabel={traces[0].x}
+				yAxisLabel={traces[0].y}
 			/>}
 		</View>
 	);

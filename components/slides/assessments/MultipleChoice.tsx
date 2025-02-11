@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { QuestionInfo } from "@/types";
@@ -156,7 +156,7 @@ export default function MultipleChoice({
 	const blocked =
 		currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
 
-	const handleChoiceSelection = (value: string) => {
+	const handleChoiceSelection = useCallback((value: string) => {
 		if (quizMode && (isWrong || currentSubmission?.isCorrect)) {
 			return;
 		}
@@ -178,7 +178,7 @@ export default function MultipleChoice({
 			}
 			return newSelectedValues;
 		});
-	};
+	}, [quizMode, isWrong, currentSubmission, setAnswer, index, setHiddenFeedback, currentSlideIndex, setSubmittableState]);
 
 	const resetStates = () => {
 		setSelectedValues([]);

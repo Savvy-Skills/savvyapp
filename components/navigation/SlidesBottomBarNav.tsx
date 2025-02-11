@@ -86,7 +86,7 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 		if (currentAssessmentID !== undefined) {
 			if (isCurrentSlideSubmittable()) {
 				if (showBottomSheet) {
-					onCloseBottomSheet();
+				onCloseBottomSheet();
 				}
 				playSound(correctnessStates[currentSlideIndex] ? "success" : "failVariant", 0.6);
 				submitAssessment(currentAssessmentID);

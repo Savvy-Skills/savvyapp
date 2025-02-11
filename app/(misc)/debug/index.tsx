@@ -1,43 +1,46 @@
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
-import NeuralNetworkVisualizer from "@/components/neuralnetwork/SimpleNN";
-// import TfjsComponent from "@/components/TfjsComponent";
-import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
-import { DatasetInfo } from "@/types";
-import React, { useCallback, useRef } from "react";
-import { ScrollView, View } from "react-native";
-import TensorFlowPoseDetection from "@/components/vision/TfjsPoseComponent";
-import WorkerTest from "@/components/WorkerTest";
-import { Text } from "react-native-paper";
+import React, { useEffect } from "react";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 
-const datasetInfo: DatasetInfo = {
-	id: "x",
-	url: "https://2810845b43907691a6f6d3af548bea56.cdn.bubble.io/f1714014246056x716561261256521100/circular-dataset.json",
-	name: "Circular Dataset",
-	extension: "json",
-	type: "Savvy",
-	description: "A dataset with circular data",
-	image_url: "https://picsum.photos/200/300",
-	disabled: false,
-	metadata: {
-		"rows": 1000,
-		"columns": 3
-	},
-	about: "A dataset with circular data",
-}
+import { useCourseStore } from "@/store/courseStore";
+
+import SlideRenderer from "@/components/slides/SlideRenderer";
+import AssessmentSlide from "@/components/slides/AssessmentSlide";
+import SingleChoice from "@/components/slides/assessments/SingleChoice";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 export default function DebugScreen() {
-  const ref = useRef<TopSheetRefProps>(null);
-  const onPress = useCallback(() => {
-    ref?.current?.scrollTo(100);
-  }, []);
-  return (
-    <ScreenWrapper style={{ flex: 1 }}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-		{/* <NeuralNetworkVisualizer dataset_info={datasetInfo} index={0} /> */}
-        {/* <TfjsRegression></TfjsRegression> */}
-        {/* <TensorFlowPoseDetection></TensorFlowPoseDetection> */}
-		<Text>Hello</Text>
-      </ScrollView>
-    </ScreenWrapper>
-  );
+
+	const { clearCurrentView, getViewById, currentView } = useCourseStore();
+
+	const player = useVideoPlayer("https://storage.googleapis.com/xfpf-pye0-4nzu.n7d.xano.io/vault/JS-TssR_/rVCpdbDQw21wS2CcnrZEPojOHa8/huXURg../Video1.mp4");
+
+	useEffect(() => {
+		clearCurrentView();
+		getViewById(Number(1));
+	}, []);
+
+	const currentSlideIndex = 2;
+
+	return (
+		<ScreenWrapper style={{ overflow: "hidden" }}>
+			<View style={styles.contentContainer}>
+				<VideoView contentFit="contain" style={styles.video} player={player} />
+			</View>
+		</ScreenWrapper>
+	);
 }
+
+const styles = StyleSheet.create({
+	contentContainer: {
+		flex: 1, 
+		alignItems: 'center',
+	},
+	video: {
+		height: "100%",
+		width: Platform.OS !== "web" ? "100%" : undefined,
+	},
+	controlsContainer: {
+		padding: 10,
+	},
+});

@@ -103,6 +103,9 @@ export default StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+  defaultButton: {
+    borderRadius: 8,
+  },
   button: {
     padding: 10,
     borderRadius: 5,
@@ -140,8 +143,9 @@ export default StyleSheet.create({
     fontFamily: "PoppinsBold",
   },
   networkContainer: {
+    flex: 1,
     flexDirection: "row",
-    minHeight: 200,
+	maxHeight: 400,
   },
   tag: {
     fontSize: 12,
@@ -352,7 +356,8 @@ export default StyleSheet.create({
   assessmentWrapper: {
     flex: 1,
     gap: 16,
-    padding: 30,
+    paddingVertical: 30,
+	paddingHorizontal: 16,
   },
   assessmentButtonContainer: {
     flexDirection: "row",
@@ -495,9 +500,7 @@ export default StyleSheet.create({
     gap: 8,
   },
   optionContainer: {
-    flex: 1,
     borderRadius: 4,
-    minHeight: "auto",
   },
   optionLabel: {
     fontSize: 16,
@@ -507,8 +510,7 @@ export default StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     borderRadius: 4,
-    flex: 1,
-    paddingHorizontal: 5,
+    paddingHorizontal: 8,
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: "rgba(108, 92, 231, 0)",
