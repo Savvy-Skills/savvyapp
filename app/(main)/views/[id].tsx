@@ -126,13 +126,9 @@ export default function ModuleDetail() {
 	const handlePressOutside = useCallback((event: any) => {
 		if (isNavMenuVisible) {
 			setNavMenuVisible(false);
-		} 
+		}
 		if (isBottomSheetOpen) {
-			// TODO: Check if the user is tapping on the bottom sheet view, 
-			// To do this we need to check the event.target children, if it has the id "bottom-sheet-view" then we don't close the bottom sheet
-			if (event.target && event.target.firstElementChild && event.target.firstElementChild.id !== "bottom-sheet-view") {
-				handleBottomSheetClose();
-			}
+			handleBottomSheetClose();
 		}
 	}, [isNavMenuVisible, setNavMenuVisible, isBottomSheetOpen, handleBottomSheetClose]);
 
@@ -152,7 +148,7 @@ export default function ModuleDetail() {
 		return <LoadingIndicator />
 	}
 
-	
+
 	const getWrapperStyle = () => {
 		if (hiddenFeedbacks[currentSlideIndex]) return null;
 		if (revealedAnswer) return styles.revealedWrapper;
@@ -165,9 +161,9 @@ export default function ModuleDetail() {
 		<ScreenWrapper style={{ overflow: "hidden" }}>
 			<Pressable style={[localStyles.pressableArea]} onPress={handlePressOutside}>
 				<TopNavBar />
-				<>
+				<View style={{ flex: 1 }}>
 					{/* TopSheet */}
-					<TopSheet ref={ref}>
+					{/* <TopSheet ref={ref}>
 						<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
 							{currentView.slides.map((slide, index) => (
 								<SlideListItem
@@ -187,7 +183,7 @@ export default function ModuleDetail() {
 								/>
 							))}
 						</ScrollView>
-					</TopSheet>
+					</TopSheet> */}
 					{/* Slides */}
 					<View style={localStyles.slidesContainer}>
 						{currentView.slides.map((slide, index) => (
@@ -223,24 +219,29 @@ export default function ModuleDetail() {
 						)}
 						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} onCloseBottomSheet={handleBottomSheetClose} showBottomSheet={isBottomSheetOpen} />
 					</View>
-					<BottomSheet
-						ref={bottomSheetRef}
-						onChange={handleSheetChanges}
-						index={-1}
-						snapPoints={["30%"]}
-						enableContentPanningGesture={false}
-						enableHandlePanningGesture={false}
-						enablePanDownToClose={false}
-						handleStyle={{ display: "none" }}
-						containerStyle={{ maxWidth: 600, width: "100%", marginHorizontal: "auto" }}
-						backgroundStyle={{ borderColor: "rgba(0, 0, 0, 0.1)", borderWidth: 1 }}
-					>
-						<BottomSheetView id="bottom-sheet-view" style={{ padding: 16 }}>
-							<Text>The answer is not a valid answer, please try again.</Text>
-						</BottomSheetView>
-					</BottomSheet>
-				</>
+				</View>
 			</Pressable>
+			{isBottomSheetOpen && (
+				<Pressable style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} onPress={handleBottomSheetClose}></Pressable>
+			)}
+			<BottomSheet
+				ref={bottomSheetRef}
+				onChange={handleSheetChanges}
+				index={-1}
+				snapPoints={["30%"]}
+				enableContentPanningGesture={false}
+				enableHandlePanningGesture={false}
+				enablePanDownToClose={false}
+				handleStyle={{ display: "none" }}
+				containerStyle={{ maxWidth: 600, width: "100%", marginHorizontal: "auto" }}
+				backgroundStyle={{ borderColor: "rgba(0, 0, 0, 0.1)", borderWidth: 1 }}
+			>
+				<BottomSheetView id="bottom-sheet-view" style={{ padding: 16, gap: 16 }}>
+					<Text>The answer is not a valid answer, please try again.</Text>
+					<Button mode="outlined" style={styles.defaultButton} onPress={handleBottomSheetClose}>Close</Button>
+				</BottomSheetView>
+			</BottomSheet>
+
 		</ScreenWrapper>
 	);
 }

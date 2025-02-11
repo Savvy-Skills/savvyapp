@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useCourseStore } from "@/store/courseStore";
 import { useEvent } from "expo";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { StyleSheet, View, Button } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 
 import { VideoSlideProps } from "./slides/content/VideoSlide";
@@ -15,12 +15,12 @@ const VideoComponent: React.FC<VideoSlideProps> = ({ url, index, canComplete }) 
 	} = useCourseStore();
 	const isActive = index === currentSlideIndex;
 	const [duration, setDuration] = useState(0);
-	const [showPlaceholder, setShowPlaceholder] = useState(true);
+	const [showPlaceholder, setShowPlaceholder] = useState(Platform.OS === "web" ? true : false);
 	const firstTime = useRef(true);
 
 	const player = useVideoPlayer(url, (player) => {
 		player.timeUpdateEventInterval = 0.5;
-		player.muted = true;
+		player.muted = Platform.OS === "web" ? true : false;
 	});
 
 	const { status, error } = useEvent(player, "statusChange", {
@@ -38,17 +38,17 @@ const VideoComponent: React.FC<VideoSlideProps> = ({ url, index, canComplete }) 
 		if (!isActive && player.playing) {
 			player.pause();
 		}
-		if (isActive && firstTime.current) {
+		if (isActive && firstTime.current && Platform.OS === "web") {
 			player.play();
 			firstTime.current = false;
 			setTimeout(() => {
-				player.replay();
+				player.seekBy(0);
 				player.pause();
 				player.muted = false;
 				setShowPlaceholder(false);
 			}, 500);
 		}
-	}, [isActive]);
+	}, [isActive, player]);
 
 	useEffect(() => {
 		if (status === "readyToPlay" && duration === 0) {
@@ -71,13 +71,7 @@ const VideoComponent: React.FC<VideoSlideProps> = ({ url, index, canComplete }) 
 
 	return (
 		<View style={styles.contentContainer}>
-			{showPlaceholder ? (
-				<ActivityIndicator />
-			) : (
-				<View style={styles.videoContainer}>
-					<VideoView style={styles.video} player={player} allowsFullscreen  />
-				</View>
-			)}
+			<VideoView style={styles.video} player={player} allowsFullscreen />
 		</View>
 	);
 };
@@ -85,18 +79,14 @@ const VideoComponent: React.FC<VideoSlideProps> = ({ url, index, canComplete }) 
 const styles = StyleSheet.create({
 	contentContainer: {
 		flex: 1,
-		alignItems: "center",
-		justifyContent: "center",
-		maxHeight: "100%",
-		width: "100%",
-	},
-	videoContainer: {
-		overflow: "hidden",
-		maxHeight: "100%",
+		alignItems: 'center',
+		justifyContent: 'center',
+		minHeight: 240,
+		alignSelf: Platform.OS === "web" ? "center" : undefined,
 	},
 	video: {
-		width: "100%",
 		height: "100%",
+		width: "100%",
 	},
 	controlsContainer: {
 		padding: 10,
