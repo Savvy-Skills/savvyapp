@@ -1,5 +1,5 @@
 import styles from "@/styles/styles";
-import { QuestionInfo } from "@/types";
+import { LocalSlide, QuestionInfo } from "@/types";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
@@ -9,33 +9,24 @@ import { useThemeStore } from "@/store/themeStore";
 import { Colors } from "@/constants/Colors";
 
 interface AssessmentWrapperProps {
+	slide: LocalSlide;
 	children: React.ReactNode;
 	question: QuestionInfo;
-	isActive: boolean;
 }
 
+const untitledAssessments = ["Fill in the Blank", "True or False"];
+
+
 export default function AssessmentWrapper({
+	slide,
 	question,
 	children: assessment,
-	isActive,
 }: AssessmentWrapperProps) {
-	const [showExplanationComponent, setShowExplanationComponent] = useState(false);
-	const {
-		showExplanation,
-		setShownExplanation,
-		triggerShowExplanation
-	} = useCourseStore();
+
+	const showExplanationComponent = slide.showExplanation;
 	const { backgroundAssessment } = useThemeStore();
 
 
-	const untitledAssessments = ["Fill in the Blank", "True or False"];
-
-	useEffect(() => {
-		if (isActive && showExplanation) {
-			setShowExplanationComponent((state) => !state);
-			triggerShowExplanation();
-		}
-	}, [showExplanation, isActive, triggerShowExplanation]);
 
 	return (
 		<View

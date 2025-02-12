@@ -2,7 +2,7 @@ import React from "react";
 import {
 	View,
 } from "react-native";
-import { AssessmentSlide as AssessmentSlideType } from "@/types";
+import { LocalSlide } from "@/types";
 import NumericalAnswer from "./assessments/NumericalAnswer";
 import SingleChoice from "./assessments/SingleChoice";
 import MultipleChoice from "./assessments/MultipleChoice";
@@ -14,82 +14,81 @@ import DragAndDropAssessment from "./assessments/DragDrop";
 import TrueFalseQuestion from "./assessments/TrueFalse";
 
 type AssessmentProps = {
-	slide: AssessmentSlideType;
-	index: number;
+	slide: LocalSlide;
 	quizMode: boolean;
 };
 
-function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
-	switch (slide.assessment_info.type) {
+function AssessmentComponent({ slide, quizMode }: AssessmentProps) {
+	switch (slide.assessment_info?.type) {
 		case "Numerical":
 			return (
 				<NumericalAnswer
+					slide={slide}
 					question={slide.assessment_info}
-					index={index}
 					quizMode={quizMode}
 				/>
 			);
 		case "Single Choice":
 			return (
 				<SingleChoice
+					slide={slide}
 					question={slide.assessment_info}
-					index={index}
 					quizMode={quizMode}
 				/>
 			);
 		case "Multiple Choice":
 			return (
 				<MultipleChoice
+					slide={slide}
 					question={slide.assessment_info}
-					index={index}
 					quizMode={quizMode}
 				/>
 			);
 		case "Order List":
 			return (
 				<ReorderAssessment
+					slide={slide}
 					question={slide.assessment_info}
-					index={index}
 					quizMode={quizMode}
 				/>
 			);
 		case "Fill in the Blank":
 			return (
 				<FillBlankAssessment
+					slide={slide}
 					question={slide.assessment_info}
-					index={index}
 					quizMode={quizMode}
 				/>
 			);
 		case "Match the Words":
-			return (
-				<MatchWordsAssessment
-					question={slide.assessment_info}
-					index={index}
-					quizMode={quizMode}
-				/>
-			);
+				return (
+					<MatchWordsAssessment
+						slide={slide}
+						question={slide.assessment_info}
+						quizMode={quizMode}
+					/>
+				);
 		case "Open Ended":
 			return (
 				<OpenEnded
+					slide={slide}
 					question={slide.assessment_info}
-					index={index}
 					quizMode={quizMode}
 				/>
 			);
 		case "Drag and Drop":
 			return (
 				<DragAndDropAssessment
+					slide={slide}
 					question={slide.assessment_info}
-					index={index}
 					quizMode={quizMode}
 				/>
 			);
 		case "True or False":
 			return (
 				<TrueFalseQuestion
+					slide={slide}
 					question={slide.assessment_info}
-					index={index}
 					quizMode={quizMode}
 				/>
 			);
@@ -100,11 +99,10 @@ function AssessmentComponent({ slide, index, quizMode }: AssessmentProps) {
 
 export default function AssessmentSlide({
 	slide,
-	index,
 	quizMode,
 }: AssessmentProps) {
 
 	return (
-		<AssessmentComponent slide={slide} index={index} quizMode={quizMode} />
+		<AssessmentComponent slide={slide} quizMode={quizMode} />
 	);
 }

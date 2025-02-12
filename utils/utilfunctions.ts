@@ -1,19 +1,20 @@
 import { AssessmentAnswer } from "@/store/courseStore";
+import styles from "@/styles/styles";
 import { CustomSlide, Submission, ViewWithSlides } from "@/types";
 
 const includes = <T>(arr: readonly T[], x: T): boolean => arr.includes(x)
 
 function hexToRgbA(hex: string): string {
-    var c;
-    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
-        c= hex.substring(1).split('');
-        if(c.length== 3){
-            c= [c[0], c[0], c[1], c[1], c[2], c[2]];
-        }
-        c= '0x'+c.join('');
-        return 'rgba('+[(parseInt(c)>>16)&255, (parseInt(c)>>8)&255, parseInt(c)&255].join(',')+',1)';
-    }
-    throw new Error('Bad Hex');
+	var c;
+	if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+		c = hex.substring(1).split('');
+		if (c.length == 3) {
+			c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+		}
+		c = '0x' + c.join('');
+		return 'rgba(' + [(parseInt(c) >> 16) & 255, (parseInt(c) >> 8) & 255, parseInt(c) & 255].join(',') + ',1)';
+	}
+	throw new Error('Bad Hex');
 }
 
 function generateColors(color: string, opacity: number) {
@@ -73,6 +74,62 @@ function createCustomSlide(
 		};
 	}
 }
+export interface OptionProps extends OptionStylesProps {
+	handleChoiceSelection: (option: string) => void;
+	key: string;
+}
+
+
+interface OptionStylesProps {
+	option: string;
+	quizMode: boolean;
+	isCorrect: boolean;
+	selectedValue: string;
+	correctAnswer: string;
+	isRevealed: boolean;
+	isSubmitted: boolean;
+	questionType: "Text" | "Image";
+}
+
+export const getOptionStyles = ({
+	option,
+	quizMode,
+	isCorrect,
+	selectedValue,
+	correctAnswer,
+	isRevealed,
+	isSubmitted,
+	questionType,
+}: OptionStylesProps) => {
+	const isSelected = option === selectedValue;
+	const isCorrectAnswer = option === correctAnswer;
+	const baseStyles = questionType === "Image" ? [styles.imageOption] : [styles.option];
+
+	// Handle quiz mode wrong answer states first
+	if (quizMode && isSubmitted && !isCorrect) {
+		if (isCorrectAnswer) return [...baseStyles, styles.correctOption];
+		if (isSelected) return [...baseStyles, styles.incorrectOption];
+		return [...baseStyles, styles.disabledOption];
+	}
+
+	// Handle revealed correct answers (non-quiz mode)
+	if (isRevealed && isCorrectAnswer && !quizMode) {
+		return [...baseStyles, styles.revealedOption];
+	}
+
+	// Handle selected option states
+	if (isSelected) {
+		if (isSubmitted && isCorrect) return [...baseStyles, styles.correctOption];
+		if (isSubmitted && !isCorrect) return [...baseStyles, styles.incorrectOption];
+		if (isRevealed) return [...baseStyles, styles.revealedOption];
+
+		return questionType === "Image"
+			? [...baseStyles, styles.selectedImage]
+			: [...baseStyles, styles.selectedOption];
+	}
+
+	return baseStyles;
+};
 
 const createSubmission = (
 	assessment_id: number,

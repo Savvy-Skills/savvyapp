@@ -94,6 +94,7 @@ export default StyleSheet.create({
     paddingVertical: 12,
     gap: 16,
     paddingHorizontal: 12,
+	zIndex:1000
   },
   slideWidth: {
     maxWidth: SLIDE_MAX_WIDTH,

@@ -11,6 +11,7 @@ import ConfirmationDialog from "@/components/modals/ConfirmationDialog";
 import { router } from "expo-router";
 import { generateColors } from "@/utils/utilfunctions";
 import { useAudioStore } from "@/store/audioStore";
+import { useViewStore } from "@/store/viewStore";
 
 const navButtonColors = generateColors(Colors.navigationPurple, 0.5);
 const checkButtonColors = generateColors(Colors.navigationOrange, 0.5);
@@ -24,33 +25,14 @@ type BottomBarNavProps = {
 
 
 const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCloseBottomSheet }: BottomBarNavProps) => {
-	const {
-		previousSlide,
-		currentView,
-		currentSlideIndex,
-		nextSlide,
-		submitAssessment,
-		isCurrentSlideSubmittable,
-		isNavMenuVisible,
-		setNavMenuVisible,
-		completedSlides,
-		restartView,
-		hiddenFeedbacks,
-		setHiddenFeedback,
-		submittedAssessments,
-		triggerTryAgain,
-		triggerScrollToEnd,
-		setSubmittableState,
-		skipAssessments,
-		setSkipAssessments,
-		correctnessStates
-	} = useCourseStore();
 
 	const { playSound } = useAudioStore();
+	const { currentSlideIndex, setCurrentSlideIndex, viewId, viewWithoutSlides, slides, prevSlide, nextSlide, submitAnswer, skipAssessments, setSkipAssessments, restartView, tryAgain } = useViewStore();
 
 	const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
 	const [showRestartViewDialog, setShowRestartViewDialog] = useState(false);
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
+	const [navMenuVisible, setNavMenuVisible] = useState(false);
 	const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 	const showFeedbackModal = () => setFeedbackModalVisible(true);
 
@@ -65,42 +47,25 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 		setShowConfirmationDialog(false);
 	};
 
-	let currentAssessmentID = undefined;
 
-	const isLastSlide =
-		currentView && currentSlideIndex === currentView.slides.length - 1;
-	if (currentView?.slides[currentSlideIndex].type === "Assessment") {
-		currentAssessmentID =
-			currentView?.slides[currentSlideIndex].assessment_id;
-	}
-	const currentSlide = currentView?.slides[currentSlideIndex];
-
-	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentView?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentView.slides[currentSlideIndex].assessment_info?.id);
-	const currentSubmission = submittedAssessments[currentSubmissionIndex];
-
-	const revealedAnswer = currentSubmission?.revealed ?? false;
-
-	const isCurrentSlideCompleted = completedSlides[currentSlideIndex];
+	const isLastSlide = slides.length - 1 === currentSlideIndex;
+	const currentSlide = slides[currentSlideIndex];
+	const revealedAnswer = currentSlide?.revealed ?? false;
+	const isCurrentSlideCompleted = currentSlide?.completed ?? false;
 
 	const handleCheck = useCallback(() => {
-		if (currentAssessmentID !== undefined) {
-			if (isCurrentSlideSubmittable()) {
-				if (showBottomSheet) {
-				onCloseBottomSheet();
-				}
-				playSound(correctnessStates[currentSlideIndex] ? "success" : "failVariant", 0.6);
-				submitAssessment(currentAssessmentID);
-				setHiddenFeedback(currentSlideIndex, false);
-				triggerScrollToEnd();
+		if (currentSlide?.type === "Assessment") {
+			if (currentSlide.submittable) {
+				submitAnswer();
 			} else {
 				onShowBottomSheet();
 			}
 		}
-	}, [currentAssessmentID, submitAssessment, triggerScrollToEnd, correctnessStates, currentSlideIndex, showBottomSheet]);
+	}, [showBottomSheet, currentSlide]);
 
 	const toggleMenu = useCallback(
-		() => setNavMenuVisible(!isNavMenuVisible),
-		[isNavMenuVisible, setNavMenuVisible]
+		() => setNavMenuVisible((prev) => !prev),
+		[navMenuVisible, setNavMenuVisible]
 	);
 
 	const handleDismissMenu = useCallback(
@@ -124,9 +89,9 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 	}, [handleDismissMenu]);
 
 	const handlePreviousSlide = useCallback(() => {
-		previousSlide();
+		prevSlide();
 		handleDismissMenu();
-	}, [previousSlide, handleDismissMenu]);
+	}, [prevSlide, handleDismissMenu]);
 
 	const handleNextSlide = useCallback(() => {
 		if (currentSlide?.type === "Assessment" && !isCurrentSlideCompleted && !skipAssessments) {
@@ -144,119 +109,120 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 	}, [handleDismissMenu]);
 
 	const handleTryAgain = useCallback(() => {
-		triggerTryAgain();
-		setHiddenFeedback(currentSlideIndex, true);
-		setSubmittableState(currentSlideIndex, false);
-	}, [triggerTryAgain, setHiddenFeedback, currentSlideIndex]);
+		tryAgain();
+	}, [tryAgain]);
 
 
-	const moduleViews = currentView?.module_info.views.sort((a, b) => a.order - b.order);
-	const currentViewIndex = moduleViews?.findIndex(view => view.view_id === currentView?.id);
+	const moduleViews = viewWithoutSlides?.module_info.views.sort((a, b) => a.order - b.order);
+	const currentViewIndex = moduleViews?.findIndex(view => view.view_id === viewWithoutSlides?.id);
 	const isLastView = moduleViews ? currentViewIndex === moduleViews.length - 1 : false;
 
 	const MiddleButton = () => {
-		const buttonLabel = currentSlide?.buttonLabel ? currentSlide.buttonLabel : currentSubmission && currentSubmission.revealed ? "Got it" : "Continue";
+		const { type, submitted, isCorrect, assessment_id, buttonLabel: slideLabel } = currentSlide || {};
+		const isAssessment = type === "Assessment";
+		const isCompleted = isCurrentSlideCompleted;
+		const isIncorrectAssessment = isAssessment && submitted && !isCorrect;
+
+		// Determine button label
+		const buttonLabel = slideLabel ||
+			(isAssessment && submitted && currentSlide?.revealed) ? "Got it" : "Continue";
+
+		// Common button props
+		const baseButtonProps = {
+			mode: "contained" as const,
+			dark: false,
+			style: [styles.checkButton],
+			labelStyle: styles.buttonLabel,
+			theme: {
+				colors: {
+					primary: checkButtonColors.normal,
+					surfaceDisabled: checkButtonColors.muted,
+				},
+			},
+		};
+
+		// Handle last slide case first
+		if (isLastSlide) {
+			return (
+				<Button
+					{...baseButtonProps}
+					onPress={handleFinish}
+					theme={{
+						colors: {
+							primary: checkButtonColors.normal,
+							surfaceDisabled: checkButtonColors.muted,
+						},
+					}}
+				>
+					FINISH
+				</Button>
+			);
+		}
+
+		// Completed slide or non-assessment
+		if (!assessment_id || isCompleted) {
+			const buttonVariant = isIncorrectAssessment ? 'incorrect' :
+				revealedAnswer ? 'revealed' :
+					isAssessment ? 'correct' : 'normal';
+
+			return (
+				<Button
+					{...baseButtonProps}
+					onPress={handleNextSlide}
+					style={[
+						styles.checkButton,
+						buttonVariant === 'incorrect' && styles.incorrectButton,
+						buttonVariant === 'revealed' && styles.revealedButton,
+						buttonVariant === 'correct' && styles.correctButton
+					]}
+					labelStyle={[
+						styles.buttonLabel,
+						buttonVariant === 'incorrect' && styles.incorrectLabel,
+						buttonVariant === 'revealed' && styles.revealedLabel,
+						buttonVariant === 'correct' && styles.correctLabel
+					]}
+				>
+					{buttonLabel}
+				</Button>
+			);
+		}
+
+		// Incomplete assessment slide
+		if (isIncorrectAssessment) {
+			return (
+				<Button
+					{...baseButtonProps}
+					style={[styles.checkButton, styles.incorrectButton]}
+					labelStyle={[styles.buttonLabel, styles.incorrectLabel]}
+					onPress={handleTryAgain}
+				>
+					Try again
+				</Button>
+			);
+		}
+
+		// Default case (check button)
 		return (
-			<>
-				{isLastSlide ? (
-					<Button
-						mode="contained"
-						onPress={handleFinish}
-						style={[styles.checkButton]}
-						labelStyle={styles.buttonLabel}
-						dark={false}
-						theme={{
-							colors: {
-								primary: checkButtonColors.normal,
-								surfaceDisabled: checkButtonColors.muted,
-							},
-						}}
-					>
-						FINISH
-					</Button>
-				) : (
-					<>
-						{!currentAssessmentID || isCurrentSlideCompleted ? (
-							<>
-								{currentSlide?.type === "Content" || currentSlide?.type === "Custom" ? (
-									<Button
-										mode="contained"
-										disabled={!isCurrentSlideCompleted}
-										onPress={handleNextSlide}
-										style={[styles.checkButton]}
-										labelStyle={styles.buttonLabel}
-										dark={false}
-										theme={{
-											colors: {
-												primary: checkButtonColors.normal,
-												surfaceDisabled: checkButtonColors.muted,
-											},
-										}}
-									>
-										{buttonLabel}
-									</Button>
-								) : (currentSubmission && !currentSubmission.isCorrect) ? (
-									<Button
-										mode="contained"
-										style={[styles.checkButton, styles.incorrectButton]}
-										labelStyle={[styles.buttonLabel, styles.incorrectLabel]}
-										dark={false}
-										onPress={handleNextSlide}
-									>
-										Got it
-									</Button>
-								) : (
-									<Button
-										mode="contained"
-										disabled={!isCurrentSlideCompleted}
-										onPress={handleNextSlide}
-										style={[styles.checkButton, revealedAnswer ? styles.revealedButton : styles.correctButton]}
-										labelStyle={[styles.buttonLabel, revealedAnswer ? styles.revealedLabel : styles.correctLabel]}
-										dark={false}
-									>
-										{buttonLabel}
-									</Button>
-								)}
-							</>
-						) : (currentSubmission && !currentSubmission.isCorrect && !hiddenFeedbacks[currentSlideIndex]) ? (
-							<Button
-								mode="contained"
-								style={[styles.checkButton, styles.incorrectButton]}
-								labelStyle={[styles.buttonLabel, styles.incorrectLabel]}
-								dark={false}
-								onPress={handleTryAgain}
-							>
-								Try again
-							</Button>
-						) : (
-							<Button
-								mode="contained"
-								// disabled={!isCurrentSlideSubmittable()}
-								onPress={handleCheck}
-								style={[styles.checkButton]}
-								labelStyle={styles.buttonLabel}
-								dark={false}
-								theme={{
-									colors: {
-										primary: checkButtonColors.normal,
-										surfaceDisabled: checkButtonColors.muted,
-									},
-								}}
-							>
-								Check
-							</Button>
-						)}
-					</>
-				)}
-			</>
-		)
-	}
+			<Button
+				{...baseButtonProps}
+				onPress={handleCheck}
+				theme={{
+					colors: {
+						primary: checkButtonColors.normal,
+						surfaceDisabled: checkButtonColors.muted,
+					},
+				}}
+			>
+				Check
+			</Button>
+		);
+	};
 
 	return (
 		<View style={[localStyles.container]}>
 			<View style={[localStyles.menusContainer]}>
 				<CustomNavMenu
-					visible={isNavMenuVisible}
+					visible={navMenuVisible}
 					onDismiss={handleDismissMenu}
 					onShowTopSheet={onShowTopSheet}
 					showModal={showFeedbackModal}
@@ -291,7 +257,7 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 					onPress={toggleMenu}
 					mode="contained"
 					iconColor={Colors.primaryDarker}
-					containerColor={Colors.navigationPurple}	
+					containerColor={Colors.navigationPurple}
 					style={styles.navButton}
 				/>
 				<MiddleButton />
@@ -316,8 +282,8 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 				visible={feedbackModalVisible}
 				onDismiss={() => setFeedbackModalVisible(false)}
 				currentViewInfo={{
-					viewId: currentView?.id || 0,
-					viewTitle: currentView?.name || "",
+					viewId: viewWithoutSlides?.id || 0,
+					viewTitle: viewWithoutSlides?.name || "",
 					currentIndex: currentSlideIndex,
 				}}
 				onSubmitFeedback={() => { }}
@@ -333,18 +299,18 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 				visible={showFinishDialog}
 				onDismiss={() => setShowFinishDialog(false)}
 				onConfirm={() => {
-					if (currentView && currentView.module_id) {
+					if (viewWithoutSlides?.module_info.id) {
 						if (isLastView) {
 							router.dismissTo({
 								pathname: "/modules/[id]",
-								params: { id: currentView.module_id },
+								params: { id: viewWithoutSlides?.module_info.id },
 							});
 						} else {
-							const nextView = currentView?.module_info?.views[currentViewIndex! + 1];
+							const nextView = moduleViews?.[currentViewIndex! + 1];
 							console.log({ nextView });
 							router.dismissTo({
 								pathname: "/views/[id]",
-								params: { id: nextView?.view_id },
+								params: { id: nextView?.view_id! },
 							});
 						}
 					}

@@ -6,25 +6,23 @@ import { router } from "expo-router";
 import styles from "@/styles/styles";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { Colors } from "@/constants/Colors";
+import { useViewStore } from "@/store/viewStore";
 
 interface SlideNavigationProps {
   wideScreen: boolean;
 }
 
 const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
-  const {
-    currentView,
-    completedSlides,
-    currentSlideIndex,
-    setCurrentSlideIndex,
-  } = useCourseStore();
+  
   const theme = useTheme();
 
-  if (!currentView) return null;
+  const { currentSlideIndex, setCurrentSlideIndex, viewId, viewWithoutSlides, slides } = useViewStore();
+
+  if (!viewId) return null;
 
   const handleClose = () => {
     setCurrentSlideIndex(0);
-	const currentModule = currentView.module_id;
+	const currentModule = viewWithoutSlides?.module_id;
     // router.navigate(`/modules/${currentModule}`);
 	router.dismissTo(`/modules/${currentModule}`);
   };
@@ -33,12 +31,12 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
     <View style={localStyles.container}>
       <View style={[localStyles.navContainer, styles.centeredMaxWidth, {maxWidth: SLIDE_MAX_WIDTH+22}]}>
         <IconButton icon="close" size={20} onPress={handleClose} />
-        {currentView.slides.map((_, index) => (
+        {slides.map((slide, index) => (
           <TouchableOpacity
             key={index}
             style={[
               localStyles.slideIndicator,
-              completedSlides[index] && localStyles.completed,
+              slide.completed && localStyles.completed,
               currentSlideIndex === index && [
                 localStyles.current,
                 { borderColor: theme.dark ? "#fff" : "#000" },

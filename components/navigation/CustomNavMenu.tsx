@@ -24,55 +24,47 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
 	const { backgroundAssessment, setBackgroundAssessment } = useThemeStore();
 
 	return (
-		<>
+		<View style={styles.menuContainer}>
 			<TouchableOpacity
-				style={styles.overlay}
-				// onPress={onDismiss}
-				activeOpacity={1}
+				style={styles.centeredItems}
+				onPress={() => {
+					onRestart();
+					onDismiss();
+				}}
 			>
-				<View style={styles.menuContainer}>
-					<TouchableOpacity
-						style={styles.centeredItems}
-						onPress={() => {
-							onRestart();
-							onDismiss();
-						}}
-					>
-						<Icon source="restore" size={24} color="white" />
-						<Text style={styles.menuText}>Restart Lesson</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={styles.centeredItems}
-						onPress={() => {
-							onShowTopSheet();
-							onDismiss();
-						}}
-					>
-						<Icon source="format-list-numbered" size={24} color="white" />
-						<Text style={styles.menuText}>Slide List</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={styles.centeredItems}
-						onPress={() => {
-							showModal();
-							onDismiss();
-						}}
-					>
-						<Icon source="send" size={24} color="white" />
-						<Text style={styles.menuText}>Message us</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={styles.centeredItems}
-						onPress={() => {
-							setBackgroundAssessment(!backgroundAssessment);
-						}}
-					>
-						<Icon source="theme-light-dark" size={24} color="white" />
-						<Text style={styles.menuText}>{backgroundAssessment ? "No Background" : "Put Background"}</Text>
-					</TouchableOpacity>
-				</View>
+				<Icon source="restore" size={24} color="white" />
+				<Text style={styles.menuText}>Restart Lesson</Text>
 			</TouchableOpacity>
-		</>
+			<TouchableOpacity
+				style={styles.centeredItems}
+				onPress={() => {
+					onShowTopSheet();
+					onDismiss();
+				}}
+			>
+				<Icon source="format-list-numbered" size={24} color="white" />
+				<Text style={styles.menuText}>Slide List</Text>
+			</TouchableOpacity>
+			<TouchableOpacity
+				style={styles.centeredItems}
+				onPress={() => {
+					showModal();
+					onDismiss();
+				}}
+			>
+				<Icon source="send" size={24} color="white" />
+				<Text style={styles.menuText}>Message us</Text>
+			</TouchableOpacity>
+			<TouchableOpacity
+				style={styles.centeredItems}
+				onPress={() => {
+					setBackgroundAssessment(!backgroundAssessment);
+				}}
+			>
+				<Icon source="theme-light-dark" size={24} color="white" />
+				<Text style={styles.menuText}>{backgroundAssessment ? "No Background" : "Put Background"}</Text>
+			</TouchableOpacity>
+		</View>
 	);
 };
 

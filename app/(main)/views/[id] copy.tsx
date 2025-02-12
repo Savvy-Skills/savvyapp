@@ -4,6 +4,7 @@ import {
 	StyleSheet,
 	Pressable,
 	Platform,
+	ScrollView,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import SlideRenderer from "../../../components/slides/SlideRenderer";
@@ -11,6 +12,7 @@ import BottomBarNav from "@/components/navigation/SlidesBottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import AnimatedSlide from "@/components/slides/AnimatedSlide";
+import { useCourseStore } from "@/store/courseStore";
 import { useKeyPress } from "@/hooks/useKeyboard";
 import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
 import SlideListItem from "@/components/slides/SlideListItem";
@@ -19,24 +21,45 @@ import LoadingIndicator from "@/components/LoadingIndicator";
 import styles from "@/styles/styles";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Button, Text } from "react-native-paper";
-import { useViewStore } from "@/store/viewStore";
 
 export default function ModuleDetail() {
 	const ref = useRef<TopSheetRefProps>(null);
 	const bottomSheetRef = useRef<BottomSheet>(null);
 	const { id } = useLocalSearchParams();
-	const [isInitialRender, setIsInitialRender] = useState(true);
-
-	const { slides, currentSlideIndex, fetchViewData, viewStatus, nextSlide, prevSlide, viewWithoutSlides } = useViewStore();
+	const {
+		getViewById,
+		currentView,
+		currentSlideIndex,
+		isNavMenuVisible,
+		setNavMenuVisible,
+		clearCurrentView,
+		nextSlide,
+		previousSlide,
+		setCurrentSlideIndex,
+		restartingView,
+		stopRestartingView,
+		completedSlides,
+		submittedAssessments,
+		hiddenFeedbacks,
+		setHiddenFeedback,
+		triggerTryAgain,
+		triggerShowExplanation,
+		triggerRevealAnswer,
+		setShownExplanation,
+		shownExplanations,
+	} = useCourseStore();
 
 	const [direction, setDirection] = useState<"forward" | "backward" | null>(
 		null
 	);
-
+	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentView?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentView.slides[currentSlideIndex].assessment_info?.id);
+	const currentSubmission = submittedAssessments[currentSubmissionIndex];
 	const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
 	const prevIndexRef = useRef(currentSlideIndex);
+	const [isInitialRender, setIsInitialRender] = useState(true);
 
+	const revealedAnswer = currentSubmission?.revealed ?? false;
 
 	const openTopDrawer = useCallback(() => {
 		ref?.current?.scrollToEnd();
@@ -47,16 +70,27 @@ export default function ModuleDetail() {
 
 
 	useEffect(() => {
-		fetchViewData(Number(id));
+		clearCurrentView();
+		getViewById(Number(id));
 	}, [id]);
 
-
+	useEffect(() => {
+		if (restartingView) {
+			clearCurrentView();
+			getViewById(Number(id));
+			stopRestartingView();
+		}
+	}, [restartingView]);
 
 	const handleArrowRight = () => {
-		nextSlide();
+		if (currentView && currentSlideIndex < currentView.slides.length - 1) {
+			nextSlide();
+		}
 	};
 	const handleArrowLeft = () => {
-		prevSlide();
+		if (currentSlideIndex > 0) {
+			previousSlide();
+		}
 	};
 
 	if (Platform.OS === "web") {
@@ -89,27 +123,43 @@ export default function ModuleDetail() {
 		}
 	}, [currentSlideIndex]);
 
+	const handlePressOutside = useCallback((event: any) => {
+		if (isNavMenuVisible) {
+			setNavMenuVisible(false);
+		}
+		if (isBottomSheetOpen) {
+			handleBottomSheetClose();
+		}
+	}, [isNavMenuVisible, setNavMenuVisible, isBottomSheetOpen, handleBottomSheetClose]);
 
-	if (viewStatus !== "READY" || !viewWithoutSlides) {
+	const handleTryAgain = useCallback(() => {
+		triggerTryAgain();
+		setHiddenFeedback(currentSlideIndex, true);
+	}, [triggerTryAgain, setHiddenFeedback, currentSlideIndex]);
+
+	const handleToggleExplanation = useCallback(() => {
+		triggerShowExplanation();
+		setShownExplanation(currentSlideIndex, !shownExplanations[currentSlideIndex]);
+	}, [triggerShowExplanation, setShownExplanation, currentSlideIndex, shownExplanations]);
+
+	const isAssessment = currentView?.slides[currentSlideIndex].type === "Assessment";
+
+	if (!currentView || restartingView) {
 		return <LoadingIndicator />
 	}
 
 
-	// const getWrapperStyle = () => {
-	// 	if (hiddenFeedbacks[currentSlideIndex]) return null;
-	// 	if (revealedAnswer) return styles.revealedWrapper;
-	// 	if (currentSubmission?.isCorrect) return styles.correctWrapper;
-	// 	if (currentSubmission?.isCorrect === false) return styles.incorrectWrapper;
-	// 	return null
-	// };
-
-	const currentSlide = slides[currentSlideIndex];
-
-	console.log({currentSlide, slides});
+	const getWrapperStyle = () => {
+		if (hiddenFeedbacks[currentSlideIndex]) return null;
+		if (revealedAnswer) return styles.revealedWrapper;
+		if (currentSubmission?.isCorrect) return styles.correctWrapper;
+		if (currentSubmission?.isCorrect === false) return styles.incorrectWrapper;
+		return null
+	};
 
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
-			<Pressable style={[localStyles.pressableArea]}>
+			<Pressable style={[localStyles.pressableArea]} onPress={handlePressOutside}>
 				<TopNavBar />
 				<View style={{ flex: 1 }}>
 					{/* TopSheet */}
@@ -135,8 +185,7 @@ export default function ModuleDetail() {
 						</ScrollView>
 					</TopSheet> */}
 					{/* Slides */}
-					<SlideRenderer slide={currentSlide} index={currentSlideIndex} quizMode={viewWithoutSlides?.quiz} />
-					{/* <View style={localStyles.slidesContainer}>
+					<View style={localStyles.slidesContainer}>
 						{currentView.slides.map((slide, index) => (
 							<AnimatedSlide
 								key={`${slide.slide_id}-${index}`}
@@ -153,10 +202,10 @@ export default function ModuleDetail() {
 								/>
 							</AnimatedSlide>
 						))}
-					</View> */}
+					</View>
 
-					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper]}>
-						{/* {(isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex]) && (
+					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper, getWrapperStyle()]}>
+						{(isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex]) && (
 							<FeedbackComponent
 								correctness={currentSubmission?.isCorrect}
 								revealed={revealedAnswer}
@@ -167,7 +216,7 @@ export default function ModuleDetail() {
 								showExplanation={shownExplanations[currentSlideIndex]}
 								slideIndex={currentSlideIndex}
 							/>
-						)} */}
+						)}
 						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} onCloseBottomSheet={handleBottomSheetClose} showBottomSheet={isBottomSheetOpen} />
 					</View>
 				</View>

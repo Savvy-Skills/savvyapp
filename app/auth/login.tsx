@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+	import React, { useEffect, useState } from "react";
 import { View, StyleSheet, KeyboardAvoidingView, Platform, Pressable } from "react-native";
 import { TextInput, Button, Text, useTheme, HelperText } from "react-native-paper";
 import { useAuthStore } from "@/store/authStore";
@@ -14,7 +14,6 @@ import {
 	GoogleSignin,
 	GoogleSigninButton,
 	NativeModuleError,
-	statusCodes,
 	User,
 } from '@react-native-google-signin/google-signin';
 import { signIn } from "@/utils/signin";
