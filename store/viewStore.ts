@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { getViewByID, getViewProgress, getViewSubmissions, postViewProgress, postViewSubmission, restartView } from "@/services/coursesApi";
-import { Answer, ViewWithoutSlides } from "@/types";
+import { Answer, LocalSlide, ViewWithoutSlides } from "@/types";
 import { ViewStore } from "@/types";
-import { createSubmission } from "@/utils/utilfunctions";
+import { createSubmission, getCorrectAnswers } from "@/utils/utilfunctions";
 
 export const useViewStore = create<ViewStore>((set, get) => ({
 	viewId: null,
@@ -122,15 +122,37 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		currentSlide.showExplanation = !currentSlide.showExplanation;
 		set({ slides: slides });
 	},
-	revealAnswer: () => {
+	revealAnswer: async () => {
 		const slides = get().slides;
 		const currentSlide = slides[get().currentSlideIndex];
-		if (currentSlide.type === "Assessment") {
+		const viewId = get().viewId;
+		if (!viewId) return;
+
+		// Function to get correct answers, based on the slide type
+		const correctAnswers = getCorrectAnswers(currentSlide).map((answer) => ({ text: answer }));
+		if (currentSlide.type === "Assessment" && currentSlide.assessment_id && currentSlide.submission_id) {
 			currentSlide.revealed = true;
 			currentSlide.submitted = true;
 			currentSlide.submittable = false;
 			currentSlide.completed = true;
+			currentSlide.answer = correctAnswers;
+			currentSlide.isCorrect = true;
 			set({ slides: slides });
+			get().completeSlide();
+			const placeHolderSubmission = createSubmission(
+				currentSlide.assessment_id,
+				true,
+				{ answer: correctAnswers, revealed: true },
+				viewId,
+				currentSlide.submission_id
+			);
+
+			// Post the submission
+			await postViewSubmission(
+				viewId,
+				placeHolderSubmission
+			);
+
 		}
 	},
 	submitAnswer: async () => {

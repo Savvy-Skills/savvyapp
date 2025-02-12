@@ -10,6 +10,7 @@ import { LottieComponentAutoplay } from "../LottieComponentAutoplay";
 import { useAudioStore } from "@/store/audioStore";
 import { generateColors } from "@/utils/utilfunctions";
 import { Colors } from "@/constants/Colors";
+import { useViewStore } from "@/store/viewStore";
 
 type AnimationConfig = {
 	source: AnimationObject;
@@ -34,27 +35,20 @@ const animations: AnimationConfig[] = [
 function FeedbackComponent({
 	correctness,
 	revealed,
-	onRevealAnswer,
-	onShowExplanation,
 	quizMode,
-	showExplanation,
-	slideIndex,
 }: {
 	correctness: boolean;
 	revealed: boolean;
-	onTryAgain: () => void;
-	onRevealAnswer: () => void;
-	onShowExplanation: () => void;
 	quizMode: boolean;
-	showExplanation: boolean;
-	slideIndex: number;
 }) {
 	const [visible, setVisible] = useState(false);
 	const showDialog = () => setVisible(true);
 	const hideDialog = () => setVisible(false);
 
-	const { playSound } = useAudioStore();
+	const { currentSlideIndex, slides, toggleExplanation, revealAnswer } = useViewStore();
+	const currentSlide = slides[currentSlideIndex];
 
+	const { playSound } = useAudioStore();
 
 	const handleShowReveal = useCallback(() => {
 		showDialog();
@@ -62,9 +56,9 @@ function FeedbackComponent({
 
 	const handleReveal = useCallback(() => {
 		playSound("success", 0.6);
-		onRevealAnswer();
+		revealAnswer();
 		hideDialog();
-	}, [onRevealAnswer, hideDialog, playSound]);
+	}, [revealAnswer, hideDialog, playSound]);
 
 
 	const getFeedbackTextStyle = () => {
@@ -100,12 +94,12 @@ function FeedbackComponent({
 				{revealed || correctness ? (
 					<Button
 						mode="text"
-						onPress={onShowExplanation}
+						onPress={toggleExplanation}
 						textColor="#321A5F"
 						buttonColor={generateColors(Colors.assessmentBackground, 0.4).muted}
 						style={{ borderRadius: 4 }}
 					>
-						{showExplanation ? "Go back to question" : "See explanation"}
+						{currentSlide.showExplanation ? "Hide explanation" : "See explanation"}
 					</Button>
 				) : (
 					<>
@@ -123,12 +117,12 @@ function FeedbackComponent({
 						{quizMode && (
 							<Button
 								mode="text"
-								onPress={onShowExplanation}
+								onPress={toggleExplanation}
 								textColor="#321A5F"
 								buttonColor={generateColors(Colors.assessmentBackground, 0.4).muted}
 								style={{ borderRadius: 4 }}
 							>
-								{showExplanation ? "Go back to question" : "See explanation"}
+								{currentSlide.showExplanation ? "Hide explanation" : "See explanation"}
 							</Button>
 						)}
 					</>

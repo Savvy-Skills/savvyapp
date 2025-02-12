@@ -95,13 +95,13 @@ export default function ModuleDetail() {
 	}
 
 
-	// const getWrapperStyle = () => {
-	// 	if (hiddenFeedbacks[currentSlideIndex]) return null;
-	// 	if (revealedAnswer) return styles.revealedWrapper;
-	// 	if (currentSubmission?.isCorrect) return styles.correctWrapper;
-	// 	if (currentSubmission?.isCorrect === false) return styles.incorrectWrapper;
-	// 	return null
-	// };
+	const getWrapperStyle = () => {
+		if (!currentSlide.submitted) return null;
+		if (currentSlide.revealed) return styles.revealedWrapper;
+		if (currentSlide.isCorrect) return styles.correctWrapper;
+		if (currentSlide.isCorrect === false) return styles.incorrectWrapper;
+		return null
+	};
 
 	const currentSlide = slides[currentSlideIndex];
 
@@ -155,19 +155,15 @@ export default function ModuleDetail() {
 						))}
 					</View> */}
 
-					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper]}>
-						{/* {(isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex]) && (
+					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper, getWrapperStyle()]}>
+						{(currentSlide.type === "Assessment" && currentSlide.submitted) && (
 							<FeedbackComponent
-								correctness={currentSubmission?.isCorrect}
-								revealed={revealedAnswer}
-								onTryAgain={handleTryAgain}
-								onRevealAnswer={triggerRevealAnswer}
-								onShowExplanation={handleToggleExplanation}
-								quizMode={currentView.quiz}
-								showExplanation={shownExplanations[currentSlideIndex]}
-								slideIndex={currentSlideIndex}
+								correctness={currentSlide.isCorrect || false}
+								revealed={currentSlide.revealed || false}
+								quizMode={viewWithoutSlides?.quiz}
+
 							/>
-						)} */}
+						)}
 						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} onCloseBottomSheet={handleBottomSheetClose} showBottomSheet={isBottomSheetOpen} />
 					</View>
 				</View>

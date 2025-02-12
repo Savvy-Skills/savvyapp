@@ -1,6 +1,6 @@
 import { AssessmentAnswer } from "@/store/courseStore";
 import styles from "@/styles/styles";
-import { CustomSlide, Submission, ViewWithSlides } from "@/types";
+import { CustomSlide, LocalSlide, Submission, ViewWithSlides } from "@/types";
 
 const includes = <T>(arr: readonly T[], x: T): boolean => arr.includes(x)
 
@@ -79,6 +79,24 @@ export interface OptionProps extends OptionStylesProps {
 	key: string;
 }
 
+
+export const getCorrectAnswers = (slide: LocalSlide) => {
+	if (slide.type === "Assessment") {
+		switch (slide.assessment_info?.type) {
+			case "Multiple Choice":
+				return slide.assessment_info?.options.filter((option) => option.isCorrect).map((option) => option.text);
+			case "Single Choice":
+				return slide.assessment_info?.options.filter((option) => option.isCorrect).map((option) => option.text);
+			case "True or False":
+				return slide.assessment_info?.options.filter((option) => option.isCorrect).map((option) => option.text);
+			case "Numerical":
+				return [slide.assessment_info?.options[0].text];
+			default:
+				return [];
+		}
+	}
+	return [];
+}
 
 interface OptionStylesProps {
 	option: string;
