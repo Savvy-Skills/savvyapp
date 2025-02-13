@@ -169,7 +169,7 @@ export interface Submission extends BaseSubmission {
 
 export type ViewStatus = "LOADING" | "READY" | "ERROR" | "RESTARTING";
 
-export interface ViewWithoutSlides extends Omit<ViewWithSlides, "slides"> {}
+export interface view extends Omit<ViewWithSlides, "slides"> {}
 
 export interface ViewStore {
 	viewId: number | null;
@@ -185,11 +185,12 @@ export interface ViewStore {
 	toggleExplanation: () => void;
 	revealAnswer: () => void;
 	submitAnswer: () => void;
-	viewWithoutSlides: ViewWithoutSlides | null;
-	setAnswer: (answer: Answer[], isCorrect: boolean) => void;
+	view: ViewWithSlides | null;
+	setAnswer: (answer: Answer[], isCorrect: boolean, notSubmittable?: boolean) => void;
 	restartView: () => void;
 	tryAgain: () => void;
 	completeSlide: () => void;
+	submitProgress: () => void;
 }
 
 export interface LocalSlide extends BaseSlide {

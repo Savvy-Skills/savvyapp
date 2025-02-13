@@ -5,7 +5,6 @@ import { View } from "react-native";
 import OptionStatusIcon from "./OptionStatusIcon";
 
 const TextOption = ({
-	key,
 	option,
 	selectedValue,
 	correctAnswer,
@@ -19,7 +18,7 @@ const TextOption = ({
 	const blocked = (quizMode || isCorrect) && isSubmitted;
 
 	return (
-		<View key={key} style={styles.optionContainer}>
+		<View style={styles.optionContainer}>
 			<CustomRadioButton
 				label={option}
 				value={option}

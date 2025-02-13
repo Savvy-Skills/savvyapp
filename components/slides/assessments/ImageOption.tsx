@@ -6,7 +6,6 @@ import OptionStatusIcon from "./OptionStatusIcon";
 
 
 const ImageOption = ({
-	key,
 	option,
 	selectedValue,
 	correctAnswer,
@@ -20,7 +19,6 @@ const ImageOption = ({
 
 	return (
 		<TouchableOpacity
-			key={key}
 			style={styles.imageContainer}
 			onPress={() => handleChoiceSelection(option)}
 			disabled={blocked}

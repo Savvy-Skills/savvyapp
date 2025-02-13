@@ -27,7 +27,7 @@ type BottomBarNavProps = {
 const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCloseBottomSheet }: BottomBarNavProps) => {
 
 	const { playSound } = useAudioStore();
-	const { currentSlideIndex, setCurrentSlideIndex, viewId, viewWithoutSlides, slides, prevSlide, nextSlide, submitAnswer, skipAssessments, setSkipAssessments, restartView, tryAgain } = useViewStore();
+	const { currentSlideIndex, view, slides, prevSlide, nextSlide, submitAnswer, skipAssessments, setSkipAssessments, restartView, tryAgain } = useViewStore();
 
 	const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
 	const [showRestartViewDialog, setShowRestartViewDialog] = useState(false);
@@ -113,8 +113,8 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 	}, [tryAgain]);
 
 
-	const moduleViews = viewWithoutSlides?.module_info.views.sort((a, b) => a.order - b.order);
-	const currentViewIndex = moduleViews?.findIndex(view => view.view_id === viewWithoutSlides?.id);
+	const moduleViews = view?.module_info.views.sort((a, b) => a.order - b.order);
+	const currentViewIndex = moduleViews?.findIndex(view => view.view_id === view?.id);
 	const isLastView = moduleViews ? currentViewIndex === moduleViews.length - 1 : false;
 
 	const MiddleButton = () => {
@@ -142,22 +142,22 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 		};
 
 		// Handle last slide case first
-		if (isLastSlide) {
-			return (
-				<Button
-					{...baseButtonProps}
-					onPress={handleFinish}
-					theme={{
-						colors: {
-							primary: checkButtonColors.normal,
-							surfaceDisabled: checkButtonColors.muted,
-						},
-					}}
-				>
-					FINISH
-				</Button>
-			);
-		}
+		// if (isLastSlide) {
+		// 	return (
+		// 		<Button
+		// 			{...baseButtonProps}
+		// 			onPress={handleFinish}
+		// 			theme={{
+		// 				colors: {
+		// 					primary: checkButtonColors.normal,
+		// 					surfaceDisabled: checkButtonColors.muted,
+		// 				},
+		// 			}}
+		// 		>
+		// 			FINISH
+		// 		</Button>
+		// 	);
+		// }
 
 		// Completed slide or non-assessment
 		if (!assessment_id || isCompleted) {
@@ -220,15 +220,6 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 
 	return (
 		<View style={[localStyles.container]}>
-			<View style={[localStyles.menusContainer]}>
-				<CustomNavMenu
-					visible={navMenuVisible}
-					onDismiss={handleDismissMenu}
-					onShowTopSheet={onShowTopSheet}
-					showModal={showFeedbackModal}
-					onRestart={showRestartDialog}
-				/>
-			</View>
 			<View
 				style={[
 					styles.bottomNavigation,
@@ -282,8 +273,8 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 				visible={feedbackModalVisible}
 				onDismiss={() => setFeedbackModalVisible(false)}
 				currentViewInfo={{
-					viewId: viewWithoutSlides?.id || 0,
-					viewTitle: viewWithoutSlides?.name || "",
+					viewId: view?.id || 0,
+					viewTitle: view?.name || "",
 					currentIndex: currentSlideIndex,
 				}}
 				onSubmitFeedback={() => { }}
@@ -299,11 +290,11 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 				visible={showFinishDialog}
 				onDismiss={() => setShowFinishDialog(false)}
 				onConfirm={() => {
-					if (viewWithoutSlides?.module_info.id) {
+					if (view?.module_info.id) {
 						if (isLastView) {
 							router.dismissTo({
 								pathname: "/modules/[id]",
-								params: { id: viewWithoutSlides?.module_info.id },
+								params: { id: view?.module_info.id },
 							});
 						} else {
 							const nextView = moduleViews?.[currentViewIndex! + 1];
@@ -331,6 +322,15 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 				content="You haven't completed this assessment yet."
 				skip={true}
 			/>
+			<View style={[localStyles.menusContainer]}>
+				<CustomNavMenu
+					visible={navMenuVisible}
+					onDismiss={handleDismissMenu}
+					onShowTopSheet={onShowTopSheet}
+					showModal={showFeedbackModal}
+					onRestart={showRestartDialog}
+				/>
+			</View>
 		</View>
 	);
 };

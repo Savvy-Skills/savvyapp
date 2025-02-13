@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { LocalSlide, QuestionInfo } from "@/types";
+import { Answer, LocalSlide, QuestionInfo } from "@/types";
 import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
@@ -23,7 +23,7 @@ export default function MultipleChoice({
 }: AssessmentProps) {
 
 	const { setAnswer } = useViewStore();
-	
+
 	const currentAnswers = slide.answer || [];
 	const options = useMemo(
 		() => question.options.map((option) => option.text),
@@ -40,23 +40,21 @@ export default function MultipleChoice({
 
 
 	const handleChoiceSelection = useCallback((value: string) => {
-		if (quizMode && (slide.submitted)) {
-			return;
-		}
-		const isCorrect = currentAnswers.length === correctAnswers.length && currentAnswers.every((val) => correctAnswers.includes(val.text));
-		if (currentAnswers.length === 0) {
-			setAnswer([{ text: value }], isCorrect);
-		} else {
-			if (currentAnswers.some((answer) => answer.text === value)) {
-				setAnswer(currentAnswers.filter((answer) => answer.text !== value), isCorrect);
-			} else {
-				setAnswer([...currentAnswers, { text: value }], isCorrect);
-			}
-		}
+		if (quizMode && slide.submitted) return;
+
+		const checkAnswersCorrect = (answers: Answer[]) => 
+			answers.length === correctAnswers.length && 
+			answers.every(val => correctAnswers.includes(val.text));
+
+		const isSelected = currentAnswers.some(answer => answer.text === value);
+		const newAnswers = isSelected
+			? currentAnswers.filter(answer => answer.text !== value)
+			: [...currentAnswers, { text: value }];
+
+		const isCorrect = checkAnswersCorrect(newAnswers);
+		setAnswer(newAnswers, isCorrect);
 
 	}, [quizMode, slide.submitted, currentAnswers, correctAnswers, setAnswer]);
-
-	console.log({ currentAnswers });
 
 	return (
 		<AssessmentWrapper
@@ -67,15 +65,16 @@ export default function MultipleChoice({
 				<View style={styles.imageGrid}>
 					{options.map((option, index) =>
 						<ImageOptionMultiple
-							key={`${option}-${index}`}
+							key={`image-option-${index}`}
 							option={option}
 							selectedValues={currentAnswers.map((answer) => answer.text)}
 							handleChoiceSelection={handleChoiceSelection}
 							blocked={quizMode && slide.submitted}
 							correctAnswers={correctAnswers}
-							showAnswer={quizMode && slide.submitted}
 							quizMode={quizMode}
-							currentSubmission={slide.submitted}
+							isCorrect={slide.isCorrect || false}
+							isRevealed={slide.revealed || false}
+							isSubmitted={slide.submitted || false}
 						/>
 					)}
 				</View>
@@ -83,17 +82,16 @@ export default function MultipleChoice({
 				<View style={styles.optionsContainer}>
 					{options.map((option, index) =>
 						<TextOptionMultiple
-							key={`${option}-${index}`}
+							key={`text-option-${index}`}
 							option={option}
 							selectedValues={currentAnswers.map((answer) => answer.text)}
 							handleChoiceSelection={handleChoiceSelection}
-							blocked={quizMode && slide.submitted}
+							blocked={(quizMode && slide.submitted) || (slide.submitted && (slide.isCorrect || false))}
 							correctAnswers={correctAnswers}
-							showAnswer={quizMode && slide.submitted}
 							quizMode={quizMode}
-							isCorrect={correctAnswers.includes(option)}
-							isRevealed={quizMode && slide.submitted}
-							isSubmitted={slide.submitted}
+							isCorrect={slide.isCorrect || false}
+							isRevealed={slide.revealed || false}
+							isSubmitted={slide.submitted || false}
 						/>
 					)}
 				</View>

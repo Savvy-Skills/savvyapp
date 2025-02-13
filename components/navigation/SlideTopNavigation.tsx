@@ -16,13 +16,13 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
   
   const theme = useTheme();
 
-  const { currentSlideIndex, setCurrentSlideIndex, viewId, viewWithoutSlides, slides } = useViewStore();
+  const { currentSlideIndex, setCurrentSlideIndex, viewId, view, slides } = useViewStore();
 
   if (!viewId) return null;
 
   const handleClose = () => {
     setCurrentSlideIndex(0);
-	const currentModule = viewWithoutSlides?.module_id;
+	const currentModule = view?.module_id;
     // router.navigate(`/modules/${currentModule}`);
 	router.dismissTo(`/modules/${currentModule}`);
   };
@@ -63,7 +63,7 @@ const localStyles = StyleSheet.create({
   },
   slideIndicator: {
     flex: 1,
-    height: 4,
+    height: 6,
     borderRadius: 4,
     backgroundColor: Colors.revealed,
     marginHorizontal: 2,

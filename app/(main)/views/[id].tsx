@@ -4,6 +4,7 @@ import {
 	StyleSheet,
 	Pressable,
 	Platform,
+	ScrollView,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import SlideRenderer from "../../../components/slides/SlideRenderer";
@@ -27,7 +28,7 @@ export default function ModuleDetail() {
 	const { id } = useLocalSearchParams();
 	const [isInitialRender, setIsInitialRender] = useState(true);
 
-	const { slides, currentSlideIndex, fetchViewData, viewStatus, nextSlide, prevSlide, viewWithoutSlides } = useViewStore();
+	const { slides, currentSlideIndex, fetchViewData, viewStatus, nextSlide, prevSlide, view, setCurrentSlideIndex } = useViewStore();
 
 	const [direction, setDirection] = useState<"forward" | "backward" | null>(
 		null
@@ -90,7 +91,7 @@ export default function ModuleDetail() {
 	}, [currentSlideIndex]);
 
 
-	if (viewStatus !== "READY" || !viewWithoutSlides) {
+	if (viewStatus !== "READY" || !view) {
 		return <LoadingIndicator />
 	}
 
@@ -105,7 +106,6 @@ export default function ModuleDetail() {
 
 	const currentSlide = slides[currentSlideIndex];
 
-	console.log({currentSlide, slides});
 
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
@@ -113,9 +113,9 @@ export default function ModuleDetail() {
 				<TopNavBar />
 				<View style={{ flex: 1 }}>
 					{/* TopSheet */}
-					{/* <TopSheet ref={ref}>
+					<TopSheet ref={ref}>
 						<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
-							{currentView.slides.map((slide, index) => (
+							{view.slides.map((slide, index) => (
 								<SlideListItem
 									key={`slide-${slide.slide_id}-${index}`}
 									name={slide.name}
@@ -127,40 +127,30 @@ export default function ModuleDetail() {
 												? slide.content_info?.type
 												: undefined
 									}
-									isCompleted={completedSlides[index]}
+									isCompleted={slides[index].completed}
 									isActive={index === currentSlideIndex}
 									onPress={() => setCurrentSlideIndex(index)}
 								/>
 							))}
 						</ScrollView>
-					</TopSheet> */}
+					</TopSheet>
 					{/* Slides */}
-					<SlideRenderer slide={currentSlide} index={currentSlideIndex} quizMode={viewWithoutSlides?.quiz} />
-					{/* <View style={localStyles.slidesContainer}>
-						{currentView.slides.map((slide, index) => (
-							<AnimatedSlide
-								key={`${slide.slide_id}-${index}`}
-								isActive={index === currentSlideIndex}
-								direction={index === currentSlideIndex ? direction : null}
-								isInitialRender={
-									isInitialRender && index === currentSlideIndex
-								}
-							>
-								<SlideRenderer
-									slide={slide}
-									index={index}
-									quizMode={currentView.quiz}
-								/>
-							</AnimatedSlide>
-						))}
-					</View> */}
+					<View style={localStyles.slidesContainer}>
+						<AnimatedSlide
+							key={`${currentSlide.slide_id}-${currentSlideIndex}`}
+							direction={direction}
+							isInitialRender={isInitialRender}
+						>
+							<SlideRenderer slide={currentSlide} index={currentSlideIndex} quizMode={view?.quiz} />
+						</AnimatedSlide>
+					</View>
 
 					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper, getWrapperStyle()]}>
 						{(currentSlide.type === "Assessment" && currentSlide.submitted) && (
 							<FeedbackComponent
 								correctness={currentSlide.isCorrect || false}
 								revealed={currentSlide.revealed || false}
-								quizMode={viewWithoutSlides?.quiz}
+								quizMode={view?.quiz}
 
 							/>
 						)}

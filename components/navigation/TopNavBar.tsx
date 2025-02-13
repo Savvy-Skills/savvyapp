@@ -8,6 +8,7 @@ import { Course, Module } from "@/types";
 import ModuleTopNavBar from "@/components/navigation/ModuleTopNavBar";
 import ViewInfo from "@/components/navigation/ViewInfo";
 import { Colors } from "@/constants/Colors";
+import styles from "@/styles/styles";
 
 interface NavBarProps {
   course?: Course;
@@ -49,25 +50,4 @@ const TopNavBar = (props: NavBarProps) => {
   );
 };
 
-const styles = StyleSheet.create({
-  navHeader: {
-	backgroundColor: Colors.background,
-    flexDirection: "row",
-    justifyContent: "center",
-    zIndex: 3,
-    paddingVertical: 4,
-    maxHeight: 56,
-    marginBottom: 10,
-  },
-  webNav: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#cccccc",
-    shadowColor: "#cccccc",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowRadius: 4,
-  },
-});
 export default TopNavBar;
