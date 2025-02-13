@@ -55,7 +55,7 @@ function FeedbackComponent({
 	}, [showDialog]);
 
 	const handleReveal = useCallback(() => {
-		playSound("success", 0.6);
+		playSound("success", 0.5);
 		revealAnswer();
 		hideDialog();
 	}, [revealAnswer, hideDialog, playSound]);
