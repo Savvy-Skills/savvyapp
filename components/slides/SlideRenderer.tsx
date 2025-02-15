@@ -1,10 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Platform, ScrollView, View } from "react-native";
 import AssessmentSlide from "./AssessmentSlide";
-import ActivitySlide from "./ActivitySlide";
-import { ContentInfo, DatasetInfo, LocalSlide, Slide } from "../../types";
-import { useCourseStore } from "@/store/courseStore";
-import LastSlide from "./LastSlide";
+import { ContentInfo, DatasetInfo, LocalSlide } from "../../types";
 import ImageSlide from "./content/ImageSlide";
 import RichTextSlide from "./content/RichTextSlide";
 import DataTableContainer from "../data/DataTableContainer";
@@ -14,7 +11,6 @@ import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
 import NeuralNetworkVisualizerWeb from "../neuralnetwork/SimpleNNWeb";
 
 import { NNState } from "@/types/neuralnetwork";
-import { Text } from "react-native-paper";
 
 export interface SlideProps {
 	slide: LocalSlide;
@@ -40,11 +36,11 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 		case "Dataset":
 			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.traces} index={index} />;
 		case "Neural Network":
-			return <NeuralNetworkVisualizer initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
-			// if (Platform.OS === "web") {
-			// 	return <NeuralNetworkVisualizerWeb initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
-			// } else {
-			// }
+			if (Platform.OS === "web") {
+				return <NeuralNetworkVisualizerWeb initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+			} else {
+				return <NeuralNetworkVisualizer initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+			}
 		default:
 			return <View />;
 	}
@@ -55,7 +51,7 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 	switch (slide.type) {
 		case "Assessment":
 			return (
-				<View style={[styles.slideWidth, styles.centeredMaxWidth, { gap: 16}]}>
+				<View style={[styles.slideWidth, styles.centeredMaxWidth, { gap: 16 }]}>
 					{sortedContents.length > 0 && (
 						sortedContents.map((content, contentIndex) => (
 							<View key={`${contentIndex}-${content.type}`} style={{ gap: 16, paddingHorizontal: 8 }}>
@@ -71,7 +67,7 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 			);
 		case "Activity":
 			return <View />;
-			// return <ActivitySlide slide={slide} index={index} />;
+		// return <ActivitySlide slide={slide} index={index} />;
 		case "Content":
 			if (sortedContents.length > 1) {
 				return sortedContents.map((content, contentIndex) => (
@@ -105,7 +101,7 @@ export default function SlideRenderer({
 	const firstContent = currentContents[0]
 
 	useEffect(() => {
-		if (slide.type==="Assessment") {
+		if (slide.type === "Assessment") {
 			setTimeout(() => {
 				scrollRef.current?.scrollToEnd();
 			}, 100);
