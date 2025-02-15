@@ -11,9 +11,10 @@ import DataTableContainer from "../data/DataTableContainer";
 import styles from "@/styles/styles";
 import VideoComponent from "../VideoComponent";
 import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
-import NeuralNetworkVisualizerWeb from "../neuralnetwork/SimpleNN.web";
+import NeuralNetworkVisualizerWeb from "../neuralnetwork/SimpleNNWeb";
 
 import { NNState } from "@/types/neuralnetwork";
+import { Text } from "react-native-paper";
 
 export interface SlideProps {
 	slide: LocalSlide;
@@ -39,11 +40,11 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 		case "Dataset":
 			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.traces} index={index} />;
 		case "Neural Network":
-			if (Platform.OS === "web") {
-				return <NeuralNetworkVisualizerWeb initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
-			} else {
-				return <NeuralNetworkVisualizer initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
-			}
+			return <NeuralNetworkVisualizer initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+			// if (Platform.OS === "web") {
+			// 	return <NeuralNetworkVisualizerWeb initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+			// } else {
+			// }
 		default:
 			return <View />;
 	}
@@ -104,9 +105,11 @@ export default function SlideRenderer({
 	const firstContent = currentContents[0]
 
 	useEffect(() => {
-		setTimeout(() => {
-			scrollRef.current?.scrollToEnd();
-		}, 100);
+		if (slide.type==="Assessment") {
+			setTimeout(() => {
+				scrollRef.current?.scrollToEnd();
+			}, 100);
+		}
 	}, [index]);
 
 	useEffect(() => {

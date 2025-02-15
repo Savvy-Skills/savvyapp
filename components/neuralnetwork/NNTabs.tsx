@@ -1,12 +1,12 @@
 import styles from "@/styles/styles";
 import { Pressable } from "react-native";
 
-import { HelperText, IconButton, Text } from "react-native-paper";
+import { IconButton, Text } from "react-native-paper";
 import { View } from "react-native";
-import { Surface } from "react-native-paper";
 import { Image } from "expo-image";
 import { dtypeMap, LayerType } from "@/types/neuralnetwork";
 import { Column } from "@/hooks/useDataFetch";
+
 
 interface NNTabsProps {
 	selectedLayer?: LayerType | null;

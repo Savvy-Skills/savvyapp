@@ -15,7 +15,6 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 	const [selectedLayer, setSelectedLayer] = useState<LayerType>("input");
 	const { currentState, setCurrentState, tfWorker, initializeWorker, workerReady, setCurrentModelId } = useTFStore();
 	const [currentNNState, setCurrentNNState] = useState<NNState>(initialNNState ?? {} as NNState);
-	const { currentSlideIndex } = useCourseStore();
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
 	const modelId = useMemo(() => {
@@ -26,8 +25,10 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 	const inputColumns = columns.filter(column => currentNNState.trainingConfig?.dataPreparationConfig?.featureConfig?.some(feature => feature.field === column.accessor));
 
 	useEffect(() => {
-		initializeWorker();
-	}, [initializeWorker]);
+		if (!workerReady) {
+			initializeWorker();
+		}
+	}, [initializeWorker, workerReady]);
 
 
 	const handleActivationFunctionChange = useCallback((activationFunction: string) => {
@@ -113,9 +114,6 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 		);
 	}
 
-	if (currentSlideIndex !== index) {
-		return <View />;
-	}
 
 	return (
 		<View style={[styles.centeredMaxWidth, styles.slideWidth, { gap: 8, flex: 1 }]}>

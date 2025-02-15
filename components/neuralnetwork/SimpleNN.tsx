@@ -1,21 +1,20 @@
 import { useDataFetch } from "@/hooks/useDataFetch";
 import { useTFStore } from "@/store/tensorStore";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
+
 import { Text, Surface, Button } from "react-native-paper";
 import LoadingIndicator from "../LoadingIndicator";
 import NNTabs from "./NNTabs";
 import styles from "@/styles/styles";
 import LayerDetails from "./LayerDetails";
-import { useCourseStore } from "@/store/courseStore";
 import { LayerType, ModelConfig, NeuralNetworkVisualizerProps, NNState } from "@/types/neuralnetwork";
 import { Colors } from "@/constants/Colors";
 
 export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, index }: NeuralNetworkVisualizerProps) {
 	const [selectedLayer, setSelectedLayer] = useState<LayerType>("input");
-	const { currentState, setCurrentState, setCurrentModelId } = useTFStore();
+	const { currentState, setCurrentState, setCurrentModelId, tfInstance, initializeInstance, instanceReady } = useTFStore();
 	const [currentNNState, setCurrentNNState] = useState<NNState>(initialNNState ?? {} as NNState);
-	const { currentSlideIndex } = useCourseStore();
 	const { data, columns } = useDataFetch({ source: dataset_info?.url, isCSV: dataset_info?.extension === "csv" });
 
 	const modelId = useMemo(() => {
@@ -26,6 +25,11 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 	const inputColumns = columns.filter(column => currentNNState.trainingConfig?.dataPreparationConfig?.featureConfig?.some(feature => feature.field === column.accessor));
 
 
+	useEffect(() => {
+		if (!instanceReady) {
+			initializeInstance();
+		}
+	}, [instanceReady, initializeInstance]);
 
 	const handleActivationFunctionChange = useCallback((activationFunction: string) => {
 		setCurrentNNState(prev => ({
@@ -85,33 +89,29 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 			}
 		})
 
-		// tfWorker?.postMessage({
-		// 	from: "main",
-		// 	type: "create_train",
-		// 	modelId,
-		// 	data: {
-		// 		data,
-		// 		columns,
-		// 		modelConfig: currentNNState.modelConfig!,
-		// 		trainConfig: currentNNState.trainingConfig!,
-		// 	},
-		// });
+		// tfInstance?.createTrain(data, columns, currentNNState.modelConfig!, currentNNState.trainingConfig!);
+		// Send shallow copy of everything to createTrain instead of the original arguments to prevent mutations
+		const trainData = {
+			data: [...data],
+			columns: [...columns],
+			modelConfig: JSON.parse(JSON.stringify(currentNNState.modelConfig!)),
+			trainConfig: JSON.parse(JSON.stringify(currentNNState.trainingConfig!)),
+		}
+		tfInstance?.createTrain(trainData);
+		console.info("Training started");
+
 		setSelectedLayer("output");
-	}, [currentNNState]);
+	}, [currentNNState, tfInstance]);
 
 	const handleSetSelectedLayer = useCallback((layer: LayerType) => {
 		setSelectedLayer(layer);
 	}, [setSelectedLayer]);
 
 
-	if (!data || !columns || columns.length === 0) {
+	if (!data || !columns || columns.length === 0 || !tfInstance) {
 		return (
 			<LoadingIndicator />
 		);
-	}
-
-	if (currentSlideIndex !== index) {
-		return <View />;
 	}
 
 	return (

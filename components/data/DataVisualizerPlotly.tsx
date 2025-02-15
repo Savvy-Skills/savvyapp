@@ -35,8 +35,8 @@ export type DataVisualizerProps = {
 
 const colors = [
   "#7B1FA2",
-  "#2196F3",
   "#FF9800",
+  "#2196F3",
   "#FFC107",
   "#4CAF50",
   "#E91E63",
@@ -520,8 +520,8 @@ const styles = StyleSheet.create({
   },
   yAxisLabelContainer: {
     position: "absolute",
-    top: 0,
-    left: 0,
+    top: 5,
+    left: 15,
     justifyContent: "center",
     zIndex: 1,
   },
@@ -531,8 +531,8 @@ const styles = StyleSheet.create({
   },
   xAxisLabelContainer: {
     position: "absolute",
-    right: 0,
-    bottom: 0,
+    right: 15,
+    bottom: 5,
     alignItems: "center",
     zIndex: 1,
   },
