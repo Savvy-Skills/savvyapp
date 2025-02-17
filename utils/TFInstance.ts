@@ -304,7 +304,7 @@ class TFInstance {
 				)
 				.map((column) => column.field);
 
-				
+
 			// Create tensor from raw values of untransformed columns
 			const nonEncodedNonNormalizedFeatures = features.map((obj) =>
 				nonEncodedNonNormalizedColumns.reduce((acc, key) => {
@@ -314,21 +314,20 @@ class TFInstance {
 			);
 
 			const values = nonEncodedNonNormalizedFeatures.map((feature) => Object.values(feature));
-			console.error({ values });
 
 
-			const nonEncodedNonNormalizedFeaturesTensor = tf.tensor(values, [values.length, values[0].length]);
-			console.error({ nonEncodedNonNormalizedFeaturesTensor });
+			const nonEncodedNonNormalizedFeaturesTensor = tf.tensor2d(values, [values.length, values[0].length]);
 
-			processedData = nonEncodedNonNormalizedFeaturesTensor as tf.Tensor2D;
-			console.error({ processedData });
+			processedData = nonEncodedNonNormalizedFeaturesTensor;
 
 			// 6. Feature Scaling: Apply normalization to specified columns
 			const scaledColumns = dataPreparationConfig.featureConfig.filter(
 				(column) => column.normalization && column.normalization !== "none"
 			);
+			console.log({ scaledColumns });
 			if (scaledColumns.length > 0) {
 				// Create and store scalers for each column
+				console.error({ scaledColumns });
 				const scalers = scaledColumns.map((column) => this.createScaler(column, data));
 				this.preprocessorState.scalers = scalers;
 
@@ -348,6 +347,7 @@ class TFInstance {
 			const encodedColumns = dataPreparationConfig.featureConfig.filter(
 				(column) => column.encoding && column.encoding !== "none"
 			);
+			console.error({ encodedColumns });
 			if (encodedColumns.length > 0) {
 				// Create and store encoders for each column
 				const encoders = encodedColumns.map((column) =>
@@ -395,7 +395,6 @@ class TFInstance {
 				// Use raw target values
 				targetData = tf.tensor2d(target, [target.length, 1]);
 			}
-
 			// 9. Create Final Datasets: Split processed data into train/test sets
 			const trainFeatures = tf.gather(processedData, trainIndices);
 			const testFeatures = tf.gather(processedData, testIndices);
@@ -617,80 +616,87 @@ class TFInstance {
 	}: TrainModelParams) {
 		const { trainFeatures, trainTarget, testFeatures } = preparedData;
 
-		await model.fit(trainFeatures, trainTarget, {
-			epochs: trainConfig.epochs,
-			shuffle: trainConfig.shuffle,
-			batchSize: trainConfig.batchSize,
-			validationSplit: trainConfig.validationSplit,
-			callbacks: {
-				onEpochEnd: (epoch, logs) => {
-					if (this.trainingStop) {
-						model.stopTraining = true;
-						this.trainingStop = false;
-						return;
-					}
-					console.log({
-						epoch,
-						logs,
-					});
-					this.transcurredEpochs = epoch;
-					this.currentTotalLoss += logs?.loss || 0;
-					if (logs?.acc) {
-						this.currentTotalAccuracy += logs.acc;
-					}
-					this.currentModelMetrics.push({
-						epoch,
-						loss: logs?.loss,
-						accuracy: logs?.acc ? logs.acc : null,
-						val_loss: logs?.val_loss,
-						val_accuracy: logs?.val_acc ? logs.val_acc : null,
-					});
-					const predictions = model.predict(testFeatures) as tf.Tensor<tf.Rank.R1 | tf.Rank.R2>;
-					const { columns: columnsData, predictions: predictionsData } =
-						this.createPredictionData({
-							originalData,
-							predictions,
-							modelConfig,
-							columns,
+		try {
+
+			await model.fit(trainFeatures, trainTarget, {
+				epochs: trainConfig.epochs,
+				shuffle: trainConfig.shuffle,
+				batchSize: trainConfig.batchSize,
+				validationSplit: trainConfig.validationSplit,
+				callbacks: {
+					onEpochEnd: (epoch, logs) => {
+						if (this.trainingStop) {
+							model.stopTraining = true;
+							this.trainingStop = false;
+							return;
+						}
+						console.log({
+							epoch,
+							logs,
 						});
+						this.transcurredEpochs = epoch;
+						this.currentTotalLoss += logs?.loss || 0;
+						if (logs?.acc) {
+							this.currentTotalAccuracy += logs.acc;
+						}
+						this.currentModelMetrics.push({
+							epoch,
+							loss: logs?.loss,
+							accuracy: logs?.acc ? logs.acc : null,
+							val_loss: logs?.val_loss,
+							val_accuracy: logs?.val_acc ? logs.val_acc : null,
+						});
+						const predictions = model.predict(testFeatures) as tf.Tensor<tf.Rank.R1 | tf.Rank.R2>;
+						const { columns: columnsData, predictions: predictionsData } =
+							this.createPredictionData({
+								originalData,
+								predictions,
+								modelConfig,
+								columns,
+							});
 						console.log()
-					this.emit(this.MESSAGE_TYPE_TRAIN_UPDATE, {
-						transcurredEpochs: epoch,
-						loss: this.currentTotalLoss,
-						accuracy: this.currentTotalAccuracy,
-						modelHistory: this.currentModelMetrics,
-						testData: {
-							data: predictionsData,
-							columns: columnsData,
-						},
-					});
-				},
-				onTrainEnd: () => {
-					const predictions = model.predict(testFeatures) as tf.Tensor<tf.Rank.R1 | tf.Rank.R2>;
-					const { columns: columnsData, predictions: predictionsData } =
-						this.createPredictionData({
-							originalData,
-							predictions,
-							modelConfig,
-							columns,
+						this.emit(this.MESSAGE_TYPE_TRAIN_UPDATE, {
+							transcurredEpochs: epoch,
+							loss: this.currentTotalLoss,
+							accuracy: this.currentTotalAccuracy,
+							modelHistory: this.currentModelMetrics,
+							testData: {
+								data: predictionsData,
+								columns: columnsData,
+							},
 						});
-					this.emit(this.MESSAGE_TYPE_TRAIN_END, {
-						transcurredEpochs: this.transcurredEpochs,
-						loss: this.currentTotalLoss,
-						accuracy: this.currentTotalAccuracy,
-						modelHistory: this.currentModelMetrics,
-						testData: {
-							data: predictionsData,
-							columns: columnsData,
-						},
-					});
-					trainFeatures.dispose();
-					trainTarget.dispose();
-					testFeatures.dispose();
-					predictions.dispose();
+					},
+					onTrainEnd: () => {
+						const predictions = model.predict(testFeatures) as tf.Tensor<tf.Rank.R1 | tf.Rank.R2>;
+						const { columns: columnsData, predictions: predictionsData } =
+							this.createPredictionData({
+								originalData,
+								predictions,
+								modelConfig,
+								columns,
+							});
+						this.emit(this.MESSAGE_TYPE_TRAIN_END, {
+							transcurredEpochs: this.transcurredEpochs,
+							loss: this.currentTotalLoss,
+							accuracy: this.currentTotalAccuracy,
+							modelHistory: this.currentModelMetrics,
+							testData: {
+								data: predictionsData,
+								columns: columnsData,
+							},
+						});
+						trainFeatures.dispose();
+						trainTarget.dispose();
+						testFeatures.dispose();
+						predictions.dispose();
+					},
 				},
-			},
-		});
+			});
+		} catch (error) {
+			console.error({ "Error training model:": error });
+			throw error;
+		}
+
 	}
 
 
@@ -704,12 +710,13 @@ class TFInstance {
 			this.currentModelConfig = modelConfig;
 
 			const preparedData = this.preprocessData(data, columns, trainConfig.dataPreparationConfig);
+			console.error({ "Prepared data": preparedData });
 			const model = this.createModel(modelConfig);
-
-		await this.trainModel({
-			model,
-			preparedData,
-			originalData: data,
+			console.error({ "Model": model });
+			await this.trainModel({
+				model,
+				preparedData,
+				originalData: data,
 				trainConfig,
 				modelConfig,
 				columns

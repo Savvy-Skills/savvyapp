@@ -283,7 +283,7 @@ export default function LayerDetails({
 								</View>
 							</View>
 							{currentState[modelId]?.training.modelHistory?.length > 0 && (
-								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
+								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} dom={{scrollEnabled: false}} />
 							)}
 						</>
 						{currentState[modelId]?.data?.testData && currentState[modelId]?.data.testData.length > 0 && (

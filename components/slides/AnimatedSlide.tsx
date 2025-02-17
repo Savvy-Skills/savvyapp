@@ -1,5 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, ViewStyle, Easing } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming, 
+  Easing 
+} from 'react-native-reanimated';
 
 interface AnimatedSlideProps {
   children: React.ReactNode;
@@ -12,29 +18,25 @@ const AnimatedSlide: React.FC<AnimatedSlideProps> = ({
   direction,
   isInitialRender 
 }) => {
-  const translateX = useRef(new Animated.Value(
+  const translateX = useSharedValue(
     isInitialRender ? 0 : (direction === 'forward' ? 1000 : -1000)
-  )).current;
+  );
 
   useEffect(() => {
     if (direction !== null && !isInitialRender) {
       // Reset position before animating in
-      translateX.setValue(direction === 'forward' ? 1000 : -1000);
+      translateX.value = direction === 'forward' ? 1000 : -1000;
       
-      Animated.parallel([
-        Animated.timing(translateX, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.cubic),
-        }),
-      ]).start();
+      translateX.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+      });
     }
   }, [direction, isInitialRender]);
 
-  const animatedStyle: Animated.AnimatedProps<ViewStyle> = {
-    transform: [{ translateX }],
-  };
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
 
   return (
     <Animated.View 

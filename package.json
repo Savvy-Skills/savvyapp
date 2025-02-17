@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "APP_VARIANT=development expo start --tunnel",
+    "start-atlas": "APP_VARIANT=development EXPO_UNSTABLE_ATLAS=true expo start --tunnel",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "APP_VARIANT=development expo start --android",
     "ios": "APP_VARIANT=development expo start --ios",
@@ -85,6 +86,7 @@
     "@types/react-native-charts-wrapper": "^0.5.11",
     "@types/react-plotly.js": "^2.6.3",
     "@types/react-test-renderer": "^18.0.7",
+    "expo-atlas": "^0.4.0",
     "jest": "^29.2.1",
     "jest-expo": "~52.0.4",
     "react-test-renderer": "18.2.0",

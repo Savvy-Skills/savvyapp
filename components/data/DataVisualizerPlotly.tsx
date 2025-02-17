@@ -387,6 +387,7 @@ export default function DataVisualizerPlotly({
               layout={layout}
               config={config}
               style={styles.plot}
+			  dom={{scrollEnabled: false}}
             />
           </Suspense>
         </View>

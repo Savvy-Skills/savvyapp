@@ -13,21 +13,18 @@ import { Colors } from "@/constants/Colors";
 import { LocalSlide } from "@/types";
 import { useViewStore } from "@/store/viewStore";
 
-interface Item {
-	text: string;
-	match: string;
-}
-
 interface DragAndDropProps {
 	quizMode?: boolean;
 	isMobileWeb: boolean;
 	slide: LocalSlide;
+	dom: import("expo/dom").DOMProps;
 }
 
 export default function DragAndDrop({
 	quizMode = false,
 	isMobileWeb,
 	slide,
+	dom,
 }: DragAndDropProps) {
 
 	const { setAnswer } = useViewStore();

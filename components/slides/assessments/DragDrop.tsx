@@ -31,6 +31,7 @@ export default function DragAndDropAssessment({
 				quizMode={quizMode}
 				isMobileWeb={isMobileWeb}
 				slide={slide}
+				dom={{scrollEnabled: false}}
 			/>
 		</AssessmentWrapper>
 	);

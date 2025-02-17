@@ -43,7 +43,6 @@ export default function RootLayout() {
 		PoppinsBlack: require("../assets/fonts/PoppinsBlack.ttf"),
 		PoppinsExtraBold: require("../assets/fonts/PoppinsExtraBold.ttf"),
 	});
-	const networkState = Network.useNetworkState();
 
 	const loadSounds = useAudioStore((state) => state.loadSounds);
 	const soundsLoaded = useAudioStore((state) => state.soundsLoaded);
