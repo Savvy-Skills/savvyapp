@@ -303,6 +303,7 @@ class TFInstance {
 						(!column.normalization || column.normalization === "none")
 				)
 				.map((column) => column.field);
+
 				
 			// Create tensor from raw values of untransformed columns
 			const nonEncodedNonNormalizedFeatures = features.map((obj) =>
@@ -311,10 +312,16 @@ class TFInstance {
 					return acc;
 				}, {} as Record<string, any>)
 			);
-			const nonEncodedNonNormalizedFeaturesTensor = tf.tensor2d(
-				nonEncodedNonNormalizedFeatures.map((feature) => Object.values(feature))
-			);
-			processedData = nonEncodedNonNormalizedFeaturesTensor;
+
+			const values = nonEncodedNonNormalizedFeatures.map((feature) => Object.values(feature));
+			console.error({ values });
+
+
+			const nonEncodedNonNormalizedFeaturesTensor = tf.tensor(values, [values.length, values[0].length]);
+			console.error({ nonEncodedNonNormalizedFeaturesTensor });
+
+			processedData = nonEncodedNonNormalizedFeaturesTensor as tf.Tensor2D;
+			console.error({ processedData });
 
 			// 6. Feature Scaling: Apply normalization to specified columns
 			const scaledColumns = dataPreparationConfig.featureConfig.filter(

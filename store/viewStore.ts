@@ -22,13 +22,12 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		await postViewProgress(viewId, progress);
 	},
 	completeSlide: async () => {
-		const { viewId, currentSlideIndex, slides } = get();
+		const { viewId, currentSlideIndex, slides, submitProgress } = get();
 		if (!viewId || slides[currentSlideIndex].completed) return;
 		slides[currentSlideIndex].completed = true;
 		set({ slides: slides });
-		const progress = slides.map((slide) => slide.completed || false);
 		// TODO: HANDLE CASE WHERE POSTING PROGRESS FAILS
-		await postViewProgress(viewId, progress);
+		await submitProgress();
 	},
 	restartView: async () => {
 		const { viewId } = get();
@@ -170,7 +169,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		}
 	},
 	submitAnswer: async () => {
-		const { currentSlideIndex, slides, view, viewId } = get();
+		const { currentSlideIndex, slides, view, viewId, completeSlide, submitProgress } = get();
 		const currentSlide = slides[currentSlideIndex];
 		const quizMode = view?.quiz || false;
 
@@ -185,14 +184,13 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 							...slide,
 							submitted: true,
 							submittable: false,
-							completed: slide.isCorrect ? true : quizMode
 						} : slide
 					)
 				}));
 				// Slide is correct or quiz saved, so we can check the slide completion
 				if (currentSlide.isCorrect || quizMode) {
 					// Complete the slide
-					get().completeSlide();
+					completeSlide();
 				}
 
 				// Create a placeholder submission
