@@ -1,13 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { StyleSheet, View, TouchableOpacity, Animated } from "react-native";
 import { Text, IconButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import { Colors } from "@/constants/Colors";
-import { QuestionInfo } from "@/types";
-import { useAudioStore } from "@/store/audioStore";
+import { useViewStore } from "@/store/viewStore";
 
 type Card = {
 	id: string;
@@ -24,19 +22,9 @@ const ANIMATION_TIMING = {
 	SHAKE_DURATION: 500,
 } as const;
 
-function createAnswer(question: QuestionInfo): AssessmentAnswer {
-	return {
-		answer: question.options.map((opt) => ({
-			text: opt.text,
-			match: opt.match,
-		})),
-		revealed: false,
-	};
-}
-
 export default function MatchWordsAssessment({
+	slide,
 	question,
-	index,
 	quizMode = false,
 }: AssessmentProps) {
 	const [cards, setCards] = useState<Card[]>([]);
@@ -46,26 +34,16 @@ export default function MatchWordsAssessment({
 	const scaleAnims = useRef<Animated.Value[]>([]).current;
 	const shakeAnims = useRef<Animated.Value[]>([]).current;
 
-	const {
-		setCorrectnessState,
-		submittedAssessments,
-		submitAssessment,
-		currentSlideIndex,
-		setAnswer,
-	} = useCourseStore();
+	const { setAnswer, submitAnswer } = useViewStore();
 
-	const { playSound } = useAudioStore();
-
-	const isActive = index === currentSlideIndex;
-
-	const currentSubmissionIndex = submittedAssessments.findIndex(
-		(submission) => submission.assessment_id === question.id
-	);
-	const currentSubmission = submittedAssessments[currentSubmissionIndex];
+	const isRevealed = slide.revealed || false;
+	const isSubmitted = slide.submitted || false;
+	const isCorrect = slide.isCorrect || false;
+	const blocked = (quizMode && isSubmitted) || (isSubmitted && isCorrect);
 
 	useEffect(() => {
 		initializeCards();
-	}, [question]);
+	}, []);
 
 	const initializeCards = () => {
 		const options = question.options.map((opt, idx) => ({
@@ -95,7 +73,7 @@ export default function MatchWordsAssessment({
 		}
 		setOriginalCards(originalCards);
 
-		if (currentSubmission && currentSubmission.isCorrect) {
+		if (slide.answer?.length) {
 			setCards(
 				allCards.map((card) => ({
 					...card,
@@ -107,7 +85,6 @@ export default function MatchWordsAssessment({
 		} else {
 			const shuffledCards = [...allCards].sort(() => Math.random() - 0.5);
 			setCards(shuffledCards);
-			// Original cards are used to display the correct matches, we should have an array where the match is next to the option in the array
 			scaleAnims.length = shuffledCards.length;
 			shakeAnims.length = shuffledCards.length;
 			shuffledCards.forEach((_, index) => {
@@ -119,11 +96,9 @@ export default function MatchWordsAssessment({
 	};
 
 	const handleReset = () => {
-		cards.forEach((_, index) => {
-			scaleAnims[index].setValue(1);
-			shakeAnims[index].setValue(0);
-		});
+		if (blocked || isRevealed) return;
 		initializeCards();
+		setAnswer([], false);
 	};
 
 	const shakeAnimation = (index: number) => {
@@ -159,8 +134,8 @@ export default function MatchWordsAssessment({
 		}).start();
 	};
 
-	const handleCardPress = (card: Card) => {
-		if (card.isMatched) return;
+	const handleCardPress = useCallback((card: Card) => {
+		if (blocked || isRevealed) return;
 
 		if (!selectedCard) {
 			setSelectedCard(card);
@@ -175,27 +150,27 @@ export default function MatchWordsAssessment({
 		const cardIndex = cards.findIndex((c) => c.id === card.id);
 		const selectedCardIndex = cards.findIndex((c) => c.id === selectedCard.id);
 
-		const isCorrect = question.options.some(
+		const isMatchCorrect = question.options.some(
 			(opt) =>
 				(selectedCard.text === opt.text && card.text === opt.match) ||
 				(card.text === opt.text && selectedCard.text === opt.match)
 		);
 
-		setCards((prev) =>
-			prev.map((c) => {
-				if (c.id === card.id || c.id === selectedCard.id) {
-					return {
-						...c,
-						showFeedback: true,
-						isCorrect: isCorrect,
-						isMatched: isCorrect,
-					};
-				}
-				return c;
-			})
-		);
+		let newCards = cards.map((c) => {
+			if (c.id === card.id || c.id === selectedCard.id) {
+				return {
+					...c,
+					showFeedback: true,
+					isCorrect: isMatchCorrect,
+					isMatched: isMatchCorrect,
+				};
+			}
+			return c;
+		});
 
-		if (isCorrect) {
+		setCards(newCards);
+
+		if (isMatchCorrect) {
 			setTimeout(() => {
 				shrinkAnimation(cardIndex);
 				shrinkAnimation(selectedCardIndex);
@@ -205,46 +180,50 @@ export default function MatchWordsAssessment({
 			shakeAnimation(selectedCardIndex);
 		}
 
+		newCards = newCards.map((c) => {
+			if (c.id === card.id || c.id === selectedCard.id) {
+				return { ...c, showFeedback: false };
+			}
+			return c;
+		});
+
 		setTimeout(() => {
-			setCards((prev) =>
-				prev.map((c) => {
-					if (c.id === card.id || c.id === selectedCard.id) {
-						return { ...c, showFeedback: false };
-					}
-					return c;
-				})
-			);
+			setCards(newCards);
 		}, ANIMATION_TIMING.FEEDBACK_DURATION);
 
 		setSelectedCard(null);
-	};
 
-	useEffect(() => {
-		if (currentSubmission) {
-			setAllMatched(true);
-		}
-	}, [submittedAssessments, currentSubmission, setAllMatched]);
+		// Update answer creation to show proper pairs
+		const matchedPairs = newCards
+			.filter((c) => c.isMatched && c.type === "option")
+			.map(optionCard => ({
+				text: optionCard.text,
+				match: newCards.find(matchCard => 
+					matchCard.type === 'match' && 
+					matchCard.isMatched && 
+					question.options.some(opt => 
+						opt.text === optionCard.text && 
+						opt.match === matchCard.text
+					)
+				)?.text || ''
+			}));
 
-	useEffect(() => {
-		if (cards.length < 1) return;
-		const allMatched = cards.every((card) => card.isMatched);
-		setAllMatched(allMatched);
-		setCorrectnessState(index, allMatched);
+
+		const allMatched = matchedPairs.length === question.options.length;
+		setAnswer(matchedPairs, allMatched, !allMatched);
 		if (allMatched) {
-			const answer = createAnswer(question);
-			setAnswer(index, answer);
-			if (!currentSubmission) {
-				playSound("success", 0.6);
-				submitAssessment(question.id);
-			}
+			setAllMatched(true);
+			submitAnswer();
 		}
 	}, [
-		cards,
-		index,
-		setCorrectnessState,
-		submitAssessment,
-		question.id,
-		currentSubmissionIndex,
+		blocked, 
+		isRevealed, 
+		selectedCard, 
+		cards, 
+		question.options, 
+		shakeAnimation, 
+		shrinkAnimation, 
+		setAnswer
 	]);
 
 	const renderCard = (card: Card, idx: number, isOriginal: boolean = false) => (
@@ -269,26 +248,22 @@ export default function MatchWordsAssessment({
 					card.showFeedback && !card.isCorrect && styles.incorrectCard,
 					card.showFeedback && card.isCorrect && styles.correctCard,
 				]}
-				disabled={card.isMatched || allMatched || isOriginal}
+				disabled={blocked || isRevealed}
 			>
 				<Text style={styles.cardText}>{card.text}</Text>
-				{card.showFeedback && (
-					<View style={styles.feedbackIcon}>
-						<StatusIcon
-							isCorrect={card.isCorrect}
-							isWrong={!card.isCorrect}
-							showAnswer={false}
-						/>
-					</View>
-				)}
+				<StatusIcon
+					isCorrect={isSubmitted && isCorrect}
+					isWrong={isSubmitted && !isCorrect}
+					showAnswer={isRevealed}
+				/>
 			</TouchableOpacity>
 		</Animated.View>
 	);
 
 	return (
 		<AssessmentWrapper
+			slide={slide}
 			question={question}
-			isActive={isActive}
 		>
 			<View style={styles.mainContainer}>
 				<View style={styles.cardsContainer}>
@@ -296,7 +271,7 @@ export default function MatchWordsAssessment({
 						? originalCards.map((card, idx) => renderCard(card, idx, true))
 						: cards.map((card, idx) => renderCard(card, idx))}
 				</View>
-				{!allMatched && (
+				{!isSubmitted && (
 					<IconButton
 						icon="refresh"
 						mode="contained"
@@ -326,17 +301,14 @@ const styles = StyleSheet.create({
 		maxWidth: "45%",
 	},
 	card: {
+		flex: 1,
 		width: "100%",
-		height: "100%",
 		borderRadius: 12,
 		padding: 16,
 		justifyContent: "center",
 		alignItems: "center",
 		elevation: 4,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.25,
-		shadowRadius: 3.84,
+		boxShadow: "0px 2px 4px 0px rgba(0, 0, 0, 0.25)",
 	},
 	optionCard: {
 		backgroundColor: "#FFB74D",

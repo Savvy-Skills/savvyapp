@@ -23,7 +23,6 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({
   disabledTouchable,
   style,
 }) => {
-  const { isDarkMode } = useThemeStore();
 
   return (
     <TouchableRipple onPress={onPress} disabled={disabled || disabledTouchable}>

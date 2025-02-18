@@ -186,7 +186,6 @@ export default function LayerDetails({
 			</ThemedTitle>
 
 			<View style={{ opacity: selectedLayer === "input" ? 1 : 0, height: selectedLayer === "input" ? "auto" : 0, overflow: "hidden" }}>
-				{/*  */}
 				<DataTableContainer data={data} columns={columns} datasetInfo={dataset_info} hideFilter={true} traces={initialTraces} index={index} />
 			</View>
 
@@ -284,11 +283,11 @@ export default function LayerDetails({
 								</View>
 							</View>
 							{currentState[modelId]?.training.modelHistory?.length > 0 && (
-								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} />
+								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} dom={{scrollEnabled: false}} />
 							)}
 						</>
 						{currentState[modelId]?.data?.testData && currentState[modelId]?.data.testData.length > 0 && (
-							<DataTableContainer invert padding={0} data={currentState[modelId]?.data.testData} columns={currentState[modelId]?.data.columns} traces={predictionTraces} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
+							<DataTableContainer originalData={currentModelConfig?.problemType === "regression" ? data : undefined} originalTraces={currentModelConfig?.problemType === "regression" ? initialTraces : undefined	} invert padding={0} data={currentState[modelId]?.data.testData} columns={currentState[modelId]?.data.columns} traces={predictionTraces} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
 						)}
 						{currentState[modelId]?.model.completed && (
 							<>

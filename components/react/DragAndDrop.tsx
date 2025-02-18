@@ -1,6 +1,6 @@
 "use dom";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
@@ -8,220 +8,163 @@ import { DraggableItem } from "./DraggableItem";
 import { DropZone } from "./DropZone";
 import { CustomDragLayer } from "./CustomDragLayer";
 import "./drag-and-drop.css";
-import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { Icon } from "react-native-paper";
 import { Colors } from "@/constants/Colors";
-
-interface Item {
-  text: string;
-  match: string;
-}
+import { LocalSlide } from "@/types";
+import { useViewStore } from "@/store/viewStore";
 
 interface DragAndDropProps {
-  items: Item[];
-  index: number;
-  quizMode?: boolean;
-  questionId: number;
-  tryAgain: boolean;
-  showAnswer: boolean;
-  isSubmitted: boolean;
-  isCorrect: boolean;
-  droppedItems: Record<string, string[]>;
-  setDroppedItems: (items: Record<string, string[]>) => void;
-  isMobile: boolean;
-  isWrong: boolean;
-}
-
-function createAnswer(
-  droppedItems: Record<string, string[]>,
-  showAnswer: boolean
-): AssessmentAnswer {
-  return {
-    //  Answer should be a list of all the items, the zone they're in should be the match value
-    answer: Object.entries(droppedItems)
-      .map(([zone, items]) => {
-        return items.map((item) => ({
-          text: item,
-          match: zone,
-        }));
-      })
-      .flat(),
-    revealed: showAnswer,
-  };
+	quizMode?: boolean;
+	isMobileWeb: boolean;
+	slide: LocalSlide;
+	dom: import("expo/dom").DOMProps;
 }
 
 export default function DragAndDrop({
-  items,
-  index,
-  quizMode = false,
-  questionId,
-  tryAgain,
-  showAnswer,
-  isSubmitted,
-  isCorrect,
-  droppedItems,
-  setDroppedItems,
-  isMobile,
-  isWrong,
+	quizMode = false,
+	isMobileWeb,
+	slide,
+	dom,
 }: DragAndDropProps) {
-  const { setSubmittableState, setCorrectnessState, setAnswer } =
-    useCourseStore();
 
-  const isTouchDevice =
-    "ontouchstart" in window || navigator.maxTouchPoints > 0;
+	const { setAnswer } = useViewStore();
 
-  // Update store when droppedItems changes
-  useEffect(() => {
-    const allItemsDropped = items.every((item) =>
-      Object.values(droppedItems).some((zoneItems) =>
-        zoneItems.includes(item.text)
-      )
-    );
-    if (allItemsDropped) {
-      const correct = items.every((item) =>
-        droppedItems[item.match]?.includes(item.text)
-      );
-      const answer = createAnswer(droppedItems, false);
-      setAnswer(index, answer);
-      setCorrectnessState(index, correct);
-    }
-  }, [droppedItems, questionId, setSubmittableState, setCorrectnessState]);
+	const question = useMemo(() => {
+		return slide.assessment_info;
+	}, [slide]);
 
-  const handleDrop = useCallback(
-    (itemText: string, targetZone: string | null) => {
-      if (isSubmitted && isCorrect) return;
-      const newDroppedItems = { ...droppedItems };
-      Object.keys(newDroppedItems).forEach((zone) => {
-        newDroppedItems[zone] = newDroppedItems[zone].filter(
-          (text) => text !== itemText
-        );
-      });
-      if (targetZone) {
-        newDroppedItems[targetZone] = [
-          ...newDroppedItems[targetZone],
-          itemText,
-        ];
-      }
-      const allItemsDropped = items.every((item) =>
-        Object.values(newDroppedItems).some((zoneItems) =>
-          zoneItems.includes(item.text)
-        )
-      );
-      setSubmittableState(index, allItemsDropped);
-      setDroppedItems(newDroppedItems);
-    },
-    [isSubmitted, isCorrect, droppedItems]
-  );
 
-  const getUndropedItems = () => {
-    const allDroppedItems = Object.values(droppedItems).flat();
-    return items.filter((item) => !allDroppedItems.includes(item.text));
-  };
+	const correctIems = useMemo(() =>
+		question?.options.map((option) => ({
+			text: option.text,
+			match: option.match,
+		})),
+		[question]
+	);
 
-  const resetStates = () => {
-    const newState = (() => {
-      const zones = [...new Set(items.map((item) => item.match))];
-      return zones.reduce((acc, zone) => ({ ...acc, [zone]: [] }), {});
-    })();
-    setDroppedItems(newState);
-  };
+	const isSubmitted = slide.submitted || false;
+	const isCorrect = slide.isCorrect || false;
+	const showAnswer = slide.revealed || false;
 
-  useEffect(() => {
-    if (tryAgain) {
-      resetStates();
-	}
-  }, [tryAgain]);
- 
+	// Derive dropped items from slide.answer, if it exists
+	const droppedItems = useMemo(() => {
+		return slide.answer?.map((answer) => ({
+			text: answer.text,
+			match: answer.match,
+		}));
+	}, [slide.answer]);
 
-  const zones = [...new Set(items.map((item) => item.match))];
-  const firstHalf = zones.slice(0, Math.ceil(zones.length / 2));
-  const secondHalf = zones.slice(Math.ceil(zones.length / 2));
+	// From Dropped Items and Items, create object with remaining items
+	const remainingItems = useMemo(() => {
+		return correctIems?.filter((item) => !droppedItems?.some((droppedItem) => droppedItem.text === item.text));
+	}, [correctIems, droppedItems]);
 
-  return (
-    <DndProvider backend={isTouchDevice ? TouchBackend : HTML5Backend}>
-      <div className="container">
-        <div className="drop-zones">
-          {firstHalf.map((zone) => (
-            <DropZone
-              key={zone}
-              zone={zone}
-              onDrop={handleDrop}
-              isCorrect={isCorrect}
-              isSubmitted={isSubmitted}
-              isWrong={isWrong}
-              showAnswer={showAnswer}
-            >
-              <div className="drop-zone-title">{zone}</div>
-              <div className="dropped-items">
-                {droppedItems[zone].map((text) => {
-                  const item = items.find((i) => i.text === text);
-                  if (!item) return null;
-                  return (
-                    <div key={item.text} className="dropped-item">
-                      <DraggableItem
-                        item={item}
-                        isDisabled={isSubmitted && (isCorrect || quizMode)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </DropZone>
-          ))}
-          <div className="centered-icon">
-            <Icon
-              source="chevron-double-up"
-              size={24}
-              color={Colors.primary}
-            />
-          </div>
-          <div className="draggable-items">
-            {getUndropedItems().map((item) => (
-              <DraggableItem
-                key={item.text}
-                item={item}
-                isDisabled={isSubmitted && (isCorrect || quizMode)}
-              />
-            ))}
-          </div>
-          <div className="centered-icon">
-            <Icon
-              source="chevron-double-down"
-              size={24}
-              color={Colors.primary}
-            />
-          </div>
-          {secondHalf.map((zone) => (
-            <DropZone
-              key={zone}
-              zone={zone}
-              onDrop={handleDrop}
-              isCorrect={isCorrect}
-              isSubmitted={isSubmitted}
-              isWrong={isWrong}
-              showAnswer={showAnswer}
-            >
-              <div className="drop-zone-title">{zone}</div>
-              <div className="dropped-items">
-                {droppedItems[zone].map((text) => {
-                  const item = items.find((i) => i.text === text);
-                  if (!item) return null;
-                  return (
-                    <div key={item.text} className="dropped-item">
-                      <DraggableItem
-                        item={item}
-                        isDisabled={isSubmitted && (isCorrect || quizMode)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </DropZone>
-          ))}
-        </div>
+	const isTouchDevice =
+		"ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-        {isMobile && <CustomDragLayer />}
-      </div>
-    </DndProvider>
-  );
+	const handleDrop = useCallback(
+		(itemText: string, targetZone: string | null) => {
+			if ((isSubmitted && isCorrect) || targetZone === null) return;
+			// Create answer object with current dropped items plus new item
+			// TODO: If dropped item is already in the answer, remove it from the answer
+			let newAnswer = slide.answer?.filter((answer) => answer.text !== itemText);
+			if (newAnswer) {
+				newAnswer = [...newAnswer, { text: itemText, match: targetZone }];
+			} else {
+				newAnswer = [{ text: itemText, match: targetZone }];
+			}
+			// Check if the answer is correct, our answers text and matches must be the same text and matches as the correct items
+			const answerCorrect = newAnswer.length === correctIems?.length && newAnswer?.every((answer) => correctIems?.some((item) => item.text === answer.text && item.match === answer.match));
+			// Not submittable if there's remaining items, this means newAnswer.length < correctIems.length
+			const notSubmittable = correctIems ? newAnswer.length < correctIems.length : false;
+			console.log({ newAnswer, correctIems, answerCorrect, notSubmittable, remainingItems });
+			setAnswer(newAnswer, answerCorrect, notSubmittable);
+		},
+		[droppedItems, correctIems, isSubmitted, isCorrect, showAnswer]
+	);
+
+
+	const zones = [...new Set(correctIems?.map((item) => item.match))];
+	const firstHalf = zones.slice(0, Math.ceil(zones.length / 2));
+	const secondHalf = zones.slice(Math.ceil(zones.length / 2));
+
+	return (
+		<DndProvider backend={isTouchDevice ? TouchBackend : HTML5Backend}>
+			<div className="container">
+				<div className="drop-zones">
+					{firstHalf.map((zone) => (
+						<DropZone
+							key={zone}
+							zone={zone}
+							onDrop={handleDrop}
+							isCorrect={isCorrect}
+							isSubmitted={isSubmitted}
+							isWrong={isSubmitted && !isCorrect}
+							showAnswer={showAnswer}
+						>
+							<div className="drop-zone-title">{zone}</div>
+							<div className="dropped-items">
+								{droppedItems?.filter((item) => item.match === zone).map((item) => (
+									<div key={item.text} className="dropped-item">
+										<DraggableItem
+											item={item}
+											isDisabled={isSubmitted && (isCorrect || quizMode)}
+										/>
+									</div>
+								))}
+							</div>
+						</DropZone>
+					))}
+					<div className="centered-icon">
+						<Icon
+							source="chevron-double-up"
+							size={24}
+							color={Colors.primary}
+						/>
+					</div>
+					<div className="draggable-items">
+						{remainingItems?.map((item) => (
+							<DraggableItem
+								key={item.text}
+								item={item}
+								isDisabled={isSubmitted && (isCorrect || quizMode)}
+							/>
+						))}
+					</div>
+					<div className="centered-icon">
+						<Icon
+							source="chevron-double-down"
+							size={24}
+							color={Colors.primary}
+						/>
+					</div>
+					{secondHalf.map((zone) => (
+						<DropZone
+							key={zone}
+							zone={zone}
+							onDrop={handleDrop}
+							isCorrect={isCorrect}
+							isSubmitted={isSubmitted}
+							isWrong={isSubmitted && !isCorrect}
+							showAnswer={showAnswer}
+						>
+							<div className="drop-zone-title">{zone}</div>
+							<div className="dropped-items">
+								{droppedItems?.filter((item) => item.match === zone).map((item) => (
+									<div key={item.text} className="dropped-item">
+										<DraggableItem
+											item={item}
+											isDisabled={isSubmitted && (isCorrect || quizMode)}
+										/>
+									</div>
+								))}
+							</div>
+						</DropZone>
+					))}
+				</div>
+
+				{isMobileWeb && <CustomDragLayer />}
+			</div>
+		</DndProvider>
+	);
 }

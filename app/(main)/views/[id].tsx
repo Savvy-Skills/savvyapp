@@ -12,7 +12,6 @@ import BottomBarNav from "@/components/navigation/SlidesBottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import TopNavBar from "@/components/navigation/TopNavBar";
 import AnimatedSlide from "@/components/slides/AnimatedSlide";
-import { useCourseStore } from "@/store/courseStore";
 import { useKeyPress } from "@/hooks/useKeyboard";
 import TopSheet, { TopSheetRefProps } from "@/components/TopSheet";
 import SlideListItem from "@/components/slides/SlideListItem";
@@ -21,45 +20,24 @@ import LoadingIndicator from "@/components/LoadingIndicator";
 import styles from "@/styles/styles";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Button, Text } from "react-native-paper";
+import { useViewStore } from "@/store/viewStore";
 
-export default function ModuleDetail() {
+export default function ViewDetail() {
 	const ref = useRef<TopSheetRefProps>(null);
 	const bottomSheetRef = useRef<BottomSheet>(null);
 	const { id } = useLocalSearchParams();
-	const {
-		getViewById,
-		currentView,
-		currentSlideIndex,
-		isNavMenuVisible,
-		setNavMenuVisible,
-		clearCurrentView,
-		nextSlide,
-		previousSlide,
-		setCurrentSlideIndex,
-		restartingView,
-		stopRestartingView,
-		completedSlides,
-		submittedAssessments,
-		hiddenFeedbacks,
-		setHiddenFeedback,
-		triggerTryAgain,
-		triggerShowExplanation,
-		triggerRevealAnswer,
-		setShownExplanation,
-		shownExplanations,
-	} = useCourseStore();
+	const [isInitialRender, setIsInitialRender] = useState(true);
+
+	const { slides, currentSlideIndex, fetchViewData, viewStatus, nextSlide, prevSlide, view, setCurrentSlideIndex } = useViewStore();
 
 	const [direction, setDirection] = useState<"forward" | "backward" | null>(
 		null
 	);
-	const currentSubmissionIndex = submittedAssessments.findIndex(submission => currentView?.slides[currentSlideIndex].type === "Assessment" && submission.assessment_id === currentView.slides[currentSlideIndex].assessment_info?.id);
-	const currentSubmission = submittedAssessments[currentSubmissionIndex];
+
 	const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
 	const prevIndexRef = useRef(currentSlideIndex);
-	const [isInitialRender, setIsInitialRender] = useState(true);
 
-	const revealedAnswer = currentSubmission?.revealed ?? false;
 
 	const openTopDrawer = useCallback(() => {
 		ref?.current?.scrollToEnd();
@@ -70,27 +48,16 @@ export default function ModuleDetail() {
 
 
 	useEffect(() => {
-		clearCurrentView();
-		getViewById(Number(id));
+		fetchViewData(Number(id));
 	}, [id]);
 
-	useEffect(() => {
-		if (restartingView) {
-			clearCurrentView();
-			getViewById(Number(id));
-			stopRestartingView();
-		}
-	}, [restartingView]);
+
 
 	const handleArrowRight = () => {
-		if (currentView && currentSlideIndex < currentView.slides.length - 1) {
-			nextSlide();
-		}
+		nextSlide();
 	};
 	const handleArrowLeft = () => {
-		if (currentSlideIndex > 0) {
-			previousSlide();
-		}
+		prevSlide();
 	};
 
 	if (Platform.OS === "web") {
@@ -123,53 +90,32 @@ export default function ModuleDetail() {
 		}
 	}, [currentSlideIndex]);
 
-	const handlePressOutside = useCallback((event: any) => {
-		if (isNavMenuVisible) {
-			setNavMenuVisible(false);
-		} 
-		if (isBottomSheetOpen) {
-			// TODO: Check if the user is tapping on the bottom sheet view, 
-			// To do this we need to check the event.target children, if it has the id "bottom-sheet-view" then we don't close the bottom sheet
-			if (event.target && event.target.firstElementChild && event.target.firstElementChild.id !== "bottom-sheet-view") {
-				handleBottomSheetClose();
-			}
-		}
-	}, [isNavMenuVisible, setNavMenuVisible, isBottomSheetOpen, handleBottomSheetClose]);
 
-	const handleTryAgain = useCallback(() => {
-		triggerTryAgain();
-		setHiddenFeedback(currentSlideIndex, true);
-	}, [triggerTryAgain, setHiddenFeedback, currentSlideIndex]);
-
-	const handleToggleExplanation = useCallback(() => {
-		triggerShowExplanation();
-		setShownExplanation(currentSlideIndex, !shownExplanations[currentSlideIndex]);
-	}, [triggerShowExplanation, setShownExplanation, currentSlideIndex, shownExplanations]);
-
-	const isAssessment = currentView?.slides[currentSlideIndex].type === "Assessment";
-
-	if (!currentView || restartingView) {
+	if (viewStatus !== "READY" || !view) {
 		return <LoadingIndicator />
 	}
 
-	
+
 	const getWrapperStyle = () => {
-		if (hiddenFeedbacks[currentSlideIndex]) return null;
-		if (revealedAnswer) return styles.revealedWrapper;
-		if (currentSubmission?.isCorrect) return styles.correctWrapper;
-		if (currentSubmission?.isCorrect === false) return styles.incorrectWrapper;
+		if (!currentSlide.submitted) return null;
+		if (currentSlide.revealed) return styles.revealedWrapper;
+		if (currentSlide.isCorrect) return styles.correctWrapper;
+		if (currentSlide.isCorrect === false) return styles.incorrectWrapper;
 		return null
 	};
 
+	const currentSlide = slides[currentSlideIndex];
+
+
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
-			<Pressable style={[localStyles.pressableArea]} onPress={handlePressOutside}>
+			<Pressable style={[localStyles.pressableArea]}>
 				<TopNavBar />
-				<>
+				<View style={{ flex: 1 }}>
 					{/* TopSheet */}
 					<TopSheet ref={ref}>
 						<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
-							{currentView.slides.map((slide, index) => (
+							{view.slides.map((slide, index) => (
 								<SlideListItem
 									key={`slide-${slide.slide_id}-${index}`}
 									name={slide.name}
@@ -181,7 +127,7 @@ export default function ModuleDetail() {
 												? slide.content_info?.type
 												: undefined
 									}
-									isCompleted={completedSlides[index]}
+									isCompleted={slides[index].completed}
 									isActive={index === currentSlideIndex}
 									onPress={() => setCurrentSlideIndex(index)}
 								/>
@@ -190,57 +136,49 @@ export default function ModuleDetail() {
 					</TopSheet>
 					{/* Slides */}
 					<View style={localStyles.slidesContainer}>
-						{currentView.slides.map((slide, index) => (
-							<AnimatedSlide
-								key={`${slide.slide_id}-${index}`}
-								isActive={index === currentSlideIndex}
-								direction={index === currentSlideIndex ? direction : null}
-								isInitialRender={
-									isInitialRender && index === currentSlideIndex
-								}
-							>
-								<SlideRenderer
-									slide={slide}
-									index={index}
-									quizMode={currentView.quiz}
-								/>
-							</AnimatedSlide>
-						))}
+						<AnimatedSlide
+							key={`${currentSlide.slide_id}-${currentSlideIndex}`}
+							direction={direction}
+							isInitialRender={isInitialRender}
+						>
+							<SlideRenderer slide={currentSlide} index={currentSlideIndex} quizMode={view?.quiz} />
+						</AnimatedSlide>
 					</View>
 
 					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper, getWrapperStyle()]}>
-						{(isAssessment && currentSubmission && !hiddenFeedbacks[currentSlideIndex]) && (
+						{(currentSlide.type === "Assessment" && currentSlide.submitted) && (
 							<FeedbackComponent
-								correctness={currentSubmission?.isCorrect}
-								revealed={revealedAnswer}
-								onTryAgain={handleTryAgain}
-								onRevealAnswer={triggerRevealAnswer}
-								onShowExplanation={handleToggleExplanation}
-								quizMode={currentView.quiz}
-								showExplanation={shownExplanations[currentSlideIndex]}
-								slideIndex={currentSlideIndex}
+								correctness={currentSlide.isCorrect || false}
+								revealed={currentSlide.revealed || false}
+								quizMode={view?.quiz}
+
 							/>
 						)}
 						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} onCloseBottomSheet={handleBottomSheetClose} showBottomSheet={isBottomSheetOpen} />
 					</View>
-					<BottomSheet
-						ref={bottomSheetRef}
-						onChange={handleSheetChanges}
-						index={-1}
-						snapPoints={["30%"]}
-						enableContentPanningGesture={false}
-						enableHandlePanningGesture={false}
-						enablePanDownToClose={false}
-						handleStyle={{ display: "none" }}
-						containerStyle={{ maxWidth: 600, width: "100%", marginHorizontal: "auto" }}
-						backgroundStyle={{ borderColor: "rgba(0, 0, 0, 0.1)", borderWidth: 1 }}
-					>
-						<BottomSheetView id="bottom-sheet-view" style={{ padding: 16 }}>
-							<Text>The answer is not a valid answer, please try again.</Text>
-						</BottomSheetView>
-					</BottomSheet>
-				</>
+				</View>
 			</Pressable>
+			{isBottomSheetOpen && (
+				<Pressable style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} onPress={handleBottomSheetClose}></Pressable>
+			)}
+			<BottomSheet
+				ref={bottomSheetRef}
+				onChange={handleSheetChanges}
+				index={-1}
+				snapPoints={["30%"]}
+				enableContentPanningGesture={false}
+				enableHandlePanningGesture={false}
+				enablePanDownToClose={false}
+				handleStyle={{ display: "none" }}
+				containerStyle={{ maxWidth: 600, width: "100%", marginHorizontal: "auto" }}
+				backgroundStyle={{ borderColor: "rgba(0, 0, 0, 0.1)", borderWidth: 1 }}
+			>
+				<BottomSheetView id="bottom-sheet-view" style={{ padding: 16, gap: 16 }}>
+					<Text>The answer is not a valid answer, please try again.</Text>
+					<Button mode="outlined" style={styles.defaultButton} onPress={handleBottomSheetClose}>Close</Button>
+				</BottomSheetView>
+			</BottomSheet>
+
 		</ScreenWrapper>
 	);
 }

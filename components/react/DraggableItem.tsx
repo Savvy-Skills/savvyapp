@@ -4,7 +4,7 @@ import { Icon } from 'react-native-paper'
 
 interface Item {
   text: string
-  match: string
+  match: string | undefined
 }
 
 interface DraggableItemProps {

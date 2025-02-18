@@ -1,359 +1,165 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Button, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
+import { useViewStore } from "@/store/viewStore";
+import { Answer, LocalSlide, QuestionInfo, Slide } from "@/types";
 
-type BlankItem = {
-	original: string;
-	filled: string;
+
+const FillBlankText = ({
+	question,
+	blanks,
+	blocked,
+	handleBlankPress,
+	slide
+}: {
+	question: QuestionInfo;
+	blanks: string[];
+	blocked: boolean;
+	handleBlankPress: (index: number) => void;
+	slide: LocalSlide;
+}) => {
+	const textParts = question.text.split(/\[(.*?)\]/g);
+	return (
+		<>
+			{textParts.map((part, index) => (
+				<React.Fragment key={`segment-${index}`}>
+					{index % 2 === 0 ? (
+						<Text key={`text-${index}`}>{part}</Text>
+					) : (
+						<Button
+							key={`blank-${index}`}
+							mode="outlined"
+							onPress={() => handleBlankPress(Math.floor(index / 2))}
+							disabled={blocked}
+							style={[
+								styles.ftbBlankButton,
+								slide.revealed && styles.revealedOption,
+								blocked && styles.disabledOption,
+							]}
+						>
+							{blanks[Math.floor(index / 2)] || "______"}
+						</Button>
+					)}
+				</React.Fragment>
+			))}
+		</>
+	);
 };
 
-function createAnswer(
-	selectedValues: string[],
-	showAnswer: boolean
-): AssessmentAnswer {
-	return {
-		answer: selectedValues.map((value, i) => ({
-			text: value,
-			order: i + 1,
-		})),
-
-		revealed: showAnswer,
-	};
-}
-
 export default function FillBlankAssessment({
+	slide,
 	question,
-	index,
 	quizMode = false,
 }: AssessmentProps) {
-	const [blanks, setBlanks] = useState<BlankItem[]>([]);
+	const { setAnswer } = useViewStore();
+	const [blanks, setBlanks] = useState<string[]>([]);
 	const [remainingOptions, setRemainingOptions] = useState<string[]>([]);
-	const [isWrong, setIsWrong] = useState(false);
-	const [showFeedback, setShowFeedback] = useState(false);
 
-	const {
-		setSubmittableState,
-		setCorrectnessState,
-		submittedAssessments,
-		submitAssessment,
-		completedSlides,
-		submittableStates,
-		currentSlideIndex,
-		setAnswer,
-		tryAgain,
-		revealAnswer,
-		setHiddenFeedback,
-		triggerTryAgain,
-		triggerRevealAnswer,
-	} = useCourseStore();
+	const correctAnswers = useMemo(() => {
+		const matches = question.text.match(/\[(.*?)\]/g) || [];
+		return matches.map(match => match.replace(/[\[\]]/g, ""));
+	}, [question.text]);
 
-	const text = useMemo(() => question.text, [question.text]);
-	const options = useMemo(
-		() => question.options.map((option) => option.text),
-		[question.options]
+	const questionOptions = useMemo(
+		() => question.options.map(option => option.text),
+		[question]
 	);
 
-	const currentSubmissionIndex = submittedAssessments.findIndex(
-		(submission) => submission.assessment_id === question.id
-	);
-	const currentSubmission =
-		currentSubmissionIndex !== -1
-			? submittedAssessments[currentSubmissionIndex]
-			: undefined;
+	const isRevealed = slide.revealed || false;
+	const blocked = (quizMode && slide.submitted) || (slide.submitted && slide.isCorrect);
 
-	const [showAnswer, setShowAnswer] = useState(
-		currentSubmission?.revealed ?? false
-	);
+	const updateRemainingOptions = useCallback((filledBlanks: string[]) => {
+		const usedOptions = filledBlanks.filter(b => b !== "");
+		const remaining = [...questionOptions, ...correctAnswers]
+			.filter(opt => !usedOptions.includes(opt));
+		setRemainingOptions(remaining);
+	}, [questionOptions, correctAnswers]);
 
-	const extractedBlanks = useMemo(() => {
-		const matches = text.match(/\[.*?\]/g) || [];
-		return matches.map((match) => match.replace(/[\[\]]/g, ""));
-	}, [text]);
+	// Initialize blanks and options
+	useState(() => {
+		const initialAnswers = slide.answer?.map(a => a.text) || [];
+		const filledBlanks = initialAnswers.length > 0 ? initialAnswers : Array(correctAnswers.length).fill("");
 
-	const blankOptions = useMemo(
-		() => extractedBlanks.map((blank) => blank.replace(/\[|\]/g, "")),
-		[extractedBlanks]
-	);
+		setBlanks(filledBlanks);
+		updateRemainingOptions(filledBlanks);
+
+	});
 
 	useEffect(() => {
-		const blanksArray = extractedBlanks.map((blank) => ({
-			original: blank,
-			filled: "",
-		}));
-		setBlanks(blanksArray);
-		setRemainingOptions([...options, ...blankOptions]);
-	}, [extractedBlanks, options, blankOptions]);
+		if (isRevealed) {
+			setBlanks(correctAnswers);
+			updateRemainingOptions(correctAnswers);
+		}
+	}, [isRevealed, setBlanks, updateRemainingOptions, correctAnswers]);
 
-	const checkCorrectness = useCallback(() => {
-		return blanks.every(
-			(blank) => blank.original.toLowerCase() === blank.filled.toLowerCase()
+	const checkCorrectness = useCallback((currentBlanks: string[]) => {
+		return currentBlanks.every((blank, index) =>
+			blank.toLowerCase() === correctAnswers[index]?.toLowerCase()
 		);
-	}, [blanks]);
+	}, [correctAnswers]);
 
-	useEffect(() => {
-		const correct = checkCorrectness();
-		const answer = createAnswer(
-			blanks.map((blank) => blank.filled),
-			false
-		);
-		setAnswer(index, answer);
-		setCorrectnessState(index, correct);
-	}, [
-		blanks,
-		setCorrectnessState,
-		setSubmittableState,
-		index,
-		checkCorrectness,
-	]);
 
-	useEffect(() => {
-		if (currentSubmission) {
-			if (!currentSubmission.isCorrect) {
-				setIsWrong(true);
-				if (quizMode) {
-					setShowAnswer(true);
-				}
+	const handleOptionPress = useCallback((option: string) => {
+		if (blocked) return;
+
+		setBlanks(prev => {
+			const newBlanks = [...prev];
+			const firstEmptyIndex = newBlanks.findIndex(b => b === "");
+
+			console.log({ newBlanks, firstEmptyIndex });
+			if (firstEmptyIndex !== -1) {
+				newBlanks[firstEmptyIndex] = option;
+			} else {
+				// If there's not an empty blank, replace the last filled blank
+				newBlanks[newBlanks.length - 1] = option;
 			}
-			// Transform answer to correct format of blanks and remaining options
-			// From answer get the current filled blanks
-			// Get the remaining options from question and the extracted blanks
 
-			const filledBlanks = currentSubmission.answer.map(
-				(answer) => answer.text
+			const isCorrect = checkCorrectness(newBlanks);
+			setAnswer(
+				newBlanks.map(text => ({ text, order: 0 })),
+				isCorrect
 			);
-
-			const questionOptions = question.options.map((option) => option.text);
-			const extractedOptions = extractedBlanks.map((blank) => blank);
-
-			//   Combine question options and extracted options
-			const remainingOptions = questionOptions.concat(extractedOptions);
-
-			//   Fill the blanks with the filled blanks, remaining options with the options
-			const newBlanks = extractedBlanks.map((blank, index) => ({
-				original: blank,
-				filled: filledBlanks[index],
-			}));
-			setBlanks(newBlanks);
-			setRemainingOptions(remainingOptions.filter((opt) => !filledBlanks.includes(opt)));
-
-			setShowFeedback(true);
-		}
-	}, [
-		extractedBlanks,
-		submittedAssessments,
-		currentSubmission,
-		quizMode,
-		completedSlides,
-		index,
-	]);
-
-	const isActive = index === currentSlideIndex;
-
-	const blocked =
-		currentSubmission?.isCorrect || showAnswer || (quizMode && isWrong);
-
-	const handleOptionPress = useCallback(
-		(option: string) => {
-			if (blocked) return;
-			setHiddenFeedback(currentSlideIndex, true);
-			setBlanks((prevBlanks) => {
-				const newBlanks = [...prevBlanks];
-				const blankIndex = newBlanks.findIndex((blank) => blank.filled === "");
-
-				if (blankIndex !== -1) {
-					// If there is an empty blank, fill it with the option
-					newBlanks[blankIndex].filled = option;
-				} else {
-					// If all blanks are filled, pop the last blank and fill it with the new option
-					const lastBlank = newBlanks.pop();
-					if (lastBlank) {
-						newBlanks.push({ ...lastBlank, filled: option });
-						setRemainingOptions((prevOptions) => [
-							...prevOptions,
-							lastBlank.filled,
-						]);
-					}
-				}
-				const isSubmittable = newBlanks.every((blank) => blank.filled !== "");
-				if (submittableStates[index] !== isSubmittable) {
-					setSubmittableState(index, isSubmittable);
-				}
-
-				return newBlanks;
-			});
-
-			setRemainingOptions((prevOptions) =>
-				prevOptions.filter((opt) => opt !== option)
-			);
-			setIsWrong(false);
-			setShowAnswer(false);
-			setShowFeedback(false);
-		},
-		[
-			blocked,
-			setBlanks,
-			setRemainingOptions,
-			setIsWrong,
-			setShowAnswer,
-			setShowFeedback,
-			setSubmittableState,
-			submittableStates,
-		]
-	);
-
-	const handleBlankPress = useCallback(
-		(blankIndex: number) => {
-			if (blocked) return;
-			if (blanks[blankIndex].filled === "") return;
-			setHiddenFeedback(currentSlideIndex, true);
-			const filledBlank = blanks[blankIndex].filled;
-			setRemainingOptions((prevOptions) => [
-				...prevOptions,
-				filledBlank,
-			]);
-			setBlanks((prevBlanks) => {
-				const newBlanks = [...prevBlanks];
-				if (newBlanks[blankIndex].filled) {
-					newBlanks[blankIndex].filled = "";
-				}
-				return newBlanks;
-			});
-
-			setSubmittableState(index, false);
-			setIsWrong(false);
-			setShowAnswer(false);
-			setShowFeedback(false);
-		},
-		[
-			blocked,
-			setBlanks,
-			setRemainingOptions,
-			setIsWrong,
-			setShowAnswer,
-			setShowFeedback,
-			blanks,
-			setSubmittableState,
-		]
-	);
-
-	const resetStates = useCallback(() => {
-		setBlanks((prevBlanks) =>
-			prevBlanks.map((blank) => ({ ...blank, filled: "" }))
-		);
-		setRemainingOptions([...options, ...blankOptions]);
-		setShowAnswer(false);
-		setIsWrong(false);
-		setShowFeedback(false);
-	}, [options, blankOptions]);
-
-	const handleTryAgain = useCallback(() => {
-		if (!quizMode) {
-			resetStates();
-		}
-	}, [quizMode, resetStates]);
-
-	const handleRevealAnswer = useCallback(() => {
-		if (!quizMode) {
-			setBlanks((prevBlanks) =>
-				prevBlanks.map((blank) => ({ ...blank, filled: blank.original }))
-			);
-			setRemainingOptions([]);
-			setShowAnswer(true);
-			setIsWrong(false);
-			setShowFeedback(true);
-			setCorrectnessState(index, true);
-			const answer = createAnswer(extractedBlanks, true);
-			setAnswer(index, answer);
-			submitAssessment(question.id);
-		}
-	}, [quizMode, index, setCorrectnessState, submitAssessment, question.id]);
-
-	useEffect(() => {
-		if (isActive && tryAgain) {
-			handleTryAgain();
-			triggerTryAgain();
-		}
-	}, [tryAgain]);
-
-	useEffect(() => {
-		if (isActive && revealAnswer) {
-			handleRevealAnswer();
-			triggerRevealAnswer();
-		}
-	}, [revealAnswer]);
-
-	const renderText = useMemo(() => {
-		let result = [];
-		let textParts = text.split(/\[.*?\]/);
-		blanks.forEach((blank, index) => {
-			result.push(<Text key={`text-${index}`}>{textParts[index]}</Text>);
-			result.push(
-				<Button
-					key={`blank-${index}`}
-					mode="outlined"
-					onPress={() => handleBlankPress(index)}
-					disabled={blocked}
-					style={[
-						styles.ftbBlankButton,
-						showAnswer && styles.revealedOption,
-						quizMode &&
-						isWrong &&
-						blank.original.toLowerCase() === blank.filled.toLowerCase() &&
-						styles.correctOption,
-						quizMode &&
-						isWrong &&
-						blank.original.toLowerCase() !== blank.filled.toLowerCase() &&
-						styles.incorrectOption,
-						blocked && styles.disabledOption,
-					]}
-				>
-					{blank.filled || "______"}
-				</Button>
-			);
+			updateRemainingOptions(newBlanks);
+			return newBlanks;
 		});
-		result.push(
-			<Text key={`text-${textParts.length - 1}`}>
-				{textParts[textParts.length - 1]}
-			</Text>
-		);
-		return result;
-	}, [text, blanks, handleBlankPress, blocked, showAnswer, quizMode, isWrong]);
+	}, [blocked, checkCorrectness, setAnswer, questionOptions, correctAnswers, updateRemainingOptions, setBlanks]);
 
-	const renderStatusIcon = () => {
-		if (isWrong) {
-			return <StatusIcon isCorrect={false} isWrong={true} showAnswer={false} />;
-		}
+	const handleBlankPress = useCallback((index: number) => {
+		if (blocked) return;
 
-		if (showAnswer || currentSubmission?.isCorrect) {
-			return (
-				<StatusIcon
-					isCorrect={true}
-					isWrong={false}
-					showAnswer={showAnswer}
-				/>
-			);
-		}
-
-		return null;
-	};
-
+		setBlanks(prev => {
+			const newBlanks = [...prev];
+			// Replace the blank with an empty string
+			newBlanks[index] = "";
+			console.log({ newBlanks });
+			updateRemainingOptions([...newBlanks]);
+			return newBlanks;
+		});
+	}, [blocked, updateRemainingOptions, setBlanks]);
 
 	return (
 		<AssessmentWrapper
+			slide={slide}
 			question={question}
-			isActive={isActive}
 		>
 			<View style={styles.ftbTextContainer}>
-				<Text style={styles.optionLabel}>
-					{renderText}
-				</Text>
+				<FillBlankText
+					question={question}
+					blanks={blanks}
+					blocked={blocked || false}
+					handleBlankPress={handleBlankPress}
+					slide={slide}
+				/>
 				<View style={styles.iconContainer}>
-					{renderStatusIcon()}
+					<StatusIcon
+						isCorrect={(slide.submitted && slide.isCorrect) || false}
+						isWrong={(slide.submitted && !slide.isCorrect) || false}
+						showAnswer={isRevealed}
+					/>
 				</View>
 			</View>
 			<View style={styles.ftbOptionsContainer}>

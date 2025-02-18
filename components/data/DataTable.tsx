@@ -48,8 +48,7 @@ export default function DataTable({
 
   return (
     <>
-      <View style={[localStyles.tableContainer, { width: tableWidth, paddingHorizontal: 8}]}>
-        <ThemedTitle style={[localStyles.boldText, localStyles.title]}>Dataset: {name}</ThemedTitle>
+      <View style={[localStyles.tableContainer, { width: tableWidth}]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={true}

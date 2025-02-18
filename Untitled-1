@@ -1,0 +1,8 @@
+let modules = $var.Module1;
+let viewID = $var.view_id;
+
+return modules
+    .filter((module) => 
+        module.views.some((view) => view.view_id === viewID)
+    )
+    .map((module) => module.id); 

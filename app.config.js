@@ -30,11 +30,11 @@ export default {
   slug: "savvy-skills",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/pngs/savvylogo.png",
+  icon: "./assets/images/pngs/icon.png",
   scheme: "myapp",
   userInterfaceStyle: "automatic",
   splash: {
-    image: "./assets/images/pngs/savvysplash.png",
+    image: "./assets/images/pngs/splash.png",
     resizeMode: "cover",
     backgroundColor: "#ffffff",
   },
@@ -44,7 +44,7 @@ export default {
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/images/pngs/savvylogo.png",
+      foregroundImage: "./assets/images/pngs/adaptive-icon.png",
       backgroundColor: "#ffffff",
     },
     package: getUniqueIdentifier(),
@@ -56,7 +56,7 @@ export default {
   web: {
     bundler: "metro",
     output: "static",
-    favicon: "./assets/images/pngs/savvylogo.png",
+    favicon: "./assets/images/pngs/icon.png",
   },
   plugins: [
     "expo-router",

@@ -69,20 +69,20 @@ export interface ViewWithSlides {
 	content_id: string;
 	slides: Slide[];
 	view_content: ContentInfo;
-	module_id: number;
 	progress: Progress;
 	quiz: boolean;
 	readonly timestamp: number;
 	module_info: Module;
 	published: boolean;
+	type: "lesson" | "example" | "tool";
 }
 export interface Progress {
 	readonly id: string;
 	readonly created_at: number;
 	user_id: number;
 	view_id: number;
-	slide_n: number;
 	class_id: number;
+	progress: boolean[];
 }
 
 export interface BareSlide {
@@ -149,6 +149,8 @@ export interface Answer {
 	match?: string;
 }
 
+
+
 export interface BaseSubmission {
 	assessment_id: number;
 	isCorrect: boolean;
@@ -164,13 +166,53 @@ export interface Submission extends BaseSubmission {
 	student_id?: number;
 }
 
+export type ViewStatus = "LOADING" | "READY" | "ERROR" | "RESTARTING";
+
+export interface view extends Omit<ViewWithSlides, "slides"> {}
+
+export interface ViewStore {
+	viewId: number | null;
+	viewStatus: ViewStatus;
+	skipAssessments: boolean;
+	setSkipAssessments: (skip: boolean) => void;
+	slides: LocalSlide[];
+	currentSlideIndex: number;
+	setCurrentSlideIndex: (index: number) => void;
+	fetchViewData: (viewId: number) => Promise<void>;
+	nextSlide: () => void;
+	prevSlide: () => void;
+	toggleExplanation: () => void;
+	revealAnswer: () => void;
+	submitAnswer: () => void;
+	view: ViewWithSlides | null;
+	setAnswer: (answer: Answer[], isCorrect: boolean, notSubmittable?: boolean) => void;
+	restartView: () => void;
+	tryAgain: () => void;
+	completeSlide: () => void;
+	submitProgress: () => void;
+}
+
+export interface LocalSlide extends BaseSlide {
+	completed: boolean;
+	submittable: boolean;
+	submitted: boolean;
+	answer?: Answer[];
+	revealed?: boolean;
+	isCorrect?: boolean;
+	showExplanation: boolean;
+	assessment_id?: number;
+	assessment_info?: QuestionInfo;
+	submission_id?: number;
+}
+
+
 export interface ViewProgress {
 	readonly id?: string;
 	readonly created_at: number;
 	user_id: number;
 	view_id: number;
 	class_id: number;
-	progress: any[];
+	progress: boolean[];
 	timestamp: number;
 }
 
@@ -240,14 +282,16 @@ export interface DatasetInfo {
 	name: string;
 	url: string;
 	metadata: Metadata;
-	about: string;
-	description: string;
 	image_url: string;
 	disabled: boolean;
 }
 export interface Metadata {
 	rows: number;
 	columns: number;
+	description?: string;
+	about?: string;
+	source?: string;
+	source_url?: string;
 }
 
 export interface Option {

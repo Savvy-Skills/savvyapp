@@ -7,6 +7,7 @@ interface DataPlotterProps {
   layout: Partial<Layout>;
   config: Partial<Config>;
   style: React.CSSProperties;
+  dom: import("expo/dom").DOMProps;
 }
 
 const DataPlotter = (props: DataPlotterProps) => {

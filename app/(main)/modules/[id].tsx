@@ -24,7 +24,7 @@ export default function ModulesList() {
 	useEffect(() => {
 		getModule(Number(id)).then((data) => {
 			setModule(data);
-			setViews(data.views.filter((view) => view.published));
+			setViews(data.views?.filter((view) => view.published) || []);
 		});
 	}, []);
 
@@ -52,12 +52,17 @@ export default function ModulesList() {
 				)}
 				<ThemedTitle style={styles.sectionTitle}>Views</ThemedTitle>
 				{selectedView === "list" && (
-					<FlatList
-						data={orderedViews}
-						renderItem={({ item }) => <ViewCard view={item} progress={module.views_progress.find((view) => view.view_id === item.id) || {} as ViewProgress} />}
-						keyExtractor={(item) => item.id.toString()}
-						contentContainerStyle={styles.listContainer}
-					/>
+					// <FlatList
+					// 	data={orderedViews}
+					// 	renderItem={({ item }) => <ViewCard view={item} progress={module.views_progress.find((view) => view.view_id === item.id) || {} as ViewProgress} />}
+					// 	keyExtractor={(item) => item.id.toString()}
+					// 	contentContainerStyle={styles.listContainer}
+					// />
+					<View style={styles.listContainer}>
+						{orderedViews.map((view) => (
+							<ViewCard key={view.id} view={view} progress={module.views_progress.find((progress) => progress.view_id === view.id) || {} as ViewProgress} />
+						))}
+					</View>
 				)}
 			</View>
 			</ScrollView>

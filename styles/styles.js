@@ -1,9 +1,28 @@
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
-import { generateColors } from "@/utils/utilfunctions";
 import { StyleSheet, Dimensions } from "react-native";
 import { Colors } from "@/constants/Colors";
-import { useThemeStore } from "@/store/themeStore";
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
+
+function hexToRgbA(hex) {
+	var c;
+	if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+		c = hex.substring(1).split('');
+		if (c.length == 3) {
+			c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+		}
+		c = '0x' + c.join('');
+		return 'rgba(' + [(parseInt(c) >> 16) & 255, (parseInt(c) >> 8) & 255, parseInt(c) & 255].join(',') + ',1)';
+	}
+	throw new Error('Bad Hex');
+}
+
+const generateColors = (color, opacity) => {
+	let rgba = color.startsWith("#") ? hexToRgbA(color) : color;
+	const color1 = rgba.replace(/[^,]+(?=\))/, "1");
+	const color2 = rgba.replace(/[^,]+(?=\))/, opacity.toString());
+	return { normal: color1, muted: color2 };
+}
+
 
 const fontSizes = {
   small: 12,
@@ -16,6 +35,16 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+
+  datasetTitle: {
+	fontWeight: "bold",
+  },
+  datasetAbout: {
+  },
+  datasetSource: {
+	fontSize: 12,
+	fontWeight: "bold",
   },
 
   feedbackModalContainer: {
@@ -94,6 +123,7 @@ export default StyleSheet.create({
     paddingVertical: 12,
     gap: 16,
     paddingHorizontal: 12,
+	zIndex:1000
   },
   slideWidth: {
     maxWidth: SLIDE_MAX_WIDTH,
@@ -102,6 +132,25 @@ export default StyleSheet.create({
     fontSize: fontSizes.large,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  defaultButton: {
+    borderRadius: 8,
+  },
+  navHeader: {
+	backgroundColor: Colors.background,
+    flexDirection: "row",
+    justifyContent: "center",
+    zIndex: 3,
+    paddingVertical: 4,
+    maxHeight: 56,
+    marginBottom: 10,
+  },
+  webNav: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#cccccc",
+	// from the shadow above make boxshadow
+	boxShadow: "0 1px 4px rgba(0, 0, 0, 0.2)",
+		
   },
   button: {
     padding: 10,
@@ -140,8 +189,9 @@ export default StyleSheet.create({
     fontFamily: "PoppinsBold",
   },
   networkContainer: {
+    flex: 1,
     flexDirection: "row",
-    minHeight: 200,
+	maxHeight: 400,
   },
   tag: {
     fontSize: 12,
@@ -158,13 +208,7 @@ export default StyleSheet.create({
     borderStyle: "dashed",
     borderColor: "#ccc",
     height: "100%",
-    shadowColor: "grey",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowRadius: 4,
-    shadowOpacity: 0.2,
+	boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
   },
   hiddenLayerWrapper: {
     flex: 1,
@@ -352,7 +396,8 @@ export default StyleSheet.create({
   assessmentWrapper: {
     flex: 1,
     gap: 16,
-    padding: 30,
+    paddingVertical: 30,
+	paddingHorizontal: 16,
   },
   assessmentButtonContainer: {
     flexDirection: "row",
@@ -376,7 +421,7 @@ export default StyleSheet.create({
     justifyContent: "center",
   },
   imageContainer: {
-    width: "45%",
+    width: "35%",
     aspectRatio: 1,
   },
   imageOption: {
@@ -495,24 +540,23 @@ export default StyleSheet.create({
     gap: 8,
   },
   optionContainer: {
-    flex: 1,
     borderRadius: 4,
-    minHeight: "auto",
   },
   optionLabel: {
     fontSize: 16,
     fontWeight: 500,
+	flexShrink:1,
   },
   option: {
     flexDirection: "row",
     gap: 10,
     borderRadius: 4,
-    flex: 1,
-    paddingHorizontal: 5,
+    paddingHorizontal: 8,
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: "rgba(108, 92, 231, 0)",
     alignItems: "center",
+	flex: 1,
   },
   selectedOption: {
     borderRadius: 4,
