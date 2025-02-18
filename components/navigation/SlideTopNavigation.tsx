@@ -22,7 +22,7 @@ const SlideNavigation: React.FC<SlideNavigationProps> = ({ wideScreen }) => {
 
   const handleClose = () => {
     setCurrentSlideIndex(0);
-	const currentModule = view?.module_id;
+	const currentModule = view?.module_info?.id;
     // router.navigate(`/modules/${currentModule}`);
 	router.dismissTo(`/modules/${currentModule}`);
   };

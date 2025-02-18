@@ -37,6 +37,16 @@ export default StyleSheet.create({
     padding: 16,
   },
 
+  datasetTitle: {
+	fontWeight: "bold",
+  },
+  datasetAbout: {
+  },
+  datasetSource: {
+	fontSize: 12,
+	fontWeight: "bold",
+  },
+
   feedbackModalContainer: {
     backgroundColor: Colors.background,
     padding: 20,

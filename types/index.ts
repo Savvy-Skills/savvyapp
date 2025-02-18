@@ -69,7 +69,6 @@ export interface ViewWithSlides {
 	content_id: string;
 	slides: Slide[];
 	view_content: ContentInfo;
-	module_id: number;
 	progress: Progress;
 	quiz: boolean;
 	readonly timestamp: number;
@@ -283,14 +282,16 @@ export interface DatasetInfo {
 	name: string;
 	url: string;
 	metadata: Metadata;
-	about: string;
-	description: string;
 	image_url: string;
 	disabled: boolean;
 }
 export interface Metadata {
 	rows: number;
 	columns: number;
+	description?: string;
+	about?: string;
+	source?: string;
+	source_url?: string;
 }
 
 export interface Option {

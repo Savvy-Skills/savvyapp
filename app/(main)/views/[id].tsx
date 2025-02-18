@@ -22,7 +22,7 @@ import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Button, Text } from "react-native-paper";
 import { useViewStore } from "@/store/viewStore";
 
-export default function ModuleDetail() {
+export default function ViewDetail() {
 	const ref = useRef<TopSheetRefProps>(null);
 	const bottomSheetRef = useRef<BottomSheet>(null);
 	const { id } = useLocalSearchParams();

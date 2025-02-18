@@ -15,7 +15,7 @@ interface TableDimensionsProps {
 export function useTableDimensions({ columns, parentWidth }: TableDimensionsProps) {
   const screenHeight = Dimensions.get('window').height;
   const screenWidth = Dimensions.get('window').width;
-  const tableHeight = screenHeight * 0.25;
+  const tableHeight = 250;
 
   if (parentWidth && parentWidth < SLIDE_MAX_WIDTH) {
     MAX_WIDTH = Math.min(parentWidth, SLIDE_MAX_WIDTH);
@@ -23,7 +23,6 @@ export function useTableDimensions({ columns, parentWidth }: TableDimensionsProp
   
   const columnWidth = useMemo(() => {
     const containerWidth = Math.min(screenWidth, MAX_WIDTH);
-    const availableColumns = Math.min(columns.length, MAX_VISIBLE_COLUMNS);
     
     if (columns.length === 0) return 0;
     let idealWidth = containerWidth / columns.length;

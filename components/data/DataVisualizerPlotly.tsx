@@ -1,4 +1,4 @@
-import React, { useState, useMemo, lazy, Suspense, useEffect } from "react";
+import React, { useState, useMemo, lazy, Suspense, useEffect, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -23,6 +23,7 @@ export type TraceConfig = {
   name: string;
   type: "scatter" | "bar" | "histogram";
   groupBy?: string;
+  stack?: boolean;
 };
 
 export type DataVisualizerProps = {
@@ -46,55 +47,6 @@ const colors = [
   "#FF5722",
 ];
 
-const TENDENCY_LINES = [
-  "linear",
-  "exponential",
-  "polynomial",
-  "logarithmic",
-  "power",
-];
-
-type TendencyLine = (typeof TENDENCY_LINES)[number];
-
-function getTendencyTraces(dataset: Record<string, any>[], type: TendencyLine) {
-  switch (type) {
-    case "linear":
-      // Calculate linear tendency line
-      const xValues = dataset.map((item) => item.x);
-      const yValues = dataset.map((item) => item.y);
-      const xMean = xValues.reduce((a, b) => a + b) / xValues.length;
-      const yMean = yValues.reduce((a, b) => a + b) / yValues.length;
-      const numerator = xValues.reduce(
-        (acc, x, i) => acc + (x - xMean) * (yValues[i] - yMean),
-        0
-      );
-      const denominator = xValues.reduce((acc, x) => acc + (x - xMean) ** 2, 0);
-
-      const m = numerator / denominator;
-      const b = yMean - m * xMean;
-
-      const xMin = Math.min(...xValues);
-      const xMax = Math.max(...xValues);
-      const yMin = m * xMin + b;
-      const yMax = m * xMax + b;
-
-      return [
-        {
-          x: [xMin, xMax],
-          y: [yMin, yMax],
-          type: "scatter",
-          mode: "lines",
-          line: {
-            color: "grey",
-            dash: "dot",
-          },
-          showlegend: false,
-        } as Data,
-      ];
-    default:
-      return {};
-  }
-}
 
 export default function DataVisualizerPlotly({
   dataset,
@@ -105,11 +57,10 @@ export default function DataVisualizerPlotly({
 }: DataVisualizerProps) {
   const initialColumn = dataset.length > 0 ? Object.keys(dataset[0])[0] : null;
 
-  const [activeChartType, setActiveChartType] = useState<PlotType>("scatter");
+  const [activeChartType, setActiveChartType] = useState<PlotType>(traces[0].type);
   const [visibleTraces, setVisibleTraces] = useState<Record<string, boolean>>(
     Object.fromEntries(traces.map((trace) => [trace.name, true]))
   );
-  const [showLine, setShowLine] = useState<null | TendencyLine>(null);
   const [pieMode, setPieMode] = useState<"frequency" | "sum">("frequency");
 
   const [selectedColumn, setSelectedColumn] = useState<string | null>(
@@ -118,9 +69,7 @@ export default function DataVisualizerPlotly({
   const [histogramColumn, setHistogramColumn] = useState<string | null>(
     initialColumn
   );
-  const [barPlotColumn, setBarPlotColumn] = useState<string | null>(
-    initialColumn
-  );
+
 
   const { width } = useWindowDimensions();
   const buttonContainerStyle: {
@@ -133,12 +82,7 @@ export default function DataVisualizerPlotly({
   if (width < SLIDE_MAX_WIDTH) {
     buttonContainerStyle.justifyContent = "flex-start";
   }
-  const chartTypeOptions = [
-    { label: "Scatter", value: "scatter" },
-    { label: "Bar", value: "bar" },
-    { label: "Histogram", value: "histogram" },
-    { label: "Pie", value: "pie" },
-  ];
+
   const pieModeOptions = [
     { label: "Frequency", value: "frequency" },
     { label: "Sum", value: "sum" },
@@ -207,23 +151,24 @@ export default function DataVisualizerPlotly({
           ];
         }
       case "bar":
-        const barData: Record<string, number> = {};
-        dataset.forEach((item) => {
-          if (barPlotColumn) {
-            const value = String(item[barPlotColumn]);
-            barData[value] = (barData[value] || 0) + 1;
-          }
-        });
-        return [
-          {
+		// TODO: Ignore disabled traces
+        return traces.map((trace, index) => {
+			if (!visibleTraces[trace.name]) return {};
+          const barData: Record<string, number> = {};
+          dataset.forEach((item) => {
+            const value = String(item[trace.x]);
+            barData[value] = (barData[value] || 0) + item[trace.y];
+          });
+          return {
             type: "bar",
             x: Object.keys(barData),
             y: Object.values(barData),
+            name: trace.name,
             marker: {
-              color: colors,
+              color: colors[index % colors.length],
             },
-          } as Data,
-        ];
+          } as Data;
+        });
       case "histogram":
         return [
           {
@@ -274,25 +219,16 @@ export default function DataVisualizerPlotly({
             } as Data;
           })
           .filter((trace) => (trace as any).visible)
-          .concat(showLine ? getTendencyTraces(dataset, showLine) : []);
     }
   }, [
     dataset,
     traces,
     activeChartType,
     visibleTraces,
-    showLine,
     pieMode,
     selectedColumn,
-    barPlotColumn,
     histogramColumn,
   ]);
-
-  useEffect(() => {
-    if (dataset && showLine) {
-      const traces = getTendencyTraces(dataset, showLine);
-    }
-  }, [dataset, showLine]);
 
   const layout: Partial<Layout> = {
     showlegend: false,
@@ -320,16 +256,16 @@ export default function DataVisualizerPlotly({
           gridwidth: 1,
           hoverformat: " ",
           range: ranges?.y,
-          title: {
-            text: activeChartType === "bar" ? "Frequency" : "",
-          },
         },
     margin: ["pie"].includes(activeChartType)
       ? { l: 10, r: 10, t: 10, b: 10 }
-      : { l: 50, r: 30, t: 20, b: 50 },
+      : { l: 40, r: 20, t: 10, b: 20 },
     hovermode: false,
     autosize: true,
     bargap: 0.1,
+	barmode: traces.some(trace => trace.stack) ? "stack" : "group",
+	plot_bgcolor: "transparent",
+	paper_bgcolor: "transparent",
   };
 
   const config: Partial<Config> = {
@@ -343,14 +279,6 @@ export default function DataVisualizerPlotly({
       ...prev,
       [traceName]: !prev[traceName],
     }));
-  };
-
-  const showTendencyLine = () => {
-    if (showLine) {
-      setShowLine(null);
-    } else {
-      setShowLine("linear");
-    }
   };
 
   return (
@@ -369,8 +297,14 @@ export default function DataVisualizerPlotly({
           style={{ marginBottom: 16 }}
         />
       )}
+	  {/* Add Y Axis Label */}
+	  {!["pie"].includes(activeChartType) && (
+		<View style={styles.yAxisLabelContainer}>
+			<Text style={styles.axisLabel}>{yAxisLabel}</Text>
+		</View>
+	  )}
       <View style={styles.plotWrapper}>
-        {!["pie"].includes(activeChartType) && (
+        {/* {!["pie"].includes(activeChartType) && (
           <>
             <View style={styles.yAxisLabelContainer}>
               <Text style={styles.axisLabel}>{yAxisLabel}</Text>
@@ -379,7 +313,7 @@ export default function DataVisualizerPlotly({
               <Text style={styles.axisLabel}>{xAxisLabel}</Text>
             </View>
           </>
-        )}
+        )} */}
         <View style={styles.plotContainer}>
           <Suspense fallback={<ActivityIndicator />}>
             <DataPlotter
@@ -391,7 +325,14 @@ export default function DataVisualizerPlotly({
             />
           </Suspense>
         </View>
+	  {/* Add X Axis Label */}
+	  {!["pie"].includes(activeChartType) && (
+		<View style={styles.xAxisLabelContainer}>
+			<Text style={styles.axisLabel}>{xAxisLabel}</Text>
+		</View>
+	  )}
       </View>
+	  {/* Add Buttons for each trace */}
       <ScrollView
         horizontal
         contentContainerStyle={buttonContainerStyle}
@@ -421,27 +362,27 @@ export default function DataVisualizerPlotly({
             </Button>
           ))}
         {activeChartType === "bar" &&
-          Object.keys(dataset[0] || {}).map((columnName, index) => (
-            <Button
-              key={columnName}
-              mode="outlined"
-              onPress={() => setBarPlotColumn(columnName)}
-              style={[
-                styles.button,
-                barPlotColumn !== columnName && styles.disabledButton,
-              ]}
-              icon={() => (
-                <View
-                  style={[
-                    styles.colorSquare,
-                    { backgroundColor: colors[index % colors.length] },
-                  ]}
-                />
-              )}
-            >
-              {columnName}
-            </Button>
-          ))}
+		traces.map((trace, index) => (
+			<Button
+				key={trace.name}
+				mode="outlined"
+				onPress={() => toggleTrace(trace.name)}
+				style={[
+					styles.button,
+					!visibleTraces[trace.name] && styles.disabledButton,
+				]}
+				icon={() => (
+					<View
+						style={[
+							styles.colorSquare,
+							{ backgroundColor: colors[index % colors.length] },
+						]}
+					/>
+				)}
+			>
+				{trace.name}
+			</Button>
+		))}
         {activeChartType === "histogram" &&
           Object.keys(dataset[0] || {}).map((columnName, index) => (
             <Button
@@ -507,22 +448,18 @@ const styles = StyleSheet.create({
   plotWrapper: {
     width: "100%",
     position: "relative",
-    marginBottom: 20,
   },
   plotContainer: {
     width: "100%",
     overflow: "hidden",
     position: "relative",
-    height: 250,
+    height: 350,
   },
   plot: {
     width: "100%",
     height: "100%",
   },
   yAxisLabelContainer: {
-    position: "absolute",
-    top: 5,
-    left: 15,
     justifyContent: "center",
     zIndex: 1,
   },
@@ -531,10 +468,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   xAxisLabelContainer: {
-    position: "absolute",
-    right: 15,
-    bottom: 5,
-    alignItems: "center",
+    alignItems: "flex-end",
     zIndex: 1,
   },
   chartTypeButtons: {

@@ -24,7 +24,7 @@ export default function ModulesList() {
 	useEffect(() => {
 		getModule(Number(id)).then((data) => {
 			setModule(data);
-			setViews(data.views.filter((view) => view.published));
+			setViews(data.views?.filter((view) => view.published) || []);
 		});
 	}, []);
 

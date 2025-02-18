@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { View } from "react-native";
-import { ActivityIndicator, Text } from "react-native-paper";
+import { ActivityIndicator, SegmentedButtons, Text } from "react-native-paper";
 import { useDataFetch } from "@/hooks/useDataFetch";
 import DataTable from "./DataTable";
 import Filter from "./Filter";
@@ -8,9 +8,8 @@ import { filterData } from "@/utils/filterData";
 import type { DatasetInfo } from "@/types";
 import type { FilterField, CombinedFilter } from "@/types/filter";
 import DataVisualizerPlotly, { TraceConfig } from "@/components/data/DataVisualizerPlotly";
-import { useCourseStore } from "@/store/courseStore";
 import styles from "@/styles/styles";
-import LoadingIndicator from "../LoadingIndicator";
+import ThemedTitle from "../themed/ThemedTitle";
 
 interface DataTableContainerProps {
 	data?: any[];
@@ -44,6 +43,8 @@ export default function DataTableContainer({
 }: DataTableContainerProps) {
 	// Destructure datasetInfo if available
 	const { url, extension } = datasetInfo || {};
+
+	const [selectedView, setSelectedView] = useState<"table" | "chart">("table");
 
 	// Use data fetch only if data is not provided
 	const { data, columns, isLoading, error } = useDataFetch({
@@ -103,6 +104,10 @@ export default function DataTableContainer({
 		return filterData(finalData, activeFilter);
 	}, [finalData, activeFilter, originalData]);
 
+	const handleViewChange = (view: "table" | "chart") => {
+		setSelectedView(view);
+	};
+
 	if (isLoading && !finalData) {
 		return (
 			<View style={styles.centeredContainer}>
@@ -119,26 +124,42 @@ export default function DataTableContainer({
 		);
 	}
 
+
 	return (
 		<View onLayout={(event) => {
 			const { height, width } = event.nativeEvent.layout;
 			setContainerWidth(width);
-		}} id={`datatable-container-${index}`} style={[{ flexDirection: invert ? "column-reverse" : "column" }]}>
-			<DataTable
+		}} id={`datatable-container-${index}`} style={[{ flexDirection: invert ? "column-reverse" : "column", gap: 16 }]}>
+			<View>
+				<ThemedTitle style={[styles.datasetTitle]}>Dataset: {datasetInfo?.name}</ThemedTitle>
+				{datasetInfo?.metadata?.about && <Text style={styles.datasetAbout}>{datasetInfo?.metadata?.about}</Text>}
+			</View>
+			<View style={{ maxWidth: 200 }}>
+				<SegmentedButtons
+					style={{ width: "100%" }}
+					buttons={[{ label: "Table", value: "table", style: { borderRadius: 4 } }, { label: "Chart", value: "chart", style: { borderRadius: 4 } }]}
+					onValueChange={(value) => handleViewChange(value as "table" | "chart")}
+					value={selectedView}
+					density="small"
+
+				/>
+			</View>
+			{selectedView === "table" && <DataTable
 				data={filteredData}
 				columns={finalColumns}
 				name={datasetInfo?.name}
 				headerColors={headerColors}
 				parentWidth={containerWidth}
-			/>
-			{!hideFilter && <Filter fields={fields} onFilterChange={setActiveFilter} />}
-			{(!hideVisualizer && finalTraces && finalTraces.length > 0) && <DataVisualizerPlotly
+			/>}
+			{selectedView === "chart" && (!hideVisualizer && finalTraces && finalTraces.length > 0) && <DataVisualizerPlotly
 				dataset={filteredData}
 				traces={finalTraces}
 				title="Data Visualizer"
 				xAxisLabel={finalTraces[0].x}
 				yAxisLabel={finalTraces[0].y}
 			/>}
+			{datasetInfo?.metadata?.source && <Text style={styles.datasetSource}>Data Source: <Text style={{ }}>{datasetInfo?.metadata?.source}</Text></Text>}
+			{!hideFilter && <Filter fields={fields} onFilterChange={setActiveFilter} />}
 		</View>
 	);
 }
