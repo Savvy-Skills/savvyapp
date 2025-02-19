@@ -188,8 +188,12 @@ export interface ViewStore {
 	setAnswer: (answer: Answer[], isCorrect: boolean, notSubmittable?: boolean) => void;
 	restartView: () => void;
 	tryAgain: () => void;
-	completeSlide: () => void;
+	completeSlide: (index: number) => void;
 	submitProgress: () => void;
+	trigger: string | null;
+	setTrigger: (trigger: string) => void;
+	resetTrigger:() => void;
+	checkSlideCompletion: (index: number) => void;
 }
 
 export interface LocalSlide extends BaseSlide {

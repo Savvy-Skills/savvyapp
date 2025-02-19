@@ -18,6 +18,7 @@ const ImageSlide: React.FC<ImageSlideProps> = ({ url, index }) => {
   return (
     <View style={styles.contentContainer}>
       <Image
+        key={url}
         source={url}
         placeholder={{ blurhash }}
         contentFit="contain"

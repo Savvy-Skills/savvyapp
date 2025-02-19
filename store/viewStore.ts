@@ -11,8 +11,15 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 	viewStatus: "LOADING",
 	slides: [],
 	currentSlideIndex: 0,
+	trigger: null,
 	setSkipAssessments: (skip: boolean) => {
 		set({ skipAssessments: skip });
+	},
+	setTrigger: (trigger: string) => {
+		set({ trigger });
+	},
+	resetTrigger: () => {
+		set({ trigger: null });
 	},
 	submitProgress: async () => {
 		const { viewId, slides } = get();
@@ -21,10 +28,10 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		// TODO: HANDLE CASE WHERE POSTING PROGRESS FAILS
 		await postViewProgress(viewId, progress);
 	},
-	completeSlide: async () => {
-		const { viewId, currentSlideIndex, slides, submitProgress } = get();
-		if (!viewId || slides[currentSlideIndex].completed) return;
-		slides[currentSlideIndex].completed = true;
+	completeSlide: async (index: number) => {
+		const { viewId, slides, submitProgress } = get();
+		if (!viewId || slides[index].completed) return;
+		slides[index].completed = true;
 		set({ slides: slides });
 		// TODO: HANDLE CASE WHERE POSTING PROGRESS FAILS
 		await submitProgress();
@@ -59,19 +66,34 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 			return;
 		}
 		// Set the current slide index
+		get().checkSlideCompletion(index);
 		set({ currentSlideIndex: index });
 	},
 	nextSlide: () => {
-		const currentIndex = get().currentSlideIndex;
-		const slides = get().slides;
-		if (currentIndex < slides.length - 1) {
-			set({ currentSlideIndex: currentIndex + 1 });
+		const {currentSlideIndex, slides, checkSlideCompletion} = get();
+		if (currentSlideIndex < slides.length - 1) {
+			set({ currentSlideIndex: currentSlideIndex + 1 });
+			checkSlideCompletion(currentSlideIndex+1);
 		}
 	},
 	prevSlide: () => {
-		const currentIndex = get().currentSlideIndex;
-		if (currentIndex > 0) {
-			set({ currentSlideIndex: currentIndex - 1 });
+		const {currentSlideIndex, checkSlideCompletion} = get();
+		if (currentSlideIndex > 0) {
+			checkSlideCompletion(currentSlideIndex-1);
+			set({ currentSlideIndex: currentSlideIndex - 1 });
+		}
+	},
+	checkSlideCompletion: ( index: number) => {
+		const {slides, completeSlide} = get();
+		const slide = slides[index];
+		if (!slide.completed) {
+			switch (slide.type) {
+				case "Content":
+					if(slide.contents[0].type === "Image"){
+						completeSlide(index);
+					}
+					break;
+			}
 		}
 	},
 	fetchViewData: async (viewId: number) => {
@@ -124,6 +146,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 				return slideObj;
 			});
 			set({ slides: structuredSlides, viewStatus: "READY", view });
+			get().checkSlideCompletion(0);
 
 		} catch (error) {
 			console.error(error);
@@ -136,8 +159,8 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		set({ slides: slides });
 	},
 	revealAnswer: async () => {
-		const slides = get().slides;
-		const currentSlide = slides[get().currentSlideIndex];
+		const {slides, currentSlideIndex, completeSlide} = get();
+		const currentSlide = slides[currentSlideIndex];
 		const viewId = get().viewId;
 		if (!viewId) return;
 
@@ -151,7 +174,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 			currentSlide.isCorrect = true;
 			currentSlide.answer = correctAnswers;
 			set({ slides: slides });
-			get().completeSlide();
+			completeSlide(currentSlideIndex);
 			const placeHolderSubmission = createSubmission(
 				currentSlide.assessment_id,
 				true,
@@ -190,7 +213,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 				// Slide is correct or quiz saved, so we can check the slide completion
 				if (currentSlide.isCorrect || quizMode) {
 					// Complete the slide
-					completeSlide();
+					completeSlide(currentSlideIndex);
 				}
 
 				// Create a placeholder submission
