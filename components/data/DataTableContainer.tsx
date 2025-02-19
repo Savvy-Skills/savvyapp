@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { View } from "react-native";
-import { ActivityIndicator, SegmentedButtons, Text } from "react-native-paper";
+import { ActivityIndicator, Button, SegmentedButtons, Text, ToggleButton } from "react-native-paper";
 import { useDataFetch } from "@/hooks/useDataFetch";
 import DataTable from "./DataTable";
 import Filter from "./Filter";
@@ -10,6 +10,7 @@ import type { FilterField, CombinedFilter } from "@/types/filter";
 import DataVisualizerPlotly, { TraceConfig } from "@/components/data/DataVisualizerPlotly";
 import styles from "@/styles/styles";
 import ThemedTitle from "../themed/ThemedTitle";
+import { useViewStore } from "@/store/viewStore";
 
 interface DataTableContainerProps {
 	data?: any[];
@@ -37,14 +38,14 @@ export default function DataTableContainer({
 	hideVisualizer = false,
 	hideFilter = false,
 	index,
-	invert = false,
 	originalData,
 	originalTraces,
 }: DataTableContainerProps) {
 	// Destructure datasetInfo if available
 	const { url, extension } = datasetInfo || {};
 
-	const [selectedView, setSelectedView] = useState<"table" | "chart">("table");
+	const [selectedView, setSelectedView] = useState<"table" | "chart">("chart");
+	const { setTrigger } = useViewStore();
 
 	// Use data fetch only if data is not provided
 	const { data, columns, isLoading, error } = useDataFetch({
@@ -57,6 +58,7 @@ export default function DataTableContainer({
 	const finalColumns = providedColumns || columns;
 
 	const [activeFilter, setActiveFilter] = useState<CombinedFilter | null>(null);
+	const [showFilters, setShowFilters] = useState(false);
 	const [containerWidth, setContainerWidth] = useState(0);
 
 	// If originalTraces is provided, merge it with the traces
@@ -106,6 +108,7 @@ export default function DataTableContainer({
 
 	const handleViewChange = (view: "table" | "chart") => {
 		setSelectedView(view);
+		setTrigger("scrollToEnd");
 	};
 
 	if (isLoading && !finalData) {
@@ -129,21 +132,32 @@ export default function DataTableContainer({
 		<View onLayout={(event) => {
 			const { height, width } = event.nativeEvent.layout;
 			setContainerWidth(width);
-		}} id={`datatable-container-${index}`} style={[{ flexDirection: invert ? "column-reverse" : "column", gap: 16 }]}>
+		}} id={`datatable-container-${index}`} style={[{ gap: 16 }]}>
 			<View>
 				<ThemedTitle style={[styles.datasetTitle]}>Dataset: {datasetInfo?.name}</ThemedTitle>
 				{datasetInfo?.metadata?.about && <Text style={styles.datasetAbout}>{datasetInfo?.metadata?.about}</Text>}
 			</View>
-			<View style={{ maxWidth: 200 }}>
-				<SegmentedButtons
-					style={{ width: "100%" }}
-					buttons={[{ label: "Table", value: "table", style: { borderRadius: 4 } }, { label: "Chart", value: "chart", style: { borderRadius: 4 } }]}
-					onValueChange={(value) => handleViewChange(value as "table" | "chart")}
-					value={selectedView}
-					density="small"
-
-				/>
+			<View style={{ flexDirection: "row", gap: 4, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+				<View style={{ maxWidth: 200 }}>
+					<SegmentedButtons
+						style={{ width: "100%" }}
+						buttons={[{ label: "Chart", value: "chart", style: { borderRadius: 4 } }, { label: "Table", value: "table", style: { borderRadius: 4 } }]}
+						onValueChange={(value) => handleViewChange(value as "table" | "chart")}
+						value={selectedView}
+					/>
+				</View>
+				{!hideFilter && (
+					<Button
+						icon={showFilters ? "eye-off-outline" : "eye-outline"}
+						onPress={() => setShowFilters(!showFilters)}
+					style={{ borderRadius: 4 }}
+					mode="outlined"
+				>
+						{showFilters ? "Hide Filters" : "Show Filters"}
+					</Button>
+				)}
 			</View>
+			{!hideFilter && showFilters && <Filter fields={fields} onFilterChange={setActiveFilter} />}
 			{selectedView === "table" && <DataTable
 				data={filteredData}
 				columns={finalColumns}
@@ -158,8 +172,7 @@ export default function DataTableContainer({
 				xAxisLabel={finalTraces[0].x}
 				yAxisLabel={finalTraces[0].y}
 			/>}
-			{datasetInfo?.metadata?.source && <Text style={styles.datasetSource}>Data Source: <Text style={{ }}>{datasetInfo?.metadata?.source}</Text></Text>}
-			{!hideFilter && <Filter fields={fields} onFilterChange={setActiveFilter} />}
+			{datasetInfo?.metadata?.source && <Text style={styles.datasetSource}>Data Source: <Text style={{}}>{datasetInfo?.metadata?.source}</Text></Text>}
 		</View>
 	);
 }

@@ -11,6 +11,7 @@ import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
 import NeuralNetworkVisualizerWeb from "../neuralnetwork/SimpleNNWeb";
 
 import { NNState } from "@/types/neuralnetwork";
+import { useViewStore } from "@/store/viewStore";
 
 export interface SlideProps {
 	slide: LocalSlide;
@@ -97,8 +98,26 @@ export default function SlideRenderer({
 
 	const scrollRef = useRef<ScrollView>(null);
 
+	const { trigger, resetTrigger } = useViewStore();
+
 	const currentContents = slide?.contents && slide.contents.length > 0 ? slide.contents.slice().sort((a, b) => a.order - b.order) : [];
 	const firstContent = currentContents[0]
+
+	useEffect(() => {
+		if (trigger) {
+			switch (trigger) {
+				case "scrollToEnd":
+					scrollRef.current?.scrollToEnd();
+					break;
+				case "scrollToStart":
+					scrollRef.current?.scrollTo({ y: 0, animated: true });
+					break;
+				default:
+					break;
+			}
+			resetTrigger();
+		}
+	}, [trigger]);
 
 	useEffect(() => {
 		if (slide.type === "Assessment") {
@@ -131,7 +150,7 @@ export default function SlideRenderer({
 			}}
 			ref={scrollRef}
 		>
-			<View style={{ marginBottom: "auto", marginTop: marginTop }}>
+			<View style={{ marginBottom: "auto", marginTop: marginTop, gap: 16 }}>
 				<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 			</View>
 		</ScrollView>

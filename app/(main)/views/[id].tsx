@@ -76,7 +76,6 @@ export default function ViewDetail() {
 		bottomSheetRef.current?.close();
 	}
 
-
 	useEffect(() => {
 		if (currentSlideIndex !== prevIndexRef.current) {
 			if (isBottomSheetOpen) {
@@ -90,11 +89,9 @@ export default function ViewDetail() {
 		}
 	}, [currentSlideIndex]);
 
-
 	if (viewStatus !== "READY" || !view) {
 		return <LoadingIndicator />
 	}
-
 
 	const getWrapperStyle = () => {
 		if (!currentSlide.submitted) return null;
@@ -105,8 +102,7 @@ export default function ViewDetail() {
 	};
 
 	const currentSlide = slides[currentSlideIndex];
-
-
+	
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
 			<Pressable style={[localStyles.pressableArea]}>
@@ -151,7 +147,6 @@ export default function ViewDetail() {
 								correctness={currentSlide.isCorrect || false}
 								revealed={currentSlide.revealed || false}
 								quizMode={view?.quiz}
-
 							/>
 						)}
 						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} onCloseBottomSheet={handleBottomSheetClose} showBottomSheet={isBottomSheetOpen} />
