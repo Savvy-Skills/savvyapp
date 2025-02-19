@@ -214,7 +214,7 @@ export default function DataVisualizerPlotly({
 							y: dataset.map((d) => d[trace.y]),
 							name: trace.name,
 							type: "scatter",
-							mode: "markers",
+							mode: trace.mode || "markers",
 							visible: !hiddenTraces[trace.name],
 							line: {
 								shape: "linear",
