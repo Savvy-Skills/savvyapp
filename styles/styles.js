@@ -47,6 +47,14 @@ export default StyleSheet.create({
 	fontWeight: "bold",
   },
 
+  toggleButton: {
+    borderRadius: 4,
+    borderColor: Colors.revealedButton,
+  },
+  toggleButtonActive: {
+    backgroundColor: generateColors(Colors.primary, 0.2).muted,
+  },
+
   feedbackModalContainer: {
     backgroundColor: Colors.background,
     padding: 20,
@@ -135,6 +143,17 @@ export default StyleSheet.create({
   },
   defaultButton: {
     borderRadius: 8,
+  },
+  selectedPointContainer: {
+    backgroundColor: generateColors(Colors.primary, 0.2).muted,
+    borderRadius: 8,
+	padding: 8,
+	alignSelf: "center",
+	justifyContent: "center",
+  },
+  selectedPointText: {
+	fontSize: 12,
+	fontWeight: "bold",
   },
   navHeader: {
 	backgroundColor: Colors.background,

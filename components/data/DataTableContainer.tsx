@@ -11,6 +11,8 @@ import DataVisualizerPlotly, { TraceConfig } from "@/components/data/DataVisuali
 import styles from "@/styles/styles";
 import ThemedTitle from "../themed/ThemedTitle";
 import { useViewStore } from "@/store/viewStore";
+import { Colors } from "@/constants/Colors";
+import { generateColors } from "@/utils/utilfunctions";
 
 interface DataTableContainerProps {
 	data?: any[];
@@ -138,22 +140,23 @@ export default function DataTableContainer({
 				{datasetInfo?.metadata?.about && <Text style={styles.datasetAbout}>{datasetInfo?.metadata?.about}</Text>}
 			</View>
 			<View style={{ flexDirection: "row", gap: 4, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-				<View style={{ maxWidth: 200 }}>
-					<SegmentedButtons
-						style={{ width: "100%" }}
-						buttons={[{ label: "Chart", value: "chart", style: { borderRadius: 4 } }, { label: "Table", value: "table", style: { borderRadius: 4 } }]}
-						onValueChange={(value) => handleViewChange(value as "table" | "chart")}
-						value={selectedView}
-					/>
-				</View>
+				<SegmentedButtons
+					style={{ flex: 1, height: "100%", maxWidth: 200 }}
+					buttons={[{ label: "Chart", value: "chart", icon: "chart-box-outline", style: { ...styles.toggleButton } },
+						{ label: "Table", value: "table", icon: "table-large", style: { ...styles.toggleButton } }]}
+					onValueChange={(value) => handleViewChange(value as "table" | "chart")}
+					value={selectedView}
+					theme={{ roundness: 0, colors: { secondaryContainer: generateColors(Colors.primary, 0.2).muted } }}
+				/>
 				{!hideFilter && (
 					<Button
-						icon={showFilters ? "eye-off-outline" : "eye-outline"}
-						onPress={() => setShowFilters(!showFilters)}
-					style={{ borderRadius: 4 }}
-					mode="outlined"
-				>
-						{showFilters ? "Hide Filters" : "Show Filters"}
+						icon="cog-outline"
+						onPress={() => setShowFilters((prev) => !prev)}
+						style={[styles.toggleButton, showFilters && styles.toggleButtonActive]}
+						textColor={Colors.text}
+						mode="outlined"
+					>
+						Filters
 					</Button>
 				)}
 			</View>
