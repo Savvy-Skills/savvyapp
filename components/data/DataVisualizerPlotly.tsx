@@ -27,6 +27,7 @@ export type TraceConfig = {
 	name: string;
 	type: "scatter" | "bar" | "histogram";
 	groupBy?: string;
+	fill?: string;
 	stack?: boolean;
 	locationmode?: "ISO-3" | "USA-states" | "country names" | "geojson-id";
 	mode?: "number" | "text" | "delta" | "gauge" | "none" | "lines" | "markers" | "lines+markers" | "text+markers" | "text+lines" | "text+lines+markers" | "number+delta" | "gauge+number" | "gauge+number+delta" | "gauge+delta" | undefined;
@@ -216,6 +217,7 @@ const generatePlotlyData = ({
 		});
 	}
 
+	// Default is scatter
 	return traces
 		// .filter((trace) => !hiddenTraces[trace.name])
 		.map((trace, index) => {
@@ -228,6 +230,7 @@ const generatePlotlyData = ({
 				marker: { color: traceColor },
 				x: dataset.map((d) => d[trace.x]),
 				y: dataset.map((d) => d[trace.y]),
+				fill: trace.fill || undefined
 			};
 			if (trace.groupBy) {
 				const groupedData = groupByColumn(dataset, trace.groupBy);
@@ -238,7 +241,7 @@ const generatePlotlyData = ({
 					name: group,
 					visible: !hiddenTraces[group] ? true : false,
 					marker: { color: CHART_COLORS[groupIndex % CHART_COLORS.length] },
-
+					fill: trace.fill || undefined
 				}));
 			}
 			return baseTrace;
