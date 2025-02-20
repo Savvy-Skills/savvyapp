@@ -2,30 +2,43 @@ import React, { useState, useMemo, lazy, Suspense, useEffect, useCallback } from
 import {
 	View,
 	StyleSheet,
-	ScrollView,
 	useWindowDimensions,
+	ScrollView,
 } from "react-native";
 import {
 	ActivityIndicator,
 	Button,
+	IconButton,
 	SegmentedButtons,
 	Text,
 } from "react-native-paper";
 import { Data, Layout, Config, PlotType } from "plotly.js";
 import { SLIDE_MAX_WIDTH } from "@/constants/Utils";
 import { groupByColumn } from "@/utils/utilfunctions";
+import styles from "@/styles/styles";
+import { Colors } from "@/constants/Colors";
 
 let DataPlotter = lazy(() => import("@/components/data/DataPlotter"));
 
 export type TraceConfig = {
 	x: string;
 	y: string;
+	z?: string;
 	name: string;
 	type: "scatter" | "bar" | "histogram";
 	groupBy?: string;
 	stack?: boolean;
+	locationmode?: "ISO-3" | "USA-states" | "country names" | "geojson-id";
 	mode?: "number" | "text" | "delta" | "gauge" | "none" | "lines" | "markers" | "lines+markers" | "text+markers" | "text+lines" | "text+lines+markers" | "number+delta" | "gauge+number" | "gauge+number+delta" | "gauge+delta" | undefined;
 };
+
+export interface HoverData {
+	pointIndex: number;
+	pointNumber: number;
+	x: number[];
+	y: number[];
+	name: string;
+}
 
 export type DataVisualizerProps = {
 	dataset: Record<string, any>[];
@@ -35,7 +48,7 @@ export type DataVisualizerProps = {
 	yAxisLabel?: string;
 };
 
-const colors = [
+const CHART_COLORS = [
 	"#7B1FA2",
 	"#FF9800",
 	"#2196F3",
@@ -48,22 +61,279 @@ const colors = [
 	"#FF5722",
 ];
 
+const PIE_MODE_OPTIONS = [
+	{ label: "Frequency", value: "frequency" },
+	{ label: "Sum", value: "sum" },
+];
+
+const getInitialHiddenTraces = (): Record<string, boolean> => ({});
+
+const calculateRanges = (dataset: Record<string, any>[], traces: TraceConfig[], chartType: PlotType) => {
+	if (["pie", "bar", "histogram"].includes(chartType)) return null;
+
+	const xValues = dataset.flatMap((d) => traces.map((t) => d[t.x]));
+	const yValues = dataset.flatMap((d) => traces.map((t) => d[t.y]));
+
+	const xMin = Math.min(...xValues);
+	const xMax = Math.max(...xValues);
+	const yMin = Math.min(...yValues);
+	const yMax = Math.max(...yValues);
+
+	const xPadding = (xMax - xMin) * 0.2;
+	const yPadding = (yMax - yMin) * 0.2;
+
+	return {
+		x: [xMin - xPadding, xMax + xPadding],
+		y: [yMin - yPadding, yMax + yPadding]
+	};
+};
+
+const generatePieData = (dataset: Record<string, any>[], mode: "frequency" | "sum", selectedColumn: string | null) => {
+	const values = mode === "frequency"
+		? calculateFrequencyData(dataset, selectedColumn)
+		: calculateSumData(dataset);
+
+	return [{
+		type: "pie",
+		labels: Object.keys(values),
+		values: Object.values(values),
+		textinfo: "label+percent",
+		hoverinfo: "none",
+		showlegend: false,
+		marker: { colors: CHART_COLORS }
+	} as Data];
+};
+
+const calculateFrequencyData = (dataset: Record<string, any>[], selectedColumn: string | null) => {
+	const frequencies: Record<string, number> = {};
+	dataset.forEach((item) => {
+		const value = selectedColumn ? String(item[selectedColumn]) : "";
+		frequencies[value] = (frequencies[value] || 0) + 1;
+	});
+	return frequencies;
+};
+
+const calculateSumData = (dataset: Record<string, any>[]) => {
+	const sums: Record<string, number> = {};
+	dataset.forEach((item) => {
+		Object.entries(item).forEach(([key, value]) => {
+			if (typeof value === "number") {
+				sums[key] = (sums[key] || 0) + value;
+			}
+		});
+	});
+	return sums;
+};
+
+const generatePlotlyData = ({
+	dataset,
+	traces,
+	hiddenTraces,
+	activeChartType,
+	histogramColumn,
+	pieMode,
+	selectedColumn,
+}: {
+	dataset: Record<string, any>[];
+	traces: TraceConfig[];
+	hiddenTraces: Record<string, boolean>;
+	activeChartType: PlotType;
+	histogramColumn: string | null;
+	pieMode: "frequency" | "sum";
+	selectedColumn: string | null;
+}) => {
+	if (activeChartType === "pie") {
+		return generatePieData(dataset, pieMode, selectedColumn);
+	}
+
+	if (activeChartType === "histogram" && histogramColumn) {
+		return [{
+			type: "histogram",
+			locationmode: "country names",
+			x: dataset.map((d) => d[histogramColumn]),
+			name: histogramColumn,
+			marker: { color: CHART_COLORS[0] }
+		} as Data];
+	}
+
+
+	if (activeChartType === "choropleth") {
+		// Create a map to store the sums for each entity
+		const entitySums = new Map<string, number>();
+
+		const locationColumn = traces[0].x;
+		const zColumn = traces[0].z;
+		// Sum the electric cars sold for each entity
+		dataset.forEach(item => {
+			const locations = item[locationColumn];
+			const z = item[zColumn as string];
+			if (entitySums.has(locations)) {
+				entitySums.set(locations, entitySums.get(locations)! + z);
+			} else {
+				entitySums.set(locations, z);
+			}
+		});
+
+		// Convert the map to arrays for locations and z
+		const locations = Array.from(entitySums.keys());
+		const z = Array.from(entitySums.values());
+		return [{
+			type: "choropleth",
+			locationmode: traces[0].locationmode || "country names",
+			locations,
+			z,
+			colorscale: "Viridis",
+			autocolorscale: true,
+			reversescale: true,
+			colorbar: { thickness: 20 }
+		} as Data];
+	}
+
+	if (activeChartType === "bar") {
+		return traces.map((trace, index) => {
+			if (hiddenTraces[trace.name]) return {};
+			const xColumnName = trace.x; // Get the x column name from the trace
+			const yColumnName = trace.y; // Get the y column name from the trace
+
+			// Group data by x column and sum the y values
+			const groupedData = dataset.reduce((acc, item) => {
+				const xValue = item[xColumnName];
+				if (!acc[xValue]) {
+					acc[xValue] = 0;
+				}
+				acc[xValue] += item[yColumnName];
+				return acc;
+			}, {} as Record<string, number>);
+
+
+			return {
+				type: "bar",
+				x: Object.keys(groupedData),
+				y: Object.values(groupedData),
+				name: trace.name,
+				marker: { color: CHART_COLORS[index % CHART_COLORS.length] }
+			} as Data;
+		});
+	}
+
+	return traces
+		// .filter((trace) => !hiddenTraces[trace.name])
+		.map((trace, index) => {
+			if (hiddenTraces[trace.name]) return {};
+			const traceColor = CHART_COLORS[index % CHART_COLORS.length];
+			const baseTrace = {
+				type: trace.type,
+				name: trace.name,
+				mode: traces[0].mode || "markers",
+				marker: { color: traceColor },
+				x: dataset.map((d) => d[trace.x]),
+				y: dataset.map((d) => d[trace.y]),
+			};
+			if (trace.groupBy) {
+				const groupedData = groupByColumn(dataset, trace.groupBy);
+				return Object.entries(groupedData).map(([group, groupDataset], groupIndex) => ({
+					...baseTrace,
+					x: (groupDataset as Record<string, any>[]).map((d) => d[trace.x]),
+					y: (groupDataset as Record<string, any>[]).map((d) => d[trace.y]),
+					name: group,
+					visible: !hiddenTraces[group] ? true : false,
+					marker: { color: CHART_COLORS[groupIndex % CHART_COLORS.length] },
+
+				}));
+			}
+			return baseTrace;
+		})
+		.flat();
+};
+
+const generateLayout = ({
+	activeChartType,
+	histogramColumn,
+	ranges,
+	xAxisLabel,
+	yAxisLabel,
+	traces,
+}: {
+	activeChartType: PlotType;
+	histogramColumn: string | null;
+	ranges: { x: number[], y: number[] } | null;
+	xAxisLabel: string;
+	yAxisLabel: string;
+	traces?: TraceConfig[];
+}): Partial<Layout> => {
+	const baseLayout: Partial<Layout> = {
+		showlegend: false,
+		hovermode: "closest",
+		autosize: true,
+		plot_bgcolor: "transparent",
+		paper_bgcolor: "transparent",
+		xaxis: { fixedrange: true },
+		yaxis: { fixedrange: true },
+		margin: { t: 10, b: 40, l: 40, r: 40 },
+	};
+
+	if (activeChartType === "choropleth") {
+		return {
+			...baseLayout,
+			geo: {
+				projection: { type: "robinson" }
+			}
+		};
+	}
+
+	if (activeChartType === "pie") {
+		return {
+			...baseLayout,
+			margin: { t: 10, b: 10, l: 10, r: 10 }
+		};
+	}
+
+	if (activeChartType === "histogram") {
+		return {
+			...baseLayout,
+			xaxis: { title: histogramColumn || "", fixedrange: true },
+			yaxis: { title: "Count", fixedrange: true }
+		};
+	}
+
+	if (activeChartType === "bar") {
+		return {
+			...baseLayout,
+			barmode: traces?.some(trace => trace.stack) ? "stack" : "group",
+			bargap: 0.1,
+
+		};
+	}
+
+	if (ranges) {
+		return {
+			...baseLayout,
+			xaxis: { range: ranges.x, tickformat: "d", fixedrange: true },
+			yaxis: { range: ranges.y, fixedrange: true }
+		};
+	}
+
+	return baseLayout;
+};
+
+const generateConfig = (): Partial<Config> => ({
+	responsive: true,
+	displayModeBar: false,
+});
+
 
 export default function DataVisualizerPlotly({
 	dataset,
 	traces = [],
-	title = "Data Visualizer",
 	xAxisLabel = "X AXIS",
 	yAxisLabel = "Y AXIS",
 }: DataVisualizerProps) {
 	const initialColumn = dataset.length > 0 ? Object.keys(dataset[0])[0] : null;
 
 	const [activeChartType, setActiveChartType] = useState<PlotType>(traces[0].type);
-	const [hiddenTraces, setHiddenTraces] = useState<Record<string, boolean>>(() => {
-		const initialHidden: Record<string, boolean> = {};
-		return initialHidden;
-	});
+	const [hiddenTraces, setHiddenTraces] = useState<Record<string, boolean>>(getInitialHiddenTraces);
 	const [pieMode, setPieMode] = useState<"frequency" | "sum">("frequency");
+	const [selectedPoint, setSelectedPoint] = useState<{ x: number, y: number, name: string } | null>(null);
 
 	const [selectedColumn, setSelectedColumn] = useState<string | null>(
 		initialColumn
@@ -85,266 +355,109 @@ export default function DataVisualizerPlotly({
 		buttonContainerStyle.justifyContent = "flex-start";
 	}
 
-	const pieModeOptions = [
-		{ label: "Frequency", value: "frequency" },
-		{ label: "Sum", value: "sum" },
-	];
+	const ranges = useMemo(() => calculateRanges(dataset, traces, activeChartType),
+		[dataset, traces, activeChartType]);
 
-	const ranges = useMemo(() => {
-		if (["pie", "bar", "histogram"].includes(activeChartType)) return null;
-		const xValues = dataset.flatMap((d) => traces.map((t) => d[t.x]));
-		const yValues = dataset.flatMap((d) => traces.map((t) => d[t.y]));
-		const xMin = Math.min(...xValues);
-		const xMax = Math.max(...xValues);
-		const yMin = Math.min(...yValues);
-		const yMax = Math.max(...yValues);
-		const xPadding = (xMax - xMin) * 0.2;
-		const yPadding = (yMax - yMin) * 0.2;
-		return {
-			x: [xMin - xPadding, xMax + xPadding],
-			y: [yMin - yPadding, yMax + yPadding],
-		};
-	}, [dataset, traces, activeChartType]);
-
-	const plotlyData: Data[] = useMemo(() => {
-		if (dataset.length === 0) return [];
-		switch (activeChartType) {
-			case "pie":
-				if (pieMode === "frequency") {
-					const frequencies: Record<string, number> = {};
-					dataset.forEach((item) => {
-						const value = selectedColumn ? String(item[selectedColumn]) : "";
-						frequencies[value] = (frequencies[value] || 0) + 1;
-					});
-					return [
-						{
-							type: "pie",
-							labels: Object.keys(frequencies),
-							values: Object.values(frequencies),
-							textinfo: "label+percent",
-							hoverinfo: "none",
-							showlegend: false,
-							marker: {
-								colors: colors,
-							},
-						} as Data,
-					];
-				} else {
-					const sums: Record<string, number> = {};
-					dataset.forEach((item) => {
-						Object.entries(item).forEach(([key, value]) => {
-							if (typeof value === "number") {
-								sums[key] = (sums[key] || 0) + value;
-							}
-						});
-					});
-					return [
-						{
-							type: "pie",
-							labels: Object.keys(sums),
-							values: Object.values(sums),
-							textinfo: "label+percent",
-							hoverinfo: "none",
-							showlegend: false,
-							marker: {
-								colors: colors,
-							},
-						} as Data,
-					];
-				}
-			case "bar":
-				return traces.map((trace, index) => {
-					if (hiddenTraces[trace.name]) return {};
-					const barData: Record<string, number> = {};
-					dataset.forEach((item) => {
-						const value = String(item[trace.x]);
-						barData[value] = (barData[value] || 0) + item[trace.y];
-					});
-					return {
-						type: "bar",
-						x: Object.keys(barData),
-						y: Object.values(barData),
-						name: trace.name,
-						marker: {
-							color: colors[index % colors.length],
-						},
-					} as Data;
-				});
-			case "histogram":
-				return [
-					{
-						type: "histogram",
-						x: dataset
-							.map((item) => (histogramColumn ? item[histogramColumn] : null))
-							.filter((value) => value !== null),
-						marker: {
-							color: colors[0],
-						},
-					} as Data,
-				];
-			default:
-				if (traces.some(trace => trace.groupBy)) {
-					const groupedData = groupByColumn(dataset, traces[0].groupBy);
-					return Object.entries(groupedData).map(([group, data], index) => {
-						const traceColor = colors[index % colors.length];
-						const mode = traces[0].mode || "markers";
-						return {
-							x: (data as Record<string, any>[]).map((d) => d[traces[0].x]),
-							y: (data as Record<string, any>[]).map((d) => d[traces[0].y]),
-							name: `${group}`,
-							type: "scatter",
-							mode: mode,
-							visible: !hiddenTraces[`${group}`],
-							line: {
-								shape: "linear",
-								color: traceColor,
-							},
-							marker: {
-								size: 6,
-								color: traceColor,
-							},
-						};
-					});
-				}
-				return traces
-					.map((trace, index) => {
-						const traceColor = colors[index % colors.length];
-						return {
-							x: dataset.map((d) => d[trace.x]),
-							y: dataset.map((d) => d[trace.y]),
-							name: trace.name,
-							type: "scatter",
-							mode: trace.mode || "markers",
-							visible: !hiddenTraces[trace.name],
-							line: {
-								shape: "linear",
-								color: traceColor,
-							},
-							marker: {
-								size: 6,
-								color: traceColor,
-							},
-							hoverinfo: "none",
-							showlegend: false,
-						} as Data;
-					})
-					.filter((trace) => (trace as any).visible)
-		}
-	}, [
+	const plotlyData = useMemo(() => generatePlotlyData({
 		dataset,
 		traces,
-		activeChartType,
 		hiddenTraces,
-		pieMode,
-		selectedColumn,
+		activeChartType,
 		histogramColumn,
-	]);
+		pieMode,
+		selectedColumn
+	}), [dataset, traces, hiddenTraces, activeChartType, histogramColumn, pieMode, selectedColumn]);
 
-	const layout: Partial<Layout> = {
-		showlegend: false,
-		xaxis: ["pie"].includes(activeChartType)
-			? { visible: false }
-			: {
-				color: "grey",
-				showgrid: true,
-				zeroline: true,
-				gridcolor: "#E4E4E4",
-				gridwidth: 1,
-				hoverformat: " ",
-				range: ranges?.x,
-				title: {
-					text: activeChartType === "histogram" ? histogramColumn || "" : "",
-				},
-			},
-		yaxis: ["pie"].includes(activeChartType)
-			? { visible: false }
-			: {
-				color: "grey",
-				showgrid: true,
-				zeroline: true,
-				gridcolor: "#E4E4E4",
-				gridwidth: 1,
-				hoverformat: " ",
-				range: ranges?.y,
-			},
-		margin: ["pie"].includes(activeChartType)
-			? { l: 10, r: 10, t: 10, b: 10 }
-			: { l: 40, r: 20, t: 10, b: 20 },
-		hovermode: false,
-		autosize: true,
-		bargap: 0.1,
-		barmode: traces.some(trace => trace.stack) ? "stack" : "group",
-		plot_bgcolor: "transparent",
-		paper_bgcolor: "transparent",
-	};
 
-	const config: Partial<Config> = {
-		displayModeBar: false,
-		responsive: true,
-		staticPlot: true,
-	};
+	const layout = useMemo(() => {
+		return generateLayout({
+			activeChartType,
+			histogramColumn,
+			ranges,
+			xAxisLabel,
+			yAxisLabel,
+			traces
+		});
+	}, [activeChartType, histogramColumn, ranges, xAxisLabel, yAxisLabel, traces]);
 
-	const toggleTrace = (traceName: string) => {
+	const config = useMemo(() => generateConfig(), []);
+
+	const toggleTrace = useCallback((traceName: string) => {
 		setHiddenTraces((prev) => ({
 			...prev,
-			[traceName]: !prev[traceName],
+			[traceName]: !prev[traceName]
 		}));
-	};
+	}, []);
+
+	const handlePointClick = useCallback((data: any) => {
+		const pointData = data[0];
+		console.log({ pointData, traces })
+		if (activeChartType === "choropleth") {
+			const x = pointData.data.locations[pointData.pointIndex];
+			const y = pointData.data.z[pointData.pointIndex];
+			const name = pointData.data.locations[pointData.pointIndex];
+			setSelectedPoint({ x, y, name });
+		} else {
+			const x = pointData.data.x[pointData.pointIndex];
+			const y = pointData.data.y[pointData.pointIndex];
+			const name = pointData.data.name;
+			setSelectedPoint({ x, y, name });
+		}
+	}, [activeChartType]);
 
 	return (
-		<View style={styles.container}>
-			{/* <SegmentedButtons
-        value={activeChartType}
-        onValueChange={(value) => setActiveChartType(value as PlotType)}
-        buttons={chartTypeOptions}
-        style={{ marginBottom: 16 }}
-      /> */}
+		<View style={localStyles.container}>
 			{activeChartType === "pie" && (
 				<SegmentedButtons
 					value={pieMode}
 					onValueChange={(value) => setPieMode(value as "frequency" | "sum")}
-					buttons={pieModeOptions}
+					buttons={PIE_MODE_OPTIONS}
 					style={{ marginBottom: 16 }}
 				/>
 			)}
 			{/* Add Y Axis Label */}
-			{!["pie"].includes(activeChartType) && (
-				<View style={styles.yAxisLabelContainer}>
-					<Text style={styles.axisLabel}>{yAxisLabel}</Text>
+			{!["pie", "choropleth"].includes(activeChartType) && (
+				<View style={localStyles.yAxisLabelContainer}>
+					<Text style={localStyles.axisLabel}>{yAxisLabel}</Text>
 				</View>
 			)}
-			<View style={styles.plotWrapper}>
-				{/* {!["pie"].includes(activeChartType) && (
-          <>
-            <View style={styles.yAxisLabelContainer}>
-              <Text style={styles.axisLabel}>{yAxisLabel}</Text>
-            </View>
-            <View style={styles.xAxisLabelContainer}>
-              <Text style={styles.axisLabel}>{xAxisLabel}</Text>
-            </View>
-          </>
-        )} */}
-				<View style={styles.plotContainer}>
+			<View style={localStyles.plotWrapper}>
+				<View style={localStyles.plotContainer}>
 					<Suspense fallback={<ActivityIndicator />}>
 						<DataPlotter
 							data={plotlyData}
 							layout={layout}
 							config={config}
-							style={styles.plot}
+							style={localStyles.plot}
 							dom={{ scrollEnabled: false }}
+							onHover={() => { }}
+							onPointClick={handlePointClick}
 						/>
 					</Suspense>
 				</View>
 				{/* Add X Axis Label */}
-				{!["pie"].includes(activeChartType) && (
-					<View style={styles.xAxisLabelContainer}>
-						<Text style={styles.axisLabel}>{xAxisLabel}</Text>
+				{!["pie", "choropleth"].includes(activeChartType) && (
+					<View style={localStyles.xAxisLabelContainer}>
+						<Text style={localStyles.axisLabel}>{xAxisLabel}</Text>
 					</View>
 				)}
 			</View>
+			{selectedPoint && (
+				<View style={styles.selectedPointContainer}>
+					<IconButton style={{ position: "absolute", top: -20, right: -20 }} icon="close" size={20} iconColor={Colors.primary} onPress={() => setSelectedPoint(null)} />
+					{activeChartType !== "choropleth" && (
+						<Text style={styles.selectedPointText}>{traces[0].type === "scatter" && traces[0].groupBy ? `${traces[0].groupBy}:` : ""}{selectedPoint.name}</Text>
+					)}
+					<Text style={styles.selectedPointText}>{traces[0].x}: {selectedPoint.x}</Text>
+					<Text style={styles.selectedPointText}>{traces[0].type === "scatter" ? `${traces[0].y}:` : "Value:"} {selectedPoint.y}</Text>
+				</View>
+			)}
 			{/* Add Buttons for each trace */}
-			<View
+			<ScrollView
 				style={{
+					maxHeight: 100,
+				}}
+				contentContainerStyle={{
 					flexDirection: "row",
 					flexWrap: "wrap",
 					justifyContent: "center",
@@ -358,14 +471,14 @@ export default function DataVisualizerPlotly({
 							mode="outlined"
 							onPress={() => setSelectedColumn(columnName)}
 							style={[
-								styles.button,
-								selectedColumn !== columnName && styles.disabledButton,
+								localStyles.button,
+								selectedColumn !== columnName && localStyles.disabledButton,
 							]}
 							icon={() => (
 								<View
 									style={[
-										styles.colorSquare,
-										{ backgroundColor: colors[index % colors.length] },
+										localStyles.colorSquare,
+										{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] },
 									]}
 								/>
 							)}
@@ -380,14 +493,14 @@ export default function DataVisualizerPlotly({
 							mode="outlined"
 							onPress={() => toggleTrace(trace.name)}
 							style={[
-								styles.button,
-								hiddenTraces[trace.name] && styles.disabledButton,
+								localStyles.button,
+								hiddenTraces[trace.name] && localStyles.disabledButton,
 							]}
 							icon={() => (
 								<View
 									style={[
-										styles.colorSquare,
-										{ backgroundColor: colors[index % colors.length] },
+										localStyles.colorSquare,
+										{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] },
 									]}
 								/>
 							)}
@@ -402,14 +515,14 @@ export default function DataVisualizerPlotly({
 							mode="outlined"
 							onPress={() => setHistogramColumn(columnName)}
 							style={[
-								styles.button,
-								histogramColumn !== columnName && styles.disabledButton,
+								localStyles.button,
+								histogramColumn !== columnName && localStyles.disabledButton,
 							]}
 							icon={() => (
 								<View
 									style={[
-										styles.colorSquare,
-										{ backgroundColor: colors[index % colors.length] },
+										localStyles.colorSquare,
+										{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] },
 									]}
 								/>
 							)}
@@ -417,22 +530,22 @@ export default function DataVisualizerPlotly({
 							{columnName}
 						</Button>
 					))}
-				{activeChartType === "scatter" && 
-					(traces.some(trace => trace.groupBy) ? 
+				{activeChartType === "scatter" &&
+					(traces.some(trace => trace.groupBy) ?
 						Object.keys(groupByColumn(dataset, traces[0].groupBy)).map((group, index) => (
 							<Button
 								key={group}
 								mode="outlined"
 								onPress={() => toggleTrace(`${group}`)}
 								style={[
-									styles.button,
-									hiddenTraces[`${group}`] && styles.disabledButton,
+									localStyles.button,
+									hiddenTraces[`${group}`] && localStyles.disabledButton,
 								]}
 								icon={() => (
 									<View
 										style={[
-											styles.colorSquare,
-											{ backgroundColor: colors[index % colors.length] },
+											localStyles.colorSquare,
+											{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] },
 										]}
 									/>
 								)}
@@ -441,35 +554,35 @@ export default function DataVisualizerPlotly({
 							</Button>
 						))
 						: traces.length > 1 &&
-							traces.map((trace, index) => (
-								<Button
-									key={trace.name}
-									mode="outlined"
-									onPress={() => toggleTrace(trace.name)}
-									style={[
-										styles.button,
-										hiddenTraces[trace.name] && styles.disabledButton,
-									]}
-									icon={() => (
-										<View
-											style={[
-												styles.colorSquare,
-												{ backgroundColor: colors[index % colors.length] },
-											]}
-										/>
-									)}
-								>
-									{trace.name}
-								</Button>
-							))
+						traces.map((trace, index) => (
+							<Button
+								key={trace.name}
+								mode="outlined"
+								onPress={() => toggleTrace(trace.name)}
+								style={[
+									localStyles.button,
+									hiddenTraces[trace.name] && localStyles.disabledButton,
+								]}
+								icon={() => (
+									<View
+										style={[
+											localStyles.colorSquare,
+											{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] },
+										]}
+									/>
+								)}
+							>
+								{trace.name}
+							</Button>
+						))
 					)
 				}
-			</View>
+			</ScrollView>
 		</View>
 	);
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
 	container: {
 		width: "100%",
 		maxWidth: SLIDE_MAX_WIDTH,
@@ -494,7 +607,7 @@ const styles = StyleSheet.create({
 	},
 	plot: {
 		width: "100%",
-		height: "100%",
+		flex: 1,
 	},
 	yAxisLabelContainer: {
 		justifyContent: "center",
@@ -534,7 +647,6 @@ const styles = StyleSheet.create({
 		width: 12,
 		height: 12,
 		borderRadius: 2,
-		marginRight: 8,
 	},
 	plotTypeButton: {
 		marginTop: 16,

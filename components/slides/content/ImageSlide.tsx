@@ -34,12 +34,11 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
 	minHeight: 300,
   },
   image: {
     flex: 1,
     width: "100%",
+	height: "100%",
   },
 });
