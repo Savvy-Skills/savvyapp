@@ -6,6 +6,7 @@ import { login, authme, authAPI } from "../services/authapi";
 import { courses_api } from "@/services/coursesApi";
 import { Platform } from "react-native";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { openai_api } from "@/services/openaiAPI";
 
 // Create a cross-platform storage object
 const crossPlatformStorage = {
@@ -69,6 +70,7 @@ export const useAuthStore = create<AuthStore>()(
 					const data = await login(email, password);
 					setTokenInterceptors(authAPI, data.auth_token);
 					setTokenInterceptors(courses_api, data.auth_token);
+					setTokenInterceptors(openai_api, data.auth_token);
 					set({ token: data.auth_token });
 					await get().getUser();
 				} catch (error) {
@@ -102,6 +104,7 @@ export const useAuthStore = create<AuthStore>()(
 			setInitialized: () => {
 				setUnauthorizedInterceptor(authAPI);
 				setUnauthorizedInterceptor(courses_api);
+				setUnauthorizedInterceptor(openai_api);
 				set({ isInitialized: true });
 			},
 		}),
@@ -118,6 +121,7 @@ export const useAuthStore = create<AuthStore>()(
 					if (token) {
 						setTokenInterceptors(authAPI, token);
 						setTokenInterceptors(courses_api, token);
+						setTokenInterceptors(openai_api, token);
 					}
 				}
 			},

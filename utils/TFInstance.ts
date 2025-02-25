@@ -2,6 +2,7 @@ import { TrainConfig } from "@/types/neuralnetwork";
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-wasm";
 import { setWasmPaths } from "@tensorflow/tfjs-backend-wasm";
+import "@tensorflow/tfjs-react-native";
 
 interface DataPreparationConfig {
 	targetConfig: {
@@ -327,7 +328,6 @@ class TFInstance {
 			console.log({ scaledColumns });
 			if (scaledColumns.length > 0) {
 				// Create and store scalers for each column
-				console.error({ scaledColumns });
 				const scalers = scaledColumns.map((column) => this.createScaler(column, data));
 				this.preprocessorState.scalers = scalers;
 
@@ -347,7 +347,6 @@ class TFInstance {
 			const encodedColumns = dataPreparationConfig.featureConfig.filter(
 				(column) => column.encoding && column.encoding !== "none"
 			);
-			console.error({ encodedColumns });
 			if (encodedColumns.length > 0) {
 				// Create and store encoders for each column
 				const encoders = encodedColumns.map((column) =>
@@ -615,7 +614,6 @@ class TFInstance {
 		columns,
 	}: TrainModelParams) {
 		const { trainFeatures, trainTarget, testFeatures } = preparedData;
-
 		try {
 
 			await model.fit(trainFeatures, trainTarget, {
@@ -654,7 +652,6 @@ class TFInstance {
 								modelConfig,
 								columns,
 							});
-						console.log()
 						this.emit(this.MESSAGE_TYPE_TRAIN_UPDATE, {
 							transcurredEpochs: epoch,
 							loss: this.currentTotalLoss,
@@ -710,9 +707,7 @@ class TFInstance {
 			this.currentModelConfig = modelConfig;
 
 			const preparedData = this.preprocessData(data, columns, trainConfig.dataPreparationConfig);
-			console.error({ "Prepared data": preparedData });
 			const model = this.createModel(modelConfig);
-			console.error({ "Model": model });
 			await this.trainModel({
 				model,
 				preparedData,
@@ -729,11 +724,8 @@ class TFInstance {
 
 	async init() {
 		try {
-			// setWasmPaths(
-			// 	"https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/wasm-out/"
-			// );
 			await tf.ready();
-			// await tf.setBackend("wasm")
+			await tf.setBackend("cpu")
 			this.initialized = true;
 			this.emit('init', { message: "TFInstance initialized" });
 		} catch (err) {

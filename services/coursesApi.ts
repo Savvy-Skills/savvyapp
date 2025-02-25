@@ -3,7 +3,6 @@ import {
   BaseSubmission,
   Course,
   Feedback,
-  ViewType,
   ViewWithSlides,
   ViewProgress,
   Module,
