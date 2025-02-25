@@ -14,6 +14,7 @@ export interface Course {
 	published: boolean;
 }
 
+
 export interface ModuleInfo {
 	readonly created_at: number;
 	readonly id: number;
