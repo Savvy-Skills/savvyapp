@@ -1,7 +1,5 @@
 import { TrainConfig } from "@/types/neuralnetwork";
 import * as tf from "@tensorflow/tfjs";
-import "@tensorflow/tfjs-backend-wasm";
-import { setWasmPaths } from "@tensorflow/tfjs-backend-wasm";
 import "@tensorflow/tfjs-react-native";
 
 interface DataPreparationConfig {

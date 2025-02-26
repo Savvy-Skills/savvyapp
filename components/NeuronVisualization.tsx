@@ -13,7 +13,7 @@ const X_AXIS_NAME = "Pending Work";
 const Y_AXIS_NAME = "Sunny Weather";
 
 const CLASS0 = "Undecided"
-const CLASS1 = "Going Out!"
+const CLASS1 = "😁"
 const CLASS2 = "Not Going!"
 // Activation functions
 const activationFunctions = {
