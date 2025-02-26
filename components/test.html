@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuron Heat Map</title>
+    <!-- Include Plotly.js from CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.16.1.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            margin: 0;
+            background-color: #F4F3FD;
+            color: #2E1A47;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #heatmap {
+            width: 60vmin;
+            height: 60vmin;
+            margin: auto;
+            border: 2px solid #E5DFF8;
+            border-radius: 12px;
+        }
+        .slider-container {
+            width: 80%;
+            max-width: 500px;
+            margin: 10px auto;
+            background-color: #FFF;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .slider-label {
+            display: block;
+            margin: 10px;
+            font-weight: bold;
+        }
+        input[type=range] {
+            width: 100%;
+            accent-color: #FFC857;
+        }
+        select {
+            padding: 8px;
+            font-size: 1em;
+            border-radius: 8px;
+            border: 1px solid #E5DFF8;
+        }
+        h1 {
+            font-size: 2em;
+            color: #5A189A;
+            margin-bottom: 10px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Heat Map of Neuron Output</h1>
+    <div id="heatmap"></div>
+
+    <div class="slider-container">
+        <label class="slider-label" for="weight1Slider">Weight 1 (w1): <span id="weight1Value">2.0</span></label>
+        <input type="range" id="weight1Slider" min="-5" max="5" step="0.1" value="2.0">
+
+        <label class="slider-label" for="weight2Slider">Weight 2 (w2): <span id="weight2Value">-3.0</span></label>
+        <input type="range" id="weight2Slider" min="-5" max="5" step="0.1" value="-3.0">
+
+        <label class="slider-label" for="biasSlider">Bias (b): <span id="biasValue">0.5</span></label>
+        <input type="range" id="biasSlider" min="-5" max="5" step="0.1" value="0.5">
+
+        <label class="slider-label" for="activationFunction">Activation Function:</label>
+        <select id="activationFunction">
+            <option value="sigmoid">Sigmoid</option>
+            <option value="tanh">Tanh</option>
+            <option value="relu">ReLU</option>
+            <option value="leakyRelu">Leaky ReLU</option>
+        </select>
+    </div>
+
+    <script>
+        // Define activation functions
+        function sigmoid(z) {
+            return 1 / (1 + Math.exp(-z));
+        }
+
+        function tanh(z) {
+            return Math.tanh(z);
+        }
+
+        function relu(z) {
+            return Math.max(0, z);
+        }
+
+        function leakyRelu(z) {
+            return z > 0 ? z : 0.01 * z;
+        }
+
+        // Neuron parameters
+        let w1 = 2.0;    // Weight for x1
+        let w2 = -3.0;   // Weight for x2
+        let b = 0.5;     // Bias
+
+        // Define the range and resolution for x1 and x2
+        const x1Min = -6;
+const x1Max = 6;
+const x2Min = -6;
+const x2Max = 6;
+        const resolution = 100; // Number of points along each axis
+
+        // Generate arrays of x1 and x2 values
+        const x1Values = [];
+        const x2Values = [];
+        const step = (x1Max - x1Min) / (resolution - 1);
+
+        for (let i = 0; i < resolution; i++) {
+            x1Values.push(x1Min + step * i);
+            x2Values.push(x2Min + step * i);
+        }
+
+        // Function to update the heat map
+        function updateHeatMap() {
+            // Update weights and bias from sliders
+            w1 = parseFloat(document.getElementById('weight1Slider').value);
+            w2 = parseFloat(document.getElementById('weight2Slider').value);
+            b = parseFloat(document.getElementById('biasSlider').value);
+
+            document.getElementById('weight1Value').innerText = w1;
+            document.getElementById('weight2Value').innerText = w2;
+            document.getElementById('biasValue').innerText = b;
+
+            // Get the selected activation function
+            const activationFunction = document.getElementById('activationFunction').value;
+            let activation;
+
+            switch (activationFunction) {
+                case 'sigmoid':
+                    activation = sigmoid;
+                    break;
+                case 'tanh':
+                    activation = tanh;
+                    break;
+                case 'relu':
+                    activation = relu;
+                    break;
+                case 'leakyRelu':
+                    activation = leakyRelu;
+                    break;
+                default:
+                    activation = sigmoid;
+            }
+
+            // Initialize a 2D array to store outputs
+            const outputMatrix = [];
+
+            // Loop through each x2 (rows)
+            for (let i = 0; i < x2Values.length; i++) {
+                const row = [];
+                const x2 = x2Values[i];
+
+                // Loop through each x1 (columns)
+                for (let j = 0; j < x1Values.length; j++) {
+                    const x1 = x1Values[j];
+
+                    // Compute the weighted sum z
+                    const z = w1 * x1 + w2 * x2 + b;
+
+                    // Apply the activation function
+                    const a = activation(z);
+
+                    row.push(a);
+                }
+                outputMatrix.push(row);
+            }
+
+            // Prepare data for Plotly
+            const data = [{
+                z: outputMatrix,
+                x: x1Values,
+                y: x2Values,
+                type: 'heatmap',
+                colorscale: 'Viridis',
+                colorbar: {
+                    title: 'Neuron Output (a)',
+                    titlefont: {
+                        family: 'Poppins, sans-serif',
+                        size: 14,
+                        color: '#2E1A47'
+                    },
+                    tickfont: {
+                        family: 'Poppins, sans-serif',
+                        size: 12,
+                        color: '#2E1A47'
+                    }
+                },
+                hovertemplate: '<b>x</b>: %{x:.2f}<br>' +
+                               '<b>y</b>: %{y:.2f}<br>' +
+                               '<b>Output (a)</b>: %{z:.2f}<extra></extra>',
+                hoverlabel: {
+                    bgcolor: '#FFC857',
+                    font: {
+                        family: 'Poppins, sans-serif',
+                        size: 14,
+                        color: '#2E1A47'
+                    }
+                }
+            }];
+
+            // Define layout
+            const layout = {
+                title: {
+                    text: 'Heat Map of Neuron Output',
+                    font: {
+                        family: 'Poppins, sans-serif',
+                        size: 20,
+                        color: '#2E1A47'
+                    }
+                },
+                xaxis: {
+                    title: 'Input x₁',
+                    range: [-6, 6],
+                    titlefont: {
+                        family: 'Poppins, sans-serif',
+                        size: 18,
+                        color: '#2E1A47'
+                    },
+                    tickfont: {
+                        family: 'Poppins, sans-serif',
+                        size: 12,
+                        color: '#2E1A47'
+                    }
+                },
+                yaxis: {
+                    title: 'Input x₂',
+                    range: [x2Min, x2Max],
+                    titlefont: {
+                        family: 'Poppins, sans-serif',
+                        size: 18,
+                        color: '#2E1A47'
+                    },
+                    tickfont: {
+                        family: 'Poppins, sans-serif',
+                        size: 12,
+                        color: '#2E1A47'
+                    }
+                },
+                showlegend: false,
+                modebar: {
+                    remove: ['toImage', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
+                }
+            };
+
+            // Render the heat map
+            Plotly.newPlot('heatmap', data, layout, { displayModeBar: false });
+        }
+
+        // Initial rendering of the heat map
+        updateHeatMap();
+
+        // Add event listeners to sliders and dropdown
+        document.getElementById('weight1Slider').addEventListener('input', updateHeatMap);
+        document.getElementById('weight2Slider').addEventListener('input', updateHeatMap);
+        document.getElementById('biasSlider').addEventListener('input', updateHeatMap);
+        document.getElementById('activationFunction').addEventListener('change', updateHeatMap);
+    </script>
+</body>
+</html>
