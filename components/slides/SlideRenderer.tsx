@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Platform, ScrollView, View } from "react-native";
 import AssessmentSlide from "./AssessmentSlide";
-import { ContentInfo, DatasetInfo, LocalSlide } from "../../types";
+import { ContentInfo, DatasetInfo, LocalSlide, NeuronConfig } from "../../types";
 import ImageSlide from "./content/ImageSlide";
 import RichTextSlide from "./content/RichTextSlide";
 import DataTableContainer from "../data/DataTableContainer";
@@ -12,6 +12,7 @@ import NeuralNetworkVisualizerWeb from "../neuralnetwork/SimpleNNWeb";
 
 import { NNState } from "@/types/neuralnetwork";
 import { useViewStore } from "@/store/viewStore";
+import NeuronVisualization from "../NeuronVisualization";
 
 export interface SlideProps {
 	slide: LocalSlide;
@@ -42,6 +43,8 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 			} else {
 				return <NeuralNetworkVisualizer initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
 			}
+		case "Neuron":
+				return <NeuronVisualization config={content.neuronConfig ?? {} as NeuronConfig } dataset_info={content.dataset_info ?? {} as DatasetInfo} />;
 		default:
 			return <View />;
 	}
@@ -138,7 +141,7 @@ export default function SlideRenderer({
 		}
 	}, [slide.submitted]);
 
-	if ((slide.type === "Content" && currentContents.length === 1) && slide.contents[0].type !== "Neural Network") {
+	if ((slide.type === "Content" && currentContents.length === 1) && ["Neural Network"].includes(slide.contents[0].type)) {
 		return (
 			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 		);
