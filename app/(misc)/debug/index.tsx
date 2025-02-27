@@ -19,14 +19,7 @@ export default function DebugScreen() {
 				value={selectedIndex}
 				onValueChange={(value) => handleValueChange(value)}
 				buttons={[
-					{
-						label: "Neuron Visualization",
-						value: "neuron",
-						icon: "chart-box-outline",
-						style: {
-							borderRadius: 4,
-						}
-					},
+
 					{
 						label: "Word to Vec",
 						value: "word2vec",
@@ -39,7 +32,6 @@ export default function DebugScreen() {
 				theme={{ roundness: 0 }}
 			/>
 			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-				{selectedIndex === "neuron" && <NeuronVisualization />}
 				{selectedIndex === "word2vec" && <WordToVec />}
 			</ScrollView>
 
