@@ -345,12 +345,10 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 
 const styles = StyleSheet.create({
 	container: {
-		maxWidth: 600,
 		alignSelf: 'center',
 		flexDirection: 'column',
 		gap: 0, // Remove gap to tighten layout
 		width: '100%',
-		paddingHorizontal: 8,
 	},
 	weightIcon: {
 		fontSize: 30,

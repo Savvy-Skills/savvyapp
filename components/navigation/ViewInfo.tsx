@@ -4,8 +4,9 @@ import { useCourseStore } from "@/store/courseStore";
 import styles from "@/styles/styles";
 import { Image } from "expo-image";
 import { Colors } from "@/constants/Colors";
-import { Slide } from "@/types";
+import { LocalSlide, Slide } from "@/types";
 import { Icon } from "react-native-paper";
+import { useViewStore } from "@/store/viewStore";
 
 const SLIDE_TYPES_ICONS = {
 	"Assessment": "cursor-default-click-outline",
@@ -14,7 +15,7 @@ const SLIDE_TYPES_ICONS = {
 	"Custom": "sign-text"
 };
 
-function getSlideIconAndText(slide: Slide) {
+function getSlideIconAndText(slide: LocalSlide) {
 	const icon = SLIDE_TYPES_ICONS[slide.type];
 	switch (slide.type) {
 		case "Custom":
@@ -28,10 +29,11 @@ function getSlideIconAndText(slide: Slide) {
 }
 
 const ViewInfo = () => {
-	const { currentView, currentSlideIndex } = useCourseStore();
+	// const { currentView, currentSlideIndex } = useCourseStore();
+	const { view, currentSlideIndex, slides } = useViewStore();
 	const { width } = useWindowDimensions();
-	const currentModuleName = currentView?.module_info.name;
-	const currentSlide = currentView?.slides[currentSlideIndex];
+	const currentModuleName = view?.module_info.name;
+	const currentSlide = slides[currentSlideIndex];
 	const paddingHorizontal = width <= 600 ? 8 : 0;
 	if (!currentSlide) return null;
 	const { icon, text } = getSlideIconAndText(currentSlide);
@@ -55,7 +57,7 @@ const ViewInfo = () => {
 				/>
 				<Text style={localStyles.text}>{currentModuleName}:</Text>
 				<Text style={[localStyles.text, localStyles.view]}>
-					{currentView?.name}
+					{view?.name}
 				</Text>
 			</View>
 			<View style={localStyles.moduleContainer}>

@@ -84,7 +84,7 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 					</View>
 				));
 			} else {
-				if (sortedContents[0].type === "Dataset") {
+				if (["Dataset", "Neuron"].includes(sortedContents[0].type)) {
 					return <View style={[styles.slideWidth, styles.centeredMaxWidth, { gap: 16 }]}>
 						<ContentComponent content={sortedContents[0]} index={index} canComplete={true} />
 					</View>

@@ -141,20 +141,22 @@ const styles = StyleSheet.create({
 	},
 	gradientTrack: {
 		position: 'absolute',
-		top: 18,
+		top: 16,
 		left: 0,
 		right: 0,
-		height: 4,
+		height: 8,
 		flexDirection: 'row',
 		alignItems: 'center',
 	},
 	leftTrack: {
 		height: '100%',
 		overflow: 'hidden',
+		borderRadius: 4,
 	},
 	rightTrack: {
 		height: '100%',
 		overflow: 'hidden',
+		borderRadius: 4,
 	},
 	leftGradient: {
 		flex: 1,
