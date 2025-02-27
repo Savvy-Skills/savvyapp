@@ -249,6 +249,11 @@ const generatePlotlyData = ({
 		.flat();
 };
 
+const MAP_PROJECTIONS = [
+	"airy", "aitoff", "albers", "albers usa", "august", "azimuthal equal area", "azimuthal equidistant", "baker", "bertin1953", "boggs", "bonne", "bottomley", "bromley", "collignon", "conic conformal", "conic equal area", "conic equidistant", "craig", "craster", "cylindrical equal area", "cylindrical stereographic", "eckert1", "eckert2", "eckert3", "eckert4", "eckert5", "eckert6", "eisenlohr", "equal earth", "equirectangular", "fahey", "foucaut", "foucaut sinusoidal", "ginzburg4", "ginzburg5", "ginzburg6", "ginzburg8", "ginzburg9", "gnomonic", "gringorten", "gringorten quincuncial", "guyou", "hammer", "hill", "homolosine", "hufnagel", "hyperelliptical", "kavrayskiy7", "lagrange", "larrivee", "laskowski", "loximuthal", "mercator", "miller", "mollweide", "mt flat polar parabolic", "mt flat polar quartic", "mt flat polar sinusoidal", "natural earth", "natural earth1", "natural earth2", "nell hammer", "nicolosi", "orthographic", "patterson", "peirce quincuncial", "polyconic", "rectangular polyconic", "robinson", "satellite", "sinu mollweide", "sinusoidal", "stereographic", "times", "transverse mercator", "van der grinten", "van der grinten2", "van der grinten3", "van der grinten4", "wagner4", "wagner6", "wiechel", "winkel tripel", "winkel3"
+]
+type MapProjection = typeof MAP_PROJECTIONS[number];
+
 const generateLayout = ({
 	activeChartType,
 	histogramColumn,
@@ -279,8 +284,9 @@ const generateLayout = ({
 		return {
 			...baseLayout,
 			geo: {
-				projection: { type: "robinson" }
-			}
+				projection: { type: "equirectangular" }
+			},
+			dragmode: false
 		};
 	}
 
@@ -337,6 +343,7 @@ export default function DataVisualizerPlotly({
 	const [hiddenTraces, setHiddenTraces] = useState<Record<string, boolean>>(getInitialHiddenTraces);
 	const [pieMode, setPieMode] = useState<"frequency" | "sum">("frequency");
 	const [selectedPoint, setSelectedPoint] = useState<{ x: number, y: number, name: string } | null>(null);
+	const [mapProjection, setMapProjection] = useState<MapProjection>("robinson");
 
 	const [selectedColumn, setSelectedColumn] = useState<string | null>(
 		initialColumn

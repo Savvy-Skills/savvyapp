@@ -4,20 +4,24 @@ import { Surface } from 'react-native-paper';
 import { getEmbeddings } from "@/services/openaiAPI";
 import { Colors } from "@/constants/Colors";
 
+function dotProduct(vecA: number[], vecB: number[]) {
+    let product = 0;
+    for(let i=0;i<vecA.length;i++){
+        product += vecA[i] * vecB[i];
+    }
+    return product;
+}
+
+function magnitude(vec: number[]) {
+    let sum = 0;
+    for (let i = 0;i<vec.length;i++){
+        sum += vec[i] * vec[i];
+    }
+    return Math.sqrt(sum);
+}
+
 function cosineSimilarity(vecA: number[], vecB: number[]) {
-	let dotProduct = 0;
-	let normA = 0;
-	let normB = 0;
-
-	for (let i = 0; i < vecA.length; i++) {
-		dotProduct += vecA[i] * vecB[i];
-		normA += vecA[i] * vecA[i];
-		normB += vecB[i] * vecB[i];
-	}
-
-	const similarity = dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-
-	return similarity;
+    return dotProduct(vecA,vecB)/ (magnitude(vecA) * magnitude(vecB));
 }
 
 export default function WordToVec() {
@@ -46,7 +50,7 @@ export default function WordToVec() {
 		setGameStatus('playing');
 		// Pick a random word from wordList
 		const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
-		setTargetWord(randomWord);
+		setTargetWord("consist");
 		
 		try {
 			const targetEmbedding = await getEmbeddings(randomWord);
