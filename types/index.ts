@@ -14,6 +14,46 @@ export interface Course {
 	published: boolean;
 }
 
+export interface ClassConfig {
+	value: string;
+	emoji?: string;
+	color: string;
+}
+
+export interface NeuronVisualizationProps {
+	config: NeuronConfig;
+	dataset_info?: DatasetInfo;
+}
+
+export interface NeuronConfig {
+	axes: {
+		x: {
+			name: string;
+			emoji?: string;
+		};
+		y: {
+			name: string;
+			emoji?: string;
+		};
+	};
+	classes: {
+		negative: ClassConfig;
+		neutral: ClassConfig;
+		positive: ClassConfig;
+	};
+	initialValues: {
+		weight1: number;
+		weight2: number;
+		bias: number;
+	};
+	locked: {
+		weight1?: boolean;
+		weight2?: boolean;
+		bias?: boolean;
+	};
+	useVerticalSlider?: boolean;
+}
+
 
 export interface ModuleInfo {
 	readonly created_at: number;
@@ -169,7 +209,7 @@ export interface Submission extends BaseSubmission {
 
 export type ViewStatus = "LOADING" | "READY" | "ERROR" | "RESTARTING";
 
-export interface view extends Omit<ViewWithSlides, "slides"> {}
+export interface view extends Omit<ViewWithSlides, "slides"> { }
 
 export interface ViewStore {
 	viewId: number | null;
@@ -193,7 +233,7 @@ export interface ViewStore {
 	submitProgress: () => void;
 	trigger: string | null;
 	setTrigger: (trigger: string) => void;
-	resetTrigger:() => void;
+	resetTrigger: () => void;
 	checkSlideCompletion: (index: number) => void;
 }
 
@@ -221,7 +261,7 @@ export interface ViewProgress {
 	timestamp: number;
 }
 
-type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity";
+type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity" | "Neuron";
 
 export interface ContentInfo {
 	readonly created_at: number;
@@ -235,6 +275,7 @@ export interface ContentInfo {
 	dataset_info?: DatasetInfo;
 	traces?: TraceConfig[];
 	nnState?: NNState;
+	neuronConfig?: NeuronConfig;
 }
 
 type QuestionTypes =
