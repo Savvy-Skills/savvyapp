@@ -141,7 +141,7 @@ export default function SlideRenderer({
 		}
 	}, [slide.submitted]);
 
-	if ((slide.type === "Content" && currentContents.length === 1) && ["Neural Network"].includes(slide.contents[0].type)) {
+	if ((slide.type === "Content" && currentContents.length === 1) && !["Neural Network", "Neuron"].includes(slide.contents[0].type)) {
 		return (
 			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 		);
@@ -152,7 +152,7 @@ export default function SlideRenderer({
 	return (
 		<ScrollView
 			contentContainerStyle={{
-				width: "100%",
+				width: Platform.OS === "web" ? "100vw" as any : "100%",
 				flexGrow: 1,
 				flex: Platform.OS === "web" ? 1 : undefined,
 			}}
