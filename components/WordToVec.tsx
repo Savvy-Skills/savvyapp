@@ -53,7 +53,7 @@ export default function WordToVec() {
 		// Pick a random word from wordList
 		// const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
 		// setTargetWord(randomWord);
-		const randomWord = "consist";
+		const randomWord = "apple";
 		setTargetWord(randomWord);
 		try {
 			const targetEmbedding = await getEmbeddings(randomWord);
@@ -120,6 +120,12 @@ export default function WordToVec() {
 
 	return (
 		<View style={localStyles.contentContainer}>
+			<Surface style={localStyles.card}>
+				<Text style={localStyles.instructionsTitle}>How to Play:</Text>
+				<Text style={localStyles.instructionsText}>
+					Try to guess the hidden word. The similarity score (0-1) shows how close your guess is semantically to the target word.
+				</Text>
+			</Surface>
 			{gameStatus === 'won' && (
 				<Surface style={localStyles.wonBanner}>
 					<Text style={localStyles.wonText}>You found it! 🎉</Text>
@@ -143,14 +149,14 @@ export default function WordToVec() {
 				</View>
 
 				{guesses.length > 0 && (
-							<Button
-								mode="contained"
-								style={[styles.savvyButton, styles.lightOrangeButton]}
-								labelStyle={[styles.buttonLabel]}
-								onPress={startGame}
-							>
-								New Game
-							</Button>
+					<Button
+						mode="contained"
+						style={[styles.savvyButton, styles.lightOrangeButton]}
+						labelStyle={[styles.buttonLabel]}
+						onPress={startGame}
+					>
+						New Game
+					</Button>
 				)}
 
 				<View style={localStyles.inputContainer}>
@@ -192,7 +198,7 @@ export default function WordToVec() {
 			{guesses.length > 0 && (
 				<Surface style={localStyles.card}>
 					<Text style={localStyles.guessesTitle}>Previous Guesses:</Text>
-					<ScrollView style={localStyles.guessesListContainer} contentContainerStyle={{flexDirection: "column-reverse"}}>
+					<ScrollView style={localStyles.guessesListContainer} contentContainerStyle={{ flexDirection: "column-reverse" }}>
 						{guesses.map((guess, index) => (
 							<View key={index} style={localStyles.guessItem}>
 								<Text style={localStyles.guessWord}>{guess.word}</Text>
@@ -212,12 +218,7 @@ export default function WordToVec() {
 				</Surface>
 			)}
 
-			<Surface style={localStyles.card}>
-				<Text style={localStyles.instructionsTitle}>How to Play:</Text>
-				<Text style={localStyles.instructionsText}>
-					Try to guess the hidden word. The similarity score (0-1) shows how close your guess is semantically to the target word.
-				</Text>
-			</Surface>
+
 		</View>
 	);
 }
