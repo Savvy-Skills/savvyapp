@@ -1,13 +1,18 @@
 {
-	"buildCommand": "expo export -p web",
-	"outputDirectory": "dist",
-	"devCommand": "expo",
-	"cleanUrls": true,
-	"framework": null,
-	"rewrites": [
-	  {
-		"source": "/:path*",
-		"destination": "/"
-	  }
-	]
+  "buildCommand": "expo export -p web",
+  "outputDirectory": "dist",
+  "devCommand": "expo",
+  "cleanUrls": true,
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "/"
+    }
+  ],
+  "functions": {
+    "api/**": {
+      "excludeFiles": "{.next,*.cache,node_modules,public,app}/**"
+    }
   }
+}
