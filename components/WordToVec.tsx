@@ -1,31 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { Platform, StyleSheet, View, TextInput, Button, Text, ActivityIndicator, ScrollView } from "react-native";
-import { Surface } from 'react-native-paper';
+import { StyleSheet, View, ScrollView } from "react-native";
+import { IconButton, Surface } from 'react-native-paper';
 import { getEmbeddings } from "@/services/openaiAPI";
 import { Colors } from "@/constants/Colors";
+import styles from "@/styles/styles";
+import { Button, Text, TextInput, ActivityIndicator } from "react-native-paper";
 
 function dotProduct(vecA: number[], vecB: number[]) {
-    let product = 0;
-    for(let i=0;i<vecA.length;i++){
-        product += vecA[i] * vecB[i];
-    }
-    return product;
+	let product = 0;
+	for (let i = 0; i < vecA.length; i++) {
+		product += vecA[i] * vecB[i];
+	}
+	return product;
 }
 
 function magnitude(vec: number[]) {
-    let sum = 0;
-    for (let i = 0;i<vec.length;i++){
-        sum += vec[i] * vec[i];
-    }
-    return Math.sqrt(sum);
+	let sum = 0;
+	for (let i = 0; i < vec.length; i++) {
+		sum += vec[i] * vec[i];
+	}
+	return Math.sqrt(sum);
 }
 
 function cosineSimilarity(vecA: number[], vecB: number[]) {
-    return dotProduct(vecA,vecB)/ (magnitude(vecA) * magnitude(vecB));
+	return dotProduct(vecA, vecB) / (magnitude(vecA) * magnitude(vecB));
 }
 
 export default function WordToVec() {
-	const [targetWord, setTargetWord] = useState<string>("apple");
+	const [targetWord, setTargetWord] = useState<string>("");
 	const [userInput, setUserInput] = useState<string>("");
 	const [similarity, setSimilarity] = useState<number>(0);
 	const [loading, setLoading] = useState<boolean>(false);
@@ -34,7 +36,7 @@ export default function WordToVec() {
 	const [guesses, setGuesses] = useState<Array<{ word: string, similarity: number | null }>>([]);
 	const [gameStatus, setGameStatus] = useState<'playing' | 'won'>('playing');
 	const [wordList, setWordList] = useState<string[]>([
-		"apple", "banana", "orange", "computer", "music", 
+		"apple", "banana", "orange", "computer", "music",
 		"mountain", "ocean", "coffee", "book", "moon"
 	]);
 
@@ -49,9 +51,10 @@ export default function WordToVec() {
 		setShowAnswer(false);
 		setGameStatus('playing');
 		// Pick a random word from wordList
-		const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
-		setTargetWord("consist");
-		
+		// const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+		// setTargetWord(randomWord);
+		const randomWord = "consist";
+		setTargetWord(randomWord);
 		try {
 			const targetEmbedding = await getEmbeddings(randomWord);
 			setTargetEmbedding(targetEmbedding.data[0].embedding);
@@ -75,13 +78,13 @@ export default function WordToVec() {
 				newGuesses[newGuesses.length - 1].similarity = similarity;
 				return newGuesses;
 			});
-			
+
 			// Check if won (similarity > 0.95 or exact match)
 			if (similarity > 0.95 || userInput.toLowerCase() === targetWord.toLowerCase()) {
 				setGameStatus('won');
 				setShowAnswer(true);
 			}
-			
+
 			setUserInput("");
 		} catch (error) {
 			console.error("Error handling guess:", error);
@@ -90,9 +93,9 @@ export default function WordToVec() {
 			setLoading(false);
 		}
 	};
-	
+
 	// Handle Enter key press
-	const handleKeyPress = (e:any) => {
+	const handleKeyPress = (e: any) => {
 		if (e.key === 'Enter' && userInput && !loading) {
 			handleGuess();
 		}
@@ -106,7 +109,7 @@ export default function WordToVec() {
 		if (highestSimilarity < 0.9) return "You're very close!";
 		return "You're extremely close!";
 	};
-	
+
 	const getSimilarityColor = (value: number) => {
 		if (value < 0.3) return Colors.error; // red
 		if (value < 0.5) return Colors.warning; // orange
@@ -116,68 +119,70 @@ export default function WordToVec() {
 	};
 
 	return (
-		<View style={styles.contentContainer}>
+		<View style={localStyles.contentContainer}>
 			{gameStatus === 'won' && (
-				<Surface style={styles.wonBanner}>
-					<Text style={styles.wonText}>You found it! 🎉</Text>
+				<Surface style={localStyles.wonBanner}>
+					<Text style={localStyles.wonText}>You found it! 🎉</Text>
 				</Surface>
 			)}
-			
-			<Surface style={styles.card}>
-				<View style={styles.targetContainer}>
-					<Text style={styles.label}>Target Word:</Text>
-					<Text style={styles.targetText}>
-						{showAnswer ? targetWord : "?????"}
-					</Text>
-					
-					<View style={styles.buttonRow}>
-						<View style={styles.buttonContainer}>
-							<Button
-								title={showAnswer ? "Hide Answer" : "Reveal Answer"}
-								onPress={() => setShowAnswer(!showAnswer)}
-								color={Colors.blue}
-							/>
-						</View>
-						<View style={styles.buttonContainer}>
-							<Button
-								title="New Game"
-								onPress={startGame}
-								color={Colors.success}
-							/>
-						</View>
+
+			<Surface style={localStyles.card}>
+				<View style={localStyles.targetContainer}>
+					<Text style={localStyles.label}>Target Word:</Text>
+					<View style={localStyles.targetTextContainer}>
+						<Text style={localStyles.targetText}>
+							{showAnswer ? targetWord : "?????"}
+						</Text>
+						<IconButton
+							icon={showAnswer ? "eye-off" : "eye"}
+							size={20}
+							onPress={() => setShowAnswer(!showAnswer)}
+							iconColor={Colors.revealedButton}
+						/>
 					</View>
 				</View>
 
 				{guesses.length > 0 && (
-					<View style={styles.hintContainer}>
-						<Text style={styles.hintText}>{getHint()}</Text>
-					</View>
+							<Button
+								mode="contained"
+								style={[styles.savvyButton, styles.lightOrangeButton]}
+								labelStyle={[styles.buttonLabel]}
+								onPress={startGame}
+							>
+								New Game
+							</Button>
 				)}
 
-				<TextInput
-					style={styles.input}
-					placeholder="Enter your guess"
-					value={userInput}
-					onChangeText={setUserInput}
-					onKeyPress={handleKeyPress}
-					editable={!loading && gameStatus !== 'won'}
-				/>
-				
-				<View style={styles.submitButtonContainer}>
+				<View style={localStyles.inputContainer}>
+					<TextInput
+						style={styles.input}
+						placeholder="Enter your guess"
+						value={userInput}
+						onChangeText={setUserInput}
+						onKeyPress={handleKeyPress}
+						editable={!loading && gameStatus !== 'won'}
+					/>
+
 					<Button
-						title={loading ? "Calculating..." : "Submit Guess"}
+						mode="contained"
+						loading={loading}
+						style={[styles.savvyButton, { maxWidth: 100 }]}
+						labelStyle={styles.buttonLabel}
 						onPress={handleGuess}
 						disabled={loading || !userInput || gameStatus === 'won'}
-						color={Colors.primary}
-					/>
+					>
+						Guess
+					</Button>
 				</View>
-
-				{loading && <ActivityIndicator size="small" color="#0000ff" style={styles.loader} />}
-
+				{guesses.length > 0 && (
+					<View style={localStyles.hintContainer}>
+						<Text style={localStyles.hintText}>{getHint()}</Text>
+					</View>
+				)}
 				{similarity > 0 && (
-					<View style={styles.similarityContainer}>
-						<Text style={styles.resultLabel}>Similarity: </Text>
-						<Text style={[styles.resultText, { color: getSimilarityColor(similarity) }]}>
+					<View style={localStyles.similarityContainer}>
+						<Text style={localStyles.resultLabel}>Similarity: </Text>
+						<Text style={[localStyles.resultText, { color: getSimilarityColor(similarity) }]}>
 							{similarity.toFixed(2)}
 						</Text>
 					</View>
@@ -185,17 +190,17 @@ export default function WordToVec() {
 			</Surface>
 
 			{guesses.length > 0 && (
-				<Surface style={styles.card}>
-					<Text style={styles.guessesTitle}>Previous Guesses:</Text>
-					<ScrollView style={styles.guessesListContainer}>
+				<Surface style={localStyles.card}>
+					<Text style={localStyles.guessesTitle}>Previous Guesses:</Text>
+					<ScrollView style={localStyles.guessesListContainer} contentContainerStyle={{flexDirection: "column-reverse"}}>
 						{guesses.map((guess, index) => (
-							<View key={index} style={styles.guessItem}>
-								<Text style={styles.guessWord}>{guess.word}</Text>
+							<View key={index} style={localStyles.guessItem}>
+								<Text style={localStyles.guessWord}>{guess.word}</Text>
 								{guess.similarity === null ? (
 									<ActivityIndicator size="small" color="#0000ff" />
 								) : (
 									<Text style={[
-										styles.guessSimilarity, 
+										localStyles.guessSimilarity,
 										{ color: getSimilarityColor(guess.similarity) }
 									]}>
 										{guess.similarity.toFixed(2)}
@@ -206,10 +211,10 @@ export default function WordToVec() {
 					</ScrollView>
 				</Surface>
 			)}
-			
-			<Surface style={styles.card}>
-				<Text style={styles.instructionsTitle}>How to Play:</Text>
-				<Text style={styles.instructionsText}>
+
+			<Surface style={localStyles.card}>
+				<Text style={localStyles.instructionsTitle}>How to Play:</Text>
+				<Text style={localStyles.instructionsText}>
 					Try to guess the hidden word. The similarity score (0-1) shows how close your guess is semantically to the target word.
 				</Text>
 			</Surface>
@@ -217,7 +222,7 @@ export default function WordToVec() {
 	);
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
 	contentContainer: {
 		flex: 1,
 		alignItems: 'center',
@@ -225,46 +230,48 @@ const styles = StyleSheet.create({
 		maxWidth: 600,
 		alignSelf: "center",
 		width: "100%",
+		gap: 16,
+	},
+	targetTextContainer: {
+		flexDirection: "row",
+		gap: 8,
+	},
+	inputContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
 	},
 	card: {
-		backgroundColor: 'white',
-		borderRadius: 10,
+		backgroundColor: Colors.background,
+		borderRadius: 4,
 		padding: 16,
 		width: '100%',
-		marginBottom: 16,
+		gap: 16,
 	},
 	targetContainer: {
-		marginBottom: 20,
 		alignItems: 'center',
 	},
 	label: {
 		fontSize: 16,
-		color: '#7f8c8d',
-		marginBottom: 5,
+		color: Colors.mutedText,
 	},
 	targetText: {
 		fontSize: 32,
 		fontWeight: 'bold',
 		marginBottom: 16,
-		color: '#2c3e50',
+		color: Colors.text,
 	},
 	buttonRow: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		width: '100%',
-	},
-	buttonContainer: {
-		flex: 1,
-		marginHorizontal: 5,
-	},
-	submitButtonContainer: {
-		marginVertical: 10,
+		gap: 8,
 	},
 	input: {
 		height: 50,
-		borderColor: '#bdc3c7',
+		borderColor: Colors.mutedText,
 		borderWidth: 1,
-		borderRadius: 8,
+		borderRadius: 4,
 		padding: 10,
 		width: '100%',
 		fontSize: 16,
@@ -276,11 +283,10 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'center',
-		marginTop: 16,
 	},
 	resultLabel: {
 		fontSize: 18,
-		color: '#7f8c8d',
+		color: Colors.mutedText,
 	},
 	resultText: {
 		fontSize: 24,
@@ -289,20 +295,19 @@ const styles = StyleSheet.create({
 	hintContainer: {
 		padding: 10,
 		marginBottom: 16,
-		backgroundColor: '#ecf0f1',
-		borderRadius: 8,
+		backgroundColor: Colors.revealedBackground,
+		borderRadius: 4,
 		alignItems: 'center',
 	},
 	hintText: {
-		fontSize: 16,
 		fontStyle: 'italic',
-		color: '#34495e',
+		color: Colors.revealedText,
 	},
 	guessesTitle: {
 		fontSize: 18,
 		fontWeight: 'bold',
 		marginBottom: 10,
-		color: '#2c3e50',
+		color: Colors.text,
 	},
 	guessesListContainer: {
 		maxHeight: 220,
@@ -312,11 +317,11 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-between',
 		paddingVertical: 8,
 		borderBottomWidth: 1,
-		borderBottomColor: '#ecf0f1',
+		borderBottomColor: Colors.mutedText,
 	},
 	guessWord: {
 		fontSize: 16,
-		color: '#2c3e50',
+		color: Colors.text,
 	},
 	guessSimilarity: {
 		fontSize: 16,
@@ -326,23 +331,23 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		fontWeight: 'bold',
 		marginBottom: 8,
-		color: '#2c3e50',
+		color: Colors.text,
 	},
 	instructionsText: {
 		fontSize: 14,
 		lineHeight: 20,
-		color: '#7f8c8d',
+		color: Colors.mutedText,
 	},
 	wonBanner: {
-		backgroundColor: '#2ecc71',
+		backgroundColor: Colors.success,
 		padding: 10,
-		borderRadius: 8,
+		borderRadius: 4,
 		marginBottom: 16,
 		width: '100%',
 		alignItems: 'center',
 	},
 	wonText: {
-		color: 'white',
+		color: Colors.background,
 		fontSize: 20,
 		fontWeight: 'bold',
 	},

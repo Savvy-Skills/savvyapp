@@ -5,7 +5,7 @@ import ThemedTitle from "../themed/ThemedTitle";
 import { Column } from "@/hooks/useDataFetch";
 import { LayerType, NNState } from "@/types/neuralnetwork";
 import styles from "@/styles/styles";
-import { lazy, useCallback, useEffect, useState } from "react";
+import { lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { DatasetInfo } from "@/types";
 import { TraceConfig } from "../data/DataVisualizerPlotly";
 import DataTableContainer from "../data/DataTableContainer";
@@ -178,145 +178,189 @@ export default function LayerDetails({
 	const accuracyColor = Number(accuracy) > 90 ? Colors.success : Number(accuracy) > 50 ? Colors.orange : Colors.error;
 	const lossColor = Number(loss) < 10 ? Colors.success : Number(loss) > 10 && Number(loss) < 20 ? Colors.orange : Colors.error;
 
-	return (
-		<Surface style={styles.detailsContainer}>
-			<ThemedTitle>
-				{selectedLayer.charAt(0).toUpperCase() + selectedLayer.slice(1)} Layer
-				Details:
-			</ThemedTitle>
+	const title = useMemo(() => {
+		if (selectedLayer === "input") {
+			return "Features";
+		} else if (selectedLayer === "hidden") {
+			return "Model Configuration";
+		} else if (selectedLayer === "output") {
+			return "Predictions";
+		}
+	}, [selectedLayer]);
 
-			<View style={{ opacity: selectedLayer === "input" ? 1 : 0, height: selectedLayer === "input" ? "auto" : 0, overflow: "hidden" }}>
-				<DataTableContainer data={data} columns={columns} datasetInfo={dataset_info} hideFilter={true} traces={initialTraces} index={index} />
-			</View>
-
-			<View style={{ opacity: selectedLayer === "hidden" ? 1 : 0, height: selectedLayer === "hidden" ? "auto" : 0, overflow: "hidden" }}>
-				<View style={{ flexDirection: "column", gap: 4 }}>
-					<View style={{ flexDirection: "row", gap: 16 }}>
-						<View style={{ flexDirection: "column", gap: 4 }}>
-							<Text style={styles.subtitle}>Activation Function:</Text>
-							<Menu
-								visible={showActivationMenu}
-								onDismiss={() => setShowActivationMenu(false)}
-								anchor={
-									<Button mode="outlined"
-										style={styles.dropdownMenuButton}
-										icon="chevron-down"
-										contentStyle={styles.dropdownMenuContainer}
-										onPress={() => setShowActivationMenu(true)}>{activationFunctionsMap[currentModelConfig?.activationFunction as keyof typeof activationFunctionsMap]}
-									</Button>
-								}
-							>
-								{Object.keys(activationFunctionsMap).map((activationFunction) => (
-									<Menu.Item key={activationFunction}
-										title={activationFunctionsMap[activationFunction as keyof typeof activationFunctionsMap]}
-										onPress={() => {
-											handleActivationFunctionChange(activationFunction);
-											setShowActivationMenu(false);
-										}} />
-								))}
-							</Menu>
-						</View>
-
-						<View style={{ flexDirection: "column", gap: 4 }}>
-							<Text style={styles.subtitle}>Learning Cycles:</Text>
-							<Menu visible={showEpochsMenu}
-								onDismiss={() => setShowEpochsMenu(false)}
-								anchor={
-									<Button mode="outlined"
-										style={styles.dropdownMenuButton}
-										icon="chevron-down"
-										contentStyle={styles.dropdownMenuContainer}
-										onPress={() => setShowEpochsMenu(true)}>{currentTrainingConfig?.epochs}
-									</Button>
-								}
-							>
-								{[1, 5, 10, 25, 50, 100, 500].map((epochs) => (
-									<Menu.Item key={epochs} title={epochs.toString()} onPress={() => {
-										handleEpochsChange(epochs);
-										setShowEpochsMenu(false);
-									}} />
-								))}
-							</Menu>
-						</View>
-					</View>
-					<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-						<Text style={styles.subtitle}>Hidden Layers:</Text>
-						<IconButton disabled={currentModelConfig?.neuronsPerLayer.length === 1} icon="minus" size={24} onPress={() => {
-							handleRemoveLayer();
-						}} />
-						<IconButton disabled={currentModelConfig?.neuronsPerLayer.length === 10} icon="plus" size={24} onPress={() => {
-							handleAddLayer();
-						}} />
-
-					</View>
-					{currentModelConfig?.neuronsPerLayer.map((neuronCount, index) => (
-						<View key={index} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-							<Text>Layer {index + 1}:</Text>
-							<Text>{neuronCount} neurons</Text>
-							<IconButton disabled={neuronCount === 1} icon="minus" size={18} onPress={() => {
-								handleRemoveNeuron(index);
-							}} />
-							<IconButton icon="plus" size={18} onPress={() => {
-								handleAddNeuron(index);
-							}} />
-						</View>
-					))}
-
-				</View>
-			</View>
-
-			<View style={{ opacity: selectedLayer === "output" ? 1 : 0, height: selectedLayer === "output" ? "auto" : 0, overflow: "hidden" }}>
-
-				{(currentState[modelId]?.model.training || currentState[modelId]?.model.completed) && (
-					<View style={{ flexDirection: "column", gap: 16 }}>
-						<>
-							<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-								{currentNNState.modelConfig?.problemType === "classification" && (
-									<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
-										<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
-										<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
-									</View>
-								)}
-								<View style={[styles.metricContainer, { borderColor: lossColor, backgroundColor: generateColors(lossColor, 0.1).muted }]}>
-									<Text style={[{ color: lossColor }]}>Loss:</Text>
-									<Text style={[{ color: lossColor }]}>{loss}%</Text>
-								</View>
-							</View>
-							{currentState[modelId]?.training.modelHistory?.length > 0 && (
-								<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} dom={{scrollEnabled: false}} />
-							)}
-						</>
-						{currentState[modelId]?.data?.testData && currentState[modelId]?.data.testData.length > 0 && (
-							<DataTableContainer originalData={currentModelConfig?.problemType === "regression" ? data : undefined} originalTraces={currentModelConfig?.problemType === "regression" ? initialTraces : undefined	} invert padding={0} data={currentState[modelId]?.data.testData} columns={currentState[modelId]?.data.columns} traces={predictionTraces} datasetInfo={dataset_info} hideVisualizer={false} hideFilter={true} index={index} />
-						)}
-						{currentState[modelId]?.model.completed && (
-							<>
-								<View style={{ flexDirection: "row", gap: 8 }}>
-									{inputColumns.map((column, index) => (
-										<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-											<Text style={styles.subtitle}>{column.accessor}:</Text>
-											<TextInput style={{ maxWidth: 100 }} mode="outlined" value={predictionInputs[column.accessor]} onChangeText={(text) => handleChangePredictionInput(text, column.accessor)} />
-										</View>
+	const renderLayerContent = () => {
+		switch (selectedLayer) {
+			case "input":
+				return (
+					<DataTableContainer 
+						data={data} 
+						columns={columns} 
+						datasetInfo={dataset_info} 
+						hideFilter={true} 
+						traces={initialTraces} 
+						index={index} 
+					/>
+				);
+			case "hidden":
+				return (
+					<View style={{ flexDirection: "column", gap: 4 }}>
+						<View style={{ flexDirection: "row", gap: 16 }}>
+							<View style={{ flexDirection: "column", gap: 4 }}>
+								<Text style={styles.subtitle}>Activation Function:</Text>
+								<Menu
+									visible={showActivationMenu}
+									onDismiss={() => setShowActivationMenu(false)}
+									anchor={
+										<Button mode="outlined"
+											style={styles.dropdownMenuButton}
+											icon="chevron-down"
+											contentStyle={styles.dropdownMenuContainer}
+											onPress={() => setShowActivationMenu(true)}>{activationFunctionsMap[currentModelConfig?.activationFunction as keyof typeof activationFunctionsMap]}
+										</Button>
+									}
+								>
+									{Object.keys(activationFunctionsMap).map((activationFunction) => (
+										<Menu.Item key={activationFunction}
+											title={activationFunctionsMap[activationFunction as keyof typeof activationFunctionsMap]}
+											onPress={() => {
+												handleActivationFunctionChange(activationFunction);
+												setShowActivationMenu(false);
+											}} />
 									))}
-									<IconButton iconColor={Colors.orange} icon="dice-6-outline" size={34} onPress={handleGetRandomInputs} />
+								</Menu>
+							</View>
+
+							<View style={{ flexDirection: "column", gap: 4 }}>
+								<Text style={styles.subtitle}>Learning Cycles:</Text>
+								<Menu visible={showEpochsMenu}
+									onDismiss={() => setShowEpochsMenu(false)}
+									anchor={
+										<Button mode="outlined"
+											style={styles.dropdownMenuButton}
+											icon="chevron-down"
+											contentStyle={styles.dropdownMenuContainer}
+											onPress={() => setShowEpochsMenu(true)}>{currentTrainingConfig?.epochs}
+										</Button>
+									}
+								>
+									{[1, 5, 10, 25, 50, 100, 500].map((epochs) => (
+										<Menu.Item key={epochs} title={epochs.toString()} onPress={() => {
+											handleEpochsChange(epochs);
+											setShowEpochsMenu(false);
+										}} />
+									))}
+								</Menu>
+							</View>
+						</View>
+						<View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+							<Text style={styles.subtitle}>Hidden Layers:</Text>
+							<IconButton disabled={currentModelConfig?.neuronsPerLayer.length === 1} icon="minus" size={24} onPress={() => {
+								handleRemoveLayer();
+							}} />
+							<IconButton disabled={currentModelConfig?.neuronsPerLayer.length === 10} icon="plus" size={24} onPress={() => {
+								handleAddLayer();
+							}} />
+
+						</View>
+						{currentModelConfig?.neuronsPerLayer.map((neuronCount, index) => (
+							<View key={index} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+								<Text>Layer {index + 1}:</Text>
+								<Text>{neuronCount} neurons</Text>
+								<IconButton disabled={neuronCount === 1} icon="minus" size={18} onPress={() => {
+									handleRemoveNeuron(index);
+								}} />
+								<IconButton icon="plus" size={18} onPress={() => {
+									handleAddNeuron(index);
+								}} />
+							</View>
+						))}
+					</View>
+				);
+			case "output":
+				return (
+					<View style={{ flexDirection: "column", gap: 16 }}>
+						{(currentState[modelId]?.model.training || currentState[modelId]?.model.completed) ? (
+							<>
+								<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+									{currentNNState.modelConfig?.problemType === "classification" && (
+										<View style={[styles.metricContainer, { borderColor: accuracyColor, backgroundColor: generateColors(accuracyColor, 0.1).muted }]}>
+											<Text style={[{ color: accuracyColor }]}>Accuracy:</Text>
+											<Text style={[{ color: accuracyColor }]}>{accuracy}%</Text>
+										</View>
+									)}
+									<View style={[styles.metricContainer, { borderColor: lossColor, backgroundColor: generateColors(lossColor, 0.1).muted }]}>
+										<Text style={[{ color: lossColor }]}>Loss:</Text>
+										<Text style={[{ color: lossColor }]}>{loss}%</Text>
+									</View>
 								</View>
-								{/* TODO: PREDICT BUTTON SHOULD ONLY BE AVAILABLE IF THE CURRENT MODEL ID IS THIS PROPS modelID */}
-								{ currentModelId === modelId && (
-									<Button mode="contained" style={{ borderRadius: 4 }} buttonColor={Colors.primary} onPress={handlePredict}>
-										Predict
-									</Button>
+								
+								{currentState[modelId]?.training.modelHistory?.length > 0 && (
+									<DataPlotter data={[...plotlyLossData, ...plotlyAccData]} layout={layout} config={config} style={style} dom={{scrollEnabled: false}} onHover={() => {}} onPointClick={() => {}} />
 								)}
-								{currentState[modelId]?.model.prediction && (
+								
+								{currentState[modelId]?.data?.testData && currentState[modelId]?.data.testData.length > 0 && (
+									<DataTableContainer 
+										originalData={currentModelConfig?.problemType === "regression" ? data : undefined} 
+										originalTraces={currentModelConfig?.problemType === "regression" ? initialTraces : undefined} 
+										invert 
+										padding={0} 
+										data={currentState[modelId]?.data.testData} 
+										columns={currentState[modelId]?.data.columns} 
+										traces={predictionTraces} 
+										datasetInfo={dataset_info} 
+										hideVisualizer={false} 
+										hideFilter={true} 
+										index={index} 
+									/>
+								)}
+								
+								{currentState[modelId]?.model.completed && (
 									<>
-										<Text style={styles.subtitle}>Predicted Value:</Text>
-										<Text>{currentState[modelId]?.model.prediction}</Text>
+										<View style={{ flexDirection: "row", gap: 8 }}>
+											{inputColumns.map((column, index) => (
+												<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+													<Text style={styles.subtitle}>{column.accessor}:</Text>
+													<TextInput style={{ maxWidth: 100 }} mode="outlined" value={predictionInputs[column.accessor]} onChangeText={(text) => handleChangePredictionInput(text, column.accessor)} />
+												</View>
+											))}
+											<IconButton iconColor={Colors.orange} icon="dice-6-outline" size={34} onPress={handleGetRandomInputs} />
+										</View>
+										
+										{currentModelId === modelId && (
+											<Button mode="contained" style={{ borderRadius: 4 }} buttonColor={Colors.primary} onPress={handlePredict}>
+												Predict
+											</Button>
+										)}
+										
+										{currentState[modelId]?.model.prediction && (
+											<>
+												<Text style={styles.subtitle}>Predicted Value:</Text>
+												<Text>{currentState[modelId]?.model.prediction}</Text>
+											</>
+										)}
 									</>
 								)}
 							</>
+						) : (
+							<View style={{ justifyContent: "center", alignItems: "center" }}>
+								<Text style={{ fontSize: 54, fontWeight: "bold" }}>🤔</Text>
+								<Text style={{ textAlign: "center" }}>Nothing to see here... yet! </Text>
+							</View>
 						)}
 					</View>
-				)}
-			</View>
+				);
+			default:
+				return null;
+		}
+	};
+
+	return (
+		<Surface style={styles.detailsContainer}>
+			<ThemedTitle>
+				{title}
+			</ThemedTitle>
+			
+			{renderLayerContent()}
 		</Surface>
 	);
 };
