@@ -176,6 +176,12 @@ export default StyleSheet.create({
     borderRadius: 5,
     width: width * 0.8, // 80% of screen width
   },
+  savvyButton:{
+	flex: 1,
+	borderRadius: 4,
+	borderColor: Colors.primary,
+	height: 40,
+  },
   buttonText: {
     color: "#FFFFFF",
     textAlign: "center",
@@ -323,10 +329,10 @@ export default StyleSheet.create({
 
   detailsContainer: {
     padding: 16,
-    marginTop: 16,
-    borderRadius: 8,
+    borderRadius: 4,
     elevation: 2,
     gap: 16,
+	backgroundColor: Colors.background,
   },
   feedbackContainer: {
     paddingHorizontal: 16,
@@ -494,13 +500,16 @@ export default StyleSheet.create({
     width: 80,
   },
   input: {
-    height: 40,
-    textAlign: "center",
+    height: 38,
     backgroundColor: "white",
     borderRadius: 4,
     color: "black",
     borderWidth: 1,
     borderColor: "grey",
+	flex: 1,
+  },
+  centerText: {
+    textAlign: "center",
   },
   trueFalseButtonText: {
     fontSize: 18,
@@ -518,11 +527,17 @@ export default StyleSheet.create({
   },
   navButton: {
     margin: 0,
-    borderRadius: 5,
+    borderRadius: 4,
   },
   checkButton: {
-    borderRadius: 5,
+    borderRadius: 4,
     flex: 1,
+  },
+  lightOrangeButton: {
+    backgroundColor: Colors.lightOrange,
+  },
+  primaryButton: {
+    backgroundColor: Colors.primary,
   },
   verticalSeparator: {
     width: 1,

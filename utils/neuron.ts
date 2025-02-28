@@ -1,8 +1,6 @@
 import { Colors } from "@/constants/Colors";
 import { NeuronConfig } from "@/types";
 import { ViewStyle } from "react-native";
-
-
 // Activation functions
 const activationFunctions = {
 	sigmoid: (z: number) => 1 / (1 + Math.exp(-z)),

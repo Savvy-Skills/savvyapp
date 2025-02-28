@@ -1,6 +1,6 @@
 import React, { lazy, useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, ViewStyle, ScrollView } from 'react-native';
-import { Text, Surface, DataTable } from 'react-native-paper';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { Text, Surface, DataTable, Button } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { Config, Layout } from 'plotly.js';
@@ -10,6 +10,7 @@ import VerticalSlider from 'rn-vertical-slider';
 import { NeuronVisualizationProps } from '@/types';
 import { ActivationFunction, calculateNeuronOutput, generateExpectedClassTrace, generateHeatmapData, generateScatterTrace, getIndicatorContainerWidth, getWeightIndicatorStyle } from '@/utils/neuron';
 import { useDataFetch } from '@/hooks/useDataFetch';
+import styles from '@/styles/styles';
 
 let DataPlotter = lazy(() => import("@/components/data/DataPlotter"));
 
@@ -21,13 +22,11 @@ const baseLayout: Partial<Layout> = {
 	paper_bgcolor: "transparent",
 	xaxis: {
 		fixedrange: true,
-		range: [0, 100],
 		titlefont: {
 			size: 14,
 			weight: 600,
 			family: "Poppins"
 		},
-		ticksuffix: "%",
 		tickfont: {
 			size: 12,
 			family: "Poppins"
@@ -35,19 +34,17 @@ const baseLayout: Partial<Layout> = {
 	},
 	yaxis: {
 		fixedrange: true,
-		range: [0, 100],
 		titlefont: {
 			size: 14,
 			weight: 600,
 			family: "Poppins"
 		},
-		ticksuffix: "%",
 		tickfont: {
 			size: 12,
 			family: "Poppins"
 		}
 	},
-	margin: { t: 20, b: 70, l: 70, r: 20 },
+	margin: { t: 20, b: 70, l: 70, r: 40 },
 	height: 400,
 };
 
@@ -57,7 +54,6 @@ const baseConfig: Partial<Config> = {
 };
 
 const MAX_WEIGHT_WIDTH = 30;
-
 
 const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps) => {
 	// Merge the provided config with the default config
@@ -101,6 +97,8 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 	const [weight2, setWeight2] = useState(mergedConfig.initialValues.weight2);
 	const [bias, setBias] = useState(mergedConfig.initialValues.bias);
 	const [activationFn, setActivationFn] = useState<ActivationFunction>('tanh');
+	const [useXTickText, setUseXTickText] = useState(mergedConfig.axes.x.useTickText);
+	const [useYTickText, setUseYTickText] = useState(mergedConfig.axes.y.useTickText);
 
 	// Create conditional setters that respect lock settings
 	const setWeight1IfUnlocked = useCallback((value: number) => {
@@ -121,6 +119,18 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 		}
 	}, [mergedConfig.locked.bias]);
 
+	// Toggle tick text, may be one of the axes or both
+
+	const toggleTickText = useCallback((axis: "x" | "y" | "both") => {
+		if (axis === "x") {
+			setUseXTickText(!useXTickText);
+		} else if (axis === "y") {
+			setUseYTickText(!useYTickText);
+		} else {
+			setUseXTickText(!useXTickText);
+			setUseYTickText(!useYTickText);
+		}
+	}, [useXTickText, useYTickText]);
 
 	// Generate heatmap data
 	const heatmapTrace = useMemo(() => {
@@ -149,7 +159,6 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 		[heatmapTrace, expectedClassTrace, scatterTrace],
 		[heatmapTrace, expectedClassTrace, scatterTrace]
 	);
-
 
 	// Calculate current predictions for all data points
 	const predictions = useMemo(() => {
@@ -190,22 +199,32 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 		...baseLayout,
 		xaxis: {
 			...baseLayout.xaxis,
-			title: X_AXIS_NAME
+			title: X_AXIS_NAME,
+			tickvals: useXTickText ? mergedConfig.axes.x.tickValues : undefined,
+			ticktext: useXTickText ? mergedConfig.axes.x.tickText : undefined,
+			range: [mergedConfig.axes.x.min, mergedConfig.axes.x.max],
+			ticksuffix: mergedConfig.axes.x.suffix,
+			tickprefix: mergedConfig.axes.x.prefix
 		},
 		yaxis: {
 			...baseLayout.yaxis,
-			title: Y_AXIS_NAME
+			title: Y_AXIS_NAME,
+			tickvals: useYTickText ? mergedConfig.axes.y.tickValues : undefined,
+			ticktext: useYTickText ? mergedConfig.axes.y.tickText : undefined,
+			range: [mergedConfig.axes.y.min, mergedConfig.axes.y.max],
+			ticksuffix: mergedConfig.axes.y.suffix,
+			tickprefix: mergedConfig.axes.y.prefix
 		}
-	}), [X_AXIS_NAME, Y_AXIS_NAME]);
+	}), [X_AXIS_NAME, Y_AXIS_NAME, useXTickText, useYTickText, mergedConfig]);
 
 	return (
-		<View style={styles.container}>
+		<View style={localStyles.container}>
 			{/* Weight sliders with disabled state from config */}
-			<View style={styles.weightsRow}>
-				<View style={styles.weightControlContainer}>
-					<Surface style={[styles.weightControl, mergedConfig.locked.weight1 && styles.disabledControl]}>
-						{mergedConfig.axes.x.emoji && <Text style={styles.weightIcon}>{mergedConfig.axes.x.emoji}</Text>}
-						<Text style={styles.weightLabel}>
+			<View style={localStyles.weightsRow}>
+				<View style={localStyles.weightControlContainer}>
+					<Surface style={[localStyles.weightControl, mergedConfig.locked.weight1 && localStyles.disabledControl]}>
+						{mergedConfig.axes.x.emoji && <Text style={localStyles.weightIcon}>{mergedConfig.axes.x.emoji}</Text>}
+						<Text style={localStyles.weightLabel}>
 							{X_AXIS_NAME} Weight (w₁): {weight1.toFixed(1)}
 						</Text>
 						<Slider
@@ -214,42 +233,42 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 							minimumValue={-1}
 							maximumValue={1}
 							step={0.1}
-							style={styles.weightSlider}
+							style={localStyles.weightSlider}
 							minimumTrackTintColor={Colors.primary}
 							maximumTrackTintColor={Colors.primaryLighter}
 							disabled={mergedConfig.locked.weight1}
 						/>
 					</Surface>
-					<View style={[styles.weightIndicatorContainer, getIndicatorContainerWidth(weight1, MAX_WEIGHT_WIDTH)]}>
+					<View style={[localStyles.weightIndicatorContainer, getIndicatorContainerWidth(weight1, MAX_WEIGHT_WIDTH)]}>
 						<View style={getWeightIndicatorStyle(weight1)} />
 					</View>
 				</View>
 
 				{/* Weight 2 Control with Indicator */}
-				<View style={styles.weightControlContainer}>
-					<Surface style={[styles.weightControl, mergedConfig.locked.weight2 && styles.disabledControl]}>
-						{mergedConfig.axes.y.emoji && <Text style={styles.weightIcon}>{mergedConfig.axes.y.emoji}</Text>}
-						<Text style={styles.weightLabel}>{Y_AXIS_NAME} Weight (w₂): {weight2.toFixed(1)}</Text>
+				<View style={localStyles.weightControlContainer}>
+					<Surface style={[localStyles.weightControl, mergedConfig.locked.weight2 && localStyles.disabledControl]}>
+						{mergedConfig.axes.y.emoji && <Text style={localStyles.weightIcon}>{mergedConfig.axes.y.emoji}</Text>}
+						<Text style={localStyles.weightLabel}>{Y_AXIS_NAME} Weight (w₂): {weight2.toFixed(1)}</Text>
 						<Slider
 							value={weight2}
 							onValueChange={setWeight2IfUnlocked}
 							minimumValue={-1}
 							maximumValue={1}
 							step={0.1}
-							style={styles.weightSlider}
+							style={localStyles.weightSlider}
 							minimumTrackTintColor={Colors.primary}
 							maximumTrackTintColor={Colors.primaryLighter}
 							disabled={mergedConfig.locked.weight2}
 						/>
 					</Surface>
-					<View style={[styles.weightIndicatorContainer, getIndicatorContainerWidth(weight2, MAX_WEIGHT_WIDTH)]}>
+					<View style={[localStyles.weightIndicatorContainer, getIndicatorContainerWidth(weight2, MAX_WEIGHT_WIDTH)]}>
 						<View style={getWeightIndicatorStyle(weight2)} />
 					</View>
 				</View>
 			</View>
 
 			{/* Plot (moved up to remove gap) */}
-			<Surface style={styles.plotContainer}>
+			<Surface style={localStyles.plotContainer}>
 				<DataPlotter
 					data={traces as any}
 					layout={layout}
@@ -298,10 +317,17 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 
 			{/* Horizontal bias slider only if vertical is disabled */}
 
-			<Surface style={styles.controlsContainer}>
+			<Surface style={localStyles.controlsContainer}>
 				<Text style={{ color: Colors.text, fontWeight: 'bold', textAlign: 'center' }}>
 					Bias{mergedConfig.locked.bias ? '(Locked):' : ':'} {bias.toFixed(1)}
 				</Text>
+				{
+					((mergedConfig.axes.x.tickText && mergedConfig.axes.x.tickText?.length > 0) || (mergedConfig.axes.y.tickText && mergedConfig.axes.y.tickText?.length > 0)) && (
+						<Button mode="outlined" style={[styles.savvyButton]} onPress={() => toggleTickText("both")}>
+							Toggle Tick Text
+						</Button>
+					)
+				}
 				{!mergedConfig.useVerticalSlider && (
 					<GradientSlider
 						value={-bias}
@@ -316,8 +342,8 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 			</Surface>
 
 			{/* Results Comparison Table */}
-			<Surface style={styles.tableContainer}>
-				<Text style={styles.tableTitle}>Model Predictions (Accuracy: {accuracy})</Text>
+			<Surface style={localStyles.tableContainer}>
+				<Text style={localStyles.tableTitle}>Model Predictions (Accuracy: {accuracy})</Text>
 
 				<DataTable>
 					<DataTable.Header>
@@ -327,9 +353,9 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 						<DataTable.Title numeric>Probability</DataTable.Title>
 					</DataTable.Header>
 
-					<ScrollView style={styles.tableScrollView}>
+					<ScrollView style={localStyles.tableScrollView}>
 						{predictions.map((item, index) => (
-							<DataTable.Row key={index} style={item.isCorrect ? styles.correctRow : styles.incorrectRow}>
+							<DataTable.Row key={index} style={item.isCorrect ? localStyles.correctRow : localStyles.incorrectRow}>
 								<DataTable.Cell>{item.coordinates}</DataTable.Cell>
 								<DataTable.Cell>{item.expected}</DataTable.Cell>
 								<DataTable.Cell>{item.predicted}</DataTable.Cell>
@@ -343,11 +369,10 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 	);
 };
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
 	container: {
 		alignSelf: 'center',
 		flexDirection: 'column',
-		gap: 0, // Remove gap to tighten layout
 		width: '100%',
 	},
 	weightIcon: {
@@ -357,11 +382,9 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		marginTop: 8,
-		marginBottom: 0, // Remove bottom margin
 	},
 	weightControlContainer: {
 		maxWidth: 150,
-		marginBottom: 0, // Remove bottom margin
 	},
 	weightControl: {
 		width: '100%',

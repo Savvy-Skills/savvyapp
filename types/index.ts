@@ -30,10 +30,24 @@ export interface NeuronConfig {
 		x: {
 			name: string;
 			emoji?: string;
+			min?: number;
+			max?: number;
+			tickValues?: number[];
+			tickText?: string[];
+			suffix?: string;
+			prefix?: string;
+			useTickText?: boolean;
 		};
 		y: {
 			name: string;
 			emoji?: string;
+			min?: number;
+			max?: number;
+			tickValues?: number[];
+			tickText?: string[];
+			suffix?: string;
+			prefix?: string;
+			useTickText?: boolean;
 		};
 	};
 	classes: {
