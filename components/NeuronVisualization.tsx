@@ -1,6 +1,6 @@
 import React, { lazy, useCallback, useMemo, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Surface, DataTable, Button } from 'react-native-paper';
+import { Text, Surface, DataTable, Switch, Icon } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { Config, Layout } from 'plotly.js';
@@ -223,6 +223,7 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 			<View style={localStyles.weightsRow}>
 				<View style={localStyles.weightControlContainer}>
 					<Surface style={[localStyles.weightControl, mergedConfig.locked.weight1 && localStyles.disabledControl]}>
+						{mergedConfig.locked.weight1 && <View style={{ position: 'absolute', top: -5, right: -5 }}><Icon source="lock" color={Colors.revealedButton} size={24} /></View>}
 						{mergedConfig.axes.x.emoji && <Text style={localStyles.weightIcon}>{mergedConfig.axes.x.emoji}</Text>}
 						<Text style={localStyles.weightLabel}>
 							{X_AXIS_NAME} Weight (w₁): {weight1.toFixed(1)}
@@ -247,6 +248,7 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 				{/* Weight 2 Control with Indicator */}
 				<View style={localStyles.weightControlContainer}>
 					<Surface style={[localStyles.weightControl, mergedConfig.locked.weight2 && localStyles.disabledControl]}>
+						{mergedConfig.locked.weight2 && <View style={{ position: 'absolute', top: -5, right: -5 }}><Icon source="lock" color={Colors.revealedButton} size={24} /></View>}
 						{mergedConfig.axes.y.emoji && <Text style={localStyles.weightIcon}>{mergedConfig.axes.y.emoji}</Text>}
 						<Text style={localStyles.weightLabel}>{Y_AXIS_NAME} Weight (w₂): {weight2.toFixed(1)}</Text>
 						<Slider
@@ -323,21 +325,27 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 				</Text>
 				{
 					((mergedConfig.axes.x.tickText && mergedConfig.axes.x.tickText?.length > 0) || (mergedConfig.axes.y.tickText && mergedConfig.axes.y.tickText?.length > 0)) && (
-						<Button mode="outlined" style={[styles.savvyButton]} onPress={() => toggleTickText("both")}>
-							Toggle Tick Text
-						</Button>
+						<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+
+							<Switch
+								value={useXTickText && useYTickText}
+								onValueChange={() => toggleTickText("both")}
+
+							/>
+							<Text>Simple Axis</Text>
+						</View>
 					)
 				}
 				{!mergedConfig.useVerticalSlider && (
-					<GradientSlider
-						value={-bias}
-						onValueChange={value => setBiasIfUnlocked(-value)}
-						minimumValue={-5}
-						maximumValue={5}
-						step={0.1}
-						disabled={mergedConfig.locked.bias}
-						classes={mergedConfig.classes}
-					/>
+						<GradientSlider
+							value={-bias}
+							onValueChange={value => setBiasIfUnlocked(-value)}
+							minimumValue={-5}
+							maximumValue={5}
+							step={0.1}
+							disabled={mergedConfig.locked.bias}
+							classes={mergedConfig.classes}
+						/>
 				)}
 			</Surface>
 
