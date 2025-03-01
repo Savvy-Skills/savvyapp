@@ -10,7 +10,6 @@ import VerticalSlider from 'rn-vertical-slider';
 import { NeuronVisualizationProps } from '@/types';
 import { ActivationFunction, calculateNeuronOutput, generateExpectedClassTrace, generateHeatmapData, generateScatterTrace, getIndicatorContainerWidth, getWeightIndicatorStyle } from '@/utils/neuron';
 import { useDataFetch } from '@/hooks/useDataFetch';
-import styles from '@/styles/styles';
 
 let DataPlotter = lazy(() => import("@/components/data/DataPlotter"));
 

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { IconButton, Surface } from 'react-native-paper';
 import { getEmbeddings } from "@/services/openaiAPI";
 import { Colors } from "@/constants/Colors";
 import styles from "@/styles/styles";
 import { Button, Text, TextInput, ActivityIndicator } from "react-native-paper";
+import ConfirmationDialog from "./modals/ConfirmationDialog";
 
 function dotProduct(vecA: number[], vecB: number[]) {
 	let product = 0;
@@ -34,17 +35,15 @@ export default function WordToVec() {
 	const [targetEmbedding, setTargetEmbedding] = useState<number[]>([]);
 	const [showAnswer, setShowAnswer] = useState<boolean>(false);
 	const [guesses, setGuesses] = useState<Array<{ word: string, similarity: number | null }>>([]);
-	const [gameStatus, setGameStatus] = useState<'playing' | 'won'>('playing');
-	const [wordList, setWordList] = useState<string[]>([
-		"apple", "banana", "orange", "computer", "music",
-		"mountain", "ocean", "coffee", "book", "moon"
-	]);
+	const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
+	const [showGiveUpDialog, setShowGiveUpDialog] = useState<boolean>(false);
+	const [currentWordHint, setCurrentWordHint] = useState<string>("");
 
 	useEffect(() => {
 		startGame();
 	}, []);
 
-	const startGame = async () => {
+	const startGame = useCallback(async () => {
 		setLoading(true);
 		setGuesses([]);
 		setSimilarity(0);
@@ -56,31 +55,46 @@ export default function WordToVec() {
 		const randomWord = "apple";
 		setTargetWord(randomWord);
 		try {
-			const targetEmbedding = await getEmbeddings(randomWord);
-			setTargetEmbedding(targetEmbedding.data[0].embedding);
+			// const targetEmbedding = await getEmbeddings(randomWord);
+			// setTargetEmbedding(targetEmbedding.data[0].embedding);
 		} catch (error) {
 			console.error("Error starting game:", error);
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
-	const handleGuess = async () => {
+	const getWordHint = useCallback(() => {
+		// TODO: Logic to get a random word hint from list of hints
+		const wordList = ["Hint #1", "Hint #2", "Hint #3", "Hint #4", "Hint #5"];
+		const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+		setCurrentWordHint(randomWord);
+	}, []);
+
+	const handleGuess = useCallback(async () => {
 		if (!userInput) return;
 		setLoading(true);
 		setGuesses(prev => [...prev, { word: userInput, similarity: null }]);
 		try {
-			const userEmbedding = await getEmbeddings(userInput);
-			const similarity = cosineSimilarity(targetEmbedding, userEmbedding.data[0].embedding);
-			setSimilarity(similarity);
+			// const userEmbedding = await getEmbeddings(userInput);
+			// const similarity = cosineSimilarity(targetEmbedding, userEmbedding.data[0].embedding);
+			// const randomSimilarity = Math.random() * 100;
+			let randomSimilarity = 0;
+			if (guesses.length > 4) {
+				randomSimilarity = 100;
+			} else {
+				// Random between 0 and 60
+				randomSimilarity = Math.random() * 60;
+			}
+			setSimilarity(randomSimilarity);
 			setGuesses(prev => {
 				const newGuesses = [...prev];
-				newGuesses[newGuesses.length - 1].similarity = similarity;
+				newGuesses[newGuesses.length - 1].similarity = randomSimilarity;
 				return newGuesses;
 			});
 
 			// Check if won (similarity > 0.95 or exact match)
-			if (similarity > 0.95 || userInput.toLowerCase() === targetWord.toLowerCase()) {
+			if (randomSimilarity > 95 || userInput.toLowerCase() === targetWord.toLowerCase()) {
 				setGameStatus('won');
 				setShowAnswer(true);
 			}
@@ -92,31 +106,40 @@ export default function WordToVec() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [userInput, guesses, targetWord]);
+
+	const handleGiveUp = useCallback(() => {
+		if (gameStatus === 'won') return;
+		setShowAnswer(true);
+		setGameStatus('lost');
+		setGuesses(prev => [...prev, { word: targetWord, similarity: 100 }]);
+	}, [gameStatus, targetWord]);
 
 	// Handle Enter key press
-	const handleKeyPress = (e: any) => {
+	const handleKeyPress = useCallback((e: any) => {
 		if (e.key === 'Enter' && userInput && !loading) {
 			handleGuess();
 		}
-	};
+	}, [userInput, loading, handleGuess]);
 
-	const getHint = () => {
+	const getHint = useCallback(() => {
 		const highestSimilarity = Math.max(...guesses.map(g => g.similarity || 0), 0);
-		if (highestSimilarity < 0.3) return "You're very cold";
-		if (highestSimilarity < 0.5) return "Getting warmer";
-		if (highestSimilarity < 0.7) return "You're hot!";
-		if (highestSimilarity < 0.9) return "You're very close!";
-		return "You're extremely close!";
-	};
+		if (highestSimilarity < 30) return "You're very cold";
+		if (highestSimilarity < 50) return "Getting warmer";
+		if (highestSimilarity < 70) return "You're hot!";
+		if (highestSimilarity < 90) return "You're very close!";
+		return "You got it!";
+	}, [guesses]);
 
-	const getSimilarityColor = (value: number) => {
-		if (value < 0.3) return Colors.error; // red
-		if (value < 0.5) return Colors.warning; // orange
-		if (value < 0.7) return Colors.lightOrange; // yellow
-		if (value < 0.9) return Colors.success; // light green
+	const getSimilarityColor = useCallback((value: number) => {
+		if (value < 30) return Colors.error; // red
+		if (value < 50) return Colors.warning; // orange
+		if (value < 70) return Colors.lightOrange; // yellow
+		if (value < 90) return Colors.success; // light green
 		return Colors.success; // green
-	};
+	}, []);
+
+	const hint = useMemo(() => getHint(), [getHint]);
 
 	return (
 		<View style={localStyles.contentContainer}>
@@ -131,6 +154,11 @@ export default function WordToVec() {
 					<Text style={localStyles.wonText}>You found it! 🎉</Text>
 				</Surface>
 			)}
+			{gameStatus === 'lost' && (
+				<Surface style={localStyles.lostBanner}>
+					<Text style={localStyles.lostText}>Answer was revealed! 👀</Text>
+				</Surface>
+			)}
 
 			<Surface style={localStyles.card}>
 				<View style={localStyles.targetContainer}>
@@ -142,13 +170,14 @@ export default function WordToVec() {
 						<IconButton
 							icon={showAnswer ? "eye-off" : "eye"}
 							size={20}
-							onPress={() => setShowAnswer(!showAnswer)}
+							onPress={() => setShowGiveUpDialog(true)}
 							iconColor={Colors.revealedButton}
 						/>
 					</View>
 				</View>
-
-				{guesses.length > 0 && (
+				<Text style={localStyles.instructionsText}>The nearest word has a similarity of <Text style={{ fontWeight: 'bold' }}>75.98</Text>, the tenth-nearest has a similarity of <Text style={{ fontWeight: 'bold' }}>49.97</Text> and the hundreth nearest word has a similarity of <Text style={{ fontWeight: 'bold' }}>30.65</Text></Text>
+				<Text style={[localStyles.wordHintText, styles.centerText]}>{currentWordHint}</Text>
+				{gameStatus === 'won' || gameStatus === 'lost' && (
 					<Button
 						mode="contained"
 						style={[styles.savvyButton, styles.lightOrangeButton]}
@@ -158,7 +187,6 @@ export default function WordToVec() {
 						New Game
 					</Button>
 				)}
-
 				<View style={localStyles.inputContainer}>
 					<TextInput
 						style={styles.input}
@@ -166,7 +194,7 @@ export default function WordToVec() {
 						value={userInput}
 						onChangeText={setUserInput}
 						onKeyPress={handleKeyPress}
-						editable={!loading && gameStatus !== 'won'}
+						editable={!loading && gameStatus !== 'won' && gameStatus !== 'lost'}
 					/>
 
 					<Button
@@ -175,16 +203,22 @@ export default function WordToVec() {
 						style={[styles.savvyButton, { maxWidth: 100 }]}
 						labelStyle={styles.buttonLabel}
 						onPress={handleGuess}
-						disabled={loading || !userInput || gameStatus === 'won'}
+						disabled={loading || !userInput || gameStatus === 'won' || gameStatus === 'lost'}
 					>
 						Guess
 					</Button>
+					<Button mode="outlined"
+						style={[styles.savvyButton, { maxWidth: 100 }]}
+						disabled={gameStatus === 'won' || gameStatus === 'lost'}
+						labelStyle={styles.buttonLabel}
+						onPress={getWordHint}> Hint</Button>
 				</View>
 				{guesses.length > 0 && (
 					<View style={localStyles.hintContainer}>
-						<Text style={localStyles.hintText}>{getHint()}</Text>
+						<Text style={localStyles.hintText}>{hint}</Text>
 					</View>
 				)}
+
 				{similarity > 0 && (
 					<View style={localStyles.similarityContainer}>
 						<Text style={localStyles.resultLabel}>Similarity: </Text>
@@ -193,6 +227,7 @@ export default function WordToVec() {
 						</Text>
 					</View>
 				)}
+
 			</Surface>
 
 			{guesses.length > 0 && (
@@ -217,8 +252,13 @@ export default function WordToVec() {
 					</ScrollView>
 				</Surface>
 			)}
-
-
+			<ConfirmationDialog
+				visible={showGiveUpDialog}
+				onDismiss={() => setShowGiveUpDialog(false)}
+				onConfirm={handleGiveUp}
+				title="Give Up?"
+				content="Are you sure you want to give up?"
+			/>
 		</View>
 	);
 }
@@ -231,7 +271,9 @@ const localStyles = StyleSheet.create({
 		maxWidth: 600,
 		alignSelf: "center",
 		width: "100%",
-		gap: 16,
+		gap: 20,
+	},
+	hintButton: {
 	},
 	targetTextContainer: {
 		flexDirection: "row",
@@ -244,10 +286,15 @@ const localStyles = StyleSheet.create({
 	},
 	card: {
 		backgroundColor: Colors.background,
-		borderRadius: 4,
-		padding: 16,
+		borderRadius: 8,
+		padding: 20,
 		width: '100%',
-		gap: 16,
+		gap: 20,
+		elevation: 2,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
 	},
 	targetContainer: {
 		alignItems: 'center',
@@ -257,16 +304,17 @@ const localStyles = StyleSheet.create({
 		color: Colors.mutedText,
 	},
 	targetText: {
-		fontSize: 32,
+		fontSize: 36,
 		fontWeight: 'bold',
 		marginBottom: 16,
 		color: Colors.text,
+		letterSpacing: 2,
 	},
 	buttonRow: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		width: '100%',
-		gap: 8,
+		gap: 12,
 	},
 	input: {
 		height: 50,
@@ -294,11 +342,12 @@ const localStyles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 	hintContainer: {
-		padding: 10,
+		padding: 14,
 		marginBottom: 16,
 		backgroundColor: Colors.revealedBackground,
-		borderRadius: 4,
+		borderRadius: 6,
 		alignItems: 'center',
+		width: '100%',
 	},
 	hintText: {
 		fontStyle: 'italic',
@@ -316,9 +365,11 @@ const localStyles = StyleSheet.create({
 	guessItem: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
-		paddingVertical: 8,
+		paddingVertical: 12,
+		paddingHorizontal: 8,
 		borderBottomWidth: 1,
-		borderBottomColor: Colors.mutedText,
+		borderBottomColor: '#e0e0e0',
+		alignItems: 'center',
 	},
 	guessWord: {
 		fontSize: 16,
@@ -334,6 +385,14 @@ const localStyles = StyleSheet.create({
 		marginBottom: 8,
 		color: Colors.text,
 	},
+	wordHintText: {
+		fontSize: 14,
+		lineHeight: 20,
+		color: Colors.whiteText,
+		backgroundColor: Colors.blue,
+		padding: 10,
+		borderRadius: 4,
+	},
 	instructionsText: {
 		fontSize: 14,
 		lineHeight: 20,
@@ -341,14 +400,30 @@ const localStyles = StyleSheet.create({
 	},
 	wonBanner: {
 		backgroundColor: Colors.success,
-		padding: 10,
-		borderRadius: 4,
+		padding: 14,
+		borderRadius: 6,
+		marginBottom: 16,
+		width: '100%',
+		alignItems: 'center',
+		flexDirection: 'row',
+		justifyContent: 'center',
+		gap: 10,
+	},
+	wonText: {
+		color: Colors.background,
+		fontSize: 20,
+		fontWeight: 'bold',
+	},
+	lostBanner: {
+		backgroundColor: Colors.revealedBackground,
+		padding: 14,
+		borderRadius: 6,
 		marginBottom: 16,
 		width: '100%',
 		alignItems: 'center',
 	},
-	wonText: {
-		color: Colors.background,
+	lostText: {
+		color: Colors.text,
 		fontSize: 20,
 		fontWeight: 'bold',
 	},
