@@ -83,6 +83,7 @@ export const useWordToVec = ({ gameId }: UseWordToVecProps) => {
 	}, [data, setMetadata]);
 
 	const guessWord = useCallback((word: string) => {
+		word = word.toLowerCase();
 		// Find the word in the dataset
 		const wordIndex = data?.findIndex(row => row.word === word);
 		if (wordIndex !== -1) {
