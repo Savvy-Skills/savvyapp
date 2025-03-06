@@ -122,6 +122,9 @@ importers:
       expo-web-browser:
         specifier: ~14.0.2
         version: 14.0.2(expo@52.0.37(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@expo/metro-runtime@4.0.1(react-native@0.76.7(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1)))(react-native-webview@13.12.5(react-native@0.76.7(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1))(react-native@0.76.7(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1))(react-native@0.76.7(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))
+      llama3-tokenizer-js:
+        specifier: ^1.2.0
+        version: 1.2.0
       lottie-react-native:
         specifier: 7.1.0
         version: 7.1.0(@lottiefiles/dotlottie-react@0.12.1(react@18.3.1))(react-native@0.76.7(@babel/core@7.25.8)(@babel/preset-env@7.26.0(@babel/core@7.25.8))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
@@ -4379,6 +4382,9 @@ packages:
 
   linkify-it@2.2.0:
     resolution: {integrity: sha512-GnAl/knGn+i1U/wjBz3akz2stz+HrHLsxMwHQGofCDfPvlf+gDKN58UtfmUquTY4/MXeE2x7k19KQmeoZi94Iw==}
+
+  llama3-tokenizer-js@1.2.0:
+    resolution: {integrity: sha512-oMgIgK958UlvoEm3Lz/gAj3QAKpnAMb6YqlY0aTYraSK/c+V3TF3P7IWFQJe4yjM60+2/KoK+EWziec6WQ57/g==}
 
   loader-runner@4.3.0:
     resolution: {integrity: sha512-3R/1M+yS3j5ou80Me59j7F9IMs4PXs3VqRrm0TU3AbKPxlmpoY1TNscJV/oGJXo8qCatFGTfDbY6W6ipGOYXfg==}
@@ -11828,6 +11834,8 @@ snapshots:
   linkify-it@2.2.0:
     dependencies:
       uc.micro: 1.0.6
+
+  llama3-tokenizer-js@1.2.0: {}
 
   loader-runner@4.3.0: {}
 

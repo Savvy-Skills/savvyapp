@@ -3,8 +3,7 @@ import { useTFStore } from "@/store/tensorStore";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, StyleSheet } from "react-native";
 
-import { Text, Surface, Button } from "react-native-paper";
-import LoadingIndicator from "../LoadingIndicator";
+import { Text, Surface, Button, ActivityIndicator } from "react-native-paper";
 import NNTabs from "./NNTabs";
 import styles from "@/styles/styles";
 import LayerDetails from "./LayerDetails";
@@ -23,7 +22,6 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 
 	// Get only the columns that are in the featureConfig
 	const inputColumns = columns.filter(column => currentNNState.trainingConfig?.dataPreparationConfig?.featureConfig?.some(feature => feature.field === column.accessor));
-
 
 	useEffect(() => {
 		if (!instanceReady) {
@@ -107,10 +105,13 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 		setSelectedLayer(layer);
 	}, [setSelectedLayer]);
 
+	
 
 	if (!data || !columns || columns.length === 0 || !tfInstance) {
 		return (
-			<LoadingIndicator />
+			<View style={styles.centeredContainer}>
+				<ActivityIndicator size="large" color="#0000ff" />
+			</View>
 		);
 	}
 

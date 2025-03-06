@@ -275,7 +275,7 @@ export interface ViewProgress {
 	timestamp: number;
 }
 
-type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity" | "Neuron";
+type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity" | "Neuron" | "Word2Vec";
 
 export interface ContentInfo {
 	readonly created_at: number;
@@ -344,6 +344,7 @@ export interface DatasetInfo {
 	metadata: Metadata;
 	image_url: string;
 	disabled: boolean;
+	word_vec: boolean;
 }
 export interface Metadata {
 	rows: number;
@@ -352,6 +353,7 @@ export interface Metadata {
 	about?: string;
 	source?: string;
 	source_url?: string;
+	hints?: string[];
 }
 
 export interface Option {
@@ -370,6 +372,11 @@ export interface LoginResponse {
 	auth_token: string;
 }
 
+interface Role {
+	id: string;
+	name: string;
+}
+
 export interface User {
 	id: number;
 	created_at: number;
@@ -380,6 +387,7 @@ export interface User {
 	birthdate: string;
 	google_oauth: GoogleOauth;
 	schools: School[];
+	role?: Role;
 }
 
 export interface GoogleOauth {
