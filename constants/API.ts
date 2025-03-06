@@ -3,5 +3,6 @@ export const apiConstants = {
 	auth: "api:_diHubFn",
 	courses: "api:edObfuQW",
 	oauth: "api:dxvrvZMc",
-	openai: "api:a1bT8k3a"
+	openai: "api:a1bT8k3a",
+	datasets: "api:EmknM6Ix"
 }

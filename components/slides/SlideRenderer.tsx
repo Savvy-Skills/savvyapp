@@ -13,6 +13,7 @@ import NeuralNetworkVisualizerWeb from "../neuralnetwork/SimpleNNWeb";
 import { NNState } from "@/types/neuralnetwork";
 import { useViewStore } from "@/store/viewStore";
 import NeuronVisualization from "../NeuronVisualization";
+import WordToVec from "../WordToVec";
 
 export interface SlideProps {
 	slide: LocalSlide;
@@ -45,6 +46,8 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 			}
 		case "Neuron":
 				return <NeuronVisualization config={content.neuronConfig ?? {} as NeuronConfig } dataset_info={content.dataset_info ?? {} as DatasetInfo} />;
+		case "Word2Vec":
+			return <WordToVec index={index} />;
 		default:
 			return <View />;
 	}
@@ -84,7 +87,7 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 					</View>
 				));
 			} else {
-				if (["Dataset", "Neuron"].includes(sortedContents[0].type)) {
+				if (["Dataset", "Neuron", "Word2Vec"].includes(sortedContents[0].type)) {
 					return <View style={[styles.slideWidth, styles.centeredMaxWidth, { gap: 16 }]}>
 						<ContentComponent content={sortedContents[0]} index={index} canComplete={true} />
 					</View>
@@ -141,13 +144,13 @@ export default function SlideRenderer({
 		}
 	}, [slide.submitted]);
 
-	if ((slide.type === "Content" && currentContents.length === 1) && !["Neural Network", "Neuron"].includes(slide.contents[0].type)) {
+	if ((slide.type === "Content" && currentContents.length === 1) && !["Neural Network", "Neuron", "Word2Vec"].includes(slide.contents[0].type)) {
 		return (
 			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 		);
 	}
 
-	const marginTop = (firstContent && firstContent.type === "Neural Network") ? 0 : "auto";
+	const marginTop = (firstContent && ["Neural Network", "Neuron", "Word2Vec"].includes(firstContent.type)) ? 0 : "auto";
 
 	return (
 		<ScrollView

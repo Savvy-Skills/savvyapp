@@ -37,7 +37,7 @@ export default function Home() {
       >
         <>
           <View style={styles.innerSection}>
-            <Link href="/debug">Debug Sergio!</Link>
+            <Link href="/debug">Debug! </Link>
             <View>
               <Text style={styles.sectionTitle}>Courses</Text>
               {isLoadingCourses ? (

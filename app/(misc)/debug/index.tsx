@@ -4,12 +4,13 @@ import NeuronVisualization from "@/components/NeuronVisualization";
 import { SegmentedButtons } from "react-native-paper";
 import WordToVec from "@/components/WordToVec";
 import { ScrollView } from "react-native";
+import Tokenizer from "@/components/Tokenizer";
 
 export default function DebugScreen() {
-	const [selectedIndex, setSelectedIndex] = useState<"neuron" | "word2vec">("neuron");
+	const [selectedIndex, setSelectedIndex] = useState<"neuron" | "word2vec" | "tokenizer">("neuron");
 
 	const handleValueChange = (value: string) => {
-		setSelectedIndex(value as "neuron" | "word2vec");
+		setSelectedIndex(value as "neuron" | "word2vec" | "tokenizer");
 	};
 
 	return (
@@ -19,7 +20,14 @@ export default function DebugScreen() {
 				value={selectedIndex}
 				onValueChange={(value) => handleValueChange(value)}
 				buttons={[
-
+					{
+						label: "Tokenizer",
+						value: "tokenizer",
+						icon: "vector-line",
+						style: {
+							borderRadius: 4,
+						}
+					},
 					{
 						label: "Word to Vec",
 						value: "word2vec",
@@ -32,7 +40,8 @@ export default function DebugScreen() {
 				theme={{ roundness: 0 }}
 			/>
 			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-				{selectedIndex === "word2vec" && <WordToVec />}
+				{selectedIndex === "word2vec" && <WordToVec index={0} />}
+				{selectedIndex === "tokenizer" && <Tokenizer />}
 			</ScrollView>
 
 		</ScreenWrapper>

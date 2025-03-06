@@ -2,7 +2,7 @@ import { useDataFetch } from "@/hooks/useDataFetch";
 import { useTFStore } from "@/store/tensorStore";
 import React, { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Text, Surface, Button } from "react-native-paper";
+import { Text, Surface, Button, ActivityIndicator } from "react-native-paper";
 import LoadingIndicator from "../LoadingIndicator";
 import NNTabs from "./NNTabs";
 import styles from "@/styles/styles";
@@ -107,13 +107,17 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 		setSelectedLayer(layer);
 	}, [setSelectedLayer]);
 
-
-	if (!workerReady || !data || !columns || columns.length === 0) {
-		return (
-			<LoadingIndicator />
-		);
+	if (!workerReady) {
+		return <LoadingIndicator />
 	}
 
+	if (!data || !columns || columns.length === 0) {
+		return (
+			<View style={styles.centeredContainer}>
+				<ActivityIndicator size="large" color={Colors.primary} />
+			</View>
+		);
+	}
 
 	return (
 		<View style={[styles.centeredMaxWidth, styles.slideWidth, { gap: 8, flex: 1 }]}>

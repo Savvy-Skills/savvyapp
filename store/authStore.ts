@@ -7,6 +7,7 @@ import { courses_api } from "@/services/coursesApi";
 import { Platform } from "react-native";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { openai_api } from "@/services/openaiAPI";
+import { datasets_api } from "@/services/datasetsAPI";
 
 // Create a cross-platform storage object
 const crossPlatformStorage = {
@@ -35,6 +36,7 @@ const crossPlatformStorage = {
 
 interface AuthStore {
 	token: string | null;
+	datasource: Datasource;
 	user: User | null;
 	isLoading: boolean;
 	login: (email: string, password: string) => Promise<void>;
@@ -45,12 +47,16 @@ interface AuthStore {
 	setInitialized: () => void;
 	setToken: (token: string) => Promise<void>;
 	setError: (error: string | null) => void;
+	setDatasource: (datasource: Datasource) => void;
 }
+
+export type Datasource = "live" | "dev";
 
 export const useAuthStore = create<AuthStore>()(
 	persist(
 		(set, get) => ({
 			token: null,
+			datasource: process.env.NODE_ENV === "development" ? "dev" : "live",
 			user: null,
 			isLoading: false,
 			error: null,
@@ -59,18 +65,33 @@ export const useAuthStore = create<AuthStore>()(
 			},
 			isInitialized: false,
 			setToken: async (token: string) => {
-				setTokenInterceptors(authAPI, token);
-				setTokenInterceptors(courses_api, token);
+				const datasource = get().datasource;
+				setTokenInterceptors(authAPI, token, datasource);
+				setTokenInterceptors(courses_api, token, datasource);
+				setTokenInterceptors(openai_api, token, datasource);
+				setTokenInterceptors(datasets_api, token, datasource);
 				set({ token });
 				await get().getUser();
+			},
+			setDatasource: (datasource: Datasource) => {
+				set({ datasource });
+				const token = get().token;
+				if (token) {
+					setTokenInterceptors(authAPI, token, datasource);
+					setTokenInterceptors(courses_api, token, datasource);
+					setTokenInterceptors(openai_api, token, datasource);
+					setTokenInterceptors(datasets_api, token, datasource);
+				}
 			},
 			login: async (email: string, password: string) => {
 				set({ isLoading: true });
 				try {
 					const data = await login(email, password);
-					setTokenInterceptors(authAPI, data.auth_token);
-					setTokenInterceptors(courses_api, data.auth_token);
-					setTokenInterceptors(openai_api, data.auth_token);
+					const datasource = get().datasource;
+					setTokenInterceptors(authAPI, data.auth_token, datasource);
+					setTokenInterceptors(courses_api, data.auth_token, datasource);
+					setTokenInterceptors(openai_api, data.auth_token, datasource);
+					setTokenInterceptors(datasets_api, data.auth_token, datasource);
 					set({ token: data.auth_token });
 					await get().getUser();
 				} catch (error) {
@@ -105,6 +126,7 @@ export const useAuthStore = create<AuthStore>()(
 				setUnauthorizedInterceptor(authAPI);
 				setUnauthorizedInterceptor(courses_api);
 				setUnauthorizedInterceptor(openai_api);
+				setUnauthorizedInterceptor(datasets_api);
 				set({ isInitialized: true });
 			},
 		}),
@@ -118,10 +140,12 @@ export const useAuthStore = create<AuthStore>()(
 						state.setError(null);
 					}
 					const token = state.token;
+					const datasource = state.datasource;
 					if (token) {
-						setTokenInterceptors(authAPI, token);
-						setTokenInterceptors(courses_api, token);
-						setTokenInterceptors(openai_api, token);
+						setTokenInterceptors(authAPI, token, datasource);
+						setTokenInterceptors(courses_api, token, datasource);
+						setTokenInterceptors(openai_api, token, datasource);
+						setTokenInterceptors(datasets_api, token, datasource);
 					}
 				}
 			},
@@ -129,13 +153,14 @@ export const useAuthStore = create<AuthStore>()(
 	)
 );
 
-function setTokenInterceptors(api: any, token: string) {
+function setTokenInterceptors(api: any, token: string, datasource: string) {
 	// Clean previous interceptors
 	api.interceptors.request.handlers = [];
 
 	function addAuthorization(config: any) {
 		if (token) {
 			config.headers["Authorization"] = `Bearer ${token}`;
+			config.headers["X-Data-Source"] = datasource;
 		}
 		return config;
 	}

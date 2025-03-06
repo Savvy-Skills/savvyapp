@@ -1,46 +1,119 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { IconButton, Surface } from 'react-native-paper';
+import { getEmbeddings } from "@/services/openaiAPI";
 import { Colors } from "@/constants/Colors";
 import styles from "@/styles/styles";
 import { Button, Text, TextInput, ActivityIndicator } from "react-native-paper";
 import ConfirmationDialog from "./modals/ConfirmationDialog";
-import { useWordToVec } from "@/hooks/useWordToVec";
 
-export default function WordToVec({ index }: { index: number }) {
+function dotProduct(vecA: number[], vecB: number[]) {
+	let product = 0;
+	for (let i = 0; i < vecA.length; i++) {
+		product += vecA[i] * vecB[i];
+	}
+	return product;
+}
+
+function magnitude(vec: number[]) {
+	let sum = 0;
+	for (let i = 0; i < vec.length; i++) {
+		sum += vec[i] * vec[i];
+	}
+	return Math.sqrt(sum);
+}
+
+function cosineSimilarity(vecA: number[], vecB: number[]) {
+	return dotProduct(vecA, vecB) / (magnitude(vecA) * magnitude(vecB));
+}
+
+export default function WordToVec() {
+	const [targetWord, setTargetWord] = useState<string>("");
 	const [userInput, setUserInput] = useState<string>("");
+	const [similarity, setSimilarity] = useState<number>(0);
+	const [loading, setLoading] = useState<boolean>(false);
+	const [targetEmbedding, setTargetEmbedding] = useState<number[]>([]);
+	const [showAnswer, setShowAnswer] = useState<boolean>(false);
+	const [guesses, setGuesses] = useState<Array<{ word: string, similarity: number | null }>>([]);
+	const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
 	const [showGiveUpDialog, setShowGiveUpDialog] = useState<boolean>(false);
+	const [currentWordHint, setCurrentWordHint] = useState<string>("");
 
-	const {
-		datasets,
-		currentWord,
-		loading,
-		error,
-		guesses,
-		gameStatus,
-		currentWordHint,
-		guessWord,
-		giveUp,
-		startGame,
-		getWordHint,
-		metadata,
-		showAnswer } = useWordToVec({ gameId: `word2vec-${index}` });
+	useEffect(() => {
+		startGame();
+	}, []);
+
+	const startGame = useCallback(async () => {
+		setLoading(true);
+		setGuesses([]);
+		setSimilarity(0);
+		setShowAnswer(false);
+		setGameStatus('playing');
+		// Pick a random word from wordList
+		// const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+		// setTargetWord(randomWord);
+		const randomWord = "apple";
+		setTargetWord(randomWord);
+		try {
+			// const targetEmbedding = await getEmbeddings(randomWord);
+			// setTargetEmbedding(targetEmbedding.data[0].embedding);
+		} catch (error) {
+			console.error("Error starting game:", error);
+		} finally {
+			setLoading(false);
+		}
+	}, []);
+
+	const getWordHint = useCallback(() => {
+		// TODO: Logic to get a random word hint from list of hints
+		const wordList = ["Hint #1", "Hint #2", "Hint #3", "Hint #4", "Hint #5"];
+		const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+		setCurrentWordHint(randomWord);
+	}, []);
 
 	const handleGuess = useCallback(async () => {
 		if (!userInput) return;
-		guessWord(userInput);
+		setLoading(true);
+		setGuesses(prev => [...prev, { word: userInput, similarity: null }]);
 		try {
+			// const userEmbedding = await getEmbeddings(userInput);
+			// const similarity = cosineSimilarity(targetEmbedding, userEmbedding.data[0].embedding);
+			// const randomSimilarity = Math.random() * 100;
+			let randomSimilarity = 0;
+			if (guesses.length > 4) {
+				randomSimilarity = 100;
+			} else {
+				// Random between 0 and 60
+				randomSimilarity = Math.random() * 60;
+			}
+			setSimilarity(randomSimilarity);
+			setGuesses(prev => {
+				const newGuesses = [...prev];
+				newGuesses[newGuesses.length - 1].similarity = randomSimilarity;
+				return newGuesses;
+			});
+
+			// Check if won (similarity > 0.95 or exact match)
+			if (randomSimilarity > 95 || userInput.toLowerCase() === targetWord.toLowerCase()) {
+				setGameStatus('won');
+				setShowAnswer(true);
+			}
+
 			setUserInput("");
 		} catch (error) {
 			console.error("Error handling guess:", error);
+			setGuesses(prev => prev.slice(0, -1));
 		} finally {
+			setLoading(false);
 		}
-	}, [userInput, guesses, currentWord]);
+	}, [userInput, guesses, targetWord]);
 
 	const handleGiveUp = useCallback(() => {
 		if (gameStatus === 'won') return;
-		giveUp();
-	}, [gameStatus, currentWord]);
+		setShowAnswer(true);
+		setGameStatus('lost');
+		setGuesses(prev => [...prev, { word: targetWord, similarity: 100 }]);
+	}, [gameStatus, targetWord]);
 
 	// Handle Enter key press
 	const handleKeyPress = useCallback((e: any) => {
@@ -50,30 +123,23 @@ export default function WordToVec({ index }: { index: number }) {
 	}, [userInput, loading, handleGuess]);
 
 	const getHint = useCallback(() => {
-		if (guesses.length === 0) return "No guesses yet";
-		const lastSimilarity = guesses[guesses.length - 1]?.similarity || 0;
-		if (lastSimilarity < 0.3) return "You're very cold";
-		if (lastSimilarity < 0.5) return "Getting warmer";
-		if (lastSimilarity < 0.7) return "You're hot!";
-		if (lastSimilarity < 0.9) return "You're very close!";
+		const highestSimilarity = Math.max(...guesses.map(g => g.similarity || 0), 0);
+		if (highestSimilarity < 30) return "You're very cold";
+		if (highestSimilarity < 50) return "Getting warmer";
+		if (highestSimilarity < 70) return "You're hot!";
+		if (highestSimilarity < 90) return "You're very close!";
 		return "You got it!";
 	}, [guesses]);
 
 	const getSimilarityColor = useCallback((value: number) => {
-		if (value < 0.3) return Colors.error; // red
-		if (value < 0.5) return Colors.warning; // orange
-		if (value < 0.7) return Colors.lightOrange; // yellow
-		if (value < 0.9) return Colors.success; // light green
+		if (value < 30) return Colors.error; // red
+		if (value < 50) return Colors.warning; // orange
+		if (value < 70) return Colors.lightOrange; // yellow
+		if (value < 90) return Colors.success; // light green
 		return Colors.success; // green
 	}, []);
 
 	const hint = useMemo(() => getHint(), [getHint]);
-
-	const similarity = useMemo(() => {
-		if (guesses.length === 0) return 0;
-		// Last guess similarity
-		return guesses[guesses.length - 1].similarity || 0;
-	}, [guesses]);
 
 	return (
 		<View style={localStyles.contentContainer}>
@@ -99,28 +165,26 @@ export default function WordToVec({ index }: { index: number }) {
 					<Text style={localStyles.label}>Target Word:</Text>
 					<View style={localStyles.targetTextContainer}>
 						<Text style={localStyles.targetText}>
-							{showAnswer ? currentWord : "?????"}
+							{showAnswer ? targetWord : "?????"}
 						</Text>
-						{!showAnswer && (
-							<IconButton
-								icon={showAnswer ? "eye-off" : "eye"}
-								size={20}
-								onPress={() => setShowGiveUpDialog(true)}
-								iconColor={Colors.revealedButton}
-							/>
-						)}
+						<IconButton
+							icon={showAnswer ? "eye-off" : "eye"}
+							size={20}
+							onPress={() => setShowGiveUpDialog(true)}
+							iconColor={Colors.revealedButton}
+						/>
 					</View>
 				</View>
-				<Text style={localStyles.instructionsText}>The nearest word has a similarity of <Text style={{ fontWeight: 'bold' }}>{metadata.nearestSimilarity.toFixed(2)}</Text>, the tenth-nearest has a similarity of <Text style={{ fontWeight: 'bold' }}>{metadata.tenthNearestSimilarity.toFixed(2)}</Text> and the hundreth nearest word has a similarity of <Text style={{ fontWeight: 'bold' }}>{metadata.hundredthNearestSimilarity.toFixed(2)}</Text></Text>
+				<Text style={localStyles.instructionsText}>The nearest word has a similarity of <Text style={{ fontWeight: 'bold' }}>75.98</Text>, the tenth-nearest has a similarity of <Text style={{ fontWeight: 'bold' }}>49.97</Text> and the hundreth nearest word has a similarity of <Text style={{ fontWeight: 'bold' }}>30.65</Text></Text>
 				{currentWordHint && (
 					<Text style={[localStyles.wordHintText, styles.centerText]}>{currentWordHint}</Text>
 				)}
-				{(gameStatus === 'won' || gameStatus === 'lost') && (
+				{gameStatus === 'won' || gameStatus === 'lost' && (
 					<Button
 						mode="contained"
 						style={[styles.savvyButton, styles.lightOrangeButton]}
 						labelStyle={[styles.buttonLabel]}
-						onPress={() => { startGame() }}
+						onPress={startGame}
 					>
 						New Game
 					</Button>
@@ -149,10 +213,7 @@ export default function WordToVec({ index }: { index: number }) {
 						style={[styles.savvyButton, { maxWidth: 100 }]}
 						disabled={gameStatus === 'won' || gameStatus === 'lost'}
 						labelStyle={styles.buttonLabel}
-						onPress={() => getWordHint()}
-					>
-						Hint
-					</Button>
+						onPress={getWordHint}> Hint</Button>
 				</View>
 				{guesses.length > 0 && (
 					<View style={localStyles.hintContainer}>
@@ -208,10 +269,11 @@ const localStyles = StyleSheet.create({
 	contentContainer: {
 		flex: 1,
 		alignItems: 'center',
+		padding: 16,
+		maxWidth: 600,
 		alignSelf: "center",
 		width: "100%",
-		gap: 16,
-		marginTop: 8,
+		gap: 20,
 	},
 	hintButton: {
 	},
@@ -227,9 +289,14 @@ const localStyles = StyleSheet.create({
 	card: {
 		backgroundColor: Colors.background,
 		borderRadius: 8,
-		padding: 16,
+		padding: 20,
 		width: '100%',
-		gap: 16,
+		gap: 20,
+		elevation: 2,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
 	},
 	targetContainer: {
 		alignItems: 'center',
