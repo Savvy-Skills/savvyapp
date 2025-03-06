@@ -93,7 +93,7 @@ const Tokenizer = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        Welcome to 🦙 Tokenizer 🦙 playground!
+        Tokenizer Playground
       </Text>
       
       <TextInput
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
 	maxWidth: 600,
 	alignSelf: 'center',
 	width: '100%',
@@ -138,16 +138,18 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     height: 200,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.revealed,
     padding: 8,
     marginBottom: 16,
+	borderRadius: 4,
   },
   tokenContainer: {
     height: 200,
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#f8f8f8',
+    borderColor: Colors.revealed,
+    backgroundColor: Colors.revealedBackground,
     marginBottom: 16,
+	borderRadius: 4,
   },
   tokenContentContainer: {
     flexDirection: 'row',
