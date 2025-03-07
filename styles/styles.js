@@ -179,8 +179,21 @@ export default StyleSheet.create({
   savvyButton:{
 	flex: 1,
 	borderRadius: 4,
-	borderColor: Colors.primary,
 	height: 40,
+  },
+  savvyContainedButton: {
+	backgroundColor: Colors.primary,
+  },
+  savvyContainedButtonText: {
+	color: Colors.whiteText,
+	fontWeight: "bold",
+  },
+  savvyOutlinedButton: {
+	borderColor: Colors.primary,
+  },
+  savvyOutlinedButtonText: {
+	color: Colors.primary,
+	fontWeight: "bold",
   },
   buttonText: {
     color: "#FFFFFF",

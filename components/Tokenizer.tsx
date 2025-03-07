@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
+import { Text, TextInput } from "react-native-paper";
 import llama3Tokenizer from 'llama3-tokenizer-js';
 import { Colors } from "@/constants/Colors";
 import { generateColors } from "@/utils/utilfunctions";
+import styles from "@/styles/styles";
 
 // Stylizing tokens is mostly copied from gpt-tokenizer demo.
 // const pastelColors = [
@@ -37,18 +39,18 @@ const getTextualRepresentationForToken = (tokenString: string) => {
 
 const TokenizedText = ({ tokenStrings }: { tokenStrings: string[] }) => (
   <ScrollView 
-    style={styles.tokenContainer}
-    contentContainerStyle={styles.tokenContentContainer}
+    style={localStyles.tokenContainer}
+    contentContainerStyle={localStyles.tokenContentContainer}
   >
     {tokenStrings.map((tokenString, index) => (
       <View
         key={index}
         style={[
-          styles.tokenWrapper,
+          localStyles.tokenWrapper,
           { backgroundColor: pastelColors[index % pastelColors.length] }
         ]}
       >
-        <Text style={styles.tokenText}>
+        <Text style={localStyles.tokenText}>
           {getTextualRepresentationForToken(tokenString)}
         </Text>
       </View>
@@ -58,24 +60,24 @@ const TokenizedText = ({ tokenStrings }: { tokenStrings: string[] }) => (
 
 const TokenIds = ({ tokenIds }: { tokenIds: number[] }) => (
   <ScrollView
-    style={styles.tokenContainer}
-    contentContainerStyle={styles.tokenContentContainer}
+    style={localStyles.tokenContainer}
+    contentContainerStyle={localStyles.tokenContentContainer}
   >
-    <Text style={styles.tokenText}>[</Text>
+    <Text style={localStyles.tokenText}>[</Text>
     {tokenIds.map((tokenId, index) => (
       <View
         key={index}
         style={[
-          styles.tokenWrapper,
+          localStyles.tokenWrapper,
           { backgroundColor: pastelColors[index % pastelColors.length] }
         ]}
       >
-        <Text style={styles.tokenText}>
+        <Text style={localStyles.tokenText}>
           {`${tokenId}, `}
         </Text>
       </View>
     ))}
-    <Text style={styles.tokenText}>]</Text>
+    <Text style={localStyles.tokenText}>]</Text>
   </ScrollView>
 );
 
@@ -91,36 +93,45 @@ const Tokenizer = () => {
   });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <View style={localStyles.container}>
+      <Text style={localStyles.title}>
         Tokenizer Playground
       </Text>
       
       <TextInput
         value={inputText}
         onChangeText={setInputText}
-        style={styles.textInput}
+        style={localStyles.textInput}
         multiline={true}
+		mode="outlined"
+		contentStyle={{
+			padding: 8,
+		}}
+		activeOutlineColor={Colors.primary}
+		outlineColor={Colors.revealed}
+		outlineStyle={{
+			borderWidth: 1,
+		}}
       />
 
       <TokenizedText tokenStrings={decodedTokens} />
       <TokenIds tokenIds={encodedTokens} />
 
-      <View style={styles.statistics}>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{Array.from(inputText).length}</Text>
-          <Text style={styles.statLabel}>Characters</Text>
+      <View style={localStyles.statistics}>
+        <View style={localStyles.stat}>
+          <Text style={localStyles.statValue}>{Array.from(inputText).length}</Text>
+          <Text style={localStyles.statLabel}>Characters</Text>
         </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{encodedTokens.length}</Text>
-          <Text style={styles.statLabel}>Tokens</Text>
+        <View style={localStyles.stat}>
+          <Text style={localStyles.statValue}>{encodedTokens.length}</Text>
+          <Text style={localStyles.statLabel}>Tokens</Text>
         </View>
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
@@ -128,6 +139,7 @@ const styles = StyleSheet.create({
 	maxWidth: 600,
 	alignSelf: 'center',
 	width: '100%',
+	gap: 16,
   },
   title: {
     fontSize: 20,
@@ -135,20 +147,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   textInput: {
+	flex: 1,
     fontFamily: 'monospace',
-    height: 200,
+	maxHeight: 100,
     borderWidth: 1,
     borderColor: Colors.revealed,
-    padding: 8,
-    marginBottom: 16,
+	backgroundColor: Colors.background,
 	borderRadius: 4,
   },
   tokenContainer: {
-    height: 200,
+	flex: 1,
+	maxHeight: 100,
     borderWidth: 1,
     borderColor: Colors.revealed,
     backgroundColor: Colors.revealedBackground,
-    marginBottom: 16,
 	borderRadius: 4,
   },
   tokenContentContainer: {

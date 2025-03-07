@@ -47,7 +47,7 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 		case "Neuron":
 				return <NeuronVisualization config={content.neuronConfig ?? {} as NeuronConfig } dataset_info={content.dataset_info ?? {} as DatasetInfo} />;
 		case "Word2Vec":
-			return <WordToVec index={index} />;
+			return <WordToVec dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
 		default:
 			return <View />;
 	}

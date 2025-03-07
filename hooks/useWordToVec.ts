@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getWordVecDatasets } from '../services/datasetsAPI';
 import { useDataFetch } from './useDataFetch';
-import { getWordToVecStore } from '../stores/wordToVecStore';
+import { getWordToVecStore, WordToVecState } from '@/store/wordToVecStore';
 import { useViewStore } from '@/store/viewStore';
+import { DatasetInfo } from '@/types';
 
 interface UseWordToVecProps {
 	gameId: string;
+	dataset_info: DatasetInfo;
 }
 
-export const useWordToVec = ({ gameId }: UseWordToVecProps) => {
+export const useWordToVec = ({ gameId, dataset_info }: UseWordToVecProps) => {
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const { currentSlideIndex, completeSlide } = useViewStore();
@@ -18,7 +19,6 @@ export const useWordToVec = ({ gameId }: UseWordToVecProps) => {
 	
 	// Use the store state and actions
 	const {
-		datasets,
 		currentWord,
 		currentDataset,
 		guesses,
@@ -34,53 +34,40 @@ export const useWordToVec = ({ gameId }: UseWordToVecProps) => {
 		setShowAnswer,
 		setMetadata,
 		resetGame: storeResetGame,
-		setDatasets
-	} = store();
+	} : WordToVecState = store();
 	
-	const { error: datasetsError, isLoading: datasetsLoading, data } = useDataFetch({ source: currentDataset?.url, isCSV: true });
+	const { error: datasetError, isLoading: datasetLoading, data } = useDataFetch({ source: currentDataset?.url, isCSV: true });
 	
+	// Initialize with the provided datasetInfo
 	useEffect(() => {
-		const fetchDatasets = async () => {
-			try {
-				setLoading(true);
-				const fetchedDatasets = await getWordVecDatasets();
-				setDatasets(fetchedDatasets);
-				// Set a random word from the dataset as the initial current word if not already set
-				if (fetchedDatasets.length > 0 && !currentWord) {
-					const randomIndex = Math.floor(Math.random() * fetchedDatasets.length);
-					setCurrentWord(fetchedDatasets[randomIndex].name);
-					setCurrentDataset(fetchedDatasets[randomIndex]);
-				}
-			} catch (err) {
-				setError('Failed to fetch word2vec datasets');
-				setLoading(false);
-				console.error(err);
-			}
-		};
-		if (datasets.length === 0) {
-			fetchDatasets();
+		if (dataset_info && !currentDataset) {
+			setCurrentWord(dataset_info.name);
+			setCurrentDataset(dataset_info);
 		}
-	}, [currentWord, setCurrentWord, setCurrentDataset, setDatasets, datasets]);
-
-	useEffect(() => {
-		if (datasetsError) {
-			setError(datasetsError);
-		}
-	}, [datasetsError]);
-
-	useEffect(() => {
-		setLoading(datasetsLoading);
-	}, [datasetsLoading]);
+	}, [dataset_info, currentDataset, setCurrentWord, setCurrentDataset]);
 
 	useEffect(() => {
 		if (data && data.length > 0) {
-			const nearestSimilarity = data[1].similarity;
-			const tenthNearestSimilarity = data[9].similarity;
-			const hundredthNearestSimilarity = data[99].similarity;
-			const thousandthNearestSimilarity = data[999].similarity;
+			const nearestSimilarity = {
+				word: data[1].word,
+				similarity: data[1].similarity,
+			};
+			const tenthNearestSimilarity = {
+				word: data[9].word,
+				similarity: data[9].similarity,
+			};
+			const hundredthNearestSimilarity = {
+				word: data[99].word,
+				similarity: data[99].similarity,
+			};
+			const thousandthNearestSimilarity = {
+				word: data[999].word,
+				similarity: data[999].similarity,
+			};
 			setMetadata({ nearestSimilarity, tenthNearestSimilarity, hundredthNearestSimilarity, thousandthNearestSimilarity });
+			setLoading(false);
 		}
-	}, [data, setMetadata]);
+	}, [data, setMetadata, setLoading]);
 
 	const guessWord = useCallback((word: string) => {
 		word = word.toLowerCase();
@@ -99,25 +86,22 @@ export const useWordToVec = ({ gameId }: UseWordToVecProps) => {
 		} else {
 			addGuess({ word, similarity: 0 });
 		}
-	}, [data, addGuess, setGameStatus, setShowAnswer]);
+	}, [data, addGuess, setGameStatus, setShowAnswer, completeSlide, currentSlideIndex]);
 
 	const giveUp = useCallback(() => {
 		setGameStatus('lost');
-		setShowAnswer(true);
-	}, [setGameStatus, setShowAnswer]);
+		setShowAnswer(true);	
+		completeSlide(currentSlideIndex);
+	}, [setGameStatus, setShowAnswer, completeSlide, currentSlideIndex]);
 
 	const resetGame = useCallback(() => {
 		storeResetGame();
-	}, [storeResetGame]);
-
-	const startGame = useCallback(() => {
-		// Reset the game
-		resetGame();
-		// Pick a random word from the dataset of datasets
-		const randomIndex = Math.floor(Math.random() * datasets.length);
-		setCurrentWord(datasets[randomIndex].name);
-		setCurrentDataset(datasets[randomIndex]);
-	}, [datasets, setCurrentWord, setCurrentDataset]);
+		// Re-initialize with the current datasetInfo
+		if (dataset_info) {
+			setCurrentWord(dataset_info.name);
+			setCurrentDataset(dataset_info);
+		}
+	}, [storeResetGame, dataset_info, setCurrentWord, setCurrentDataset]);
 
 	const getWordHint = useCallback(() => {
 		// TODO: Logic to get a random word hint from list of hints
@@ -131,7 +115,6 @@ export const useWordToVec = ({ gameId }: UseWordToVecProps) => {
 	}, [currentDataset, setCurrentWordHint]);
 
 	return {
-		datasets,
 		currentWord,
 		setCurrentWord,
 		loading,
@@ -141,7 +124,7 @@ export const useWordToVec = ({ gameId }: UseWordToVecProps) => {
 		currentWordHint,
 		guessWord,
 		giveUp,
-		startGame,
+		resetGame,
 		getWordHint,
 		showAnswer,
 		metadata,
