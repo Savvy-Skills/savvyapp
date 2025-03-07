@@ -12,6 +12,8 @@ import { router } from "expo-router";
 import { generateColors } from "@/utils/utilfunctions";
 import { useAudioStore } from "@/store/audioStore";
 import { useViewStore } from "@/store/viewStore";
+import { useWordToVec } from "@/hooks/useWordToVec";
+import { resetAllWordToVecGames } from "@/store/wordToVecStore";
 
 const navButtonColors = generateColors(Colors.navigationPurple, 0.5);
 const checkButtonColors = generateColors(Colors.navigationOrange, 0.5);
@@ -28,7 +30,6 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 
 	const { playSound } = useAudioStore();
 	const { currentSlideIndex, view, slides, prevSlide, nextSlide, submitAnswer, skipAssessments, setSkipAssessments, restartView, tryAgain } = useViewStore();
-
 	const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
 	const [showRestartViewDialog, setShowRestartViewDialog] = useState(false);
 	const [showFinishDialog, setShowFinishDialog] = useState(false);
@@ -287,7 +288,10 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 			<ConfirmationDialog
 				visible={showRestartViewDialog}
 				onDismiss={hideRestartDialog}
-				onConfirm={restartView}
+				onConfirm={() => {
+					restartView();
+					resetAllWordToVecGames();
+				}}
 				title="Are you sure?"
 				content="This will restart the view and you will lose your progress."
 			/>

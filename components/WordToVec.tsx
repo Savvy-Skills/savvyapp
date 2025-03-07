@@ -1,30 +1,29 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
-import { IconButton, Surface } from 'react-native-paper';
+import { IconButton, Surface, Tooltip } from 'react-native-paper';
 import { Colors } from "@/constants/Colors";
 import styles from "@/styles/styles";
 import { Button, Text, TextInput, ActivityIndicator } from "react-native-paper";
 import ConfirmationDialog from "./modals/ConfirmationDialog";
 import { useWordToVec } from "@/hooks/useWordToVec";
+import { DatasetInfo } from "@/types";
 
-export default function WordToVec({ index }: { index: number }) {
+export default function WordToVec({ index, dataset_info }: { index: number, dataset_info: DatasetInfo }) {
 	const [userInput, setUserInput] = useState<string>("");
 	const [showGiveUpDialog, setShowGiveUpDialog] = useState<boolean>(false);
 
 	const {
-		datasets,
 		currentWord,
 		loading,
-		error,
 		guesses,
 		gameStatus,
 		currentWordHint,
 		guessWord,
 		giveUp,
-		startGame,
 		getWordHint,
 		metadata,
-		showAnswer } = useWordToVec({ gameId: `word2vec-${index}` });
+		showAnswer,
+	} = useWordToVec({ gameId: `word2vec-${index}`, dataset_info });
 
 	const handleGuess = useCallback(async () => {
 		if (!userInput) return;
@@ -111,11 +110,18 @@ export default function WordToVec({ index }: { index: number }) {
 						)}
 					</View>
 				</View>
-				<Text style={localStyles.instructionsText}>The nearest word has a similarity of <Text style={{ fontWeight: 'bold' }}>{metadata.nearestSimilarity.toFixed(2)}</Text>, the tenth-nearest has a similarity of <Text style={{ fontWeight: 'bold' }}>{metadata.tenthNearestSimilarity.toFixed(2)}</Text> and the hundreth nearest word has a similarity of <Text style={{ fontWeight: 'bold' }}>{metadata.hundredthNearestSimilarity.toFixed(2)}</Text></Text>
+				<Text style={localStyles.instructionsText}>
+					The nearest word has a similarity of 
+					<Text style={{ fontWeight: 'bold' }}><Tooltip title={metadata.nearestSimilarity?.word}><Text style={{ fontWeight: 'bold' }}> {metadata.nearestSimilarity?.similarity.toFixed(2)}</Text></Tooltip></Text>,
+					the tenth-nearest has a similarity of 
+					<Text style={{ fontWeight: 'bold' }}><Tooltip title={metadata.tenthNearestSimilarity?.word}><Text style={{ fontWeight: 'bold' }}>{metadata.tenthNearestSimilarity?.similarity.toFixed(2)} </Text></Tooltip></Text> 
+					and the hundreth nearest word has a similarity of 
+					<Text style={{ fontWeight: 'bold' }}><Tooltip title={metadata.hundredthNearestSimilarity?.word}><Text style={{ fontWeight: 'bold' }}> {metadata.hundredthNearestSimilarity?.similarity.toFixed(2)}</Text></Tooltip></Text>
+				</Text>
 				{currentWordHint && (
 					<Text style={[localStyles.wordHintText, styles.centerText]}>{currentWordHint}</Text>
 				)}
-				{(gameStatus === 'won' || gameStatus === 'lost') && (
+				{/* {(gameStatus === 'won' || gameStatus === 'lost') && (
 					<Button
 						mode="contained"
 						style={[styles.savvyButton, styles.lightOrangeButton]}
@@ -124,7 +130,7 @@ export default function WordToVec({ index }: { index: number }) {
 					>
 						New Game
 					</Button>
-				)}
+				)} */}
 				<View style={localStyles.inputContainer}>
 					<TextInput
 						style={styles.input}

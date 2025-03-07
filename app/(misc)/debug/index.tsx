@@ -5,12 +5,13 @@ import { SegmentedButtons } from "react-native-paper";
 import WordToVec from "@/components/WordToVec";
 import { ScrollView } from "react-native";
 import Tokenizer from "@/components/Tokenizer";
+import TokenizeComponent from "@/components/TokenizeComponent";
 
 export default function DebugScreen() {
-	const [selectedIndex, setSelectedIndex] = useState<"neuron" | "word2vec" | "tokenizer">("neuron");
+	const [selectedIndex, setSelectedIndex] = useState<"neuron" | "word2vec" | "tokenizer" | "tokenize">("neuron");
 
 	const handleValueChange = (value: string) => {
-		setSelectedIndex(value as "neuron" | "word2vec" | "tokenizer");
+		setSelectedIndex(value as "neuron" | "word2vec" | "tokenizer" | "tokenize");
 	};
 
 	return (
@@ -29,8 +30,8 @@ export default function DebugScreen() {
 						}
 					},
 					{
-						label: "Word to Vec",
-						value: "word2vec",
+						label: "Do your own Tokenization",
+						value: "tokenize",
 						icon: "vector-line",
 						style: {
 							borderRadius: 4,
@@ -40,8 +41,9 @@ export default function DebugScreen() {
 				theme={{ roundness: 0 }}
 			/>
 			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-				{selectedIndex === "word2vec" && <WordToVec index={0} />}
+				{/* {selectedIndex === "word2vec" && <WordToVec index={0} datasetInfo={datasetInfo} />} */}
 				{selectedIndex === "tokenizer" && <Tokenizer />}
+				{selectedIndex === "tokenize" && <TokenizeComponent />}
 			</ScrollView>
 
 		</ScreenWrapper>

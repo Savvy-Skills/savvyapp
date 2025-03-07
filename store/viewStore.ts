@@ -42,6 +42,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		// TODO: HANDLE CASE WHERE RESTARTING VIEW FAILS
 		await restartView(viewId);
 		set({ viewStatus: "RESTARTING" });
+		// Reset all game states
 		// Empty the slides, submissions, currentSlideIndex, and view
 		set({ slides: [], currentSlideIndex: 0, view: null });
 		// Fetch the view data again
