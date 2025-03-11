@@ -14,6 +14,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import { decodeJpeg } from "@tensorflow/tfjs-react-native";
 import Svg, { Circle } from "react-native-svg";
 import { Button, Text } from "react-native-paper";
+import { base64ToArrayBuffer } from "@/utils/utilfunctions";
 
 const CAM_PREVIEW_WIDTH = Math.min(Dimensions.get("window").width, 640);
 const CAM_PREVIEW_HEIGHT = Math.min(Dimensions.get("window").height, 480);
@@ -22,19 +23,7 @@ const MIN_KEYPOINT_SCORE = 0.3;
 
 type CameraStatus = "running" | "error" | "loading" | "paused" | "predicting";
 
-function base64ToArrayBuffer(base64: string) {
-	// remove the data:image/jpeg;base64, part
-	const binaryString = atob(base64.replace(/^data[^,]+,/, ''));
 
-	const length = binaryString.length;
-	const bytes = new Uint8Array(length);
-
-	for (let i = 0; i < length; i++) {
-		bytes[i] = binaryString.charCodeAt(i);
-	}
-
-	return bytes.buffer;
-}
 
 export default function TensorFlowPoseDetection() {
 	const cameraRef = useRef<CameraView | null>(null);

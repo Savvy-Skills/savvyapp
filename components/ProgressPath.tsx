@@ -124,7 +124,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		alignItems: "center",
 		justifyContent: "center",
-		// backgroundColor: "#f8f8f8",
 		maxWidth: 300,
 	},
 });

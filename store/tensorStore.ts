@@ -9,7 +9,7 @@ const MESSAGE_TYPE_TRAIN_UPDATE = "train_update";
 const MESSAGE_TYPE_TRAIN_END = "train_end";
 const MESSAGE_TYPE_INIT = "init";
 const MESSAGE_TYPE_PREDICTION_RESULT = "prediction_result";
-
+const MESSAGE_TYPE_IMAGE_PREDICTION_RESULT = "image_prediction_result";
 // If Platform.OS is web, use the workerScript from the utils folder
 const workerScript = Platform.OS === "web" ? require("@/utils/tfworker").workerScript : null;
 
@@ -30,6 +30,7 @@ interface TFStore {
 				completed: boolean;
 				paused: boolean;
 				prediction: string | null;
+				probabilities?: any[] | null;
 			}
 			training: {
 				transcurredEpochs: number;
@@ -53,7 +54,7 @@ interface TFStore {
 
 interface WorkerMessage {
 	from: "worker" | "main";
-	type: typeof MESSAGE_TYPE_INIT | typeof MESSAGE_TYPE_ERROR | typeof MESSAGE_TYPE_TRAIN_UPDATE | typeof MESSAGE_TYPE_TRAIN_END | typeof MESSAGE_TYPE_PREDICTION_RESULT;
+	type: typeof MESSAGE_TYPE_INIT | typeof MESSAGE_TYPE_ERROR | typeof MESSAGE_TYPE_TRAIN_UPDATE | typeof MESSAGE_TYPE_TRAIN_END | typeof MESSAGE_TYPE_PREDICTION_RESULT | typeof MESSAGE_TYPE_IMAGE_PREDICTION_RESULT;
 	modelId: string;
 	data?: any;
 }
@@ -155,6 +156,21 @@ export const useTFStore = create<TFStore>((set, get) => ({
 								break;
 							case MESSAGE_TYPE_ERROR:
 								set({ error: message.data });
+								break;
+							case MESSAGE_TYPE_IMAGE_PREDICTION_RESULT:
+								set({
+									currentState: {
+										...get().currentState,
+										[message.modelId]: {
+											...get().currentState[message.modelId],
+											model: {
+												...get().currentState[message.modelId]?.model,
+												prediction: message.data.predictionResult,
+												probabilities: message.data.probabilities,
+											}
+										}
+									}
+								})
 								break;
 							case MESSAGE_TYPE_TRAIN_UPDATE:
 								const { transcurredEpochs, loss, accuracy, modelHistory, testData } = message.data;

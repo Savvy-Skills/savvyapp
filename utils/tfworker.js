@@ -8,6 +8,11 @@ const workerFunction = function () {
   const MESSAGE_TYPE_INIT = "init";
   const MESSAGE_TYPE_PREDICT = "predict";
   const MESSAGE_TYPE_PREDICTION_RESULT = "prediction_result";
+  const MESSAGE_LOAD_REMOTE_MODEL = "load_remote_model";
+  const MESSAGE_TYPE_IMAGE_PREDICTION_RESULT = "image_prediction_result";
+  const MESSAGE_TYPE_IMAGE_PREDICT = "image_predict";
+
+  const MNIST_MODEL_URL = "https://api.savvyskills.io/vault/JS-TssR_/NEO6tP40wf5PSQQQwCVgdxX8KHo/LTfPsw../modelfile.json";
 
   let initialized = false;
 
@@ -31,6 +36,42 @@ const workerFunction = function () {
   };
 
   let trainingStop = false;
+
+  async function loadRemoteModel(type) {
+    // TODO: Implement remote model loading
+	let url = null;
+	if (type === "mnist") {
+		url = MNIST_MODEL_URL;
+	} else {
+		throw new Error("Invalid model type");
+	}
+    try {
+      currentModel = await tf.loadLayersModel(url);
+	  currentModelId = type;
+      await warmUpModel();
+    } catch (err) {
+      console.error("Error loading remote model:", err);
+    }
+  }
+
+  async function warmUpModel() {
+    // TODO: Implement model warming up
+    const dummyInput = tf.tidy(() => {
+      return tf.zeros([1, 28, 28, 1]);
+    });
+    // Run a prediction to warm up the model
+    try {
+      await currentModel.predict(dummyInput).data();
+      console.log("Model warmed up successfully");
+      return true;
+    } catch (error) {
+      console.error("Error warming up model:", error);
+      return false;
+    } finally {
+      // Clean up
+      dummyInput.dispose();
+    }
+  }
 
   function createScaler(column, data) {
     let scaler = null;
@@ -384,8 +425,8 @@ const workerFunction = function () {
         result["predictions"] = predictionsData;
       }
     }
-	// Dispose of tensors to free memory
-	predictions.dispose();
+    // Dispose of tensors to free memory
+    predictions.dispose();
     return result;
   }
 
@@ -409,45 +450,49 @@ const workerFunction = function () {
     // 1. Process raw numerical columns (no encoding/scaling needed)
     const nonEncodedNonScaledColumns = inputColumns.filter(
       (column) =>
-        !encoders.map(encoder => encoder.field).includes(column) &&
-        !scalers.map(scaler => scaler.field).includes(column)
+        !encoders.map((encoder) => encoder.field).includes(column) &&
+        !scalers.map((scaler) => scaler.field).includes(column)
     );
-    
+
     if (nonEncodedNonScaledColumns.length > 0) {
       const nonEncodedNonScaledData = nonEncodedNonScaledColumns.map(
-        column => features[0][column]
+        (column) => features[0][column]
       );
       processedData = tf.tensor2d([nonEncodedNonScaledData]);
     }
 
     // 2. Process scaled numerical columns
-    const scaledColumns = scalers.filter(scaler => 
+    const scaledColumns = scalers.filter((scaler) =>
       inputColumns.includes(scaler.field)
     );
-    
+
     if (scaledColumns.length > 0) {
       const scaledData = scaledColumns.map((column) => {
-        const scaler = scalers.find(scaler => scaler.field === column.field);
+        const scaler = scalers.find((scaler) => scaler.field === column.field);
         return scaleColumn([Number(features[0][column.field])], scaler);
       });
-      processedData = processedData.length > 0 
-        ? tf.concat([...processedData, ...scaledData], 1)
-        : scaledData[0];
+      processedData =
+        processedData.length > 0
+          ? tf.concat([...processedData, ...scaledData], 1)
+          : scaledData[0];
     }
 
     // 3. Process encoded categorical columns
-    const encodedColumns = encoders.filter(encoder =>
+    const encodedColumns = encoders.filter((encoder) =>
       inputColumns.includes(encoder.field)
     );
-    
+
     if (encodedColumns.length > 0) {
       const encodedData = encodedColumns.map((column) => {
-        const encoder = encoders.find(encoder => encoder.field === column.field);
+        const encoder = encoders.find(
+          (encoder) => encoder.field === column.field
+        );
         return encodeColumn([features[0][column.field]], encoder);
       });
-      processedData = processedData.length > 0
-        ? tf.concat([...processedData, ...encodedData], 1)
-        : encodedData;
+      processedData =
+        processedData.length > 0
+          ? tf.concat([...processedData, ...encodedData], 1)
+          : encodedData;
     }
 
     // Make prediction using processed input tensor
@@ -458,8 +503,9 @@ const workerFunction = function () {
     if (currentModelConfig.problemType === "classification") {
       if (currentModelConfig.lastLayerSize === 1) {
         // Binary classification: convert probability to 0/1 using 0.5 threshold
-        const predictionsToBinary = predictions.arraySync()
-          .map(prediction => prediction > 0.5 ? 1 : 0);
+        const predictionsToBinary = predictions
+          .arraySync()
+          .map((prediction) => (prediction > 0.5 ? 1 : 0));
         predictionResult = targetEncoder.decode(predictionsToBinary[0]);
       } else {
         // Multi-class classification: take argmax of predictions
@@ -480,13 +526,13 @@ const workerFunction = function () {
     self.postMessage({
       from: "worker",
       type: MESSAGE_TYPE_PREDICTION_RESULT,
-	  modelId: currentModelId,
+      modelId: currentModelId,
       data: { predictionResult },
     });
 
-	// Dispose of tensors to free memory
-	processedData.dispose();
-	predictions.dispose();
+    // Dispose of tensors to free memory
+    processedData.dispose();
+    predictions.dispose();
   }
 
   async function trainModel({
@@ -538,7 +584,7 @@ const workerFunction = function () {
             });
           self.postMessage({
             from: "worker",
-			modelId: currentModelId,
+            modelId: currentModelId,
             type: MESSAGE_TYPE_TRAIN_UPDATE,
             data: {
               transcurredEpochs: epoch,
@@ -563,7 +609,7 @@ const workerFunction = function () {
               columns,
             });
           self.postMessage({
-			modelId: currentModelId,
+            modelId: currentModelId,
             from: "worker",
             type: MESSAGE_TYPE_TRAIN_END,
             data: {
@@ -584,6 +630,90 @@ const workerFunction = function () {
         },
       },
     });
+  }
+
+  function base64ToArrayBuffer(base64) {
+    // Remove the data URL prefix if present
+    const base64String = base64.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
+    
+    // Decode base64
+    const binaryString = atob(base64String);
+    const bytes = new Uint8Array(binaryString.length);
+    
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    return bytes.buffer;
+  }
+
+  function preprocessImage(tensorImage, width, height) {
+    return tf.tidy(() => {
+      // Resize the image to the required dimensions
+      const resized = tf.image.resizeBilinear(tensorImage, [width, height]);
+      
+      // Convert RGB to grayscale (if it's not already)
+      // Formula: 0.299 * R + 0.587 * G + 0.114 * B
+      const grayscale = tensorImage.shape[2] === 3 
+        ? resized.mul([0.299, 0.587, 0.114]).sum(-1).expandDims(-1)
+        : resized;
+      
+      // Normalize pixel values (0-255 -> 0-1) and invert colors for MNIST
+      const normalized = tf.scalar(1).sub(grayscale.div(tf.scalar(255)));
+      
+      // Add batch dimension
+      const batched = normalized.expandDims(0);
+      
+      return batched;
+    });
+  }
+
+  async function predictImage(image) {
+    try {
+      // Convert base64 to array buffer
+      const imageData = base64ToArrayBuffer(image);
+      
+      // Create a bitmap from the array buffer
+      const imageBitmap = await createImageBitmap(
+        new Blob([imageData], { type: 'image/jpeg' })
+      );
+      
+      // Create an OffscreenCanvas to draw the image
+      const canvas = new OffscreenCanvas(imageBitmap.width, imageBitmap.height);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imageBitmap, 0, 0);
+      
+      // Get image data from canvas
+      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      
+      // Process image and make prediction
+      tf.tidy(() => {
+        const imageTensor = tf.browser.fromPixels(pixels);
+        const preprocessedImage = preprocessImage(imageTensor, 28, 28);
+        const prediction = currentModel.predict(preprocessedImage);
+        const probabilities = prediction.dataSync();
+        const predictedClass = prediction.argMax(1).dataSync()[0];
+        const confidence = probabilities[predictedClass];
+        
+        // Send results back to main thread
+        self.postMessage({
+          from: "worker",
+          type: MESSAGE_TYPE_IMAGE_PREDICTION_RESULT,
+          modelId: currentModelId,
+          data: { predictionResult: predictedClass, confidence, probabilities },
+        });
+      });
+      
+      // Clean up
+      imageBitmap.close();
+    } catch (error) {
+      console.error("Image prediction error:", error);
+      self.postMessage({
+        from: "worker",
+        type: MESSAGE_TYPE_ERROR,
+        error: `Image prediction failed: ${error.message}`
+      });
+    }
   }
 
   async function createTrain(data, columns, modelConfig, trainConfig) {
@@ -627,15 +757,15 @@ const workerFunction = function () {
       });
       self.onmessage = async function (event) {
         console.log("Message received:", event.data);
-		if (event.data.from !== "main") {
-			return;
-		}
+        if (event.data.from !== "main") {
+          return;
+        }
         switch (event.data.type) {
           case MESSAGE_TYPE_CREATE_TRAIN:
             const { data, columns, modelConfig, trainConfig } = event.data.data;
             currentDataPreparationConfig = trainConfig.dataPreparationConfig;
             currentModelConfig = modelConfig;
-			currentModelId = event.data.modelId;
+            currentModelId = event.data.modelId;
             await createTrain(data, columns, modelConfig, trainConfig);
             break;
           case MESSAGE_TYPE_REMOVE:
@@ -646,6 +776,14 @@ const workerFunction = function () {
             break;
           case MESSAGE_TYPE_STOP:
             trainingStop = true;
+            break;
+          case MESSAGE_LOAD_REMOTE_MODEL:
+            const { type } = event.data.data;
+            await loadRemoteModel(type);
+            break;
+          case MESSAGE_TYPE_IMAGE_PREDICT:
+            const { image } = event.data.data;
+            await predictImage(image);
             break;
           default:
             self.postMessage({
