@@ -1,18 +1,21 @@
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
-import React, { useState } from "react";
-import NeuronVisualization from "@/components/NeuronVisualization";
-import { SegmentedButtons } from "react-native-paper";
-import WordToVec from "@/components/WordToVec";
+import React, { useRef, useState } from "react";
+import { Button, SegmentedButtons } from "react-native-paper";
 import { ScrollView } from "react-native";
 import Tokenizer from "@/components/Tokenizer";
 import TokenizeComponent from "@/components/TokenizeComponent";
+import DrawingBoxWeb from "@/components/react/DrawingBoxWeb";
+import { Image } from "expo-image";
+import { DrawingBoxHandle } from "@/components/react/DrawingBoxWeb";
+import MNISTComponent from "@/components/MNISTComponent";
 
 export default function DebugScreen() {
-	const [selectedIndex, setSelectedIndex] = useState<"neuron" | "word2vec" | "tokenizer" | "tokenize">("neuron");
+	const [selectedIndex, setSelectedIndex] = useState<"drawing" | "tokenizer" | "tokenize">("drawing");
 
 	const handleValueChange = (value: string) => {
-		setSelectedIndex(value as "neuron" | "word2vec" | "tokenizer" | "tokenize");
+		setSelectedIndex(value as "drawing" | "tokenizer" | "tokenize");
 	};
+
 
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
@@ -37,11 +40,21 @@ export default function DebugScreen() {
 							borderRadius: 4,
 						}
 					},
+					{
+						label: "Drawing Box",
+						value: "drawing",
+						icon: "vector-line",
+						style: {
+							borderRadius: 4,
+						}
+					},
 				]}
 				theme={{ roundness: 0 }}
 			/>
 			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-				{/* {selectedIndex === "word2vec" && <WordToVec index={0} datasetInfo={datasetInfo} />} */}
+				{selectedIndex === "drawing" && (
+					<MNISTComponent />
+				)}
 				{selectedIndex === "tokenizer" && <Tokenizer />}
 				{selectedIndex === "tokenize" && <TokenizeComponent />}
 			</ScrollView>

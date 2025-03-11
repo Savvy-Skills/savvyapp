@@ -668,3 +668,99 @@ export const dynamicStyles = (theme) =>
       color: theme === "dark" ? "#FFFFFF" : "#000000",
     },
   });
+
+// MNIST Drawing Component Styles
+export const mnistStyles = StyleSheet.create({
+  container: {
+    flex: 1, 
+    alignItems: 'center'
+  },
+  contentContainer: {
+    maxWidth: 400,
+    width: '100%',
+    alignItems: 'center',
+    padding: 16,
+    gap: 16
+  },
+  drawingBoxContainer: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'black',
+    overflow: 'hidden',
+    position: 'relative',
+    maxWidth: 320,
+  },
+  clearButton: {
+    position: 'absolute', 
+    top: 0, 
+    right: 0, 
+    bottom: 0, 
+    zIndex: 10
+  },
+  resultContainer: { 
+    width: '100%', 
+    marginTop: 16, 
+    gap: 16 
+  },
+  predictionText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  }
+});
+
+// Probability Visualizer Styles
+export const probabilityVisualizerStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 8,
+    backgroundColor: Colors.background,
+    borderRadius: 4,
+  },
+  digitContainer: {
+    alignItems: 'center',
+    flex: 1,
+    gap: 4,
+  },
+  barContainer: {
+    height: 80,
+    width: '60%',
+    backgroundColor: Colors.revealedBackground,
+    justifyContent: 'flex-end',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  probabilityBar: {
+    width: '100%',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+  digit: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  predictedDigit: {
+    color: Colors.success,
+    fontSize: 22,
+  },
+  percentage: {
+    fontSize: 12,
+    color: Colors.text,
+  },
+});
+
+// Drawing Box Styles
+export const drawingBoxStyles = StyleSheet.create({
+  canvas: {
+    backgroundColor: 'white',
+    touchAction: 'none', 
+    width: '100%',
+    height: '100%',
+    display: 'block'
+  },
+  container: { 
+    width: '100%', 
+    height: '100%' 
+  }
+});

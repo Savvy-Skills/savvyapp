@@ -41,6 +41,20 @@ function groupByColumn(data: any[], key?: string) {
 	}, {});
 }
 
+function base64ToArrayBuffer(base64: string) {
+	// remove the data:image/jpeg;base64, part
+	const binaryString = atob(base64.replace(/^data[^,]+,/, ''));
+
+	const length = binaryString.length;
+	const bytes = new Uint8Array(length);
+
+	for (let i = 0; i < length; i++) {
+		bytes[i] = binaryString.charCodeAt(i);
+	}
+
+	return bytes.buffer;
+}
+
 function createCustomSlide(
 	type: string,
 	module_id: number,
@@ -250,5 +264,6 @@ export {
 	groupByColumn,
 	createCustomSlide,
 	createSubmission,
-	generateColors
+	generateColors,
+	base64ToArrayBuffer
 }
