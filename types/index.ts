@@ -6,12 +6,17 @@ export interface Course {
 	readonly created_at: number;
 	name: string;
 	description: string;
-	image: Image;
+	image_url: string;
 	grade_level: string;
 	tags: string[];
 	type: "Savvy" | "Own";
 	duration: number;
 	published: boolean;
+	modules: [{
+		readonly module_id: number;
+		order: number;
+		module_info?: Module;
+	}];
 }
 
 export interface ClassConfig {
@@ -82,7 +87,7 @@ export interface Module extends ModuleInfo {
 	course_info: Course;
 	views: ViewType[];
 	views_progress: ViewProgress[];
-	image: Image;
+	image_url: string;
 }
 
 export interface ViewInfo {
@@ -112,7 +117,7 @@ export interface ViewType extends BaseView {
 	module_id: number;
 	quiz: boolean;
 	published: boolean;
-	type: "lesson" | "example" | "tool";
+	type: "lesson" | "example" | "tool" | "post";
 	slides: BaseSlide[];
 }
 
@@ -129,7 +134,7 @@ export interface ViewWithSlides {
 	readonly timestamp: number;
 	module_info: Module;
 	published: boolean;
-	type: "lesson" | "example" | "tool";
+	type: "lesson" | "example" | "tool" | "post";
 }
 export interface Progress {
 	readonly id: string;
@@ -148,6 +153,24 @@ export interface BareSlide {
 interface ContentResponse extends ContentInfo {
 	content_id: string;
 	order: number;
+}
+
+interface ImageType {
+	access: string;
+	path: string;
+	name: string;
+	type: string;
+	size: number;
+	mime: string;
+	meta: {
+		width: number;
+		height: number;
+	}
+}
+
+export interface ImageResponse { 
+	url: string;
+	image: ImageType;
 }
 
 export interface BaseSlide extends BareSlide {
@@ -362,6 +385,7 @@ export interface Option {
 	correctOrder: number;
 	match: string;
 }
+
 
 export interface Image {
 	url: string;

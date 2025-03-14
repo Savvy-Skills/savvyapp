@@ -22,6 +22,16 @@ export const getCourses = async (): Promise<Course[]> => {
   }
 };
 
+export const getCourse = async (course_id: number): Promise<Course> => {
+	try {
+		const response = await courses_api.get<Course>(`/courses/${course_id}`);
+		return response.data;
+	} catch (error) {
+		console.error("Error fetching course", error);
+		return {} as Course;
+	}
+}
+
 export const getModules = async (): Promise<Module[]> => {
   try {
     const response = await courses_api.get<Module[]>(`/modules`);

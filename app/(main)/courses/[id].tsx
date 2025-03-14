@@ -4,21 +4,21 @@ import ModuleCard from "../../../components/cards/ModuleCard";
 import styles from "@/styles/styles";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import { useLocalSearchParams } from "expo-router";
-import { getCourseModules } from "@/services/coursesApi";
+import { getCourse } from "@/services/coursesApi";
 import { Course, Module } from "@/types";
 import ThemedTitle from "@/components/themed/ThemedTitle";
 import TopNavBar from "@/components/navigation/TopNavBar";
 
 export default function ModulesList() {
-  const [modules, setModules] = useState<Module[]>([]);
   const [courseInfo, setCourseInfo] = useState<Course>({} as Course);
   const { id } = useLocalSearchParams();
   useEffect(() => {
-    getCourseModules(Number(id)).then((data) => {
-      setModules(data.modules);
-      setCourseInfo(data.course_info);
+    getCourse(Number(id)).then((data) => {
+      setCourseInfo(data);
     });
   }, []);
+
+  const modules = courseInfo.modules?.map((module) => module.module_info).filter((item): item is Module => item !== undefined) || [];
   return (
     <ScreenWrapper>
 	<TopNavBar course={courseInfo} />
