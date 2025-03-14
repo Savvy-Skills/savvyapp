@@ -8,6 +8,7 @@ import { Platform } from "react-native";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { openai_api } from "@/services/openaiAPI";
 import { datasets_api } from "@/services/datasetsAPI";
+import { admin_api } from "@/services/adminApi";
 
 // Create a cross-platform storage object
 const crossPlatformStorage = {
@@ -66,10 +67,11 @@ export const useAuthStore = create<AuthStore>()(
 			isInitialized: false,
 			setToken: async (token: string) => {
 				const datasource = get().datasource;
-				setTokenInterceptors(authAPI, token, datasource);
-				setTokenInterceptors(courses_api, token, datasource);
-				setTokenInterceptors(openai_api, token, datasource);
-				setTokenInterceptors(datasets_api, token, datasource);
+				// setTokenInterceptors(authAPI, token, datasource);
+				// setTokenInterceptors(courses_api, token, datasource);
+				// setTokenInterceptors(openai_api, token, datasource);
+				// setTokenInterceptors(datasets_api, token, datasource);
+				setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api], token, datasource);
 				set({ token });
 				await get().getUser();
 			},
@@ -77,10 +79,7 @@ export const useAuthStore = create<AuthStore>()(
 				set({ datasource });
 				const token = get().token;
 				if (token) {
-					setTokenInterceptors(authAPI, token, datasource);
-					setTokenInterceptors(courses_api, token, datasource);
-					setTokenInterceptors(openai_api, token, datasource);
-					setTokenInterceptors(datasets_api, token, datasource);
+					setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api], token, datasource);
 				}
 			},
 			login: async (email: string, password: string) => {
@@ -88,10 +87,11 @@ export const useAuthStore = create<AuthStore>()(
 				try {
 					const data = await login(email, password);
 					const datasource = get().datasource;
-					setTokenInterceptors(authAPI, data.auth_token, datasource);
-					setTokenInterceptors(courses_api, data.auth_token, datasource);
-					setTokenInterceptors(openai_api, data.auth_token, datasource);
-					setTokenInterceptors(datasets_api, data.auth_token, datasource);
+					// setTokenInterceptors(authAPI, data.auth_token, datasource);
+					// setTokenInterceptors(courses_api, data.auth_token, datasource);
+					// setTokenInterceptors(openai_api, data.auth_token, datasource);
+					// setTokenInterceptors(datasets_api, data.auth_token, datasource);
+					setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api], data.auth_token, datasource);
 					set({ token: data.auth_token });
 					await get().getUser();
 				} catch (error) {
@@ -123,10 +123,11 @@ export const useAuthStore = create<AuthStore>()(
 				}
 			},
 			setInitialized: () => {
-				setUnauthorizedInterceptor(authAPI);
-				setUnauthorizedInterceptor(courses_api);
-				setUnauthorizedInterceptor(openai_api);
-				setUnauthorizedInterceptor(datasets_api);
+				// setUnauthorizedInterceptor(authAPI);
+				// setUnauthorizedInterceptor(courses_api);
+				// setUnauthorizedInterceptor(openai_api);
+				// setUnauthorizedInterceptor(datasets_api);
+				setUnauthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api]);
 				set({ isInitialized: true });
 			},
 		}),
@@ -142,10 +143,7 @@ export const useAuthStore = create<AuthStore>()(
 					const token = state.token;
 					const datasource = state.datasource;
 					if (token) {
-						setTokenInterceptors(authAPI, token, datasource);
-						setTokenInterceptors(courses_api, token, datasource);
-						setTokenInterceptors(openai_api, token, datasource);
-						setTokenInterceptors(datasets_api, token, datasource);
+						setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api], token, datasource);
 					}
 				}
 			},
@@ -183,4 +181,16 @@ function setUnauthorizedInterceptor(api: any) {
 	api.interceptors.response.use((response: any) => {
 		return response;
 	}, onError);
+}
+
+function setAuthorizedInterceptors(apis: any[], token: string, datasource: string) {
+	apis.forEach((api) => {
+		setTokenInterceptors(api, token, datasource);
+	});
+}
+
+function setUnauthorizedInterceptors(apis: any[]) {
+	apis.forEach((api) => {
+		setUnauthorizedInterceptor(api);
+	});
 }

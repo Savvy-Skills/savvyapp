@@ -37,6 +37,7 @@ export default function CourseCard({ course }: CourseCardProps) {
 					<Text style={localStyles.title} numberOfLines={2}>
 						{course.name}
 					</Text>
+					<Text>{course.modules.length} Modules</Text>
 				</View>
 			</TouchableRipple>
 		</Surface>

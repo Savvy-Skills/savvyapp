@@ -4,5 +4,7 @@ export const apiConstants = {
 	courses: "api:edObfuQW",
 	oauth: "api:dxvrvZMc",
 	openai: "api:a1bT8k3a",
-	datasets: "api:EmknM6Ix"
+	datasets: "api:EmknM6Ix",
+	admin: "api:kj7A2iyq",
+	media: "api:em_Wy9jw"
 }
