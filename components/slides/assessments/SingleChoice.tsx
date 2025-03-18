@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { View } from "react-native";
 import { RadioButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { LocalSlide, QuestionInfo } from "@/types";
+import { LocalSlide, AssessmentInfo } from "@/types";
 import styles from "@/styles/styles";
 import { useViewStore } from "@/store/viewStore";
 import ImageOption from "./ImageOption";
@@ -10,7 +10,7 @@ import TextOption from "./TextOption";
 
 export type AssessmentProps = {
 	slide: LocalSlide;
-	question: QuestionInfo;
+	question: AssessmentInfo;
 	quizMode: boolean;
 };
 

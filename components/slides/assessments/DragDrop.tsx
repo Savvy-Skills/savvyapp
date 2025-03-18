@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { QuestionInfo } from "@/types";
+import { AssessmentInfo } from "@/types";
 import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import AssessmentWrapper from "../AssessmentWrapper";
 import DragAndDrop from "@/components/react/DragAndDrop";
@@ -9,7 +9,7 @@ import { LocalSlide } from "@/types";
 
 export type DragAndDropAssessmentProps = {
 	slide: LocalSlide;
-	question: QuestionInfo;
+	question: AssessmentInfo;
 	quizMode?: boolean;
 };
 

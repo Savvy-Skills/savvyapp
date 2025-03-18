@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Button, Dialog, Portal, TextInput, Text, DataTable, Card } from 'react-native-paper';
-import { Module, Course } from '@/types';
+import { Module, Course } from '@/types/index';
 import { getCourse } from '@/services/coursesApi';
 import { createModule, updateModule, disableModule, updateCourse } from '@/services/adminApi';
 import ImageUploader from '@/components/common/ImageUploader';
@@ -11,9 +11,11 @@ import { Colors } from '@/constants/Colors';
 interface ModuleManagerProps {
 	courseId: number | null;
 	onModuleSelect: (moduleId: number) => void;
+	selectedModuleId: number | null;
+	onBack?: () => void;
 }
 
-export default function ModuleManager({ courseId, onModuleSelect }: ModuleManagerProps) {
+export default function ModuleManager({ courseId, onModuleSelect, selectedModuleId, onBack }: ModuleManagerProps) {
 	const [modules, setModules] = useState<Module[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [dialogVisible, setDialogVisible] = useState(false);
@@ -68,7 +70,7 @@ export default function ModuleManager({ courseId, onModuleSelect }: ModuleManage
 		try {
 			const courseData = await getCourse(courseId);
 			// Extract actual Module objects from the nested structure
-			setModules(courseData.modules?.map(item => item.module_info).filter(Boolean) as Module[] || []);
+			setModules(courseData.modules?.map((item: any) => item.module_info).filter(Boolean) as Module[] || []);
 		} catch (error) {
 			console.error('Failed to fetch modules:', error);
 		} finally {
@@ -145,6 +147,12 @@ export default function ModuleManager({ courseId, onModuleSelect }: ModuleManage
 			await fetchCourseDetails();
 		} catch (error) {
 			console.error('Failed to update course:', error);
+		}
+	};
+
+	const handleBack = () => {
+		if (onBack) {
+			onBack();
 		}
 	};
 
@@ -232,9 +240,19 @@ export default function ModuleManager({ courseId, onModuleSelect }: ModuleManage
 			)}
 
 			<View style={localStyles.header}>
-				<Text variant="headlineMedium">Module Management</Text>
-				<Button
-					mode="contained"
+				<View style={localStyles.headerActions}>
+					<Button
+						mode="outlined"
+						onPress={handleBack}
+						style={[styles.savvyButton, localStyles.backButton]}
+						icon="arrow-left"
+					>
+						Back to Courses
+					</Button>
+					<Text variant="headlineMedium">Module Management</Text>
+				</View>
+				<Button 
+					mode="contained" 
 					onPress={() => handleOpenDialog()}
 					style={[styles.savvyButton, localStyles.addButton]}
 				>
@@ -255,7 +273,10 @@ export default function ModuleManager({ courseId, onModuleSelect }: ModuleManage
 						</DataTable.Header>
 
 						{modules.map((module) => (
-							<DataTable.Row key={module.id}>
+							<DataTable.Row 
+								key={module.id}
+								style={module.id === selectedModuleId ? localStyles.selectedRow : undefined}
+							>
 								<DataTable.Cell style={{ maxWidth: 100 }}>
 									{module.image_url ? (
 										<Image 
@@ -274,11 +295,11 @@ export default function ModuleManager({ courseId, onModuleSelect }: ModuleManage
 								<DataTable.Cell>
 									<View style={localStyles.actionButtons}>
 										<Button
-											mode="outlined"
+											mode={module.id === selectedModuleId ? "contained" : "outlined"}
 											onPress={() => onModuleSelect(module.id)}
 											style={[styles.savvyButton, localStyles.actionButton]}
 										>
-											Select
+											{module.id === selectedModuleId ? "Selected" : "Select"}
 										</Button>
 										<Button
 											mode="outlined"
@@ -424,6 +445,11 @@ const localStyles = StyleSheet.create({
 		alignItems: 'center',
 		marginBottom: 20,
 	},
+	headerActions: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: 8,
+	},
 	addButton: {
 		marginLeft: 16,
 		maxWidth: 200,
@@ -485,5 +511,11 @@ const localStyles = StyleSheet.create({
 	},
 	saveDialogButton: {
 		minWidth: 100,
+	},
+	selectedRow: {
+		backgroundColor: 'rgba(98, 0, 238, 0.08)',
+	},
+	backButton: {
+		marginRight: 8,
 	},
 }); 

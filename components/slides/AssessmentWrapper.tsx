@@ -1,5 +1,5 @@
 import styles from "@/styles/styles";
-import { LocalSlide, QuestionInfo } from "@/types";
+import { LocalSlide, AssessmentInfo } from "@/types";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
@@ -11,7 +11,7 @@ import { Colors } from "@/constants/Colors";
 interface AssessmentWrapperProps {
 	slide: LocalSlide;
 	children: React.ReactNode;
-	question: QuestionInfo;
+	question: AssessmentInfo;
 }
 
 const untitledAssessments = ["Fill in the Blank", "True or False"];

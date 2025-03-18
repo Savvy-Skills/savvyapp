@@ -1,0 +1,204 @@
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { Button, Dialog, Portal, Text, TextInput, SegmentedButtons, Divider } from 'react-native-paper';
+import { ContentInfo, ContentTypes } from '@/types/index';
+import { createContent } from '@/services/adminApi';
+import ContentEditor from '@/components/content/ContentEditor';
+
+interface EnhancedContentFormDialogProps {
+	visible: boolean;
+	onDismiss: () => void;
+	onSave: (content: ContentInfo) => void;
+	editingContent?: ContentInfo | null;
+	viewId?: number;
+	isEditing?: boolean;
+}
+
+export default function EnhancedContentFormDialog({
+	visible,
+	onDismiss,
+	onSave,
+	editingContent,
+	viewId,
+	isEditing = false
+}: EnhancedContentFormDialogProps) {
+	const [contentType, setContentType] = useState<ContentTypes>('Rich Text');
+	const [contentTitle, setContentTitle] = useState('');
+	const [contentData, setContentData] = useState<Partial<ContentInfo>>({});
+	const [loading, setLoading] = useState(false);
+
+	// Initialize form when editing content
+	useEffect(() => {
+		if (editingContent && visible) {
+			setContentType(editingContent.type || 'Rich Text');
+			setContentTitle(editingContent.title || '');
+			setContentData({
+				...editingContent
+			});
+		}
+	}, [editingContent, visible]);
+
+	const resetForm = () => {
+		setContentType('Rich Text');
+		setContentTitle('');
+		setContentData({});
+		setLoading(false);
+	};
+
+	const handleDismiss = () => {
+		resetForm();
+		onDismiss();
+	};
+
+	const handleContentChange = (updatedContent: Partial<ContentInfo>) => {
+		setContentData(updatedContent);
+	};
+
+	const isFormValid = () => {
+		if (!contentTitle) return false;
+
+		switch (contentType) {
+			case 'Rich Text':
+				return !!contentData.state;
+			case 'Image':
+			case 'Video':
+				return !!contentData.url;
+			case 'Dataset':
+				return !!contentData.dataset_id;
+			// Add validation for other content types as needed
+			default:
+				return false;
+		}
+	};
+
+	const handleSave = async () => {
+		if (!isFormValid()) {
+			return;
+		}
+
+		setLoading(true);
+		try {
+			// Prepare content data with title and type
+			const fullContentData: Partial<ContentInfo> = {
+				...contentData,
+				title: contentTitle,
+				type: contentType,
+			};
+
+			let savedContent;
+
+
+			savedContent = await createContent(fullContentData);
+
+			// Notify parent component
+			onSave(savedContent);
+			resetForm();
+		} catch (error) {
+			console.error(`Failed to ${isEditing ? 'update' : 'create'} content:`, error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const dialogTitle = isEditing ? "Edit Content" : "Create New Content";
+	const actionButtonLabel = isEditing ? "Update" : "Create";
+
+	return (
+		<Portal>
+			<Dialog visible={visible} onDismiss={handleDismiss} style={styles.dialog}>
+				<Dialog.Title style={styles.dialogTitle}>{dialogTitle}</Dialog.Title>
+				<ScrollView style={styles.dialogContent}>
+					<Dialog.Content>
+						<TextInput
+							label="Content Title"
+							value={contentTitle}
+							onChangeText={setContentTitle}
+							style={styles.input}
+						/>
+						<Text variant="titleMedium" style={styles.sectionTitle}>Content Type</Text>
+						<SegmentedButtons
+							value={contentType}
+							onValueChange={(value) => setContentType(value as ContentTypes)}
+							buttons={[
+								{ value: 'Rich Text', label: 'Text' },
+								{ value: 'Image', label: 'Image' },
+								{ value: 'Video', label: 'Video' },
+								{ value: 'Dataset', label: 'Dataset' }
+							]}
+							style={styles.segmentedButton}
+						/>
+
+						<Divider style={styles.divider} />
+
+						<ContentEditor
+							contentType={contentType}
+							content={contentData as ContentInfo}
+							onContentChange={handleContentChange}
+						/>
+					</Dialog.Content>
+				</ScrollView>
+
+				<Divider />
+				<Dialog.Actions style={styles.dialogActions}>
+					<Button
+						onPress={handleDismiss}
+						mode="outlined"
+						style={styles.cancelButton}
+					>
+						Cancel
+					</Button>
+					<Button
+						onPress={handleSave}
+						loading={loading}
+						disabled={loading || !isFormValid()}
+						mode="contained"
+						style={styles.saveButton}
+					>
+						{actionButtonLabel}
+					</Button>
+				</Dialog.Actions>
+			</Dialog>
+		</Portal>
+	);
+}
+
+const styles = StyleSheet.create({
+	dialog: {
+		maxWidth: 600,
+		width: '100%',
+		marginHorizontal: "auto",
+	},
+	dialogTitle: {
+		paddingBottom: 8,
+	},
+	dialogContent: {
+		maxHeight: 500,
+		paddingBottom: 16,
+	},
+	container: {
+		flex: 1,
+	},
+	input: {
+		marginBottom: 16,
+	},
+	sectionTitle: {
+		marginTop: 8,
+		marginBottom: 8,
+	},
+	segmentedButton: {
+		marginVertical: 8,
+	},
+	divider: {
+		marginVertical: 16,
+	},
+	dialogActions: {
+		padding: 16,
+		justifyContent: 'flex-end',
+	},
+	cancelButton: {
+		marginRight: 8,
+	},
+	saveButton: {
+		minWidth: 100,
+	},
+}); 

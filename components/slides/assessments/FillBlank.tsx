@@ -6,7 +6,7 @@ import { AssessmentProps } from "./SingleChoice";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
 import { useViewStore } from "@/store/viewStore";
-import { Answer, LocalSlide, QuestionInfo, Slide } from "@/types";
+import { Answer, LocalSlide, AssessmentInfo, Slide } from "@/types";
 
 
 const FillBlankText = ({
@@ -16,7 +16,7 @@ const FillBlankText = ({
 	handleBlankPress,
 	slide
 }: {
-	question: QuestionInfo;
+	question: AssessmentInfo;
 	blanks: string[];
 	blocked: boolean;
 	handleBlankPress: (index: number) => void;

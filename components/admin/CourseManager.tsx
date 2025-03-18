@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { Button, Card, Dialog, Portal, TextInput, Text, FAB, DataTable } from 'react-native-paper';
-import { Course } from '@/types';
+import { Course } from '@/types/index';
 import { getCourses } from '@/services/coursesApi';
 import { createCourse, updateCourse, disableCourse } from '@/services/adminApi';
 import ImageUploader from '@/components/common/ImageUploader';
@@ -10,9 +10,10 @@ import styles from '@/styles/styles';
 
 interface CourseManagerProps {
   onCourseSelect: (courseId: number) => void;
+  selectedCourseId: number | null;
 }
 
-export default function CourseManager({ onCourseSelect }: CourseManagerProps) {
+export default function CourseManager({ onCourseSelect, selectedCourseId }: CourseManagerProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -119,7 +120,10 @@ export default function CourseManager({ onCourseSelect }: CourseManagerProps) {
             </DataTable.Header>
 
             {courses.map((course) => (
-              <DataTable.Row key={course.id}>
+              <DataTable.Row 
+                key={course.id} 
+                style={course.id === selectedCourseId ? localStyles.selectedRow : undefined}
+              >
                 <DataTable.Cell style={{ maxWidth: 100 }}>
                   {course.image_url ? (
                     <Image 
@@ -138,11 +142,11 @@ export default function CourseManager({ onCourseSelect }: CourseManagerProps) {
                 <DataTable.Cell>
                   <View style={localStyles.actionButtons}>
                     <Button 
-                      mode="outlined" 
+                      mode={course.id === selectedCourseId ? "contained" : "outlined"}
                       onPress={() => onCourseSelect(course.id)}
                       style={[styles.savvyButton, localStyles.actionButton]}
                     >
-                      Select
+                      {course.id === selectedCourseId ? "Selected" : "Select"}
                     </Button>
                     <Button 
                       mode="outlined" 
@@ -316,5 +320,8 @@ const localStyles = StyleSheet.create({
   },
   saveDialogButton: {
     minWidth: 100,
+  },
+  selectedRow: {
+    backgroundColor: 'rgba(98, 0, 238, 0.08)',
   },
 }); 

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useDataFetch } from './useDataFetch';
 import { getWordToVecStore, WordToVecState } from '@/store/wordToVecStore';
 import { useViewStore } from '@/store/viewStore';
-import { DatasetInfo } from '@/types';
+import { DatasetInfo } from '@/types/index';
 
 interface UseWordToVecProps {
 	gameId: string;
