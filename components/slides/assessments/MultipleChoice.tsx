@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import AssessmentWrapper from "../AssessmentWrapper";
-import { Answer, LocalSlide, QuestionInfo } from "@/types";
+import { Answer, LocalSlide, AssessmentInfo } from "@/types";
 import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
@@ -12,7 +12,7 @@ import TextOptionMultiple from "./TextOptionMultiple";
 
 export type AssessmentProps = {
 	slide: LocalSlide;
-	question: QuestionInfo;
+	question: AssessmentInfo;
 	quizMode: boolean;
 };
 

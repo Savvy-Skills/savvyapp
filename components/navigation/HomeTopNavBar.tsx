@@ -1,3 +1,4 @@
+import React from "react";
 import { useAuthStore } from "@/store/authStore";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
@@ -10,11 +11,11 @@ const HomeTopNavBar = () => {
 
 	const closeMenu = useCallback(() => {
 		setVisible(false);
-	}, []);
+	}, [setVisible]);
 
 	const openMenu = useCallback(() => {
 		setVisible(true);
-	}, []);
+	}, [setVisible]);
 
 	const handleLogout = useCallback(() => {
 		router.push({ pathname: "/" });
@@ -25,6 +26,10 @@ const HomeTopNavBar = () => {
 		setDatasource(datasource === "live" ? "dev" : "live");
 		router.push({ pathname: "/" });
 		logout();
+	};
+
+	const handleAdminDashboard = () => {
+		router.push({ pathname: "/admin" });
 	};
 
 	return (
@@ -50,11 +55,19 @@ const HomeTopNavBar = () => {
 			>
 				<Divider />
 				{user?.role?.name === "Savvy" && (
-					<Menu.Item
-						leadingIcon={"database"}
-						onPress={handleChangeDatasource}
-						title={`Datasource: ${datasource}`}
-					/>
+					<>
+						<Menu.Item
+							leadingIcon={"database"}
+							onPress={handleChangeDatasource}
+							title={`Datasource: ${datasource}`}
+						/>
+						{/* GO to admin dashboard */}
+						<Menu.Item
+							leadingIcon={"monitor-dashboard"}
+							onPress={handleAdminDashboard}
+							title="Admin Dashboard"
+						/>
+					</>
 				)}
 				<Menu.Item
 					leadingIcon={"logout-variant"}

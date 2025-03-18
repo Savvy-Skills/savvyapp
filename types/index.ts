@@ -173,12 +173,14 @@ export interface ImageResponse {
 	image: ImageType;
 }
 
+export type SlideTypes = "Assessment" | "Content" | "Activity" | "Custom";
+
 export interface BaseSlide extends BareSlide {
 	readonly created_at: number;
 	published: boolean;
 	module_id: number;
-	type: "Assessment" | "Content" | "Activity" | "Custom";
-	contents: ContentResponse[];
+	type: SlideTypes;
+	contents?: ContentResponse[];
 	name: string;
 	subtype?: string;
 	buttonLabel?: string;
@@ -187,13 +189,11 @@ export interface BaseSlide extends BareSlide {
 export interface AssessmentSlide extends BaseSlide {
 	type: "Assessment";
 	assessment_id: number;
-	assessment_info: QuestionInfo;
+	assessment_info: AssessmentInfo;
 }
 
 export interface ContentSlide extends BaseSlide {
 	type: "Content";
-	content_id: string;
-	content_info: ContentInfo;
 }
 
 export interface ActivitySlide extends BaseSlide {
@@ -283,7 +283,7 @@ export interface LocalSlide extends BaseSlide {
 	isCorrect?: boolean;
 	showExplanation: boolean;
 	assessment_id?: number;
-	assessment_info?: QuestionInfo;
+	assessment_info?: AssessmentInfo;
 	submission_id?: number;
 }
 
@@ -298,7 +298,7 @@ export interface ViewProgress {
 	timestamp: number;
 }
 
-type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity" | "Neuron" | "Word2Vec";
+export type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity" | "Neuron" | "Word2Vec";
 
 export interface ContentInfo {
 	readonly created_at: number;
@@ -315,7 +315,7 @@ export interface ContentInfo {
 	neuronConfig?: NeuronConfig;
 }
 
-type QuestionTypes =
+export type AssessmentTypes =
 	| "Multiple Choice"
 	| "Single Choice"
 	| "True or False"
@@ -335,27 +335,26 @@ interface ExtrasInfo {
 	text?: string;
 	text2?: string;
 	operator: NumericOperator;
-	filterable: boolean;
-	table: boolean;
-	plot: boolean;
-	traces: any[];
 }
 
-export interface QuestionInfo {
-	readonly created_at: number;
-	id: number;
+export interface Assessment {
 	title: string;
 	text: string;
-	type: QuestionTypes;
+	type: AssessmentTypes;
 	answerType: string;
-	gradingScale: number;
-	explanation: string;
+	gradingScale?: number;
+	explanation?: string;
 	dataset?: string;
-	context: string;
-	options: Option[];
-	dataset_info?: DatasetInfo;
+	context?: string;
 	extras?: ExtrasInfo;
 	subtype?: QuestionSubtypes;
+	options?: Option[];
+}
+
+export interface AssessmentInfo extends Assessment {
+	readonly created_at: number;
+	readonly id: number;
+	dataset_info?: DatasetInfo;
 }
 
 export interface DatasetInfo {

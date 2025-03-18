@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, Icon, Surface, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { QuestionInfo, LocalSlide } from "@/types";
+import { AssessmentInfo, LocalSlide } from "@/types";
 import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import AssessmentWrapper from "../AssessmentWrapper";
@@ -13,7 +13,7 @@ import { useViewStore } from "@/store/viewStore";
 
 export type TrueFalseQuestionProps = {
 	slide: LocalSlide;
-	question: QuestionInfo;
+	question: AssessmentInfo;
 	quizMode: boolean;
 };
 

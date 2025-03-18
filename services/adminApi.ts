@@ -1,4 +1,4 @@
-import { Course, Module, ViewWithSlides, LocalSlide } from "@/types";
+import { Course, Module, ViewWithSlides, LocalSlide, Assessment, ContentInfo } from "@/types/index";
 import { createAPI } from "./apiConfig";
 
 export const admin_api = createAPI("admin");
@@ -132,4 +132,52 @@ export const reorderSlides = async (viewId: number, slideIds: number[]): Promise
     console.error("Error reordering slides", error);
     throw error;
   }
-}; 
+};
+
+interface AssessmentData extends Assessment {
+  slideName?: string;
+}
+
+// Create Assessment (This will create an assessment and return the assessment object)
+export const createAssessment = async (assessmentData: AssessmentData): Promise<Assessment> => {
+  try {
+    const response = await admin_api.post<Assessment>('/assessments', assessmentData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating assessment", error);
+    throw error;
+  }
+};
+
+// Get all assessments
+export const getAssessments = async (): Promise<Assessment[]> => {
+  try {
+    const response = await admin_api.get<Assessment[]>('/assessments');
+    return response.data;
+  } catch (error) {
+    console.error("Error getting assessments", error);
+    throw error;
+  }
+};
+
+// Get all contents
+export const getContents = async (): Promise<ContentInfo[]> => {
+  try {
+    const response = await admin_api.get<ContentInfo[]>('/contents');
+    return response.data;
+  } catch (error) {
+    console.error("Error getting contents", error);
+	throw error;
+  }
+};
+
+// Create Content (This will create a content and return the content object)
+export const createContent = async (contentData: Partial<ContentInfo>): Promise<ContentInfo> => {
+  try {
+    const response = await admin_api.post<ContentInfo>('/contents', contentData);
+    return response.data;
+  } catch (error) {
+	console.error("Error creating content", error);
+	throw error;
+  }
+};

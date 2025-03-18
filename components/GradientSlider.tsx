@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, ViewStyle, LayoutRectangle } from 'react-native';
-import { Surface, Text } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
-import { ClassConfig } from '@/types';
+import { ClassConfig } from '@/types/index';
 
 interface GradientSliderProps {
 	value: number;

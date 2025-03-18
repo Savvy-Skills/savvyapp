@@ -1,6 +1,6 @@
 import CustomCheckbox from "@/components/SavvyCheckbox";
 import styles from "@/styles/styles";
-import { QuestionInfo } from "@/types";
+import { AssessmentInfo } from "@/types";
 import { View } from "react-native";
 import OptionStatusIcon from "./OptionStatusIcon";
 import { getMultipleOptionStyles, MultipleOptionProps } from "@/utils/utilfunctions";

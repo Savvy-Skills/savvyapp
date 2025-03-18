@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -8,17 +8,20 @@ import ViewManager from '@/components/admin/ViewManager';
 import SlideManager from '@/components/admin/SlideManager';
 import ScreenWrapper from '@/components/screens/ScreenWrapper';
 import { useAuthStore } from '@/store/authStore';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 export type AdminSection = 'courses' | 'modules' | 'views' | 'slides';
 
 export default function AdminDashboard() {
-	const [activeSection, setActiveSection] = useState<AdminSection>('courses');
-	const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
-	const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
-	const [selectedViewId, setSelectedViewId] = useState<number | null>(null);
 	const { user } = useAuthStore();
-	const [isMounted, setIsMounted] = useState(false);
+	const [isMounted, setIsMounted] = React.useState(false);
+	
+	// Get parameters from URL using Expo Router
+	const params = useLocalSearchParams();
+	const section = (params.section as AdminSection) || 'courses';
+	const courseId = params.courseId ? Number(params.courseId) : null;
+	const moduleId = params.moduleId ? Number(params.moduleId) : null;
+	const viewId = params.viewId ? Number(params.viewId) : null;
 
 	useEffect(() => {
 		setIsMounted(true);
@@ -32,44 +35,118 @@ export default function AdminDashboard() {
 		}
 	}, [user, isMounted]);
 
-	const handleCourseSelect = (courseId: number) => {
-		setSelectedCourseId(courseId);
-		setSelectedModuleId(null);
-		setSelectedViewId(null);
-		setActiveSection('modules');
+	// Update URL when selections change
+	const updateUrlParams = (newParams: {
+		section?: AdminSection;
+		courseId?: number | null;
+		moduleId?: number | null;
+		viewId?: number | null;
+	}) => {
+		// Build new URL parameters
+		const urlParams: Record<string, string> = {};
+		
+		// Keep existing parameters unless explicitly changed
+		if (newParams.section) urlParams.section = newParams.section;
+		else if (section) urlParams.section = section;
+		
+		if (newParams.courseId !== undefined) {
+			if (newParams.courseId !== null) urlParams.courseId = newParams.courseId.toString();
+		} else if (courseId !== null) {
+			urlParams.courseId = courseId.toString();
+		}
+		
+		if (newParams.moduleId !== undefined) {
+			if (newParams.moduleId !== null) urlParams.moduleId = newParams.moduleId.toString();
+		} else if (moduleId !== null) {
+			urlParams.moduleId = moduleId.toString();
+		}
+		
+		if (newParams.viewId !== undefined) {
+			if (newParams.viewId !== null) urlParams.viewId = newParams.viewId.toString();
+		} else if (viewId !== null) {
+			urlParams.viewId = viewId.toString();
+		}
+		
+		// Update the URL using Expo Router
+		router.replace({
+			pathname: '/(misc)/admin',
+			params: urlParams
+		});
 	};
 
-	const handleModuleSelect = (moduleId: number) => {
-		setSelectedModuleId(moduleId);
-		setSelectedViewId(null);
-		setActiveSection('views');
+	const handleCourseSelect = (id: number) => {
+		updateUrlParams({
+			courseId: id,
+			moduleId: null,
+			viewId: null,
+			section: 'modules'
+		});
 	};
 
-	const handleViewSelect = (viewId: number) => {
-		setSelectedViewId(viewId);
-		setActiveSection('slides');
+	const handleModuleSelect = (id: number) => {
+		updateUrlParams({
+			moduleId: id,
+			viewId: null,
+			section: 'views'
+		});
+	};
+
+	const handleViewSelect = (id: number) => {
+		updateUrlParams({
+			viewId: id,
+			section: 'slides'
+		});
+	};
+
+	const handleSectionChange = (newSection: AdminSection) => {
+		updateUrlParams({ section: newSection });
+	};
+
+	// Handle back button actions
+	const handleBackToCourses = () => {
+		updateUrlParams({
+			section: 'courses',
+			moduleId: null,
+			viewId: null
+		});
+	};
+
+	const handleBackToModules = () => {
+		updateUrlParams({
+			section: 'modules',
+			viewId: null
+		});
 	};
 
 	const renderContent = () => {
-		switch (activeSection) {
+		switch (section) {
 			case 'courses':
-				return <CourseManager onCourseSelect={handleCourseSelect} />;
+				return <CourseManager onCourseSelect={handleCourseSelect} selectedCourseId={courseId} />;
 			case 'modules':
 				return (
 					<ModuleManager
-						courseId={selectedCourseId}
+						courseId={courseId}
+						selectedModuleId={moduleId}
 						onModuleSelect={handleModuleSelect}
+						onBack={handleBackToCourses}
 					/>
 				);
 			case 'views':
 				return (
 					<ViewManager
-						moduleId={selectedModuleId}
+						moduleId={moduleId}
+						selectedViewId={viewId}
 						onViewSelect={handleViewSelect}
+						onBack={handleBackToModules}
 					/>
 				);
 			case 'slides':
-				return <SlideManager viewId={selectedViewId} />;
+				return (
+					<SlideManager 
+						viewId={viewId} 
+						onBack={() => updateUrlParams({ section: 'views' })}
+					/>
+				);
 			default:
 				return <Text>Select a section from the sidebar</Text>;
 		}
@@ -84,11 +161,11 @@ export default function AdminDashboard() {
 		<ScreenWrapper>
 			<View style={styles.container}>
 				<AdminSidebar
-					activeSection={activeSection}
-					onSectionChange={setActiveSection}
-					courseId={selectedCourseId}
-					moduleId={selectedModuleId}
-					viewId={selectedViewId}
+					activeSection={section}
+					onSectionChange={handleSectionChange}
+					courseId={courseId}
+					moduleId={moduleId}
+					viewId={viewId}
 				/>
 				<View style={styles.content}>
 					{renderContent()}

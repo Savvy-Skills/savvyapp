@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, Dialog, Portal, TextInput, Text, Switch, DataTable, Card, Menu } from 'react-native-paper';
-import { ViewWithSlides, ViewType, Module } from '@/types';
+import { ViewWithSlides, ViewType, Module } from '@/types/index';
 import { getModule } from '@/services/coursesApi';
 import { createView, updateView, disableView, updateModule } from '@/services/adminApi';
 import ImageUploader from '@/components/common/ImageUploader';
@@ -12,9 +12,11 @@ import { Image } from 'expo-image';
 interface ViewManagerProps {
   moduleId: number | null;
   onViewSelect: (viewId: number) => void;
+  selectedViewId: number | null;
+  onBack?: () => void;
 }
 
-export default function ViewManager({ moduleId, onViewSelect }: ViewManagerProps) {
+export default function ViewManager({ moduleId, onViewSelect, selectedViewId, onBack }: ViewManagerProps) {
   const [views, setViews] = useState<ViewType[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -71,7 +73,7 @@ export default function ViewManager({ moduleId, onViewSelect }: ViewManagerProps
     setLoading(true);
     try {
       const moduleData = await getModule(moduleId);
-      setViews((moduleData.views || []).map(view => ({
+      setViews((moduleData.views || []).map((view: any) => ({
         ...view,
         view_content: null,
         progress: null,
@@ -169,6 +171,12 @@ export default function ViewManager({ moduleId, onViewSelect }: ViewManagerProps
   const openMenu = () => setMenuVisible(true);
   const closeMenu = () => setMenuVisible(false);
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    }
+  };
+
   if (!moduleId) {
     return (
       <View style={styles.container}>
@@ -255,7 +263,17 @@ export default function ViewManager({ moduleId, onViewSelect }: ViewManagerProps
       )}
       
       <View style={localStyles.header}>
-        <Text variant="headlineMedium">View Management</Text>
+        <View style={localStyles.headerActions}>
+          <Button
+            mode="outlined"
+            onPress={handleBack}
+            style={[styles.savvyButton, localStyles.backButton]}
+            icon="arrow-left"
+          >
+            Back to Modules
+          </Button>
+          <Text variant="headlineMedium">View Management</Text>
+        </View>
         <Button 
           mode="contained" 
           onPress={() => handleOpenDialog()}
@@ -278,18 +296,21 @@ export default function ViewManager({ moduleId, onViewSelect }: ViewManagerProps
             </DataTable.Header>
 
             {views.map((view, index) => (
-              <DataTable.Row key={view.id}>
+              <DataTable.Row 
+                key={view.id}
+                style={view.id === selectedViewId ? localStyles.selectedRow : undefined}
+              >
                 <DataTable.Cell>{view.name}</DataTable.Cell>
                 <DataTable.Cell>{index + 1}</DataTable.Cell>
                 <DataTable.Cell>{view.quiz ? 'Yes' : 'No'}</DataTable.Cell>
                 <DataTable.Cell>
                   <View style={localStyles.actionButtons}>
                     <Button 
-                      mode="outlined" 
+                      mode={view.id === selectedViewId ? "contained" : "outlined"} 
                       onPress={() => onViewSelect(view.id)}
                       style={[styles.savvyButton, localStyles.actionButton]}
                     >
-                      Select
+                      {view.id === selectedViewId ? "Selected" : "Select"}
                     </Button>
                     <Button 
                       mode="outlined" 
@@ -559,5 +580,16 @@ const localStyles = StyleSheet.create({
   },
   menuButtonLabel: {
     fontWeight: 'bold', 
+  },
+  selectedRow: {
+    backgroundColor: 'rgba(98, 0, 238, 0.08)',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  backButton: {
+    marginRight: 8,
   },
 }); 
