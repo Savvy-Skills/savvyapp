@@ -217,6 +217,7 @@ export default StyleSheet.create({
     gap: 10,
     padding: 10,
 	borderRadius: 8,
+	flex: 1,
   },
   tagContainer: {
     backgroundColor: generateColors(Colors.primary, 0.2).muted,

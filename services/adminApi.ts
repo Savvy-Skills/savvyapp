@@ -105,9 +105,9 @@ export const createSlide = async (viewId: number, slideData: Partial<LocalSlide>
   }
 };
 
-export const updateSlide = async (viewId: number, slideId: number, slideData: Partial<LocalSlide>): Promise<LocalSlide> => {
+export const updateSlide = async (slideId: number, slideData: Partial<LocalSlide>): Promise<LocalSlide> => {
   try {
-    const response = await admin_api.put<LocalSlide>(`/views/${viewId}/slides/${slideId}`, slideData);
+    const response = await admin_api.put<LocalSlide>(`/slides/${slideId}`, slideData);
     return response.data;
   } catch (error) {
     console.error("Error updating slide", error);
@@ -115,19 +115,14 @@ export const updateSlide = async (viewId: number, slideId: number, slideData: Pa
   }
 };
 
-export const disableSlide = async (viewId: number, slideId: number): Promise<void> => {
-  try {
-    await admin_api.put(`/views/${viewId}/slides/${slideId}/disable`);
-  } catch (error) {
-    console.error("Error deleting slide", error);
-    throw error;
-  }
-};
-
+export type SlidesOrder = {
+  slide_id: number;
+  order: number;
+}
 // Reorder slides
-export const reorderSlides = async (viewId: number, slideIds: number[]): Promise<void> => {
+export const reorderSlides = async (viewId: number, slides: SlidesOrder[]): Promise<void> => {
   try {
-    await admin_api.post(`/views/${viewId}/reorder-slides`, { slideIds });
+    await admin_api.post(`/views/${viewId}/slidesorder`, { slides });
   } catch (error) {
     console.error("Error reordering slides", error);
     throw error;
