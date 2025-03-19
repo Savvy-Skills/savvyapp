@@ -37,10 +37,10 @@ export default function ModulesList() {
 			<ScrollView>
 				<View style={styles.innerSection}>
 					<ThemedTitle style={styles.sectionTitle}>Module Overview</ThemedTitle>
-				{module.image && module.image.url && (
+				{module.image_url && module.image_url && (
 					<>
 						<View style={{ flexDirection: "row", gap: 16, flexWrap: "wrap" }}>
-							<Image source={module.image?.url} style={{ width: 150, height: 150, borderRadius: 16 }} transition={1000} contentFit="cover" placeholder={{ blurhash }} />
+							<Image source={module.image_url} style={{ width: 150, height: 150, borderRadius: 16 }} transition={1000} contentFit="cover" placeholder={{ blurhash }} />
 							<View style={{ flex: 1, maxWidth: "50%", minWidth: 200 }}>
 								{module.description && (
 									<Text>{module.description}</Text>
@@ -52,12 +52,6 @@ export default function ModulesList() {
 				)}
 				<ThemedTitle style={styles.sectionTitle}>Views</ThemedTitle>
 				{selectedView === "list" && (
-					// <FlatList
-					// 	data={orderedViews}
-					// 	renderItem={({ item }) => <ViewCard view={item} progress={module.views_progress.find((view) => view.view_id === item.id) || {} as ViewProgress} />}
-					// 	keyExtractor={(item) => item.id.toString()}
-					// 	contentContainerStyle={styles.listContainer}
-					// />
 					<View style={styles.listContainer}>
 						{orderedViews.map((view) => (
 							<ViewCard key={view.id} view={view} progress={module.views_progress.find((progress) => progress.view_id === view.id) || {} as ViewProgress} />

@@ -22,7 +22,7 @@ export default function ViewCard({ view, progress }: ViewCardProps) {
 		});
 	};
 	// TODO: Add the Outro slide to the total slides
-	const viewSlides = view.slides.length + 1;
+	const viewSlides = view.slides.length;
 	//  Progress is an array of boolean values, true if the slide was completed, false otherwise
 	const completedSlides = progress.progress?.filter((slide) => slide).length || 0;
 

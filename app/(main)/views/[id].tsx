@@ -6,7 +6,7 @@ import {
 	Platform,
 	ScrollView,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import SlideRenderer from "../../../components/slides/SlideRenderer";
 import BottomBarNav from "@/components/navigation/SlidesBottomBarNav";
 import ScreenWrapper from "@/components/screens/ScreenWrapper";
@@ -21,12 +21,14 @@ import styles from "@/styles/styles";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Button, Text } from "react-native-paper";
 import { useViewStore } from "@/store/viewStore";
+import ApiErrorComponent from "@/components/errors/ApiErrorComponent";
 
 export default function ViewDetail() {
 	const ref = useRef<TopSheetRefProps>(null);
 	const bottomSheetRef = useRef<BottomSheet>(null);
 	const { id } = useLocalSearchParams();
 	const [isInitialRender, setIsInitialRender] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
 	const { slides, currentSlideIndex, fetchViewData, viewStatus, nextSlide, prevSlide, view, setCurrentSlideIndex } = useViewStore();
 
@@ -48,7 +50,19 @@ export default function ViewDetail() {
 
 
 	useEffect(() => {
-		fetchViewData(Number(id));
+		try {
+			const viewId = Number(id);
+			if (isNaN(viewId)) {
+				throw new Error("Invalid view ID");
+			}
+			fetchViewData(viewId).catch(err => {
+				console.error("Error fetching view data:", err);
+				setError("Failed to load view data. Please try again.");
+			});
+		} catch (err) {
+			console.error("Error in fetch effect:", err);
+			setError("An error occurred while loading the view.");
+		}
 	}, [id]);
 
 
@@ -89,20 +103,40 @@ export default function ViewDetail() {
 		}
 	}, [currentSlideIndex]);
 
+	if (error) {
+		return (
+			<ScreenWrapper>
+				<TopNavBar />
+				<ApiErrorComponent
+					message={error}
+					onAction={() => {
+						setError(null);
+						try {
+							fetchViewData(Number(id));
+						} catch (err) {
+							console.error("Error retrying fetch:", err);
+							setError("Failed to reload. Please try again later.");
+						}
+					}}
+				/>
+			</ScreenWrapper>
+		);
+	}
+
 	if (viewStatus !== "READY" || !view) {
 		return <LoadingIndicator />
 	}
 
+	const currentSlide = slides[currentSlideIndex] || null;
+
 	const getWrapperStyle = () => {
-		if (!currentSlide.submitted) return null;
+		if (!currentSlide || !currentSlide.submitted) return null;
 		if (currentSlide.revealed) return styles.revealedWrapper;
 		if (currentSlide.isCorrect) return styles.correctWrapper;
 		if (currentSlide.isCorrect === false) return styles.incorrectWrapper;
 		return null
 	};
 
-	const currentSlide = slides[currentSlideIndex];
-	
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
 			<Pressable style={[localStyles.pressableArea]}>
@@ -111,19 +145,19 @@ export default function ViewDetail() {
 					{/* TopSheet */}
 					<TopSheet ref={ref}>
 						<ScrollView contentContainerStyle={{ paddingHorizontal: 0 }}>
-							{view.slides.map((slide, index) => (
+							{view && view.slides && view.slides.map((slide, index) => (
 								<SlideListItem
 									key={`slide-${slide.slide_id}-${index}`}
-									name={slide.name}
-									type={slide.type}
+									name={slide.name || `Slide ${index + 1}`}
+									type={slide.type || "Unknown"}
 									subtype={
 										slide.type === "Assessment"
 											? slide.assessment_info?.type
 											: slide.type === "Content"
-												? slide.content_info?.type
+												? slide.contents?.[0]?.type
 												: undefined
 									}
-									isCompleted={slides[index].completed}
+									isCompleted={slides[index]?.completed || false}
 									isActive={index === currentSlideIndex}
 									onPress={() => setCurrentSlideIndex(index)}
 								/>
@@ -132,24 +166,46 @@ export default function ViewDetail() {
 					</TopSheet>
 					{/* Slides */}
 					<View style={localStyles.slidesContainer}>
-						<AnimatedSlide
-							key={`${currentSlide.slide_id}-${currentSlideIndex}`}
-							direction={direction}
-							isInitialRender={isInitialRender}
-						>
-							<SlideRenderer slide={currentSlide} index={currentSlideIndex} quizMode={view?.quiz} />
-						</AnimatedSlide>
+						{currentSlide ? (
+							<AnimatedSlide
+								key={`${currentSlide.slide_id}-${currentSlideIndex}`}
+								direction={direction}
+								isInitialRender={isInitialRender}
+							>
+								<SlideRenderer
+									slide={currentSlide}
+									index={currentSlideIndex}
+									quizMode={view?.quiz || false}
+								/>
+							</AnimatedSlide>
+						) : (
+							<View style={[styles.centeredContainer, { flex: 1 }]}>
+								<ApiErrorComponent
+									message={"No slide content available"}
+									title={"Empty View"}
+									actionLabel={"Go Back"}
+									onAction={() => {
+										router.dismissTo({ pathname: "/modules/[id]", params: { id: view?.module_info?.id } });
+									}}
+								/>
+							</View>
+						)}
 					</View>
 
 					<View style={[styles.centeredMaxWidth, styles.slideWidth, styles.bottomBarWrapper, getWrapperStyle()]}>
-						{(currentSlide.type === "Assessment" && currentSlide.submitted) && (
+						{(currentSlide && currentSlide.type === "Assessment" && currentSlide.submitted) && (
 							<FeedbackComponent
 								correctness={currentSlide.isCorrect || false}
 								revealed={currentSlide.revealed || false}
-								quizMode={view?.quiz}
+								quizMode={view?.quiz || false}
 							/>
 						)}
-						<BottomBarNav onShowTopSheet={openTopDrawer} onShowBottomSheet={handleBottomSheetOpen} onCloseBottomSheet={handleBottomSheetClose} showBottomSheet={isBottomSheetOpen} />
+						<BottomBarNav
+							onShowTopSheet={openTopDrawer}
+							onShowBottomSheet={handleBottomSheetOpen}
+							onCloseBottomSheet={handleBottomSheetClose}
+							showBottomSheet={isBottomSheetOpen}
+						/>
 					</View>
 				</View>
 			</Pressable>
@@ -173,7 +229,6 @@ export default function ViewDetail() {
 					<Button mode="outlined" style={styles.defaultButton} onPress={handleBottomSheetClose}>Close</Button>
 				</BottomSheetView>
 			</BottomSheet>
-
 		</ScreenWrapper>
 	);
 }

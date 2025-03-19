@@ -168,9 +168,41 @@ interface ImageType {
 	}
 }
 
+interface VideoType {
+	access: string;
+	path: string;
+	name: string;
+	type: string;
+	size: number;
+	mime: string;
+	meta: {
+		duration: number;
+		video: {
+			codec: string;
+			profile: string;
+			res: string;
+			postWidth: number;
+			postHeight: number;
+			fps: number;
+			bitrate: number;
+			dar: number;
+			par: boolean;
+		};
+		audio: {
+			codec: string;
+			freq: number;
+			bitrate: number;
+		};
+	}
+}
 export interface ImageResponse { 
 	url: string;
 	image: ImageType;
+}
+
+export interface VideoResponse {
+	url: string;
+	video: VideoType;
 }
 
 export type SlideTypes = "Assessment" | "Content" | "Activity" | "Custom";

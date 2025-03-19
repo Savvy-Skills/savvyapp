@@ -2,14 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, Text, Card, TextInput, SegmentedButtons, Divider, Dialog, Portal } from 'react-native-paper';
 import { getViewByID } from '@/services/coursesApi';
-import { createSlide, updateSlide, disableSlide, reorderSlides, createAssessment, getContents, getAssessments } from '@/services/adminApi';
-import { Assessment, AssessmentInfo, ContentInfo, LocalSlide } from '@/types/index';
+import { createSlide, updateSlide, reorderSlides, createAssessment, getContents, getAssessments } from '@/services/adminApi';
+import { AssessmentInfo, ContentInfo, LocalSlide } from '@/types/index';
 import SlideList from './SlideList';
 import ImportDialog from './ImportDialog';
 import ConfirmDialog from './ConfirmDialog';
 import AssessmentFormDialog from './AssessmentFormDialog';
 import EnhancedContentFormDialog from './EnhancedContentFormDialog';
 import ContentPreviewCard from './ContentPreviewCard';
+import DraggableList from './DraggableList';
+import { SlidesOrder } from '@/services/adminApi';
+import ConfirmationDialog from '@/components/modals/ConfirmationDialog';
 
 interface SlideManagerProps {
 	viewId: number | null;
@@ -61,6 +64,15 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
   const [editingContent, setEditingContent] = useState<ContentInfo | null>(null);
   const [editContentDialogVisible, setEditContentDialogVisible] = useState(false);
 
+	// Add these new state variables for reordering
+	const [isReordering, setIsReordering] = useState(false);
+	const [reorderedSlides, setReorderedSlides] = useState<LocalSlide[]>([]);
+	const [hasReorderChanges, setHasReorderChanges] = useState(false);
+
+	// Add state for slide removal confirmation
+	const [removeConfirmVisible, setRemoveConfirmVisible] = useState(false);
+	const [slideToRemove, setSlideToRemove] = useState<LocalSlide | null>(null);
+
 	// Load slides when viewId changes
 	useEffect(() => {
 		if (viewId) {
@@ -69,8 +81,14 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 			fetchAssessmentList();
 		} else {
 			setSlides([]);
+			setReorderedSlides([]);
 		}
 	}, [viewId]);
+
+	// When slides are loaded, initialize reorderedSlides
+	useEffect(() => {
+		setReorderedSlides([...slides]);
+	}, [slides]);
 
 	const fetchSlides = async () => {
 		if (!viewId) return;
@@ -187,7 +205,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 			
 			if (editingSlideId) {
 				// Update existing slide
-				await updateSlide(viewId, editingSlideId, slideData);
+				await updateSlide(editingSlideId, slideData);
 			} else {
 				// Create new slide
 				await createSlide(viewId, slideData);
@@ -207,9 +225,9 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 
 	const confirmDisableSlide = async () => {
 		if (!viewId || !slideToDelete) return;
-
+		return;
 		try {
-			await disableSlide(viewId, slideToDelete);
+			// await disableSlide(viewId, slideToDelete);
 			fetchSlides();
 		} catch (error) {
 			console.error('Failed to disable slide:', error);
@@ -311,6 +329,84 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 				onBack();
 			}
 		}
+	};
+
+	// Add new function to handle reordering
+	const handleReorderModeToggle = () => {
+		setIsReordering(!isReordering);
+		// If canceling reorder mode, reset to original order
+		if (isReordering) {
+			setReorderedSlides([...slides]);
+			setHasReorderChanges(false);
+		}
+	};
+
+	// Add function to handle when slides are reordered
+	const handleReorder = (reordered: LocalSlide[]) => {
+		setReorderedSlides(reordered);
+		setHasReorderChanges(true);
+	};
+
+	// Add function to save the new slide order
+	const handleSaveReorder = async () => {
+		if (!viewId) return;
+		
+		try {
+			const slidesOrder: SlidesOrder[] = reorderedSlides.map((slide, index) => ({
+				slide_id: slide.slide_id,
+				order: index
+			}));
+			
+			await reorderSlides(viewId, slidesOrder);
+			
+			// Update the original slides order after successful save
+			setSlides([...reorderedSlides]);
+			setHasReorderChanges(false);
+			
+			// Optionally exit reorder mode after saving
+			setIsReordering(false);
+		} catch (error) {
+			console.error('Failed to save new slide order:', error);
+		}
+	};
+
+	const handleCancelReorder = () => {
+		setIsReordering(false);
+		setReorderedSlides([...slides]);
+		setHasReorderChanges(false);
+	};
+
+	// Add function to handle removing a slide
+	const handleRemoveSlide = (slide: LocalSlide) => {
+		setSlideToRemove(slide);
+		setRemoveConfirmVisible(true);
+	};
+
+	// Add function to confirm removal
+	const confirmRemoveSlide = async (skip: boolean) => {
+		if (!viewId || !slideToRemove) return;
+
+		try {
+			// Filter out the slide to remove and create a new order
+			const updatedSlides = slides.filter(s => s.slide_id !== slideToRemove.slide_id);
+			
+			// Create the slides order array for the API call
+			const slidesOrder: SlidesOrder[] = updatedSlides.map((slide, index) => ({
+				slide_id: slide.slide_id,
+				order: index
+			}));
+			
+			// Call the reorderSlides function to update the view without the removed slide
+			await reorderSlides(viewId, slidesOrder);
+			
+			// Refresh the slides after removal
+			fetchSlides();
+		} catch (error) {
+			console.error('Failed to remove slide:', error);
+		}
+		
+		// Reset state
+		setSlideToRemove(null);
 	};
 
 	if (!viewId) {
@@ -477,24 +573,56 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 					</Button>
 					<Text variant="headlineMedium">Slide Management</Text>
 				</View>
-				{!isEditing && (
-					<Button
-						mode="contained"
-						onPress={startAddingSlide}
-						style={styles.addButton}
-					>
-						Add New Slide
-					</Button>
-				)}
+				<View style={styles.headerButtons}>
+					{!isEditing && !isReordering && (
+						<Button
+							mode="contained"
+							onPress={startAddingSlide}
+							style={styles.addButton}
+						>
+							Add New Slide
+						</Button>
+					)}
+					{!isEditing && slides.length > 1 && (
+						<Button
+							mode={isReordering ? "contained" : "outlined"}
+							onPress={handleReorderModeToggle}
+							style={styles.reorderButton}
+							icon={isReordering ? "cancel" : "reorder-horizontal"}
+						>
+							{isReordering ? 'Cancel Reorder' : 'Reorder Slides'}
+						</Button>
+					)}
+					{isReordering && hasReorderChanges && (
+						<Button
+							mode="contained"
+							onPress={handleSaveReorder}
+							style={styles.saveReorderButton}
+							icon="content-save"
+						>
+							Save Order
+						</Button>
+					)}
+				</View>
 			</View>
 
 			{isEditing ? renderSlideForm() : (
-				<SlideList
-					slides={slides}
-					loading={loading}
-					onEditSlide={startEditingSlide}
-					onDisableSlide={handleDisableSlide}
-				/>
+				isReordering ? (
+					<DraggableList
+						slides={reorderedSlides}
+						onReorder={handleReorder}
+						onSave={handleSaveReorder}
+						onCancel={handleCancelReorder}
+					/>
+				) : (
+					<SlideList
+						slides={slides}
+						loading={loading}
+						onEditSlide={startEditingSlide}
+						onDisableSlide={handleDisableSlide}
+						onRemoveSlide={handleRemoveSlide}
+					/>
+				)
 			)}
 
 			{/* Content Attach Options Dialog */}
@@ -660,6 +788,15 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 				confirmLabel="Disable"
 				cancelLabel="Cancel"
 			/>
+
+			{/* Slide Removal Confirmation Dialog */}
+			<ConfirmationDialog
+				visible={removeConfirmVisible}
+				onDismiss={() => setRemoveConfirmVisible(false)}
+				onConfirm={confirmRemoveSlide}
+				title="Remove Slide"
+				content={`Are you sure you want to remove the slide "${slideToRemove?.name}" from this view? This action cannot be undone.`}
+			/>
 		</ScrollView>
 	);
 }
@@ -679,6 +816,10 @@ const styles = StyleSheet.create({
 	headerActions: {
 		flexDirection: 'row',
 		alignItems: 'center',
+	},
+	headerButtons: {
+		flexDirection: 'row',
+		gap: 12,
 	},
 	addButton: {
 		marginLeft: 16,
@@ -770,5 +911,12 @@ const styles = StyleSheet.create({
 	},
 	clearAllButton: {
 		marginTop: 12,
+	},
+	reorderButton: {
+		marginLeft: 16,
+	},
+	saveReorderButton: {
+		marginLeft: 16,
+		backgroundColor: 'green',
 	},
 }); 

@@ -9,7 +9,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { openai_api } from "@/services/openaiAPI";
 import { datasets_api } from "@/services/datasetsAPI";
 import { admin_api } from "@/services/adminApi";
-
+import { media_api } from "@/services/mediaAPI";
 // Create a cross-platform storage object
 const crossPlatformStorage = {
 	getItem: async (name: string): Promise<string | null> => {
@@ -71,7 +71,7 @@ export const useAuthStore = create<AuthStore>()(
 				// setTokenInterceptors(courses_api, token, datasource);
 				// setTokenInterceptors(openai_api, token, datasource);
 				// setTokenInterceptors(datasets_api, token, datasource);
-				setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api], token, datasource);
+				setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api, media_api], token, datasource);
 				set({ token });
 				await get().getUser();
 			},
@@ -79,7 +79,7 @@ export const useAuthStore = create<AuthStore>()(
 				set({ datasource });
 				const token = get().token;
 				if (token) {
-					setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api], token, datasource);
+					setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api, media_api], token, datasource);
 				}
 			},
 			login: async (email: string, password: string) => {
@@ -91,7 +91,7 @@ export const useAuthStore = create<AuthStore>()(
 					// setTokenInterceptors(courses_api, data.auth_token, datasource);
 					// setTokenInterceptors(openai_api, data.auth_token, datasource);
 					// setTokenInterceptors(datasets_api, data.auth_token, datasource);
-					setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api], data.auth_token, datasource);
+					setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api, media_api], data.auth_token, datasource);
 					set({ token: data.auth_token });
 					await get().getUser();
 				} catch (error) {
@@ -127,7 +127,7 @@ export const useAuthStore = create<AuthStore>()(
 				// setUnauthorizedInterceptor(courses_api);
 				// setUnauthorizedInterceptor(openai_api);
 				// setUnauthorizedInterceptor(datasets_api);
-				setUnauthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api]);
+				setUnauthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api, media_api]);
 				set({ isInitialized: true });
 			},
 		}),
@@ -143,7 +143,7 @@ export const useAuthStore = create<AuthStore>()(
 					const token = state.token;
 					const datasource = state.datasource;
 					if (token) {
-						setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api], token, datasource);
+						setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api, media_api], token, datasource);
 					}
 				}
 			},

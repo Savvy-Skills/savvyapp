@@ -8,9 +8,10 @@ interface SlideListProps {
   loading: boolean;
   onEditSlide: (slide: LocalSlide) => void;
   onDisableSlide: (slideId: number) => void;
+  onRemoveSlide: (slide: LocalSlide) => void;
 }
 
-export default function SlideList({ slides, loading, onEditSlide, onDisableSlide }: SlideListProps) {
+export default function SlideList({ slides, loading, onEditSlide, onDisableSlide, onRemoveSlide }: SlideListProps) {
   if (loading) {
     return <Text>Loading slides...</Text>;
   }
@@ -32,7 +33,7 @@ export default function SlideList({ slides, loading, onEditSlide, onDisableSlide
             <DataTable.Cell>{slide.type}</DataTable.Cell>
             <DataTable.Cell>
               {slide.type === 'Content'
-                ? (slide as any).content_info?.type
+                ? (slide as any).contents.map((content: any) => content.type).join(', ')
                 : (slide as any).assessment_info?.type}
             </DataTable.Cell>
             <DataTable.Cell>{index + 1}</DataTable.Cell>
@@ -47,10 +48,10 @@ export default function SlideList({ slides, loading, onEditSlide, onDisableSlide
                 </Button>
                 <Button
                   mode="outlined"
-                  onPress={() => onDisableSlide(slide.slide_id)}
-                  style={[styles.actionButton, styles.deleteButton]}
+                  onPress={() => onRemoveSlide(slide)}
+                  style={[styles.actionButton, styles.removeButton]}
                 >
-                  Disable
+                  Remove
                 </Button>
               </View>
             </DataTable.Cell>
@@ -75,5 +76,8 @@ const styles = StyleSheet.create({
   deleteButton: {
     borderColor: 'red',
     color: 'red',
+  },
+  removeButton: {
+    borderColor: 'orange',
   },
 }); 
