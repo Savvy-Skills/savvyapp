@@ -177,7 +177,6 @@ export default StyleSheet.create({
     width: width * 0.8, // 80% of screen width
   },
   savvyButton:{
-	flex: 1,
 	borderRadius: 4,
 	height: 40,
   },

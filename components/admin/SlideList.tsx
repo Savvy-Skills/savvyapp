@@ -2,6 +2,8 @@ import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, DataTable, Text } from 'react-native-paper';
 import { LocalSlide } from '@/types/index';
+import styles from '@/styles/styles';
+import { Colors } from '@/constants/Colors';
 
 interface SlideListProps {
   slides: LocalSlide[];
@@ -17,7 +19,7 @@ export default function SlideList({ slides, loading, onEditSlide, onDisableSlide
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={localStyles.container}>
       <DataTable>
         <DataTable.Header>
           <DataTable.Title>Name</DataTable.Title>
@@ -38,18 +40,18 @@ export default function SlideList({ slides, loading, onEditSlide, onDisableSlide
             </DataTable.Cell>
             <DataTable.Cell>{index + 1}</DataTable.Cell>
             <DataTable.Cell>
-              <View style={styles.actionButtons}>
+              <View style={localStyles.actionButtons}>
                 <Button
                   mode="outlined"
                   onPress={() => onEditSlide(slide)}
-                  style={styles.actionButton}
+                  style={[styles.savvyButton, localStyles.actionButton]}
                 >
                   Edit
                 </Button>
                 <Button
                   mode="outlined"
                   onPress={() => onRemoveSlide(slide)}
-                  style={[styles.actionButton, styles.removeButton]}
+                  style={[styles.savvyButton, localStyles.actionButton, localStyles.removeButton]}
                 >
                   Remove
                 </Button>
@@ -62,7 +64,7 @@ export default function SlideList({ slides, loading, onEditSlide, onDisableSlide
   );
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -71,13 +73,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    marginHorizontal: 4,
+    
   },
   deleteButton: {
     borderColor: 'red',
     color: 'red',
   },
   removeButton: {
-    borderColor: 'orange',
+    borderColor: Colors.revealedButton,
+    color: Colors.revealedButton,
   },
 }); 

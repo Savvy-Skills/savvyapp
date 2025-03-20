@@ -39,51 +39,15 @@ export default function DraggableList({ slides, onReorder, onSave, onCancel }: D
     updatedSlides.splice(toIndex, 0, movedSlide);
     
     setLocalSlides(updatedSlides);
+    // Call the parent component's onReorder with the updated order
+    onReorder(updatedSlides);
     // Enter reordering state when changes are made
     setIsReordering(true);
-  };
-  
-  // Handle saving changes
-  const handleSave = () => {
-    // Call the parent component's onReorder with the final order
-    onReorder(localSlides);
-    // Exit reordering state
-    setIsReordering(false);
-    // Call the onSave callback if provided
-    if (onSave) onSave();
-  };
-  
-  // Handle cancelling changes
-  const handleCancel = () => {
-    // Reset to original slides
-    setLocalSlides([...slides]);
-    // Exit reordering state
-    setIsReordering(false);
-    // Call the onCancel callback if provided
-    if (onCancel) onCancel();
   };
 
   return (
     <View style={styles.container}>
-      {/* Action buttons */}
-      {isReordering && (
-        <View style={styles.actionButtonsContainer}>
-          <Button 
-            mode="outlined" 
-            onPress={handleCancel} 
-            style={styles.actionButton}
-          >
-            Cancel
-          </Button>
-          <Button 
-            mode="contained" 
-            onPress={handleSave} 
-            style={styles.actionButton}
-          >
-            Save Order
-          </Button>
-        </View>
-      )}
+      {/* Removed duplicate action buttons */}
       
       {/* Drop indicator line that shows where the item will be placed */}
       {draggingIndex !== null && (
@@ -325,14 +289,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-  },
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: 16,
-    gap: 8,
-  },
-  actionButton: {
-    minWidth: 110,
   },
 }); 

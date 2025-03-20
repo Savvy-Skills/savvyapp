@@ -45,8 +45,10 @@ export default function DataTableContainer({
 }: DataTableContainerProps) {
 	// Destructure datasetInfo if available
 	const { url, extension } = datasetInfo || {};
+	const validTraces = traces && traces.length > 0;
 
-	const [selectedView, setSelectedView] = useState<"table" | "chart">("chart");
+	// Set default view to table if originalTraces is undefined
+	const [selectedView, setSelectedView] = useState<"table" | "chart">(validTraces ? "chart" : "table");
 	const { setTrigger } = useViewStore();
 
 	// Use data fetch only if data is not provided
@@ -65,6 +67,9 @@ export default function DataTableContainer({
 
 	// If originalTraces is provided, merge it with the traces
 	const finalTraces = traces ? [...(originalTraces || []), ...traces] : originalTraces;
+	
+	// Determine if chart view should be available
+	const chartViewAvailable = validTraces;
 
 	const fields: FilterField[] = useMemo(() => {
 		if (!finalData || !finalColumns || !finalData.length || !finalColumns.length) return [];
@@ -140,14 +145,16 @@ export default function DataTableContainer({
 				{datasetInfo?.metadata?.about && <Text style={styles.datasetAbout}>{datasetInfo?.metadata?.about}</Text>}
 			</View>
 			<View style={{ flexDirection: "row", gap: 4, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-				<SegmentedButtons
-					style={{ flex: 1, height: "100%", maxWidth: 200 }}
-					buttons={[{ label: "Chart", value: "chart", icon: "chart-box-outline", style: { ...styles.toggleButton } },
-						{ label: "Table", value: "table", icon: "table-large", style: { ...styles.toggleButton } }]}
-					onValueChange={(value) => handleViewChange(value as "table" | "chart")}
-					value={selectedView}
-					theme={{ roundness: 0, colors: { secondaryContainer: generateColors(Colors.primary, 0.2).muted } }}
-				/>
+				{chartViewAvailable && (
+					<SegmentedButtons
+						style={{ flex: 1, height: "100%", maxWidth: 200 }}
+						buttons={[{ label: "Chart", value: "chart", icon: "chart-box-outline", style: { ...styles.toggleButton } },
+							{ label: "Table", value: "table", icon: "table-large", style: { ...styles.toggleButton } }]}
+						onValueChange={(value) => handleViewChange(value as "table" | "chart")}
+						value={selectedView}
+						theme={{ roundness: 0, colors: { secondaryContainer: generateColors(Colors.primary, 0.2).muted } }}
+					/>
+				)}
 				{!hideFilter && (
 					<Button
 						icon="cog-outline"
@@ -161,14 +168,14 @@ export default function DataTableContainer({
 				)}
 			</View>
 			{!hideFilter && showFilters && <Filter fields={fields} onFilterChange={setActiveFilter} />}
-			{selectedView === "table" && <DataTable
+			{(selectedView === "table" || !chartViewAvailable) && <DataTable
 				data={filteredData}
 				columns={finalColumns}
 				name={datasetInfo?.name}
 				headerColors={headerColors}
 				parentWidth={containerWidth}
 			/>}
-			{selectedView === "chart" && (!hideVisualizer && finalTraces && finalTraces.length > 0) && <DataVisualizerPlotly
+			{selectedView === "chart" && chartViewAvailable && (!hideVisualizer && finalTraces && finalTraces.length > 0) && <DataVisualizerPlotly
 				dataset={filteredData}
 				traces={finalTraces}
 				title="Data Visualizer"

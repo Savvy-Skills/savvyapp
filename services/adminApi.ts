@@ -1,4 +1,4 @@
-import { Course, Module, ViewWithSlides, LocalSlide, Assessment, ContentInfo } from "@/types/index";
+import { Course, Module, ViewWithSlides, LocalSlide, Assessment, ContentInfo, DatasetInfo } from "@/types/index";
 import { createAPI } from "./apiConfig";
 
 export const admin_api = createAPI("admin");
@@ -176,3 +176,26 @@ export const createContent = async (contentData: Partial<ContentInfo>): Promise<
 	throw error;
   }
 };
+
+
+export const getDatasets = async (): Promise<DatasetInfo[]> => {
+  try {
+    const response = await admin_api.get<DatasetInfo[]>('/datasets');
+    return response.data;
+  } catch (error) {
+    console.error("Error getting datasets", error);
+    throw error;
+  }
+};
+
+export const updateContent = async (contentData: Partial<ContentInfo>): Promise<ContentInfo> => {
+  try {
+    const response = await admin_api.put<ContentInfo>(`/contents/${contentData.id}`, contentData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating content", error);
+	throw error;
+  }
+};
+
+	

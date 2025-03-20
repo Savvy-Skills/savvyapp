@@ -13,6 +13,8 @@ import ContentPreviewCard from './ContentPreviewCard';
 import DraggableList from './DraggableList';
 import { SlidesOrder } from '@/services/adminApi';
 import ConfirmationDialog from '@/components/modals/ConfirmationDialog';
+import styles from '@/styles/styles';
+import { Colors } from '@/constants/Colors';
 
 interface SlideManagerProps {
 	viewId: number | null;
@@ -24,7 +26,7 @@ type SlideType = 'Content' | 'Assessment';
 export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	const [slides, setSlides] = useState<LocalSlide[]>([]);
 	const [loading, setLoading] = useState(false);
-	
+
 	// State for slide creation/editing
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingSlideId, setEditingSlideId] = useState<number | null>(null);
@@ -32,14 +34,14 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 		name: '',
 		type: 'Content',
 	});
-	
+
 	// State for slide type selection
 	const [slideType, setSlideType] = useState<SlideType>('Assessment');
-	
+
 	// State for attached contents and assessment
 	const [attachedContents, setAttachedContents] = useState<Partial<ContentInfo>[]>([]);
 	const [attachedAssessment, setAttachedAssessment] = useState<Partial<AssessmentInfo> | null>(null);
-	
+
 	// State for dialogs
 	const [importContentDialogVisible, setImportContentDialogVisible] = useState(false);
 	const [importAssessmentDialogVisible, setImportAssessmentDialogVisible] = useState(false);
@@ -47,22 +49,22 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	const [createAssessmentDialogVisible, setCreateAssessmentDialogVisible] = useState(false);
 	const [contentAttachOptionsVisible, setContentAttachOptionsVisible] = useState(false);
 	const [assessmentAttachOptionsVisible, setAssessmentAttachOptionsVisible] = useState(false);
-	
+
 	// Lists for imports
 	const [contentList, setContentList] = useState<any[]>([]);
 	const [assessmentList, setAssessmentList] = useState<any[]>([]);
 	const [selectedImportItemId, setSelectedImportItemId] = useState<number | null>(null);
-	
+
 	// Delete dialog state
 	const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 	const [slideToDelete, setSlideToDelete] = useState<number | null>(null);
 
 	// Add to state declarations
 	const [slideOrder, setSlideOrder] = useState<string>('');
-  
-  // Content editing state
-  const [editingContent, setEditingContent] = useState<ContentInfo | null>(null);
-  const [editContentDialogVisible, setEditContentDialogVisible] = useState(false);
+
+	// Content editing state
+	const [editingContent, setEditingContent] = useState<ContentInfo | null>(null);
+	const [editContentDialogVisible, setEditContentDialogVisible] = useState(false);
 
 	// Add these new state variables for reordering
 	const [isReordering, setIsReordering] = useState(false);
@@ -136,7 +138,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 		setIsEditing(false);
 		setSelectedImportItemId(null);
 		setSlideOrder('');
-    setEditingContent(null);
+		setEditingContent(null);
 	};
 
 	const startEditingSlide = (slide: LocalSlide) => {
@@ -158,7 +160,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 			}));
 			setAttachedContents(contents);
 		}
-		
+
 		// Set assessment if available
 		if (slide.assessment_info) {
 			setAttachedAssessment(slide.assessment_info);
@@ -183,13 +185,13 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 				name: slideForm.name,
 				type: slideType,
 			};
-			
+
 			// Add contents if we have any attached
 			if (attachedContents.length > 0) {
 				const contentIds = attachedContents
 					.filter(content => content.id)
 					.map(content => content.id as string);
-				
+
 				if (contentIds.length > 0) {
 					slideData.contents = contentIds.map((id, index) => ({
 						content_id: id,
@@ -197,12 +199,12 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 					})) as any;
 				}
 			}
-			
+
 			// Add assessment_id if we have attached assessment
 			if (attachedAssessment?.id) {
 				slideData.assessment_id = attachedAssessment.id;
 			}
-			
+
 			if (editingSlideId) {
 				// Update existing slide
 				await updateSlide(editingSlideId, slideData);
@@ -210,7 +212,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 				// Create new slide
 				await createSlide(viewId, slideData);
 			}
-			
+
 			resetForm();
 			fetchSlides();
 		} catch (error) {
@@ -251,6 +253,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	};
 
 	const handleContentCreated = (newContent: ContentInfo) => {
+		console.log('newContent', newContent);
 		setAttachedContents([...attachedContents, newContent]);
 		setCreateContentDialogVisible(false);
 		setContentAttachOptionsVisible(false);
@@ -270,23 +273,23 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 		setAttachedContents([]);
 	};
 
-  // Edit specific content
-  const handleEditContent = (content: ContentInfo) => {
-    setEditingContent(content);
-    setEditContentDialogVisible(true);
-  };
+	// Edit specific content
+	const handleEditContent = (content: ContentInfo) => {
+		setEditingContent(content);
+		setEditContentDialogVisible(true);
+	};
 
-  // Handle content update
-  const handleContentUpdated = (updatedContent: ContentInfo) => {
-    const updatedContents = attachedContents.map(content => 
-      content.id === updatedContent.id ? updatedContent : content
-    );
-    setAttachedContents(updatedContents);
-    setEditContentDialogVisible(false);
-    setEditingContent(null);
-    // Refresh content list
-    fetchContentList();
-  };
+	// Handle content update
+	const handleContentUpdated = (updatedContent: ContentInfo) => {
+		const updatedContents = attachedContents.map(content =>
+			content.id === updatedContent.id ? updatedContent : content
+		);
+		setAttachedContents(updatedContents);
+		setEditContentDialogVisible(false);
+		setEditingContent(null);
+		// Refresh content list
+		fetchContentList();
+	};
 
 	// Assessment handling functions
 	const showAssessmentAttachOptions = () => {
@@ -350,19 +353,19 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	// Add function to save the new slide order
 	const handleSaveReorder = async () => {
 		if (!viewId) return;
-		
+
 		try {
 			const slidesOrder: SlidesOrder[] = reorderedSlides.map((slide, index) => ({
 				slide_id: slide.slide_id,
 				order: index
 			}));
-			
+
 			await reorderSlides(viewId, slidesOrder);
-			
+
 			// Update the original slides order after successful save
 			setSlides([...reorderedSlides]);
 			setHasReorderChanges(false);
-			
+
 			// Optionally exit reorder mode after saving
 			setIsReordering(false);
 		} catch (error) {
@@ -389,22 +392,22 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 		try {
 			// Filter out the slide to remove and create a new order
 			const updatedSlides = slides.filter(s => s.slide_id !== slideToRemove.slide_id);
-			
+
 			// Create the slides order array for the API call
 			const slidesOrder: SlidesOrder[] = updatedSlides.map((slide, index) => ({
 				slide_id: slide.slide_id,
 				order: index
 			}));
-			
+
 			// Call the reorderSlides function to update the view without the removed slide
 			await reorderSlides(viewId, slidesOrder);
-			
+
 			// Refresh the slides after removal
 			fetchSlides();
 		} catch (error) {
 			console.error('Failed to remove slide:', error);
 		}
-		
+
 		// Reset state
 		setSlideToRemove(null);
 	};
@@ -420,7 +423,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	// Render slide form
 	const renderSlideForm = () => {
 		return (
-			<Card style={styles.formCard}>
+			<Card style={localStyles.formCard}>
 				<Card.Title title={editingSlideId ? "Edit Slide" : "Create New Slide"} />
 				<Card.Content>
 					<TextInput
@@ -430,7 +433,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 						style={styles.input}
 					/>
 
-					<View style={styles.formSection}>
+					<View style={localStyles.formSection}>
 						<Text variant="titleMedium">Slide Type</Text>
 						<SegmentedButtons
 							value={slideType}
@@ -439,95 +442,98 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 								{ value: 'Content', label: 'Content' },
 								{ value: 'Assessment', label: 'Assessment' }
 							]}
-							style={styles.segmentedButton}
+							style={localStyles.segmentedButton}
 						/>
 					</View>
-					
-					<Divider style={styles.divider} />
-					
+
+					<Divider style={localStyles.divider} />
+
 					{/* Content Attachment Section */}
-					<View style={styles.attachmentSection}>
-						<View style={styles.attachmentHeader}>
+					<View style={localStyles.attachmentSection}>
+						<View style={localStyles.attachmentHeader}>
 							<Text variant="titleMedium">Contents</Text>
-							<Button 
-								mode="outlined" 
+							<Button
+								mode="outlined"
 								onPress={showContentAttachOptions}
+								style={[styles.savvyButton, localStyles.addButton]}
 							>
 								Add Content
 							</Button>
 						</View>
-						
+
 						{attachedContents.length > 0 ? (
 							<>
 								{attachedContents.map((content, index) => (
-                  <ContentPreviewCard 
-                    key={`content-${index}`}
-                    content={content} 
-                    index={index} 
-                    onRemove={handleRemoveContent}
-                    onEdit={handleEditContent}
-                  />
+									<ContentPreviewCard
+										key={`content-${index}`}
+										content={content}
+										index={index}
+										onRemove={handleRemoveContent}
+										onEdit={handleEditContent}
+									/>
 								))}
-								
+
 								{attachedContents.length > 1 && (
-									<Button 
+									<Button
 										mode="outlined"
-										icon="delete-sweep" 
+										icon="delete-sweep"
 										onPress={handleClearAllContents}
-										style={styles.clearAllButton}
+										style={[styles.savvyButton, localStyles.clearAllButton]}
 									>
 										Clear All Contents
 									</Button>
 								)}
 							</>
 						) : (
-							<Text style={styles.noAttachmentText}>No content attached</Text>
+							<Text style={localStyles.noAttachmentText}>No content attached</Text>
 						)}
 					</View>
-					
-					<Divider style={styles.divider} />
-					
+
+					<Divider style={localStyles.divider} />
+
 					{/* Assessment Attachment Section - Only show if slide type is Assessment */}
 					{slideType === 'Assessment' && (
-						<View style={styles.attachmentSection}>
-							<View style={styles.attachmentHeader}>
+						<View style={localStyles.attachmentSection}>
+							<View style={localStyles.attachmentHeader}>
 								<Text variant="titleMedium">Assessment</Text>
 								{!attachedAssessment ? (
-									<Button 
-										mode="outlined" 
+									<Button
+										mode="outlined"
 										onPress={showAssessmentAttachOptions}
+										style={[styles.savvyButton, localStyles.addButton]}
 									>
 										Attach Assessment
 									</Button>
 								) : (
-									<Button 
+									<Button
 										mode="outlined"
-										icon="close" 
+										icon="close"
 										onPress={handleDetachAssessment}
+										style={[styles.savvyButton, localStyles.addButton]}
 									>
 										Detach
 									</Button>
 								)}
 							</View>
-							
+
 							{attachedAssessment ? (
-								<Card style={styles.previewCard}>
+								<Card style={localStyles.previewCard}>
 									<Card.Content>
-										<Text style={styles.previewLabel}>Type:</Text>
-										<Text style={styles.previewValue}>{attachedAssessment.type}</Text>
-										
-										<Text style={styles.previewLabel}>Question:</Text>
-										<Text style={styles.previewValue}>{attachedAssessment.text}</Text>
-										
+										<Text style={localStyles.previewLabel}>Type:</Text>
+										<Text style={localStyles.previewValue}>{attachedAssessment.type}</Text>
+
+										<Text style={localStyles.previewLabel}>Question:</Text>
+										<Text style={localStyles.previewValue}>{attachedAssessment.text}</Text>
+
 										{attachedAssessment.options && attachedAssessment.options.length > 0 && (
 											<>
-												<Text style={styles.previewLabel}>Options:</Text>
+												<Text style={localStyles.previewLabel}>Options:</Text>
 												{attachedAssessment.options.map((option, index) => (
 													<Text key={index} style={[
-														styles.previewValue, 
+														localStyles.previewValue,
 														option.isCorrect && styles.correctOption
 													]}>
-														• {option.text} {option.match ? `---> ${option.match}` : ''} {option.isCorrect ? '(Correct)' : ''} 
+														• {option.text} {option.match ? `---> ${option.match}` : ''} {option.isCorrect ? '(Correct)' : ''}
 													</Text>
 												))}
 											</>
@@ -535,20 +541,24 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 									</Card.Content>
 								</Card>
 							) : (
-								<Text style={styles.noAttachmentText}>No assessment attached</Text>
+								<Text style={localStyles.noAttachmentText}>No assessment attached</Text>
 							)}
 						</View>
 					)}
-					
-					<View style={styles.formActions}>
-						<Button mode="outlined" onPress={cancelEditingSlide} style={styles.formButton}>
+
+					<View style={localStyles.formActions}>
+						<Button mode="outlined" onPress={cancelEditingSlide} style={[styles.savvyButton, localStyles.formButton]}>
 							Cancel
 						</Button>
-						<Button 
-							mode="contained" 
-							onPress={handleSaveSlide} 
-							style={styles.formButton}
-							disabled={!slideForm.name}
+						<Button
+							mode="contained"
+							onPress={handleSaveSlide}
+							style={[styles.savvyButton, localStyles.formButton]}
+							disabled={
+								!slideForm.name ||
+								(slideType === 'Assessment' && !attachedAssessment) ||
+								(slideType === 'Content' && attachedContents.length === 0)
+							}
 						>
 							Save
 						</Button>
@@ -560,25 +570,25 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	};
 
 	return (
-		<ScrollView style={styles.container}>
-			<View style={styles.header}>
-				<View style={styles.headerActions}>
+		<ScrollView style={localStyles.container}>
+			<View style={localStyles.header}>
+				<View style={localStyles.headerActions}>
 					<Button
 						mode="outlined"
 						onPress={handleBack}
-						style={[styles.backButton]}
+						style={[styles.savvyButton, localStyles.backButton]}
 						icon="arrow-left"
 					>
 						{isEditing ? 'Back to Slides' : 'Back to Views'}
 					</Button>
 					<Text variant="headlineMedium">Slide Management</Text>
 				</View>
-				<View style={styles.headerButtons}>
+				<View style={localStyles.headerButtons}>
 					{!isEditing && !isReordering && (
 						<Button
 							mode="contained"
 							onPress={startAddingSlide}
-							style={styles.addButton}
+							style={[styles.savvyButton, localStyles.addButton]}
 						>
 							Add New Slide
 						</Button>
@@ -587,7 +597,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 						<Button
 							mode={isReordering ? "contained" : "outlined"}
 							onPress={handleReorderModeToggle}
-							style={styles.reorderButton}
+							style={[styles.savvyButton, localStyles.reorderButton]}
 							icon={isReordering ? "cancel" : "reorder-horizontal"}
 						>
 							{isReordering ? 'Cancel Reorder' : 'Reorder Slides'}
@@ -597,7 +607,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 						<Button
 							mode="contained"
 							onPress={handleSaveReorder}
-							style={styles.saveReorderButton}
+							style={[styles.savvyButton, localStyles.saveReorderButton]}
 							icon="content-save"
 						>
 							Save Order
@@ -627,51 +637,43 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 
 			{/* Content Attach Options Dialog */}
 			<Portal>
-				<Dialog 
-					visible={contentAttachOptionsVisible} 
+				<Dialog
+					visible={contentAttachOptionsVisible}
 					onDismiss={() => setContentAttachOptionsVisible(false)}
-					style={styles.dialog}
+					style={localStyles.dialog}
 				>
-					<Dialog.Title style={styles.dialogTitle}>Attach Content</Dialog.Title>
+					<Dialog.Title style={localStyles.dialogTitle}>Attach Content</Dialog.Title>
 					<Dialog.Content>
-						<View style={styles.dialogHeader}>
+						<View style={localStyles.dialogHeader}>
 							<Text variant="titleMedium">Choose an option:</Text>
-							<Button 
-								icon="refresh" 
-								mode="text" 
-								onPress={fetchContentList}
-								compact
-							>
-								Refresh List
-							</Button>
 						</View>
-						<Button 
-							mode="outlined" 
+						<Button
+							mode="outlined"
 							onPress={() => {
 								setContentAttachOptionsVisible(false);
 								setImportContentDialogVisible(true);
 							}}
-							style={styles.dialogButton}
+							style={localStyles.dialogButton}
 						>
 							Import Existing Content
 						</Button>
-						<Button 
-							mode="outlined" 
+						<Button
+							mode="outlined"
 							onPress={() => {
 								setContentAttachOptionsVisible(false);
 								setCreateContentDialogVisible(true);
 							}}
-							style={styles.dialogButton}
+							style={localStyles.dialogButton}
 						>
 							Create New Content
 						</Button>
 					</Dialog.Content>
 					<Divider />
-					<Dialog.Actions style={styles.dialogActions}>
-						<Button 
+					<Dialog.Actions style={localStyles.dialogActions}>
+						<Button
 							mode="outlined"
 							onPress={() => setContentAttachOptionsVisible(false)}
-							style={styles.cancelButton}
+							style={localStyles.cancelButton}
 						>
 							Cancel
 						</Button>
@@ -681,10 +683,10 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 
 			{/* Assessment Attach Options Dialog */}
 			<Portal>
-				<Dialog style={styles.dialog} visible={assessmentAttachOptionsVisible} onDismiss={() => setAssessmentAttachOptionsVisible(false)}>
+				<Dialog style={localStyles.dialog} visible={assessmentAttachOptionsVisible} onDismiss={() => setAssessmentAttachOptionsVisible(false)}>
 					<Dialog.Title>Attach Assessment</Dialog.Title>
 					<Dialog.Content>
-						<View style={styles.dialogHeader}>
+						<View style={localStyles.dialogHeader}>
 							<Text>Choose an option:</Text>
 							{/* <Button 
 								icon="refresh" 
@@ -695,23 +697,23 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 								Refresh List
 							</Button> */}
 						</View>
-						<Button 
-							mode="outlined" 
+						<Button
+							mode="outlined"
 							onPress={() => {
 								setAssessmentAttachOptionsVisible(false);
 								setImportAssessmentDialogVisible(true);
 							}}
-							style={styles.dialogButton}
+							style={localStyles.dialogButton}
 						>
 							Import Existing Assessment
 						</Button>
-						<Button 
-							mode="outlined" 
+						<Button
+							mode="outlined"
 							onPress={() => {
 								setAssessmentAttachOptionsVisible(false);
 								setCreateAssessmentDialogVisible(true);
 							}}
-							style={styles.dialogButton}
+							style={localStyles.dialogButton}
 						>
 							Create New Assessment
 						</Button>
@@ -754,15 +756,15 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 				onDismiss={() => setCreateContentDialogVisible(false)}
 				onSave={handleContentCreated}
 				viewId={viewId}
-        		isEditing={false}
+				isEditing={false}
 			/>
 
 			{/* Edit Content Dialog */}
 			<EnhancedContentFormDialog
 				visible={editContentDialogVisible}
 				onDismiss={() => {
-				setEditContentDialogVisible(false);
-				setEditingContent(null);
+					setEditContentDialogVisible(false);
+					setEditingContent(null);
 				}}
 				onSave={handleContentUpdated}
 				editingContent={editingContent}
@@ -801,7 +803,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	);
 }
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
 	container: {
 		flex: 1,
 	},
@@ -841,6 +843,7 @@ const styles = StyleSheet.create({
 	},
 	segmentedButton: {
 		marginTop: 8,
+		borderRadius: 4,
 	},
 	divider: {
 		marginVertical: 16,
@@ -888,8 +891,13 @@ const styles = StyleSheet.create({
 		maxWidth: 600,
 		width: "100%",
 		marginHorizontal: 'auto',
+		borderRadius: 12,
+		padding: 8,
 	},
 	dialogTitle: {
+		textAlign: 'center',
+		fontSize: 20,
+		fontWeight: 'bold',
 		paddingBottom: 8,
 	},
 	dialogHeader: {
@@ -917,6 +925,17 @@ const styles = StyleSheet.create({
 	},
 	saveReorderButton: {
 		marginLeft: 16,
-		backgroundColor: 'green',
+		backgroundColor: Colors.primary,
+	},
+	actionButtons: {
+		flexDirection: 'row',
+		gap: 8,
+	},
+	actionButton: {
+		marginHorizontal: 4,
+	},
+	removeButton: {
+		borderColor: Colors.revealedButton,
+		color: Colors.revealedButton,
 	},
 }); 
