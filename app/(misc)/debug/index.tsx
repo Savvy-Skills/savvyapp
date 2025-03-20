@@ -8,12 +8,13 @@ import DrawingBoxWeb from "@/components/react/DrawingBoxWeb";
 import { Image } from "expo-image";
 import { DrawingBoxHandle } from "@/components/react/DrawingBoxWeb";
 import MNISTComponent from "@/components/MNISTComponent";
+import AnswerReviewer from "@/components/assessment/AnswerReviewer";
 
 export default function DebugScreen() {
-	const [selectedIndex, setSelectedIndex] = useState<"drawing" | "tokenizer" | "tokenize">("drawing");
+	const [selectedIndex, setSelectedIndex] = useState<"drawing" | "tokenizer" | "tokenize" | "answer-reviewer">("answer-reviewer");
 
 	const handleValueChange = (value: string) => {
-		setSelectedIndex(value as "drawing" | "tokenizer" | "tokenize");
+		setSelectedIndex(value as "drawing" | "tokenizer" | "tokenize" | "answer-reviewer");
 	};
 
 
@@ -48,6 +49,14 @@ export default function DebugScreen() {
 							borderRadius: 4,
 						}
 					},
+					{
+						label: "Answer Reviewer",
+						value: "answer-reviewer",
+						icon: "vector-line",
+						style: {
+							borderRadius: 4,
+						}
+					},
 				]}
 				theme={{ roundness: 0 }}
 			/>
@@ -57,6 +66,7 @@ export default function DebugScreen() {
 				)}
 				{selectedIndex === "tokenizer" && <Tokenizer />}
 				{selectedIndex === "tokenize" && <TokenizeComponent />}
+				{selectedIndex === "answer-reviewer" && <AnswerReviewer />}
 			</ScrollView>
 
 		</ScreenWrapper>
