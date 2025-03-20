@@ -54,7 +54,7 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 };
 
 const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
-	const sortedContents = slide.contents?.length > 0 ? slide.contents.slice().sort((a, b) => a.order - b.order) : [];
+	const sortedContents = slide.contents && slide.contents.length > 0 ? slide.contents.slice().sort((a, b) => a.order - b.order) : [];
 	switch (slide.type) {
 		case "Assessment":
 			return (
@@ -144,7 +144,7 @@ export default function SlideRenderer({
 		}
 	}, [slide.submitted]);
 
-	if ((slide.type === "Content" && currentContents.length === 1) && !["Neural Network", "Neuron", "Word2Vec"].includes(slide.contents[0].type)) {
+	if ((slide.type === "Content" && currentContents.length === 1) && !["Neural Network", "Neuron", "Word2Vec", "Dataset"].includes(currentContents[0].type)) {
 		return (
 			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 		);

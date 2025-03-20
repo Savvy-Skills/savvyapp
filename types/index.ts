@@ -391,6 +391,7 @@ export interface AssessmentInfo extends Assessment {
 
 export interface DatasetInfo {
 	id: string;
+	readonly created_at: number;
 	type: string;
 	extension: string;
 	name: string;
@@ -408,6 +409,7 @@ export interface Metadata {
 	source?: string;
 	source_url?: string;
 	hints?: string[];
+	columns_names?: string[];
 }
 
 export interface Option {

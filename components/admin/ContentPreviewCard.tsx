@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
 import { ContentInfo } from '@/types/index';
+import RichText from '../slides/RichTextComponent';
 
 interface ContentPreviewCardProps {
   content: Partial<ContentInfo>;
@@ -11,6 +12,7 @@ interface ContentPreviewCardProps {
 }
 
 export default function ContentPreviewCard({ content, index, onRemove, onEdit }: ContentPreviewCardProps) {
+	console.log('content', content);
   return (
     <Card key={`content-${index}`} style={styles.previewCard}>
       <Card.Content>
@@ -42,14 +44,9 @@ export default function ContentPreviewCard({ content, index, onRemove, onEdit }:
         
         <Text style={styles.previewLabel}>Type:</Text>
         <Text style={styles.previewValue}>{content.type}</Text>
-        
+        <Text style={styles.previewLabel}>Preview:</Text>
         {content.type === 'Rich Text' && (
-          <>
-            <Text style={styles.previewLabel}>Content:</Text>
-            <Text style={styles.previewValue} numberOfLines={3}>
-              {content.state || '[No text content]'}
-            </Text>
-          </>
+         <RichText text={content.state || ''} />
         )}
         
         {content.type === 'Image' && (

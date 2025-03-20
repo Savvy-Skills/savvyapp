@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput, SegmentedButtons, Divider } from 'react-native-paper';
 import { ContentInfo, ContentTypes } from '@/types/index';
-import { createContent } from '@/services/adminApi';
+import { createContent, updateContent } from '@/services/adminApi';
 import ContentEditor from '@/components/content/ContentEditor';
 
 interface EnhancedContentFormDialogProps {
@@ -51,7 +51,11 @@ export default function EnhancedContentFormDialog({
 	};
 
 	const handleContentChange = (updatedContent: Partial<ContentInfo>) => {
-		setContentData(updatedContent);
+		console.log('updatedContent', updatedContent);
+		setContentData(prevData => ({
+			...prevData,
+			...updatedContent
+		}));
 	};
 
 	const isFormValid = () => {
@@ -65,7 +69,6 @@ export default function EnhancedContentFormDialog({
 				return !!contentData.url;
 			case 'Dataset':
 				return !!contentData.dataset_id;
-			// Add validation for other content types as needed
 			default:
 				return false;
 		}
@@ -86,9 +89,11 @@ export default function EnhancedContentFormDialog({
 			};
 
 			let savedContent;
-
-
-			savedContent = await createContent(fullContentData);
+			if (isEditing) {
+				savedContent = await updateContent(fullContentData);
+			} else {
+				savedContent = await createContent(fullContentData);
+			}
 
 			// Notify parent component
 			onSave(savedContent);
