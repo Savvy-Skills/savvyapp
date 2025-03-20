@@ -1,31 +1,22 @@
-import ScreenWrapper from '@/components/screens/ScreenWrapper';
-import { Link, Stack } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import React from "react";
+import { Image } from "react-native";
+import ErrorComponent from "@/components/errors/ErrorComponent";
+import ScreenWrapper from "@/components/screens/ScreenWrapper";
+import TopNavBar from "@/components/navigation/TopNavBar";
+import { router } from "expo-router";
 
-export default function NotFoundScreen() {
+export default function NotFoundPage() {
   return (
     <ScreenWrapper>
-      <Stack.Screen options={{ title: 'Oops!' }} />
-      <View style={styles.container}>
-        <Text>This screen doesn't exist.</Text>
-        <Link href="/" style={styles.link}>
-          <Text>Go to home screen!</Text>
-        </Link>
-      </View>
+      <ErrorComponent 
+        title="Page Not Found"
+        message="We couldn't find the page you're looking for. It might have been moved or deleted."
+        actionLabel="Go to Home"
+        onAction={() => router.push("/")}
+        imageSource={require("@/assets/images/pngs/robot.png")} // Make sure to add this image to your assets
+        secondaryActionLabel="Go Back"
+        onSecondaryAction={() => router.back()}
+      />
     </ScreenWrapper>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
-  },
-});
+} 
