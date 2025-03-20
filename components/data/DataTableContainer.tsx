@@ -175,7 +175,7 @@ export default function DataTableContainer({
 				headerColors={headerColors}
 				parentWidth={containerWidth}
 			/>}
-			{selectedView === "chart" && chartViewAvailable && (!hideVisualizer && finalTraces && finalTraces.length > 0) && <DataVisualizerPlotly
+			{selectedView === "chart" && chartViewAvailable && (!hideVisualizer && finalTraces && originalTraces && originalTraces.length > 0) && <DataVisualizerPlotly
 				dataset={filteredData}
 				traces={finalTraces}
 				title="Data Visualizer"
