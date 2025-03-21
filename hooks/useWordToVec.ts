@@ -41,7 +41,7 @@ export const useWordToVec = ({ gameId, dataset_info }: UseWordToVecProps) => {
 	// Initialize with the provided datasetInfo
 	useEffect(() => {
 		if (dataset_info && !currentDataset) {
-			setCurrentWord(dataset_info.name);
+			// setCurrentWord(data[0].word);
 			setCurrentDataset(dataset_info);
 		}
 	}, [dataset_info, currentDataset, setCurrentWord, setCurrentDataset]);
@@ -64,6 +64,7 @@ export const useWordToVec = ({ gameId, dataset_info }: UseWordToVecProps) => {
 				word: data[999].word,
 				similarity: data[999].similarity,
 			};
+			setCurrentWord(data[0].word);
 			setMetadata({ nearestSimilarity, tenthNearestSimilarity, hundredthNearestSimilarity, thousandthNearestSimilarity });
 			setLoading(false);
 		}
@@ -105,7 +106,6 @@ export const useWordToVec = ({ gameId, dataset_info }: UseWordToVecProps) => {
 
 	const getWordHint = useCallback(() => {
 		// TODO: Logic to get a random word hint from list of hints
-		console.log({currentDataset});
 		if (!currentDataset?.metadata.hints) {
 			setCurrentWordHint("No hints available");
 		} else {

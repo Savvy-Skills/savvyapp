@@ -83,13 +83,14 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 		y: row["y"],
 		result: row["result"]
 	}));
+	console.log({dataPoints});
 
 	// Extract values for easier use
 	const X_AXIS_NAME = mergedConfig.axes.x.name;
 	const Y_AXIS_NAME = mergedConfig.axes.y.name;
-	const CLASS2 = mergedConfig.classes.negative.value;
-	const CLASS0 = mergedConfig.classes.neutral.value;
-	const CLASS1 = mergedConfig.classes.positive.value;
+	const CLASS2_NAME = mergedConfig.classes.negative.value;
+	const CLASS0_NAME = mergedConfig.classes.neutral.value;
+	const CLASS1_NAME = mergedConfig.classes.positive.value;
 
 	// Set state from configuration
 	const [weight1, setWeight1] = useState(mergedConfig.initialValues.weight1);
@@ -167,25 +168,48 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 			const scaledY = (point.y / 50) - 1; // Scale 0-100 to -1 to 1
 
 			const output = calculateNeuronOutput(scaledX, scaledY, weight1, weight2, bias, activationFn);
-			const predictedClass = output < 0 ? mergedConfig.classes.negative.value : output > 0 ? mergedConfig.classes.positive.value : mergedConfig.classes.neutral.value;
+			
+			// Generate internal prediction class
+			const internalPredicted = output < 0 ? "negative" : output > 0 ? "positive" : "neutral";
+			
+			// Map internal prediction to display name
+			const predictedClass = internalPredicted === "negative" 
+				? mergedConfig.classes.negative.value 
+				: internalPredicted === "positive" 
+					? mergedConfig.classes.positive.value 
+					: mergedConfig.classes.neutral.value;
+			
 			const probability = output < 0
 				? (Math.min(Math.abs(output), 1) * 100).toFixed(0) + '%'
 				: output > 0
 					? (Math.min(output, 1) * 100).toFixed(0) + '%'
 					: '0%';
 
+			// Map expected class to internal representation for comparison
+			const internalExpected = point.result === "negative" 
+				? "negative"
+				: point.result === "positive"
+					? "positive"
+					: "neutral";
+
+			const internalExpectedDisplay = internalExpected === "negative" 
+				? mergedConfig.classes.negative.value 
+				: internalExpected === "positive" 
+					? mergedConfig.classes.positive.value 
+					: mergedConfig.classes.neutral.value;
+
 			// Check if prediction matches expected result
-			const isCorrect = predictedClass === point.result;
+			const isCorrect = internalPredicted === internalExpected;
 
 			return {
 				coordinates: `(${point.x}%, ${point.y}%)`,
-				expected: point.result,
+				expected: internalExpectedDisplay,
 				predicted: predictedClass,
 				probability,
 				isCorrect
 			};
 		});
-	}, [weight1, weight2, bias, activationFn, dataPoints]);
+	}, [weight1, weight2, bias, activationFn, dataPoints, mergedConfig]);
 
 	// Calculate accuracy
 	const accuracy = useMemo(() => {
@@ -275,7 +299,7 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 					layout={layout}
 					config={baseConfig}
 					style={{ flex: 1 }}
-					onHover={() => { }}
+					onHover={() => {}}
 					onPointClick={() => { }}
 					dom={{ scrollEnabled: false }}
 				/>
@@ -284,7 +308,7 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 				{mergedConfig.useVerticalSlider && (
 					<View style={{ flexDirection: 'column', alignItems: 'center', gap: 10, marginRight: 32 }}>
 						<Text style={{ color: Colors.text, fontWeight: 'bold' }}>
-							{CLASS1} {mergedConfig.classes.positive.emoji && mergedConfig.classes.positive.emoji}
+							{CLASS1_NAME} {mergedConfig.classes.positive.emoji && mergedConfig.classes.positive.emoji}
 						</Text>
 						<VerticalSlider
 							value={-bias}
@@ -303,14 +327,14 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 							renderIndicator={() => (
 								<View style={{ backgroundColor: mergedConfig.classes.neutral.color, width: 80, height: 30, alignItems: 'center', justifyContent: 'center', borderTopRightRadius: 5, borderBottomRightRadius: 5 }}>
 									<Text style={{ color: Colors.text, fontWeight: 'bold' }}>
-										{CLASS0} {mergedConfig.classes.neutral.emoji && mergedConfig.classes.neutral.emoji}
+										{CLASS0_NAME} {mergedConfig.classes.neutral.emoji && mergedConfig.classes.neutral.emoji}
 									</Text>
 								</View>
 							)}
 							renderIndicatorHeight={30}
 						/>
 						<Text style={{ color: Colors.text, fontWeight: 'bold' }}>
-							{CLASS2} {mergedConfig.classes.negative.emoji && mergedConfig.classes.negative.emoji}
+							{CLASS2_NAME} {mergedConfig.classes.negative.emoji && mergedConfig.classes.negative.emoji}
 						</Text>
 					</View>
 				)}

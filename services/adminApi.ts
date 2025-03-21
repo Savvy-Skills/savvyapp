@@ -177,16 +177,30 @@ export const createContent = async (contentData: Partial<ContentInfo>): Promise<
   }
 };
 
-
-export const getDatasets = async (): Promise<DatasetInfo[]> => {
+interface GetDatasetsParams {	
+  word_vec_only?: boolean;
+}
+export const getDatasets = async ({word_vec_only = false}: GetDatasetsParams): Promise<DatasetInfo[]> => {
   try {
-    const response = await admin_api.get<DatasetInfo[]>('/datasets');
+    const response = await admin_api.get<DatasetInfo[]>('/datasets', { params: { word_vec: word_vec_only } });
     return response.data;
   } catch (error) {
     console.error("Error getting datasets", error);
     throw error;
   }
 };
+
+
+export const getDataset = async (datasetId: number): Promise<DatasetInfo> => {
+  try {
+    const response = await admin_api.get<DatasetInfo>(`/datasets/${datasetId}`);
+    return response.data;
+  } catch (error) {
+	console.error("Error getting dataset", error);
+	throw error;
+  }
+};
+
 
 export const updateContent = async (contentData: Partial<ContentInfo>): Promise<ContentInfo> => {
   try {

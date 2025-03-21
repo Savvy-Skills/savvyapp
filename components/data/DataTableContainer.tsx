@@ -45,7 +45,7 @@ export default function DataTableContainer({
 }: DataTableContainerProps) {
 	// Destructure datasetInfo if available
 	const { url, extension } = datasetInfo || {};
-	const validTraces = traces && traces.length > 0;
+	const validTraces = traces && traces.length > 0;	
 
 	// Set default view to table if originalTraces is undefined
 	const [selectedView, setSelectedView] = useState<"table" | "chart">(validTraces ? "chart" : "table");
@@ -175,7 +175,7 @@ export default function DataTableContainer({
 				headerColors={headerColors}
 				parentWidth={containerWidth}
 			/>}
-			{selectedView === "chart" && chartViewAvailable && (!hideVisualizer && finalTraces && originalTraces && originalTraces.length > 0) && <DataVisualizerPlotly
+			{selectedView === "chart" && chartViewAvailable && (!hideVisualizer && finalTraces && finalTraces.length > 0) && <DataVisualizerPlotly
 				dataset={filteredData}
 				traces={finalTraces}
 				title="Data Visualizer"
