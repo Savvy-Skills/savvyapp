@@ -5,6 +5,7 @@ import { ContentInfo, DatasetInfo } from '@/types/index';
 import { getDatasets } from '@/services/adminApi';
 import { TraceConfig as PlotlyTraceConfig } from '@/components/data/DataVisualizerPlotly';
 import DatasetUploader from '@/components/common/DatasetUploader';
+import Dropdown from '@/components/common/Dropdown';
 
 interface TraceConfig extends Omit<PlotlyTraceConfig, 'type'> {
   id: string;
@@ -77,7 +78,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
   const loadDatasets = async () => {
     setLoading(true);
     try {
-      const fetchedDatasets = await getDatasets();
+      const fetchedDatasets = await getDatasets({word_vec_only: false});
       setDatasets(fetchedDatasets);
     } catch (error) {
       console.error('Error loading datasets:', error);
@@ -205,8 +206,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
           
           <View style={styles.columnSelectors}>
             <View style={styles.columnSelector}>
-              <Text style={styles.label}>X Axis</Text>
-              <ColumnSelector 
+              <Dropdown 
                 label="X Axis"
                 value={currentTrace.x}
                 options={columns}
@@ -216,8 +216,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
             
             {currentTrace.type !== 'choropleth' && (
               <View style={styles.columnSelector}>
-                <Text style={styles.label}>Y Axis</Text>
-                <ColumnSelector 
+                <Dropdown 
                   label="Y Axis"
                   value={currentTrace.y}
                   options={columns}
@@ -228,8 +227,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
             
             {currentTrace.type === 'choropleth' && (
               <View style={styles.columnSelector}>
-                <Text style={styles.label}>Value (z)</Text>
-                <ColumnSelector 
+                <Dropdown 
                   label="Value (z)"
                   value={currentTrace.z || ''}
                   options={columns}
@@ -295,12 +293,12 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
             <View style={styles.formInput}>
               <Text style={styles.label}>Group By</Text>
               <View style={styles.groupByContainer}>
-                <ColumnSelector 
-                  label="Group By"
+                <Dropdown 
                   value={currentTrace.groupBy || ''}
                   options={columns}
-                  onChange={(value) => setCurrentTrace({...currentTrace, groupBy: value})}
+                  onChange={(value: string) => setCurrentTrace({...currentTrace, groupBy: value})}
                   placeholder="Select column (optional)"
+                  width="95%"
                 />
                 {currentTrace.groupBy && (
                   <IconButton 
@@ -396,61 +394,6 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
     }
     
     return description;
-  };
-
-  // Add this component inside the DatasetEditor component
-  const ColumnSelector = ({ 
-    label, 
-    value, 
-    options, 
-    onChange, 
-    placeholder = "Select column" 
-  }: { 
-    label: string; 
-    value: string; 
-    options: Array<{label: string; value: string}>; 
-    onChange: (value: string) => void;
-    placeholder?: string;
-  }) => {
-    const [menuVisible, setMenuVisible] = useState(false);
-    
-    const openMenu = () => setMenuVisible(true);
-    const closeMenu = () => setMenuVisible(false);
-    
-    const handleSelect = (value: string) => {
-      onChange(value);
-      closeMenu();
-    };
-    
-    return (
-      <View>
-        <Menu
-          visible={menuVisible}
-          onDismiss={closeMenu}
-          anchor={
-            <Button 
-              mode="outlined" 
-              onPress={openMenu} 
-              style={styles.dropdownButton}
-              icon="menu-down"
-            >
-              {value || placeholder}
-            </Button>
-          }
-        >
-          {options.map((option) => (
-            <Menu.Item
-              key={option.value}
-              onPress={() => handleSelect(option.value)}
-              title={option.label}
-            />
-          ))}
-          {options.length === 0 && (
-            <Menu.Item title="No columns available" disabled />
-          )}
-        </Menu>
-      </View>
-    );
   };
 
   // Add this function to handle the newly uploaded dataset
@@ -672,21 +615,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 6,
     color: '#666',
-  },
-  dropdownButton: {
-    width: '100%',
-    marginBottom: 8,
-    justifyContent: 'flex-start',
-  },
-  dropdown: {
-    height: 50,
-    borderColor: 'gray',
-    borderWidth: 0.5,
-    borderRadius: 4,
-    paddingHorizontal: 8,
-  },
-  dropdownPlaceholder: {
-    color: '#888',
   },
   segmentedButtons: {
     marginBottom: 12,

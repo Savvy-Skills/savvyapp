@@ -34,6 +34,9 @@ const DatasetUploader = memo(function DatasetUploader({
   // Add a new state to store the file object
   const [fileObject, setFileObject] = useState<File | null>(null);
 
+  // Add new state for Word2Vec validation
+  const [isValidWord2Vec, setIsValidWord2Vec] = useState(false);
+
   const pickDatasetFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -122,6 +125,22 @@ const DatasetUploader = memo(function DatasetUploader({
             columns,
             columns_names
           };
+          
+          // Check if this is a valid Word2Vec dataset
+          const hasRequiredColumns = 
+            columns === 3 && 
+            columns_names.includes('word') && 
+            columns_names.includes('percentile') && 
+            columns_names.includes('similarity');
+            
+          setIsValidWord2Vec(hasRequiredColumns);
+          
+          // If it's a valid Word2Vec dataset, automatically set the flag
+          if (hasRequiredColumns) {
+            setIsWordVec(true);
+          } else {
+            setIsWordVec(false);
+          }
         }
       }
       // For JSON files, attempt to parse
@@ -139,7 +158,27 @@ const DatasetUploader = memo(function DatasetUploader({
               columns,
               columns_names
             };
+            
+            // Check if this is a valid Word2Vec dataset
+            const hasRequiredColumns = 
+              columns === 3 && 
+              columns_names.includes('word') && 
+              columns_names.includes('percentile') && 
+              columns_names.includes('similarity');
+              
+            setIsValidWord2Vec(hasRequiredColumns);
+            
+            // If it's a valid Word2Vec dataset, automatically set the flag
+            if (hasRequiredColumns) {
+              setIsWordVec(true);
+            } else {
+              setIsWordVec(false);
+            }
           }
+        } else {
+          // Not a supported format for Word2Vec
+          setIsValidWord2Vec(false);
+          setIsWordVec(false);
         }
       }
       
@@ -147,6 +186,8 @@ const DatasetUploader = memo(function DatasetUploader({
       setMetadata(metadataObj);
     } catch (error) {
       console.warn('Error extracting metadata:', error);
+      setIsValidWord2Vec(false);
+      setIsWordVec(false);
     }
   };
   
@@ -154,6 +195,13 @@ const DatasetUploader = memo(function DatasetUploader({
     if ((!fileContent && !fileObject) || !name || !fileExtension) {
       setHasFileError(true);
       setFileErrorMessage('Please provide a file and dataset name before uploading');
+      return;
+    }
+    
+    // Validate Word2Vec marking
+    if (isWordVec && !isValidWord2Vec) {
+      setHasFileError(true);
+      setFileErrorMessage('This dataset does not match Word2Vec format requirements');
       return;
     }
     
@@ -281,6 +329,10 @@ const DatasetUploader = memo(function DatasetUploader({
                   setFileName('');
                   setFileContent(null);
                   setFileExtension('');
+                  setFileObject(null);
+                  setMetadata({});
+                  setIsValidWord2Vec(false);
+                  setIsWordVec(false);
                 }}
                 compact
               >
@@ -381,14 +433,20 @@ const DatasetUploader = memo(function DatasetUploader({
           <View style={styles.checkboxContainer}>
             <Checkbox
               status={isWordVec ? 'checked' : 'unchecked'}
-              onPress={() => setIsWordVec(!isWordVec)}
+              onPress={() => isValidWord2Vec && setIsWordVec(!isWordVec)}
+              disabled={!isValidWord2Vec}
             />
-            <Text style={styles.checkboxLabel} onPress={() => setIsWordVec(!isWordVec)}>
+            <Text 
+              style={[styles.checkboxLabel, !isValidWord2Vec && styles.disabledText]} 
+              onPress={() => isValidWord2Vec && setIsWordVec(!isWordVec)}
+            >
               This is a Word2Vec dataset
             </Text>
           </View>
-          <HelperText type="info">
-            Word2Vec datasets contain word embeddings that can be used for text analysis
+          <HelperText type={isValidWord2Vec ? "info" : "error"}>
+            {isValidWord2Vec 
+              ? "Word2Vec datasets contain word embeddings that can be used for text analysis" 
+              : "Word2Vec datasets require exactly 3 columns: 'word', 'percentile', and 'similarity'"}
           </HelperText>
         </View>
         
@@ -498,5 +556,8 @@ const styles = StyleSheet.create({
   columnChip: {
     marginRight: 4,
     marginBottom: 4,
+  },
+  disabledText: {
+    opacity: 0.5,
   },
 }); 

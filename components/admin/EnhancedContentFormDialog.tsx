@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Button, Dialog, Portal, Text, TextInput, SegmentedButtons, Divider } from 'react-native-paper';
+import { Button, Dialog, Portal, Text, TextInput, SegmentedButtons, Divider, Menu } from 'react-native-paper';
 import { ContentInfo, ContentTypes } from '@/types/index';
 import { createContent, updateContent } from '@/services/adminApi';
 import ContentEditor from '@/components/content/ContentEditor';
+import Dropdown from '../common/Dropdown';
 
 interface EnhancedContentFormDialogProps {
 	visible: boolean;
@@ -13,6 +14,16 @@ interface EnhancedContentFormDialogProps {
 	viewId?: number;
 	isEditing?: boolean;
 }
+
+const contentTypeOptions = [
+	{ label: 'Rich Text', value: 'Rich Text' },
+	{ label: 'Image', value: 'Image' },
+	{ label: 'Video', value: 'Video' },
+	{ label: 'Dataset', value: 'Dataset' },
+	{ label: 'Neural Network', value: 'Neural Network' },
+	{ label: 'Neuron', value: 'Neuron' },
+	{ label: 'Word2Vec', value: 'Word2Vec' },
+];
 
 export default function EnhancedContentFormDialog({
 	visible,
@@ -51,7 +62,6 @@ export default function EnhancedContentFormDialog({
 	};
 
 	const handleContentChange = (updatedContent: Partial<ContentInfo>) => {
-		console.log('updatedContent', updatedContent);
 		setContentData(prevData => ({
 			...prevData,
 			...updatedContent
@@ -69,6 +79,10 @@ export default function EnhancedContentFormDialog({
 				return !!contentData.url;
 			case 'Dataset':
 				return !!contentData.dataset_id;
+			case 'Neuron':
+				return !!contentData.dataset_id;
+			case 'Word2Vec':
+				return !!contentData.dataset_id && !!contentData.dataset_info?.word_vec;
 			default:
 				return false;
 		}
@@ -121,16 +135,26 @@ export default function EnhancedContentFormDialog({
 							style={styles.input}
 						/>
 						<Text variant="titleMedium" style={styles.sectionTitle}>Content Type</Text>
-						<SegmentedButtons
+						{/* <SegmentedButtons
 							value={contentType}
 							onValueChange={(value) => setContentType(value as ContentTypes)}
 							buttons={[
 								{ value: 'Rich Text', label: 'Text' },
 								{ value: 'Image', label: 'Image' },
 								{ value: 'Video', label: 'Video' },
-								{ value: 'Dataset', label: 'Dataset' }
+								{ value: 'Dataset', label: 'Dataset' },
+								{ value: 'Neural Network', label: 'Neural Network' },
+								{ value: 'Neuron', label: 'Neuron' },
+								{ value: 'Word2Vec', label: 'Word2Vec' },
 							]}
 							style={styles.segmentedButton}
+						/> */}
+						{/* TODO: Add a dropdown for content type using menu from react-native-paper */}
+						<Dropdown
+							label="Content Type"
+							value={contentType}
+							options={contentTypeOptions}
+							onChange={(value: string) => setContentType(value as ContentTypes)}
 						/>
 
 						<Divider style={styles.divider} />

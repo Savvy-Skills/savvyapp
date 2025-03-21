@@ -141,9 +141,14 @@ const generateScatterTrace = (points: Array<{ x: number, y: number, result: stri
 		}
 	});
 
-	// Create class and probability text
+	// Create class and probability text - using display values from config
 	const classNames = outputs.map(output => {
-		return output < 0 ? config.classes.negative.value : output > 0 ? config.classes.positive.value : config.classes.neutral.value;
+		const internalPrediction = output < 0 ? "negative" : output > 0 ? "positive" : "neutral";
+		return internalPrediction === "negative" 
+			? config.classes.negative.value 
+			: internalPrediction === "positive" 
+				? config.classes.positive.value 
+				: config.classes.neutral.value;
 	});
 
 	const probabilities = outputs.map(output => {
@@ -163,8 +168,13 @@ const generateScatterTrace = (points: Array<{ x: number, y: number, result: stri
 	const customData = points.map((point, index) => {
 		const probability = probabilities[index];
 		const confidenceLabel = getConfidenceLabel(probability);
+		const expectedClass = point.result === "negative" 
+			? config.classes.negative.value 
+			: point.result === "positive" 
+				? config.classes.positive.value 
+				: config.classes.neutral.value;
 		
-		return [probability, point.result, confidenceLabel];
+		return [probability, expectedClass, confidenceLabel];
 	});
 
 	return {
@@ -204,11 +214,11 @@ const getConfidenceLabel = (probabilityString: string): string => {
 
 // Function to generate the expected class trace (larger circles behind the data points)
 const generateExpectedClassTrace = (points: Array<{ x: number, y: number, result: string }>, config: NeuronConfig) => {
-	// Map results to colors
+	// Map results to colors, handle both internal and display values
 	const resultColors = points.map(point => {
-		if (point.result === config.classes.positive.value) {
+		if (point.result === "positive" || point.result === config.classes.positive.value) {
 			return config.classes.positive.color;
-		} else if (point.result === config.classes.negative.value) {
+		} else if (point.result === "negative" || point.result === config.classes.negative.value) {
 			return config.classes.negative.color;
 		} else {
 			return Colors.whiteText;
