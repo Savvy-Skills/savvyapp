@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Button, Dialog, Portal, Text, TextInput, Divider } from 'react-native-paper';
+import { Button, Dialog, Portal, Text, TextInput, Divider, Card, IconButton, ToggleButton } from 'react-native-paper';
 import { Assessment, AssessmentInfo, AssessmentTypes } from '@/types/index';
 import { createAssessment } from '@/services/adminApi';
 import AssessmentFormFieldsContainer from './AssessmentFormFieldsContainer';
+import RichText from '@/components/slides/RichTextComponent';
+import RichTextEditorComponent from '@/components/common/RichTextEditorComponent';
 
 interface AssessmentFormDialogProps {
   visible: boolean;
@@ -26,6 +28,17 @@ export default function AssessmentFormDialog({
   const [assessmentFormData, setAssessmentFormData] = useState<Partial<AssessmentInfo>>({});
   const [assessmentName, setAssessmentName] = useState('New Assessment');
   const [loading, setLoading] = useState(false);
+  
+  // Explanation section state
+  const [explanationExpanded, setExplanationExpanded] = useState(false);
+  const [explanation, setExplanation] = useState('');
+  const [explSelection, setExplSelection] = useState({ start: 0, end: 0 });
+  const [activeStyles, setActiveStyles] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+  });
+  const [history, setHistory] = useState<string[]>([]);
 
   // Initialize form when dialog becomes visible
   useEffect(() => {
@@ -45,6 +58,10 @@ export default function AssessmentFormDialog({
     setAssessmentFormData({});
     setAssessmentName('New Assessment');
     setLoading(false);
+    setExplanation('');
+    setExplanationExpanded(false);
+    setActiveStyles({ bold: false, italic: false, underline: false });
+    setHistory([]);
   };
 
   const handleDismiss = () => {
@@ -62,7 +79,7 @@ export default function AssessmentFormDialog({
       buttonLabel: "Submit",
       view_id: viewId || 0,
       subtype: "Text",
-      explanation: ""
+      explanation: explanation // Include explanation in the data
     } as Assessment;
 
     // Structure options based on assessment type
@@ -153,6 +170,101 @@ export default function AssessmentFormDialog({
     }
 
     return finalAssessmentData;
+  };
+
+  // Find if the current selection is entirely within a style tag
+  const findContainingStyleTag = (text: string, selStart: number, selEnd: number) => {
+    const tags = findStyleTags(text);
+    
+    for (const tag of tags) {
+      if (selStart >= tag.contentStart && selEnd <= tag.contentEnd) {
+        return tag;
+      }
+    }
+    
+    return null;
+  };
+
+  // Find all style tags in the text and their positions
+  const findStyleTags = (input: string) => {
+    const regex = /\[style=(\{.*?\})\](.*?)\[\/style\]/g;
+    const tags = [];
+    let match;
+
+    while ((match = regex.exec(input)) !== null) {
+      try {
+        const style = JSON.parse(match[1]);
+        tags.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          contentStart: match.index + `[style=${match[1]}]`.length,
+          contentEnd: match.index + match[0].length - '[/style]'.length,
+          styleString: match[1],
+          style
+        });
+      } catch (e) {
+        console.warn(`Invalid style string: ${match[1]}`);
+      }
+    }
+
+    return tags;
+  };
+
+  // Apply style to selected text
+  const applyStyle = (styleKey: string, styleValue: any) => {
+    if (explSelection.start !== explSelection.end) {
+      // Save current state to history before updating
+      setHistory([...history, explanation]);
+      
+      const containingTag = findContainingStyleTag(explanation, explSelection.start, explSelection.end);
+      
+      if (containingTag) {
+        // Clone the existing style
+        const currentStyle = { ...containingTag.style } as any;
+        
+        // Toggle the style property
+        if (currentStyle[styleKey] === styleValue) {
+          delete currentStyle[styleKey];
+        } else {
+          currentStyle[styleKey] = styleValue;
+        }
+        
+        // Create new style string and update text
+        const newStyleString = JSON.stringify(currentStyle);
+        const fullContent = explanation.substring(containingTag.contentStart, containingTag.contentEnd);
+        
+        const newText = 
+          explanation.substring(0, containingTag.start) + 
+          `[style=${newStyleString}]${fullContent}[/style]` + 
+          explanation.substring(containingTag.end);
+        
+        setExplanation(newText);
+      } else {
+        // No containing tag, just add the style
+        const styleObject = { [styleKey]: styleValue } as any;
+        const selectedText = explanation.substring(explSelection.start, explSelection.end);
+        const styleTag = `[style=${JSON.stringify(styleObject)}]${selectedText}[/style]`;
+        
+        const newText = 
+          explanation.substring(0, explSelection.start) + 
+          styleTag + 
+          explanation.substring(explSelection.end);
+        
+        setExplanation(newText);
+      }
+    }
+  };
+
+  const toggleBold = () => applyStyle('fontWeight', 'bold');
+  const toggleItalic = () => applyStyle('fontStyle', 'italic');
+  const toggleUnderline = () => applyStyle('textDecorationLine', 'underline');
+  
+  const undo = () => {
+    if (history.length > 0) {
+      const previousState = history[history.length - 1];
+      setHistory(history.slice(0, -1));
+      setExplanation(previousState);
+    }
   };
 
   const handleSave = async () => {
@@ -283,6 +395,37 @@ export default function AssessmentFormDialog({
               onCorrectAnswersChange={setCorrectAnswers}
               onFormDataChange={setAssessmentFormData}
             />
+            
+            <Divider style={styles.divider} />
+            
+            {/* Explanation Section */}
+            <View style={styles.explanationSection}>
+              <Button 
+                mode="outlined"
+                onPress={() => setExplanationExpanded(!explanationExpanded)}
+                icon={explanationExpanded ? "chevron-up" : "chevron-down"}
+                style={styles.expandButton}
+              >
+                {explanationExpanded ? "Hide Explanation" : "Add Explanation (Optional)"}
+              </Button>
+              
+              {explanationExpanded && (
+                <Card style={styles.explanationCard}>
+                  <Card.Content>
+                    <RichTextEditorComponent
+                      value={explanation}
+                      onChange={setExplanation}
+                      label="Explanation"
+                      placeholder="Enter an explanation for the correct answer..."
+                      numberOfLines={4}
+                      previewHeight={60}
+					  enableColors={true}
+					  enableFontSize={true}
+                    />
+                  </Card.Content>
+                </Card>
+              )}
+            </View>
           </ScrollView>
         </Dialog.ScrollArea>
         <Divider />
@@ -340,5 +483,35 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     minWidth: 100,
+  },
+  explanationSection: {
+    marginVertical: 16,
+    paddingHorizontal: 24,
+  },
+  expandButton: {
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  explanationCard: {
+    marginTop: 8,
+  },
+  toolbar: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  explanationInput: {
+    marginBottom: 16,
+  },
+  previewTitle: {
+    marginBottom: 8,
+  },
+  previewContainer: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 4,
+    padding: 8,
+    backgroundColor: '#f9f9f9',
+    minHeight: 60,
   },
 }); 
