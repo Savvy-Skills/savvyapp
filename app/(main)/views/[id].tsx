@@ -131,6 +131,7 @@ export default function ViewDetail() {
 
 	const getWrapperStyle = () => {
 		if (!currentSlide || !currentSlide.submitted) return null;
+		if (currentSlide.isEvaluating) return styles.revealedWrapper;
 		if (currentSlide.revealed) return styles.revealedWrapper;
 		if (currentSlide.isCorrect) return styles.correctWrapper;
 		if (currentSlide.isCorrect === false) return styles.incorrectWrapper;

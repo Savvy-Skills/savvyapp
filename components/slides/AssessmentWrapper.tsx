@@ -26,8 +26,6 @@ export default function AssessmentWrapper({
 	const showExplanationComponent = slide.showExplanation;
 	const { backgroundAssessment } = useThemeStore();
 
-
-
 	return (
 		<View
 			style={[

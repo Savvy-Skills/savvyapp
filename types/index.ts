@@ -259,7 +259,11 @@ export interface Answer {
 	match?: string;
 }
 
-
+export interface SubRating {
+	rating: number;
+	feedback: string;
+	reasoning: string;
+}
 
 export interface BaseSubmission {
 	assessment_id: number;
@@ -267,6 +271,7 @@ export interface BaseSubmission {
 	answer: Answer[];
 	views_id: number;
 	revealed: boolean;
+	subRating?: SubRating;
 }
 
 export interface Submission extends BaseSubmission {
@@ -304,8 +309,15 @@ export interface ViewStore {
 	setTrigger: (trigger: string) => void;
 	resetTrigger: () => void;
 	checkSlideCompletion: (index: number) => void;
+	evaluateOpenEndedAnswer: (questionText: string, answerText: string) => Promise<OpenEndedEvaluation>;
 }
 
+export interface OpenEndedEvaluation {
+	is_correct: boolean;
+	rating: number;
+	feedback: string;
+	reasoning: string;
+}
 export interface LocalSlide extends BaseSlide {
 	completed: boolean;
 	submittable: boolean;
@@ -317,6 +329,8 @@ export interface LocalSlide extends BaseSlide {
 	assessment_id?: number;
 	assessment_info?: AssessmentInfo;
 	submission_id?: number;
+	subRating?: SubRating;
+	isEvaluating?: boolean;
 }
 
 
@@ -369,6 +383,17 @@ interface ExtrasInfo {
 	operator: NumericOperator;
 }
 
+export interface RubricLevel {
+	name: string;
+	description: string;
+	value: number;
+}
+
+export interface Rubric {
+	criterion: string;
+	levels: RubricLevel[];
+}
+
 export interface Assessment {
 	title: string;
 	text: string;
@@ -381,6 +406,7 @@ export interface Assessment {
 	extras?: ExtrasInfo;
 	subtype?: QuestionSubtypes;
 	options?: Option[];
+	rubric?: Rubric[];
 }
 
 export interface AssessmentInfo extends Assessment {

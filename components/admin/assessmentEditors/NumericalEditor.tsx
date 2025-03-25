@@ -3,17 +3,27 @@ import { View, StyleSheet } from 'react-native';
 import { Text, TextInput, Menu, Button } from 'react-native-paper';
 import { BaseEditorProps } from './types';
 import { NumericOperator } from '@/types/index';
+import ExplanationInputNative from './common/ExplanationInput';
+
+interface NumericalEditorProps extends BaseEditorProps {
+	extras?: {
+		text?: string;
+		text2?: string;
+		operator?: NumericOperator;
+	};
+}
 
 export default function NumericalEditor({
 	options,
 	onOptionsChange,
-	onFormDataChange
-}: BaseEditorProps) {
-	const [numericalOperator, setNumericalOperator] = useState<NumericOperator>('eq');
-	const [numericalPrefix, setNumericalPrefix] = useState<string>('');
-	const [numericalSuffix, setNumericalSuffix] = useState<string>('');
+	onFormDataChange,
+	extras = {}
+}: NumericalEditorProps) {
+	const [numericalOperator, setNumericalOperator] = useState<NumericOperator>(extras.operator || 'eq');
+	const [numericalPrefix, setNumericalPrefix] = useState<string>(extras.text || '');
+	const [numericalSuffix, setNumericalSuffix] = useState<string>(extras.text2 || '');
 	const [operatorMenuVisible, setOperatorMenuVisible] = useState(false);
-	const [correctValue, setCorrectValue] = useState<string>('');
+	const [correctValue, setCorrectValue] = useState<string>(options[0] || '');
 
 	// Initialize with existing data if available
 	useEffect(() => {
@@ -31,13 +41,15 @@ export default function NumericalEditor({
 
 	// Update form data extras when any numerical settings change
 	useEffect(() => {
-		onFormDataChange({
-			extras: {
-				text: numericalPrefix,
-				text2: numericalSuffix,
-				operator: numericalOperator
-			}
-		});
+		if (onFormDataChange) {
+			onFormDataChange({
+				extras: {
+					text: numericalPrefix,
+					text2: numericalSuffix,
+					operator: numericalOperator
+				}
+			});
+		}
 	}, [numericalOperator, numericalPrefix, numericalSuffix]);
 
 	// Helper function to get the operator label
@@ -54,100 +66,102 @@ export default function NumericalEditor({
 	};
 
 	return (
-		<View style={styles.container}>
-			<Text variant="titleMedium" style={{ marginBottom: 8 }}>Numerical Question Settings</Text>
+		<View>
+			<View style={styles.container}>
+				<Text variant="titleMedium" style={{ marginBottom: 8 }}>Numerical Question Settings</Text>
 
-			<View style={styles.operatorSection}>
-				<Text style={styles.sectionLabel}>Comparison Operator</Text>
-				<View style={styles.operatorDropdown}>
-					<Menu
-						visible={operatorMenuVisible}
-						onDismiss={() => setOperatorMenuVisible(false)}
-						anchor={<Button
-							mode="outlined"
-							onPress={() => setOperatorMenuVisible(true)}
-							style={styles.operatorButton}
+				<View style={styles.operatorSection}>
+					<Text style={styles.sectionLabel}>Comparison Operator</Text>
+					<View style={styles.operatorDropdown}>
+						<Menu
+							visible={operatorMenuVisible}
+							onDismiss={() => setOperatorMenuVisible(false)}
+							anchor={<Button
+								mode="outlined"
+								onPress={() => setOperatorMenuVisible(true)}
+								style={styles.operatorButton}
+							>
+								{getOperatorLabel(numericalOperator)}
+							</Button>}
 						>
-							{getOperatorLabel(numericalOperator)}
-						</Button>}
-					>
-						<Menu.Item
-							title="Equal to (=)"
-							onPress={() => {
-								setNumericalOperator('eq');
-								setOperatorMenuVisible(false);
-							}}
-						/>
-						<Menu.Item
-							title="Not equal to (≠)"
-							onPress={() => {
-								setNumericalOperator('neq');
-								setOperatorMenuVisible(false);
-							}}
-						/>
-						<Menu.Item
-							title="Greater than (>)"
-							onPress={() => {
-								setNumericalOperator('gt');
-								setOperatorMenuVisible(false);
-							}}
-						/>
-						<Menu.Item
-							title="Less than (<)"
-							onPress={() => {
-								setNumericalOperator('lt');
-								setOperatorMenuVisible(false);
-							}}
-						/>
-						<Menu.Item
-							title="Greater than or equal to (≥)"
-							onPress={() => {
-								setNumericalOperator('gte');
-								setOperatorMenuVisible(false);
-							}}
-						/>
-						<Menu.Item
-							title="Less than or equal to (≤)"
-							onPress={() => {
-								setNumericalOperator('lte');
-								setOperatorMenuVisible(false);
-							}}
-						/>
-					</Menu>
+							<Menu.Item
+								title="Equal to (=)"
+								onPress={() => {
+									setNumericalOperator('eq');
+									setOperatorMenuVisible(false);
+								}}
+							/>
+							<Menu.Item
+								title="Not equal to (≠)"
+								onPress={() => {
+									setNumericalOperator('neq');
+									setOperatorMenuVisible(false);
+								}}
+							/>
+							<Menu.Item
+								title="Greater than (>)"
+								onPress={() => {
+									setNumericalOperator('gt');
+									setOperatorMenuVisible(false);
+								}}
+							/>
+							<Menu.Item
+								title="Less than (<)"
+								onPress={() => {
+									setNumericalOperator('lt');
+									setOperatorMenuVisible(false);
+								}}
+							/>
+							<Menu.Item
+								title="Greater than or equal to (≥)"
+								onPress={() => {
+									setNumericalOperator('gte');
+									setOperatorMenuVisible(false);
+								}}
+							/>
+							<Menu.Item
+								title="Less than or equal to (≤)"
+								onPress={() => {
+									setNumericalOperator('lte');
+									setOperatorMenuVisible(false);
+								}}
+							/>
+						</Menu>
+					</View>
 				</View>
-			</View>
 
-			<View style={styles.correctValueSection}>
-				<Text style={styles.sectionLabel}>Correct Value</Text>
-				<View style={styles.valueRow}>
-					<TextInput
-						label="Prefix (optional)"
-						value={numericalPrefix}
-						onChangeText={setNumericalPrefix}
-						placeholder="e.g. $, £, €"
-						style={styles.prefixInput}
-					/>
-					<TextInput
-						label="Value"
-						value={correctValue}
-						onChangeText={setCorrectValue}
-						keyboardType="numeric"
-						placeholder="e.g. 42"
-						style={styles.valueInput}
-					/>
-					<TextInput
-						label="Suffix (optional)"
-						value={numericalSuffix}
-						onChangeText={setNumericalSuffix}
-						placeholder="e.g. kg, cm, %"
-						style={styles.suffixInput}
-					/>
+				<View style={styles.correctValueSection}>
+					<Text style={styles.sectionLabel}>Correct Value</Text>
+					<View style={styles.valueRow}>
+						<TextInput
+							label="Prefix (optional)"
+							value={numericalPrefix}
+							onChangeText={setNumericalPrefix}
+							placeholder="e.g. $, £, €"
+							style={styles.prefixInput}
+						/>
+						<TextInput
+							label="Value"
+							value={correctValue}
+							onChangeText={setCorrectValue}
+							keyboardType="numeric"
+							placeholder="e.g. 42"
+							style={styles.valueInput}
+						/>
+						<TextInput
+							label="Suffix (optional)"
+							value={numericalSuffix}
+							onChangeText={setNumericalSuffix}
+							placeholder="e.g. kg, cm, %"
+							style={styles.suffixInput}
+						/>
+					</View>
 				</View>
-			</View>
 
-			<Text style={styles.helpText}>
-				Students will need to enter a number that matches the condition you specified.
-			</Text>
+				<Text style={styles.helpText}>
+					Students will need to enter a number that matches the condition you specified.
+				</Text>
+			</View>
 		</View>
 	);
 }

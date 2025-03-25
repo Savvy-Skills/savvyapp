@@ -48,7 +48,6 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 		setShowConfirmationDialog(false);
 	};
 
-
 	const isLastSlide = slides.length - 1 === currentSlideIndex;
 	const currentSlide = slides[currentSlideIndex];
 	const revealedAnswer = currentSlide?.revealed ?? false;
@@ -124,10 +123,33 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 	const isLastView = moduleViews ? currentViewIndex === moduleViews.length - 1 : false;
 
 	const MiddleButton = () => {
-		const { type, submitted, isCorrect, assessment_id, buttonLabel: slideLabel } = currentSlide || {};
+		const { type, submitted, isCorrect, assessment_id, buttonLabel: slideLabel, isEvaluating, assessment_info } = currentSlide || {};
 		const isAssessment = type === "Assessment";
 		const isCompleted = isCurrentSlideCompleted;
 		const isIncorrectAssessment = isAssessment && submitted && !isCorrect;
+		const isOpenEnded = isAssessment && assessment_info?.type === "Open Ended";
+
+		// If evaluating, show loading button
+		if (isEvaluating) {
+			return (
+				<Button
+					mode="contained"
+					dark={false}
+					style={[styles.checkButton]}
+					labelStyle={styles.buttonLabel}
+					loading={true}
+					disabled={true}
+					theme={{
+						colors: {
+							primary: checkButtonColors.normal,
+							surfaceDisabled: checkButtonColors.muted,
+						},
+					}}
+				>
+					Evaluating...
+				</Button>
+			);
+		}
 
 		// Determine button label
 		const buttonLabel = slideLabel ||

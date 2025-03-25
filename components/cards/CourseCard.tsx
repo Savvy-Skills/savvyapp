@@ -27,17 +27,21 @@ export default function CourseCard({ course }: CourseCardProps) {
 				style={styles.touchable}
 			>
 				<View style={localStyles.container}>
-					<Image
-						source={require("@/assets/images/pngs/placeholder.png")}
-						style={localStyles.backgroundPattern}
-					/>
-					<View style={styles.tagContainer}>
-						<Text style={styles.tag}>AI</Text>
+					<View style={localStyles.imageContainer}>
+						<Image
+							source={course.image_url ? { uri: course.image_url } : require("@/assets/images/pngs/placeholder.png")}
+							style={localStyles.backgroundPattern}
+						/>
 					</View>
-					<Text style={localStyles.title} numberOfLines={2}>
-						{course.name}
-					</Text>
-					<Text>{course.modules.length} Modules</Text>
+					<View style={localStyles.contentContainer}>
+						<View style={styles.tagContainer}>
+							<Text style={styles.tag}>AI</Text>
+						</View>
+						<Text style={localStyles.title} numberOfLines={2}>
+							{course.name}
+						</Text>
+						<Text style={localStyles.modules}>{course.modules.length} Modules</Text>
+					</View>
 				</View>
 			</TouchableRipple>
 		</Surface>
@@ -46,19 +50,33 @@ export default function CourseCard({ course }: CourseCardProps) {
 
 const localStyles = StyleSheet.create({
 	container: {
+		overflow: 'hidden',
+	},
+	imageContainer: {
+		height: 140,
+		width: '100%',
+		borderTopLeftRadius: 8,
+		borderTopRightRadius: 8,
+		overflow: 'hidden',
+		backgroundColor: '#f0f0f0',
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
 	backgroundPattern: {
-		width: "100%",
-		height: 120,
-		resizeMode: "cover",
-		borderTopEndRadius: 8,
-		borderTopLeftRadius: 8,
+		width: '90%',
+		height: '90%',
+		resizeMode: 'contain',
 	},
-	content: {
-		flex: 1,
+	contentContainer: {
+		padding: 12,
 	},
 	title: {
-		fontSize: 20,
+		fontSize: 18,
 		fontFamily: "PoppinsBold",
+		marginBottom: 4,
+	},
+	modules: {
+		fontSize: 14,
+		opacity: 0.8,
 	},
 });

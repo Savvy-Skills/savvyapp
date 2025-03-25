@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput, Divider } from 'react-native-paper';
 import { Assessment, AssessmentInfo, AssessmentTypes } from '@/types/index';
@@ -20,21 +20,30 @@ export default function AssessmentFormDialog({
 }: AssessmentFormDialogProps) {
   // Core state
   const [assessmentType, setAssessmentType] = useState<AssessmentTypes>('Single Choice');
-  const [questionText, setQuestionText] = useState('');
+  const [questionText, setQuestionText] = useState('What is the answer to this question?');
   const [options, setOptions] = useState<string[]>(['', '']);
   const [correctAnswers, setCorrectAnswers] = useState<number[]>([0]);
   const [assessmentFormData, setAssessmentFormData] = useState<Partial<AssessmentInfo>>({});
-  const [assessmentName, setAssessmentName] = useState('');
+  const [assessmentName, setAssessmentName] = useState('New Assessment');
   const [loading, setLoading] = useState(false);
+
+  // Initialize form when dialog becomes visible
+  useEffect(() => {
+    if (visible) {
+      // Set default values when creating a new assessment
+      setAssessmentName('New Assessment');
+      setQuestionText('What is the answer to this question?');
+    }
+  }, [visible]);
 
   // Reset form
   const resetForm = () => {
     setAssessmentType('Single Choice');
-    setQuestionText('');
+    setQuestionText('What is the answer to this question?');
     setOptions(['', '']);
     setCorrectAnswers([0]);
     setAssessmentFormData({});
-    setAssessmentName('');
+    setAssessmentName('New Assessment');
     setLoading(false);
   };
 
@@ -133,6 +142,14 @@ export default function AssessmentFormDialog({
       });
       
       finalAssessmentData.options = finalOptions;
+    } else if (assessmentType === 'Open Ended') {
+      // For Open Ended, we just need to store the model answer if provided
+      finalAssessmentData.options = options[0] ? [{
+        text: options[0],
+        isCorrect: true,
+        correctOrder: 0,
+        match: ''
+      }] : [];
     }
 
     return finalAssessmentData;
@@ -199,6 +216,11 @@ export default function AssessmentFormDialog({
       return hasBlanks;
     }
     
+    if (assessmentType === 'Open Ended') {
+      // Open-ended questions just need a question text
+      return questionText.trim() !== '';
+    }
+    
     return true;
   };
 
@@ -250,6 +272,9 @@ export default function AssessmentFormDialog({
                   setCorrectAnswers([0]);
                 } else if (type === 'Fill in the Blank') {
                   setOptions([]);
+                  setCorrectAnswers([]);
+                } else if (type === 'Open Ended') {
+                  setOptions(['']); // First option is for model answer (optional)
                   setCorrectAnswers([]);
                 }
               }}
