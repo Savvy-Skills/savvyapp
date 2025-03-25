@@ -7,6 +7,7 @@ import { useCourseStore } from "@/store/courseStore";
 import ThemedTitle from "../themed/ThemedTitle";
 import { useThemeStore } from "@/store/themeStore";
 import { Colors } from "@/constants/Colors";
+import RichText from "./RichTextComponent";
 
 interface AssessmentWrapperProps {
 	slide: LocalSlide;
@@ -50,7 +51,7 @@ export default function AssessmentWrapper({
 			)}
 			{showExplanationComponent ? (
 				<View style={styles.explanationContainer}>
-					<Text>{question.explanation}</Text>
+					<RichText text={question.explanation || ""} />
 				</View>
 			) : (
 				<>{assessment}</>

@@ -443,8 +443,7 @@ export default StyleSheet.create({
     marginTop: 16,
   },
   explanationContainer: {
-    marginTop: 16,
-    padding: 8,
+    padding: 16,
     backgroundColor: "#e9ecef",
     borderRadius: 4,
   },
