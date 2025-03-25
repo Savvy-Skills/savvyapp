@@ -359,8 +359,8 @@ export default StyleSheet.create({
   },
   bottomBarWrapper: {
     flexDirection: "column",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
     marginTop: 8,
   },
   lottieContainer: {
@@ -373,7 +373,7 @@ export default StyleSheet.create({
   feedbackHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 16,
     flex: 1,
   },
   feedbackTitle: {

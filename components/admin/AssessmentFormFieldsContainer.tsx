@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text, Menu, Button } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { AssessmentTypes, AssessmentInfo } from '@/types/index';
 import { TextInput } from 'react-native-paper';
+import Dropdown from '@/components/common/Dropdown';
 
 // Import all editors
 import {
@@ -13,7 +14,8 @@ import {
 	MatchWordsEditor,
 	OrderListEditor,
 	NumericalEditor,
-	DragDropEditor
+	DragDropEditor,
+	OpenEndedEditor
 } from './assessmentEditors';
 
 interface AssessmentFormFieldsProps {
@@ -26,6 +28,7 @@ interface AssessmentFormFieldsProps {
 	onOptionsChange: (options: string[]) => void;
 	onCorrectAnswersChange: (answers: number[]) => void;
 	onFormDataChange: (formData: Partial<AssessmentInfo>) => void;
+	formData?: AssessmentInfo;
 }
 
 export default function AssessmentFormFieldsContainer(props: AssessmentFormFieldsProps) {
@@ -36,35 +39,28 @@ export default function AssessmentFormFieldsContainer(props: AssessmentFormField
 		onAssessmentTypeChange
 	} = props;
 
-	const [menuVisible, setMenuVisible] = React.useState(false);
+	// Create dropdown options for assessment types
+	const assessmentTypeOptions = [
+		{ label: 'Single Choice', value: 'Single Choice' },
+		{ label: 'Multiple Choice', value: 'Multiple Choice' },
+		{ label: 'True or False', value: 'True or False' },
+		{ label: 'Fill in the Blank', value: 'Fill in the Blank' },
+		{ label: 'Numerical', value: 'Numerical' },
+		{ label: 'Match the Words', value: 'Match the Words' },
+		{ label: 'Order List', value: 'Order List' },
+		{ label: 'Drag and Drop', value: 'Drag and Drop' },
+		{ label: 'Open Ended', value: 'Open Ended' }
+	];
 
 	// Type selection menu
 	const renderTypeSelector = () => (
 		<View style={styles.dropdownContainer}>
-			<Menu
-				visible={menuVisible}
-				onDismiss={() => setMenuVisible(false)}
-				anchor={<Button
-					mode="outlined"
-					onPress={() => setMenuVisible(true)}
-					style={styles.dropdownButton}
-				>
-					Assessment Type: {assessmentType}
-				</Button>}
-				style={styles.menu}
-			>
-				{['Single Choice', 'Multiple Choice', 'True or False', 'Fill in the Blank',
-					'Numerical', 'Match the Words', 'Order List', 'Drag and Drop'].map((type) => (
-						<Menu.Item
-							key={type}
-							title={type}
-							onPress={() => {
-								onAssessmentTypeChange(type as AssessmentTypes);
-								setMenuVisible(false);
-							}}
-						/>
-					))}
-			</Menu>
+			<Dropdown
+				label="Assessment Type"
+				value={assessmentType}
+				options={assessmentTypeOptions}
+				onChange={(value: string) => onAssessmentTypeChange(value as AssessmentTypes)}
+			/>
 		</View>
 	);
 
@@ -77,6 +73,7 @@ export default function AssessmentFormFieldsContainer(props: AssessmentFormField
 				onChangeText={onQuestionTextChange}
 				multiline
 				style={styles.input}
+				placeholder="Enter your question here..."
 			/>
 		) : null
 	);
@@ -100,6 +97,8 @@ export default function AssessmentFormFieldsContainer(props: AssessmentFormField
 				return <NumericalEditor {...props} />;
 			case 'Drag and Drop':
 				return <DragDropEditor {...props} />;
+			case 'Open Ended':			
+				return <OpenEndedEditor {...props} />;
 			default:
 				return null;
 		}
@@ -120,16 +119,7 @@ const styles = StyleSheet.create({
 	},
 	dropdownContainer: {
 		marginTop: 8,
-		position: 'relative',
-		zIndex: 1000,
 		marginBottom: 16,
-	},
-	dropdownButton: {
-		width: '100%',
-		justifyContent: 'flex-start',
-	},
-	menu: {
-		width: 300,
 	},
 	input: {
 		marginBottom: 16,

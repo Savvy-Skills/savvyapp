@@ -1,6 +1,6 @@
 import { AssessmentAnswer } from "@/store/courseStore";
 import styles from "@/styles/styles";
-import { CustomSlide, LocalSlide, Submission, ViewWithSlides } from "@/types";
+import { Answer, CustomSlide, LocalSlide, Submission, SubRating, ViewWithSlides } from "@/types";
 
 const includes = <T>(arr: readonly T[], x: T): boolean => arr.includes(x)
 
@@ -93,26 +93,26 @@ export interface OptionProps extends OptionStylesProps {
 }
 
 
-export const getCorrectAnswers = (slide: LocalSlide) => {
+export const getCorrectAnswers = (slide: LocalSlide): Answer[] => {
 	if (slide.type === "Assessment") {
 		switch (slide.assessment_info?.type) {
 			case "Multiple Choice":
-				return slide.assessment_info?.options.filter((option) => option.isCorrect).map((option) => ({ text: option.text }));
+				return slide.assessment_info?.options?.filter((option) => option.isCorrect).map((option) => ({ text: option.text })) || [];
 			case "Single Choice":
-				return slide.assessment_info?.options.filter((option) => option.isCorrect).map((option) => ({ text: option.text }));
+				return slide.assessment_info?.options?.filter((option) => option.isCorrect).map((option) => ({ text: option.text })) || [];
 			case "True or False":
-				return slide.assessment_info?.options.filter((option) => option.isCorrect).map((option) => ({ text: option.text }));
+				return slide.assessment_info?.options?.filter((option) => option.isCorrect).map((option) => ({ text: option.text })) || [];
 			case "Order List":
-				return slide.assessment_info?.options.slice().sort((a, b) => a.correctOrder - b.correctOrder).map((option) => ({ text: option.text }));
+				return slide.assessment_info?.options?.slice().sort((a, b) => a.correctOrder - b.correctOrder).map((option) => ({ text: option.text })) || [];
 			case "Numerical":
-				return [{text: slide.assessment_info?.options[0].text}];
+				return [{text: slide.assessment_info?.options?.[0]?.text || ""}];
 			case "Fill in the Blank":
 				const matches = slide.assessment_info?.text.match(/\[(.*?)\]/g);
 				const texts = matches?.map((match) => match.replace(/[\[\]]/g, ''));
 				if (!texts) return [];
 				return texts.map((text, index) => ({ text: text, order: index }));
 			case "True or False":
-				return slide.assessment_info?.options.filter((option) => option.isCorrect).map((option) => ({ text: option.text }));
+				return slide.assessment_info?.options?.filter((option) => option.isCorrect).map((option) => ({ text: option.text })) || [];
 			default:
 				return [];
 		}
@@ -244,7 +244,8 @@ const createSubmission = (
 	correct: boolean,
 	answer: AssessmentAnswer,
 	view_id: number,
-	submission_id: number
+	submission_id: number,
+	subRating?: SubRating
 ): Submission => {
 	return {
 		id: submission_id,
@@ -255,6 +256,7 @@ const createSubmission = (
 		isCorrect: correct,
 		answer: answer.answer,
 		revealed: answer.revealed,
+		subRating: subRating
 	};
 };
 

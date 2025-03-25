@@ -31,12 +31,9 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editingSlideId, setEditingSlideId] = useState<number | null>(null);
 	const [slideForm, setSlideForm] = useState<Partial<LocalSlide>>({
-		name: '',
+		name: 'New Slide',
 		type: 'Content',
 	});
-
-	// State for slide type selection
-	const [slideType, setSlideType] = useState<SlideType>('Assessment');
 
 	// State for attached contents and assessment
 	const [attachedContents, setAttachedContents] = useState<Partial<ContentInfo>[]>([]);
@@ -128,10 +125,9 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 
 	const resetForm = () => {
 		setSlideForm({
-			name: '',
-			type: 'Assessment',
+			name: 'New Slide',
+			type: 'Content',
 		});
-		setSlideType('Assessment');
 		setAttachedContents([]);
 		setAttachedAssessment(null);
 		setEditingSlideId(null);
@@ -150,7 +146,6 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 			type: slide.type,
 		});
 		setEditingSlideId(slide.slide_id);
-		setSlideType(slide.type as SlideType);
 		setIsEditing(true);
 
 		// Set contents if available
@@ -180,10 +175,18 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 		if (!viewId) return;
 
 		try {
+			// Determine slide type based on attachments
+			const determineSlideType = (): SlideType => {
+				if (attachedAssessment) {
+					return 'Assessment';
+				}
+				return 'Content';
+			};
+
 			// Prepare data to save
 			let slideData: Partial<LocalSlide> = {
 				name: slideForm.name,
-				type: slideType,
+				type: determineSlideType(),
 			};
 
 			// Add contents if we have any attached
@@ -433,22 +436,9 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 						style={styles.input}
 					/>
 
-					<View style={localStyles.formSection}>
-						<Text variant="titleMedium">Slide Type</Text>
-						<SegmentedButtons
-							value={slideType}
-							onValueChange={(value) => setSlideType(value as SlideType)}
-							buttons={[
-								{ value: 'Content', label: 'Content' },
-								{ value: 'Assessment', label: 'Assessment' }
-							]}
-							style={localStyles.segmentedButton}
-						/>
-					</View>
-
 					<Divider style={localStyles.divider} />
 
-					{/* Content Attachment Section */}
+					{/* Content Attachment Section - always visible */}
 					<View style={localStyles.attachmentSection}>
 						<View style={localStyles.attachmentHeader}>
 							<Text variant="titleMedium">Contents</Text>
@@ -491,60 +481,58 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 
 					<Divider style={localStyles.divider} />
 
-					{/* Assessment Attachment Section - Only show if slide type is Assessment */}
-					{slideType === 'Assessment' && (
-						<View style={localStyles.attachmentSection}>
-							<View style={localStyles.attachmentHeader}>
-								<Text variant="titleMedium">Assessment</Text>
-								{!attachedAssessment ? (
-									<Button
-										mode="outlined"
-										onPress={showAssessmentAttachOptions}
-										style={[styles.savvyButton, localStyles.addButton]}
-									>
-										Attach Assessment
-									</Button>
-								) : (
-									<Button
-										mode="outlined"
-										icon="close"
-										onPress={handleDetachAssessment}
-										style={[styles.savvyButton, localStyles.addButton]}
-									>
-										Detach
-									</Button>
-								)}
-							</View>
-
-							{attachedAssessment ? (
-								<Card style={localStyles.previewCard}>
-									<Card.Content>
-										<Text style={localStyles.previewLabel}>Type:</Text>
-										<Text style={localStyles.previewValue}>{attachedAssessment.type}</Text>
-
-										<Text style={localStyles.previewLabel}>Question:</Text>
-										<Text style={localStyles.previewValue}>{attachedAssessment.text}</Text>
-
-										{attachedAssessment.options && attachedAssessment.options.length > 0 && (
-											<>
-												<Text style={localStyles.previewLabel}>Options:</Text>
-												{attachedAssessment.options.map((option, index) => (
-													<Text key={index} style={[
-														localStyles.previewValue,
-														option.isCorrect && styles.correctOption
-													]}>
-														• {option.text} {option.match ? `---> ${option.match}` : ''} {option.isCorrect ? '(Correct)' : ''}
-													</Text>
-												))}
-											</>
-										)}
-									</Card.Content>
-								</Card>
+					{/* Assessment Attachment Section - always visible */}
+					<View style={localStyles.attachmentSection}>
+						<View style={localStyles.attachmentHeader}>
+							<Text variant="titleMedium">Assessment</Text>
+							{!attachedAssessment ? (
+								<Button
+									mode="outlined"
+									onPress={showAssessmentAttachOptions}
+									style={[styles.savvyButton, localStyles.addButton]}
+								>
+									Attach Assessment
+								</Button>
 							) : (
-								<Text style={localStyles.noAttachmentText}>No assessment attached</Text>
+								<Button
+									mode="outlined"
+									icon="close"
+									onPress={handleDetachAssessment}
+									style={[styles.savvyButton, localStyles.addButton]}
+								>
+									Detach
+								</Button>
 							)}
 						</View>
-					)}
+
+						{attachedAssessment ? (
+							<Card style={localStyles.previewCard}>
+								<Card.Content>
+									<Text style={localStyles.previewLabel}>Type:</Text>
+									<Text style={localStyles.previewValue}>{attachedAssessment.type}</Text>
+
+									<Text style={localStyles.previewLabel}>Question:</Text>
+									<Text style={localStyles.previewValue}>{attachedAssessment.text}</Text>
+
+									{attachedAssessment.options && attachedAssessment.options.length > 0 && (
+										<>
+											<Text style={localStyles.previewLabel}>Options:</Text>
+											{attachedAssessment.options.map((option, index) => (
+												<Text key={index} style={[
+													localStyles.previewValue,
+													option.isCorrect && styles.correctOption
+												]}>
+													• {option.text} {option.match ? `---> ${option.match}` : ''} {option.isCorrect ? '(Correct)' : ''}
+												</Text>
+											))}
+										</>
+									)}
+								</Card.Content>
+							</Card>
+						) : (
+							<Text style={localStyles.noAttachmentText}>No assessment attached</Text>
+						)}
+					</View>
 
 					<View style={localStyles.formActions}>
 						<Button mode="outlined" onPress={cancelEditingSlide} style={[styles.savvyButton, localStyles.formButton]}>
@@ -556,8 +544,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 							style={[styles.savvyButton, localStyles.formButton]}
 							disabled={
 								!slideForm.name ||
-								(slideType === 'Assessment' && !attachedAssessment) ||
-								(slideType === 'Content' && attachedContents.length === 0)
+								(attachedContents.length === 0 && !attachedAssessment)
 							}
 						>
 							Save

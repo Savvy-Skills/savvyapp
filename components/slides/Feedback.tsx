@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "@/styles/styles";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Dialog, Icon, Portal, Text } from "react-native-paper";
+import { ActivityIndicator, Button, Dialog, Icon, Portal, Text } from "react-native-paper";
 import ConfirmationDialog from "../modals/ConfirmationDialog";
 import { useCourseStore } from "@/store/courseStore";
 import { View } from "react-native";
@@ -47,6 +47,7 @@ function FeedbackComponent({
 
 	const { currentSlideIndex, slides, toggleExplanation, revealAnswer } = useViewStore();
 	const currentSlide = slides[currentSlideIndex];
+	const isEvaluating = currentSlide?.isEvaluating || false;
 
 	const { playSound } = useAudioStore();
 
@@ -79,6 +80,20 @@ function FeedbackComponent({
 		return "Not quite!";
 	}, [revealed, correctness]);
 
+	if (isEvaluating) {
+		return (
+			<View style={[styles.feedbackContainer]}>
+				<View style={styles.feedbackHeader}>
+					<View style={styles.lottieContainer}>
+						<ActivityIndicator size="small" color={Colors.primary} />
+					</View>
+					<Text style={[styles.feedbackTitle, styles.revealedTitle]}>
+						Evaluating...
+					</Text>
+				</View>
+			</View>
+		);
+	}
 
 	return (
 		<View style={[styles.feedbackContainer]}>

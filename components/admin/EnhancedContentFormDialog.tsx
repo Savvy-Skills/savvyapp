@@ -34,7 +34,7 @@ export default function EnhancedContentFormDialog({
 	isEditing = false
 }: EnhancedContentFormDialogProps) {
 	const [contentType, setContentType] = useState<ContentTypes>('Rich Text');
-	const [contentTitle, setContentTitle] = useState('');
+	const [contentTitle, setContentTitle] = useState(isEditing ? '' : 'New Content');
 	const [contentData, setContentData] = useState<Partial<ContentInfo>>({});
 	const [loading, setLoading] = useState(false);
 
@@ -46,12 +46,14 @@ export default function EnhancedContentFormDialog({
 			setContentData({
 				...editingContent
 			});
+		} else if (visible && !isEditing) {
+			setContentTitle('New Content'); // Set default title for new content
 		}
-	}, [editingContent, visible]);
+	}, [editingContent, visible, isEditing]);
 
 	const resetForm = () => {
 		setContentType('Rich Text');
-		setContentTitle('');
+		setContentTitle(isEditing ? '' : 'New Content');
 		setContentData({});
 		setLoading(false);
 	};
@@ -133,23 +135,9 @@ export default function EnhancedContentFormDialog({
 							value={contentTitle}
 							onChangeText={setContentTitle}
 							style={styles.input}
+							placeholder="Enter a title for this content"
 						/>
 						<Text variant="titleMedium" style={styles.sectionTitle}>Content Type</Text>
-						{/* <SegmentedButtons
-							value={contentType}
-							onValueChange={(value) => setContentType(value as ContentTypes)}
-							buttons={[
-								{ value: 'Rich Text', label: 'Text' },
-								{ value: 'Image', label: 'Image' },
-								{ value: 'Video', label: 'Video' },
-								{ value: 'Dataset', label: 'Dataset' },
-								{ value: 'Neural Network', label: 'Neural Network' },
-								{ value: 'Neuron', label: 'Neuron' },
-								{ value: 'Word2Vec', label: 'Word2Vec' },
-							]}
-							style={styles.segmentedButton}
-						/> */}
-						{/* TODO: Add a dropdown for content type using menu from react-native-paper */}
 						<Dropdown
 							label="Content Type"
 							value={contentType}

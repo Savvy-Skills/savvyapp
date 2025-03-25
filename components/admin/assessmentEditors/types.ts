@@ -8,4 +8,5 @@ export interface BaseEditorProps {
   onOptionsChange: (options: string[]) => void;
   onCorrectAnswersChange: (answers: number[]) => void;
   onFormDataChange: (formData: Partial<AssessmentInfo>) => void;
+  formData?: AssessmentInfo;
 } 

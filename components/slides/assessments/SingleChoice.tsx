@@ -24,9 +24,9 @@ export default function SingleChoice({
 
 	const currentValue = slide.answer?.[0]?.text || "";
 
-	const options = question.options.map((option) => option.text);
+	const options = question.options?.map((option) => option.text) || [];
 	const correctAnswer =
-		question.options.find((option) => option.isCorrect)?.text || "";
+		question.options?.find((option) => option.isCorrect)?.text || "";
 
 	const handleChoiceSelection = useCallback((value: string) => {
 		if (value !== currentValue) {

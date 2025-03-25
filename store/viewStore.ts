@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { getViewByID, getViewSubmissions, postViewProgress, postViewSubmission, restartView } from "@/services/coursesApi";
-import { Answer, view } from "@/types";
+import { Answer, OpenEndedEvaluation, view } from "@/types";
 import { ViewStore } from "@/types";
 import { createSubmission, getCorrectAnswers } from "@/utils/utilfunctions";
+
 
 export const useViewStore = create<ViewStore>((set, get) => ({
 	viewId: null,
@@ -34,6 +35,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		slides[index].completed = true;
 		set({ slides: slides });
 		// TODO: HANDLE CASE WHERE POSTING PROGRESS FAILS
+		console.log("Submitting progress");
 		await submitProgress();
 	},
 	restartView: async () => {
@@ -52,13 +54,14 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		const slides = get().slides;
 		const currentSlide = slides[get().currentSlideIndex];
 		if (currentSlide) {
+			console.log("Changing answer");
 			currentSlide.answer = answer;
 			currentSlide.isCorrect = isCorrect;
 			currentSlide.submittable = answer.length > 0 && !notSubmittable;
 			if (currentSlide.submitted) {
 				currentSlide.submitted = false;
 			}
-		} 
+		}
 		set({ slides: slides });
 	},
 	setCurrentSlideIndex: (index: number) => {
@@ -71,26 +74,26 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		set({ currentSlideIndex: index });
 	},
 	nextSlide: () => {
-		const {currentSlideIndex, slides, checkSlideCompletion} = get();
+		const { currentSlideIndex, slides, checkSlideCompletion } = get();
 		if (currentSlideIndex < slides.length - 1) {
 			set({ currentSlideIndex: currentSlideIndex + 1 });
-			checkSlideCompletion(currentSlideIndex+1);
+			checkSlideCompletion(currentSlideIndex + 1);
 		}
 	},
 	prevSlide: () => {
-		const {currentSlideIndex, checkSlideCompletion} = get();
+		const { currentSlideIndex, checkSlideCompletion } = get();
 		if (currentSlideIndex > 0) {
-			checkSlideCompletion(currentSlideIndex-1);
+			checkSlideCompletion(currentSlideIndex - 1);
 			set({ currentSlideIndex: currentSlideIndex - 1 });
 		}
 	},
-	checkSlideCompletion: ( index: number) => {
-		const {slides, completeSlide} = get();
+	checkSlideCompletion: (index: number) => {
+		const { slides, completeSlide } = get();
 		const slide = slides[index];
 		if (!slide.completed) {
 			switch (slide.type) {
 				case "Content":
-					if(slide.contents[0].type === "Image"){
+					if (slide.contents && slide.contents[0]?.type === "Image") {
 						completeSlide(index);
 					}
 					break;
@@ -143,6 +146,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 					slideObj["submitted"] = submission ? true : false;
 					slideObj["revealed"] = isRevealed;
 					slideObj["isCorrect"] = isCorrect;
+					slideObj["subRating"] = submission?.subRating;
 				}
 				return slideObj;
 			});
@@ -160,7 +164,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		set({ slides: slides });
 	},
 	revealAnswer: async () => {
-		const {slides, currentSlideIndex, completeSlide} = get();
+		const { slides, currentSlideIndex, completeSlide } = get();
 		const currentSlide = slides[currentSlideIndex];
 		const viewId = get().viewId;
 		if (!viewId) return;
@@ -193,47 +197,102 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		}
 	},
 	submitAnswer: async () => {
-		const { currentSlideIndex, slides, view, viewId, completeSlide, submitProgress } = get();
+		const { currentSlideIndex, slides, view, viewId, completeSlide, evaluateOpenEndedAnswer } = get();
 		const currentSlide = slides[currentSlideIndex];
 		const quizMode = view?.quiz || false;
 
 		if (!viewId) return;
 		if (currentSlide.type === "Assessment" && currentSlide.assessment_id) {
 			if (currentSlide.submittable) {
+				// Check if this is an open-ended question
+				const isOpenEnded = currentSlide.assessment_info?.type === "Open Ended";
+				
+				if (isOpenEnded) {
+					// Set evaluating state to true
+					set((state) => ({
+						slides: state.slides.map((slide, index) =>
+							index === state.currentSlideIndex ? {
+								...slide,
+								isEvaluating: true,
+								submitted: true,
+								submittable: false,
+								subRating: undefined
+							} : slide
+						)
+					}));
+				} else {
+					// For non-open-ended questions, just mark as submitted
+					set((state) => ({
+						slides: state.slides.map((slide, index) =>
+							index === state.currentSlideIndex ? {
+								...slide,
+								submitted: true,
+								submittable: false,
+								subRating: undefined
+							} : slide
+						)
+					}));
+				}
 
-				// Update the slide to be submitted
-				set((state) => ({
-					slides: state.slides.map((slide, index) =>
-						index === state.currentSlideIndex ? {
-							...slide,
-							submitted: true,
-							submittable: false,
-						} : slide
-					)
-				}));
+				// Evaluate open-ended answers
+				let evaluation: OpenEndedEvaluation | null = null;
+				if (isOpenEnded && currentSlide.answer && currentSlide.answer.length > 0) {
+					const questionText = currentSlide.assessment_info?.text || "";
+					const answerText = currentSlide.answer[0]?.text || "";
+
+					// Evaluate the open-ended answer
+					evaluation = await evaluateOpenEndedAnswer(questionText, answerText);
+					
+					// Update with evaluation results - use functional update to access latest state
+					set((state) => ({
+						slides: state.slides.map((slide, index) =>
+							index === state.currentSlideIndex ? {
+								...slide,
+								isEvaluating: false, // Reset evaluating state
+								isCorrect: evaluation?.is_correct || false,
+								subRating: {
+									rating: evaluation?.rating || 0,
+									feedback: evaluation?.feedback || "",
+									reasoning: evaluation?.reasoning || ""
+								}
+							} : slide
+						)
+					}));
+				}
+
+				// Get updated current slide after evaluation
+				const updatedCurrentSlide = get().slides[currentSlideIndex];
+				
 				// Slide is correct or quiz saved, so we can check the slide completion
-				if (currentSlide.isCorrect || quizMode) {
+				if (updatedCurrentSlide.isCorrect || quizMode) {
 					// Complete the slide
 					completeSlide(currentSlideIndex);
 				}
 
-				// Create a placeholder submission
+				// Create submission data
+				const submissionData = {
+					answer: updatedCurrentSlide.answer || [],
+					revealed: false,
+				};
+
 				const placeHolderSubmission = createSubmission(
-					currentSlide.assessment_id,
-					currentSlide.isCorrect || false,
-					{ answer: currentSlide.answer || [], revealed: false },
+					updatedCurrentSlide.assessment_id || 0,
+					updatedCurrentSlide.isCorrect || false,
+					submissionData,
 					viewId,
-					currentSlide.submission_id || 0
+					updatedCurrentSlide.submission_id || 0,
+					updatedCurrentSlide.subRating
 				);
-				// TODO: HANDLE CASE WHERE POSTING SUBMISSION FAILS
+				console.log({placeHolderSubmission});
+
 				// Post the submission
 				const postedSubmission = await postViewSubmission(
 					viewId,
 					placeHolderSubmission
 				);
 
-				// Update the slide with the posted submission id for future reference if it doesn't already have one
-				if (postedSubmission.id && !currentSlide.submission_id) {
+				// Update the slide with the posted submission id - use functional update again
+				if (postedSubmission.id && !updatedCurrentSlide.submission_id) {
 					set((state) => ({
 						slides: state.slides.map((slide, index) =>
 							index === state.currentSlideIndex ? {
@@ -254,5 +313,51 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		currentSlide.answer = [];
 		currentSlide.isCorrect = false;
 		set({ slides: slides });
+	},
+	evaluateOpenEndedAnswer: async (questionText: string, answerText: string) => {
+		if (!questionText.trim() || !answerText.trim()) {
+			return {
+				isCorrect: false,
+				rating: 0,
+				feedback: "",
+				reasoning: ""
+			};
+		}
+
+		try {
+			// Make API call to evaluate the answer
+			const response = await fetch("https://backendtest-production-2cac.up.railway.app/evaluate", {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					question: questionText,
+					answer: answerText
+				})
+			});
+
+			if (!response.ok) {
+				console.error("Error evaluating answer:", await response.text());
+				return {
+					isCorrect: false,
+					rating: 0,
+					feedback: "",
+					reasoning: ""
+				};
+			}
+
+			const evaluation = await response.json();
+
+			return evaluation;
+		} catch (error) {
+			console.error("Failed to evaluate answer:", error);
+			return {
+				isCorrect: false,
+				rating: 0,
+				feedback: "",
+				reasoning: ""
+			};
+		}
 	},
 }));

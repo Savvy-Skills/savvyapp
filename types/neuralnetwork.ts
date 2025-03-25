@@ -39,20 +39,17 @@ export interface DataPreparationMetadata {
 	mappedOutputs?: Record<number, string>;
 }
 export interface ModelConfig {
-	neuronsPerLayer: number[];
-	problemType: "classification" | "regression";
-	activationFunction: "relu" | "sigmoid" | "tanh" | "softmax" | "linear";
-	regularization?: "l1" | "l2" | "l1l2";
-	regularizationRate?: number;
-	kernelInitializer?: "glorotUniform" | "glorotNormal" | "heUniform" | "heNormal" | "leCunUniform" | "leCunNormal" | "ones" | "zeros" | "randomUniform" | "randomNormal" | "varianceScaling" | "orthogonal" | "identity" | "zeros" | "ones" | "randomUniform" | "randomNormal" | "varianceScaling" | "orthogonal" | "identity";
-	compileOptions: {
-		optimizer: "sgd" | "adam" | "rmsprop" | "adagrad" | "adadelta" | "adamax";
-		learningRate: number;
-		lossFunction: "meanSquaredError" | "binaryCrossentropy" | "categoricalCrossentropy";
-		metrics: string;
-	}
 	inputSize: number;
+	problemType: 'classification' | 'regression';
 	lastLayerSize: number;
+	compileOptions: {
+		metrics: string;
+		optimizer: string;
+		learningRate: number;
+		lossFunction: string;
+	};
+	neuronsPerLayer: number[];
+	activationFunction: 'relu' | 'sigmoid' | 'tanh';
 }
 
 export interface TrainConfig {
@@ -64,10 +61,13 @@ export interface TrainConfig {
 }
 
 export interface DataPreparationConfig {
+	stratify: boolean;
 	testSize: number;
-	stratify?: boolean;
+	targetConfig: {
+		field: string;
+		encoding: 'none' | 'label' | 'onehot';
+	};
 	featureConfig: FeatureConfig[];
-	targetConfig: FeatureConfig;
 }
 
 export interface ModelState {
@@ -97,7 +97,21 @@ export interface TFState {
 
 export interface FeatureConfig {
 	field: string;
-	encoding: "oneHot" | "label" | "none";
-	normalization?: "minmax" | "zscore" | "none";
-	ordinalConfig?: string[];
+	encoding: 'none' | 'label' | 'onehot';
+	normalization: 'none' | 'minmax' | 'standard';
+}
+
+export interface Trace {
+	x: string;
+	y: string;
+	name: string;
+	type: 'scatter' | 'line' | 'bar';
+	groupBy?: string;
+}
+
+export interface NNConfig {
+	modelConfig: ModelConfig;
+	trainingConfig: TrainingConfig;
+	initialTraces: Trace[];
+	predictionTraces: Trace[];
 }

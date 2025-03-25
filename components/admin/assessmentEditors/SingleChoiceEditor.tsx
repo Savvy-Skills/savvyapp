@@ -7,7 +7,7 @@ export default function SingleChoiceEditor({
   options,
   correctAnswers,
   onOptionsChange,
-  onCorrectAnswersChange
+  onCorrectAnswersChange,
 }: BaseEditorProps) {
   
   const handleOptionChange = (text: string, index: number) => {
@@ -38,41 +38,44 @@ export default function SingleChoiceEditor({
   };
   
   return (
-    <View style={styles.container}>
-      <Text variant="titleMedium" style={{ marginBottom: 8 }}>Options</Text>
-      <Text style={styles.helpText}>
-        Add answer options and select the correct one.
-      </Text>
-      
-      {options.map((option, index) => (
-        <View key={index} style={styles.optionRow}>
-          <RadioButton
-            status={correctAnswers.includes(index) ? 'checked' : 'unchecked'}
-            onPress={() => onCorrectAnswersChange([index])}
-          />
-          <TextInput
-            value={option}
-            onChangeText={(text) => handleOptionChange(text, index)}
-            placeholder={`Option ${index + 1}`}
-            style={styles.optionInput}
-          />
+    <View>
+      <View style={styles.container}>
+        <Text variant="titleMedium" style={{ marginBottom: 8 }}>Options</Text>
+        <Text style={styles.helpText}>
+          Add answer options and select the correct one.
+        </Text>
+        
+        {options.map((option, index) => (
+          <View key={index} style={styles.optionRow}>
+            <RadioButton
+              value={correctAnswers.includes(index) ? 'checked' : 'unchecked'}
+              status={correctAnswers.includes(index) ? 'checked' : 'unchecked'}
+              onPress={() => onCorrectAnswersChange([index])}
+            />
+            <TextInput
+              value={option}
+              onChangeText={(text) => handleOptionChange(text, index)}
+              placeholder={`Option ${index + 1}`}
+              style={styles.optionInput}
+            />
+            <IconButton
+              icon="delete"
+              onPress={() => handleRemoveOption(index)}
+              disabled={options.length <= 2}
+            />
+          </View>
+        ))}
+        
+        <View style={styles.addButtonContainer}>
           <IconButton
-            icon="delete"
-            onPress={() => handleRemoveOption(index)}
-            disabled={options.length <= 2}
+            icon="plus"
+            mode="outlined"
+            containerColor="#f0f0f0"
+            size={20}
+            onPress={handleAddOption}
           />
+          <Text>Add Option</Text>
         </View>
-      ))}
-      
-      <View style={styles.addButtonContainer}>
-        <IconButton
-          icon="plus"
-          mode="outlined"
-          containerColor="#f0f0f0"
-          size={20}
-          onPress={handleAddOption}
-        />
-        <Text>Add Option</Text>
       </View>
     </View>
   );
