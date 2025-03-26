@@ -23,6 +23,9 @@ const contentTypeOptions = [
 	{ label: 'Neural Network', value: 'Neural Network' },
 	{ label: 'Neuron', value: 'Neuron' },
 	{ label: 'Word2Vec', value: 'Word2Vec' },
+	{ label: 'MNIST', value: 'MNIST' },
+	{ label: 'Tokenization', value: 'Tokenization' },
+	{ label: 'Auto Tokenization', value: 'Auto Tokenization' },
 ];
 
 export default function EnhancedContentFormDialog({
@@ -85,6 +88,11 @@ export default function EnhancedContentFormDialog({
 				return !!contentData.dataset_id;
 			case 'Word2Vec':
 				return !!contentData.dataset_id && !!contentData.dataset_info?.word_vec;
+			case 'Tokenization':
+			case 'Auto Tokenization':
+				return !!contentData.state;
+			case 'MNIST':
+				return true;
 			default:
 				return false;
 		}

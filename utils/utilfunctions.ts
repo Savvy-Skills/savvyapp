@@ -1,4 +1,3 @@
-import { AssessmentAnswer } from "@/store/courseStore";
 import styles from "@/styles/styles";
 import { Answer, CustomSlide, LocalSlide, Submission, SubRating, ViewWithSlides } from "@/types";
 
@@ -113,6 +112,8 @@ export const getCorrectAnswers = (slide: LocalSlide): Answer[] => {
 				return texts.map((text, index) => ({ text: text, order: index }));
 			case "True or False":
 				return slide.assessment_info?.options?.filter((option) => option.isCorrect).map((option) => ({ text: option.text })) || [];
+			case "Open Ended":
+				return [{text: slide.assessment_info?.options?.[0]?.text || "", subRating: slide.assessment_info?.options?.[0]?.subRating}];
 			default:
 				return [];
 		}
@@ -238,6 +239,10 @@ export const getOptionStyles = ({
 
 	return baseStyles;
 };
+export interface AssessmentAnswer {
+	answer: Answer[];
+	revealed: boolean;
+}
 
 const createSubmission = (
 	assessment_id: number,
@@ -256,7 +261,6 @@ const createSubmission = (
 		isCorrect: correct,
 		answer: answer.answer,
 		revealed: answer.revealed,
-		subRating: subRating
 	};
 };
 

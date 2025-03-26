@@ -54,8 +54,8 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		const slides = get().slides;
 		const currentSlide = slides[get().currentSlideIndex];
 		if (currentSlide) {
-			console.log("Changing answer");
 			currentSlide.answer = answer;
+			currentSlide.error = null;
 			currentSlide.isCorrect = isCorrect;
 			currentSlide.submittable = answer.length > 0 && !notSubmittable;
 			if (currentSlide.submitted) {
@@ -146,7 +146,6 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 					slideObj["submitted"] = submission ? true : false;
 					slideObj["revealed"] = isRevealed;
 					slideObj["isCorrect"] = isCorrect;
-					slideObj["subRating"] = submission?.subRating;
 				}
 				return slideObj;
 			});
@@ -171,12 +170,13 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 
 		// Function to get correct answers, based on the slide type
 		const correctAnswers = getCorrectAnswers(currentSlide);
-		if (currentSlide.type === "Assessment" && currentSlide.assessment_id && currentSlide.submission_id) {
+		if (currentSlide.type === "Assessment" && currentSlide.assessment_id ) {
+			get().completeSlide(currentSlideIndex);
 			currentSlide.revealed = true;
 			currentSlide.submittable = false;
 			currentSlide.submitted = true;
-			currentSlide.completed = true;
 			currentSlide.isCorrect = true;
+			currentSlide.error = null;
 			currentSlide.answer = correctAnswers;
 			set({ slides: slides });
 			completeSlide(currentSlideIndex);
@@ -185,7 +185,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 				true,
 				{ answer: correctAnswers, revealed: true },
 				viewId,
-				currentSlide.submission_id
+				currentSlide.submission_id || 0
 			);
 			// TODO: HANDLE CASE WHERE POSTING SUBMISSION FAILS
 			// Post the submission
@@ -193,6 +193,8 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 				viewId,
 				placeHolderSubmission
 			);
+
+
 
 		}
 	},
@@ -216,7 +218,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 								isEvaluating: true,
 								submitted: true,
 								submittable: false,
-								subRating: undefined
+								error: null // Clear any previous errors
 							} : slide
 						)
 					}));
@@ -228,7 +230,6 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 								...slide,
 								submitted: true,
 								submittable: false,
-								subRating: undefined
 							} : slide
 						)
 					}));
@@ -236,12 +237,45 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 
 				// Evaluate open-ended answers
 				let evaluation: OpenEndedEvaluation | null = null;
+				let evaluationError: string | null = null;
+				
 				if (isOpenEnded && currentSlide.answer && currentSlide.answer.length > 0) {
 					const questionText = currentSlide.assessment_info?.text || "";
 					const answerText = currentSlide.answer[0]?.text || "";
 
-					// Evaluate the open-ended answer
-					evaluation = await evaluateOpenEndedAnswer(questionText, answerText);
+					try {
+						// Evaluate the open-ended answer
+						evaluation = await evaluateOpenEndedAnswer(questionText, answerText);
+					} catch (error:any) {
+						// Handle evaluation errors
+						console.error("Evaluation error:", error);
+						
+						if (error.response) {
+							// The request was made and the server responded with an error status
+							const errorData = error.response.data;
+							evaluationError = errorData.message || "There was an error evaluating your answer.";
+						} else if (error.request) {
+							// The request was made but no response was received
+							evaluationError = "Unable to connect to the evaluation service. Please check your internet connection.";
+						} else {
+							// Something happened in setting up the request
+							evaluationError = "An unexpected error occurred during evaluation.";
+						}
+						
+						// Update slide with error state
+						set((state) => ({
+							slides: state.slides.map((slide, index) =>
+								index === state.currentSlideIndex ? {
+									...slide,
+									isEvaluating: false,
+									error: evaluationError
+								} : slide
+							)
+						}));
+						
+						// Don't proceed with the rest of the submission process if there was an error
+						return;
+					}
 					
 					// Update with evaluation results - use functional update to access latest state
 					set((state) => ({
@@ -253,12 +287,16 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 								subRating: {
 									rating: evaluation?.rating || 0,
 									feedback: evaluation?.feedback || "",
-									reasoning: evaluation?.reasoning || ""
+									rubrics: evaluation?.rubrics || [],
+									max_score: evaluation?.max_score || 0
 								}
 							} : slide
 						)
 					}));
 				}
+
+				// If there was an error, don't proceed with submission
+				if (evaluationError) return;
 
 				// Get updated current slide after evaluation
 				const updatedCurrentSlide = get().slides[currentSlideIndex];
@@ -281,23 +319,37 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 					submissionData,
 					viewId,
 					updatedCurrentSlide.submission_id || 0,
-					updatedCurrentSlide.subRating
 				);
-				console.log({placeHolderSubmission});
 
 				// Post the submission
-				const postedSubmission = await postViewSubmission(
-					viewId,
-					placeHolderSubmission
-				);
+				try {
+					const postedSubmission = await postViewSubmission(
+						viewId,
+						placeHolderSubmission
+					);
 
-				// Update the slide with the posted submission id - use functional update again
-				if (postedSubmission.id && !updatedCurrentSlide.submission_id) {
+					// Update the slide with the posted submission id - use functional update again
+					if (postedSubmission.id && !updatedCurrentSlide.submission_id) {
+						set((state) => ({
+							slides: state.slides.map((slide, index) =>
+								index === state.currentSlideIndex ? {
+									...slide,
+									submission_id: postedSubmission.id
+								} : slide
+							)
+						}));
+					}
+				} catch (error) {
+					console.error("Submission error:", error);
+					
+					// Handle submission errors
+					const submissionError = "Failed to save your answer. Please try again.";
+					
 					set((state) => ({
 						slides: state.slides.map((slide, index) =>
 							index === state.currentSlideIndex ? {
 								...slide,
-								submission_id: postedSubmission.id
+								error: submissionError
 							} : slide
 						)
 					}));
@@ -312,52 +364,47 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		currentSlide.completed = false;
 		currentSlide.answer = [];
 		currentSlide.isCorrect = false;
+		currentSlide.error = null;
 		set({ slides: slides });
 	},
 	evaluateOpenEndedAnswer: async (questionText: string, answerText: string) => {
 		if (!questionText.trim() || !answerText.trim()) {
 			return {
-				isCorrect: false,
+				is_correct: false,
 				rating: 0,
 				feedback: "",
-				reasoning: ""
+				rubrics: [],
+				max_score: 0
 			};
 		}
 
-		try {
-			// Make API call to evaluate the answer
-			const response = await fetch("https://backendtest-production-2cac.up.railway.app/evaluate", {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					question: questionText,
-					answer: answerText
-				})
-			});
+		// Make API call to evaluate the answer
+		const response = await fetch("https://backendtest-production-2cac.up.railway.app/evaluate", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				question: questionText,
+				answer: answerText
+			})
+		});
 
-			if (!response.ok) {
-				console.error("Error evaluating answer:", await response.text());
-				return {
-					isCorrect: false,
-					rating: 0,
-					feedback: "",
-					reasoning: ""
-				};
-			}
-
-			const evaluation = await response.json();
-
-			return evaluation;
-		} catch (error) {
-			console.error("Failed to evaluate answer:", error);
-			return {
-				isCorrect: false,
-				rating: 0,
-				feedback: "",
-				reasoning: ""
+		if (!response.ok) {
+			// Parse error response
+			const errorData = await response.json();
+			
+			// Throw error with details
+			throw {
+				response: {
+					status: response.status,
+					data: errorData
+				}
 			};
 		}
+
+		// Parse successful response
+		const evaluation = await response.json();
+		return evaluation;
 	},
 }));

@@ -8,6 +8,9 @@ import NeuralNetworkEditor from './editors/NeuralNetworkEditor';
 import ActivityEditor from './editors/ActivityEditor';
 import NeuronEditor from './editors/NeuronEditor';
 import Word2VecEditor from './editors/Word2VecEditor';
+import MNISTEditor from './editors/MNISTEditor';
+import TokenizeEditor from './editors/TokenizeEditor';
+import AutoTokenizeEditor from './editors/AutoTokenizeEditor';
 
 interface ContentEditorProps {
   content?: ContentInfo;
@@ -39,6 +42,12 @@ export default function ContentEditor({
       return <NeuronEditor content={content} onContentChange={onContentChange} />;
     case 'Word2Vec':
       return <Word2VecEditor content={content} onContentChange={onContentChange} />;
+    case 'MNIST':
+      return <MNISTEditor content={content} onContentChange={onContentChange} />;
+    case 'Tokenization':
+      return <TokenizeEditor content={content} onContentChange={onContentChange} />;
+    case 'Auto Tokenization':
+      return <AutoTokenizeEditor content={content} onContentChange={onContentChange} />;
     default:
       return <RichTextEditor content={content} onContentChange={onContentChange} />;
   }
