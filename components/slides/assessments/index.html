@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Answer Evaluation Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .input-section, .results-section {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result-card {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+        .rating {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .feedback {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .criteria-title {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .criteria-item {
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+        }
+        .criteria-name {
+            font-weight: 600;
+        }
+        .criteria-level {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-left: 8px;
+            font-size: 14px;
+            background-color: #e0f7fa;
+            color: #0288d1;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border-left: 4px solid #c62828;
+        }
+        .toggle-rubrics {
+            background-color: #f0f0f0;
+            border: none;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .rubrics-editor {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .rubrics-editor textarea {
+            min-height: 200px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .criteria-formatted {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+            background-color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .criteria-formatted p {
+            margin-bottom: 15px;
+        }
+        .criteria-title {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .criteria-level {
+            font-weight: bold;
+            color: #3498db;
+        }
+        .criteria-feedback {
+            margin-top: 5px;
+            margin-left: 15px;
+            margin-bottom: 15px;
+        }
+        .criteria-quote {
+            margin-top: 5px;
+            margin-left: 15px;
+            margin-bottom: 15px;
+            font-style: italic;
+            font-size: 0.8em
+        }
+    </style>
+</head>
+<body>
+    <h1>Answer Evaluation Tool</h1>
+    
+    <div class="container">
+        <div class="input-section">
+            <h2>Input</h2>
+            
+            <label for="question">Question:</label>
+            <textarea id="question" placeholder="Enter the question here..."></textarea>
+            
+            <label for="answer">Student Answer:</label>
+            <textarea id="answer" placeholder="Enter the student's answer here..."></textarea>
+            
+            <button type="button" class="toggle-rubrics" id="toggleRubrics">Show/Hide Rubrics Editor</button>
+            
+            <div class="rubrics-editor" id="rubricsEditor">
+                <label for="rubrics">Custom Rubrics (JSON format):</label>
+                <textarea id="rubrics" placeholder="Enter custom rubrics in JSON format or leave empty to use default..."></textarea>
+                <button type="button" id="loadDefaultRubrics" class="load-default-btn">Load Default Rubrics</button>
+            </div>
+            
+            <button type="button" id="evaluateBtn">Evaluate Answer</button>
+        </div>
+        
+        <div class="results-section">
+            <h2>Evaluation Results</h2>
+            <div id="results">
+                <div class="loading" style="display: none;">Evaluating answer...</div>
+                <div class="error-message" style="display: none;"></div>
+                <div class="result-content" style="display: none;">
+                    <div class="result-card">
+                        <div class="rating">Score: <span id="rating">0</span>/<span id="maxScore">0</span></div>
+                        
+                        <div class="feedback" id="feedback"></div>
+                        <div class="criteria-title">Criteria Evaluation:</div>
+                        <div id="criteriaEvaluation"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const questionInput = document.getElementById('question');
+            const answerInput = document.getElementById('answer');
+            const rubricsInput = document.getElementById('rubrics');
+            const evaluateBtn = document.getElementById('evaluateBtn');
+            const toggleRubricsBtn = document.getElementById('toggleRubrics');
+            const rubricsEditor = document.getElementById('rubricsEditor');
+            const loadDefaultRubricsBtn = document.getElementById('loadDefaultRubrics');
+            
+            const resultsDiv = document.getElementById('results');
+            const loadingDiv = resultsDiv.querySelector('.loading');
+            const errorDiv = resultsDiv.querySelector('.error-message');
+            const resultContentDiv = resultsDiv.querySelector('.result-content');
+            
+            const ratingSpan = document.getElementById('rating');
+            const feedbackDiv = document.getElementById('feedback');
+            const maxScoreSpan = document.getElementById('maxScore');
+            const criteriaEvaluationDiv = document.getElementById('criteriaEvaluation');
+            
+            // Toggle rubrics editor
+            toggleRubricsBtn.addEventListener('click', function() {
+                if (rubricsEditor.style.display === 'none' || rubricsEditor.style.display === '') {
+                    rubricsEditor.style.display = 'block';
+                } else {
+                    rubricsEditor.style.display = 'none';
+                }
+            });
+            
+            // Load default rubrics
+            loadDefaultRubricsBtn.addEventListener('click', function() {
+                // Show loading state
+                loadingDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+                
+                // Fetch default rubrics from the server
+                fetch('http://127.0.0.1:5000/rubrics')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to load default rubrics');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Hide loading state
+                        loadingDiv.style.display = 'none';
+                        
+                        // Format the JSON and display it in the textarea
+                        rubricsInput.value = JSON.stringify(data, null, 2);
+                    })
+                    .catch(error => {
+                        loadingDiv.style.display = 'none';
+                        showError('Error loading default rubrics: ' + error.message);
+                    });
+            });
+            
+            // Evaluate button click handler
+            evaluateBtn.addEventListener('click', function() {
+                const question = questionInput.value.trim();
+                const answer = answerInput.value.trim();
+                
+                if (!question || !answer) {
+                    showError('Both question and answer are required.');
+                    return;
+                }
+                
+                // Prepare request data
+                const requestData = {
+                    question: question,
+                    answer: answer
+                };
+                
+                // Add custom rubrics if provided
+                const rubrics = rubricsInput.value.trim();
+                if (rubrics) {
+                    try {
+                        requestData.rubrics = JSON.parse(rubrics);
+                    } catch (e) {
+                        showError('Invalid JSON format for rubrics. Please check your input.');
+                        return;
+                    }
+                }
+                
+                // Show loading state
+                loadingDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+                resultContentDiv.style.display = 'none';
+                
+                // Make API request
+                fetch('http://127.0.0.1:5000/evaluate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'An error occurred during evaluation.');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide loading state
+                    loadingDiv.style.display = 'none';
+                    
+                    // Display results
+                    ratingSpan.textContent = data.rating;
+                    feedbackDiv.textContent = data.feedback;
+                    maxScoreSpan.textContent = data.max_score;
+                    
+                    // Display criteria evaluation
+                    criteriaEvaluationDiv.innerHTML = '';
+                    if (data.rubrics) {
+                        // Parse the criteria evaluation array
+                        const criteriaContent = document.createElement('div');
+                        criteriaContent.className = 'criteria-formatted';
+                        
+                        try {
+                            // Ensure it's an array
+                            if (Array.isArray(data.rubrics)) {
+                                data.rubrics.forEach(item => {
+                                    if (item.criterion && item.levels) {
+                                        // Create header element
+                                        const header = document.createElement('div');
+                                        header.className = 'criteria-title';
+                                        
+                                        // Find the selected level (the one with the highest value)
+                                        let selectedLevel = null;
+                                        let highestValue = -1;
+                                        
+                                        if (Array.isArray(item.levels)) {
+                                            item.levels.forEach(level => {
+                                                if (level.value > highestValue) {
+                                                    highestValue = level.value;
+                                                    selectedLevel = level;
+                                                }
+                                            });
+                                        }
+                                        
+                                        if (selectedLevel) {
+                                            header.innerHTML = `${item.criterion}: <span class="criteria-level">${selectedLevel.name} (${selectedLevel.value} points)</span>`;
+                                            criteriaContent.appendChild(header);
+                                            
+                                            // Create description element
+                                            const description = document.createElement('div');
+                                            description.className = 'criteria-feedback';
+                                            description.textContent = selectedLevel.description;
+                                            criteriaContent.appendChild(description);
+                                            
+                                            // Create quote element
+                                            const quote = document.createElement('div');
+                                            quote.className = 'criteria-quote';
+                                            quote.textContent = selectedLevel.quote;
+                                            criteriaContent.appendChild(quote);
+                                        } else {
+                                            header.textContent = item.criterion;
+                                            criteriaContent.appendChild(header);
+                                        }
+                                    }
+                                });
+                            } else {
+                                criteriaContent.textContent = "Invalid criteria evaluation format";
+                            }
+                        } catch (e) {
+                            console.error("Error parsing criteria evaluation:", e);
+                            criteriaContent.textContent = "Error displaying criteria evaluation";
+                        }
+                        
+                        criteriaEvaluationDiv.appendChild(criteriaContent);
+                    }
+                    
+                    resultContentDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    loadingDiv.style.display = 'none';
+                    showError(error.message || 'An error occurred during evaluation.');
+                });
+            });
+            
+            // Helper function to show error messages
+            function showError(message) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                resultContentDiv.style.display = 'none';
+            }
+            
+            // Add example question and answer for testing
+            questionInput.value = "What is the difference between a for loop and a while loop in Python?";
+            answerInput.value = "A for loop is used to iterate over a sequence like a list or string, while a while loop continues as long as a condition is true. For loops are typically used when you know how many times you need to iterate, while while loops are better when you don't know in advance.";
+        });
+    </script>
+</body>
+</html>

@@ -257,12 +257,14 @@ export interface Answer {
 	text: string;
 	order?: number;
 	match?: string;
+	subRating?: SubRating;
 }
 
 export interface SubRating {
 	rating: number;
 	feedback: string;
-	reasoning: string;
+	rubrics: Rubric[];
+	max_score?: number;
 }
 
 export interface BaseSubmission {
@@ -271,7 +273,6 @@ export interface BaseSubmission {
 	answer: Answer[];
 	views_id: number;
 	revealed: boolean;
-	subRating?: SubRating;
 }
 
 export interface Submission extends BaseSubmission {
@@ -316,7 +317,8 @@ export interface OpenEndedEvaluation {
 	is_correct: boolean;
 	rating: number;
 	feedback: string;
-	reasoning: string;
+	rubrics: Rubric[];
+	max_score: number;
 }
 export interface LocalSlide extends BaseSlide {
 	completed: boolean;
@@ -329,8 +331,8 @@ export interface LocalSlide extends BaseSlide {
 	assessment_id?: number;
 	assessment_info?: AssessmentInfo;
 	submission_id?: number;
-	subRating?: SubRating;
 	isEvaluating?: boolean;
+	error?: string | null;
 }
 
 
@@ -344,7 +346,7 @@ export interface ViewProgress {
 	timestamp: number;
 }
 
-export type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity" | "Neuron" | "Word2Vec";
+export type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity" | "Neuron" | "Word2Vec" | "MNIST" | "Tokenization" | "Auto Tokenization";
 
 export interface ContentInfo {
 	readonly created_at: number;
@@ -387,11 +389,13 @@ export interface RubricLevel {
 	name: string;
 	description: string;
 	value: number;
+	quote?: string;
 }
 
 export interface Rubric {
 	criterion: string;
 	levels: RubricLevel[];
+	quote?: string;
 }
 
 export interface Assessment {
@@ -442,7 +446,8 @@ export interface Option {
 	text: string;
 	isCorrect: boolean;
 	correctOrder: number;
-	match: string;
+	match?: string;
+	subRating?: SubRating;
 }
 
 

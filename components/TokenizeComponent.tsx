@@ -6,6 +6,7 @@ import { generateColors } from "@/utils/utilfunctions";
 import { useKeyPress } from "@/hooks/useKeyboard";
 import styles from "@/styles/styles";
 import Svg, { Text as SvgText, Rect } from "react-native-svg";
+import { ContentInfo } from "@/types";
 
 const pastelColors = [
 	generateColors(Colors.primary, 0.3).muted,
@@ -21,9 +22,10 @@ interface TokenSegment {
 	tokenId?: number;
 }
 
-const TokenizeComponent = () => {
+
+const TokenizeComponent = ({ content }: { content?: ContentInfo }) => {
 	const [text] = useState(
-		"Replace this text in the input field to see how tokenization works. Text in the input field to see how tokenization works."
+		content?.state ?? ""
 	);
 	const [tokenizingState, setTokenizingState] = useState<"tokenizing" | "stop" | "end" | "initial">("initial");
 	const [selectionStart, setSelectionStart] = useState(0);

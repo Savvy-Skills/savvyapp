@@ -14,6 +14,9 @@ import { NNState } from "@/types/neuralnetwork";
 import { useViewStore } from "@/store/viewStore";
 import NeuronVisualization from "../NeuronVisualization";
 import WordToVec from "../WordToVec";
+import MNISTComponent from "../MNISTComponent";
+import Tokenizer from "../Tokenizer";
+import TokenizeComponent from "../TokenizeComponent";
 
 export interface SlideProps {
 	slide: LocalSlide;
@@ -48,6 +51,12 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 				return <NeuronVisualization config={content.neuronConfig ?? {} as NeuronConfig } dataset_info={content.dataset_info ?? {} as DatasetInfo} />;
 		case "Word2Vec":
 			return <WordToVec dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+		case "MNIST":
+			return <MNISTComponent />;
+		case "Tokenization":
+			return <TokenizeComponent content={content} />;
+		case "Auto Tokenization":
+			return <Tokenizer content={content} />;
 		default:
 			return <View />;
 	}

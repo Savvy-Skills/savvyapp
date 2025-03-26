@@ -5,6 +5,7 @@ import llama3Tokenizer from 'llama3-tokenizer-js';
 import { Colors } from "@/constants/Colors";
 import { generateColors } from "@/utils/utilfunctions";
 import styles from "@/styles/styles";
+import { ContentInfo } from "@/types";
 
 // Stylizing tokens is mostly copied from gpt-tokenizer demo.
 // const pastelColors = [
@@ -81,9 +82,9 @@ const TokenIds = ({ tokenIds }: { tokenIds: number[] }) => (
   </ScrollView>
 );
 
-const Tokenizer = () => {
+const Tokenizer = ({ content }: { content?: ContentInfo }) => {
   const [inputText, setInputText] = useState(
-    "Replace this text in the input field...\n<|start_header_id|>...to see how tokenization works."
+    content?.state ?? ""
   );
 
   const encodedTokens = llama3Tokenizer.encode(inputText, { bos: false, eos: false });
