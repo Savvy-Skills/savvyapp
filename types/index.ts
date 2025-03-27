@@ -404,6 +404,7 @@ export interface Assessment {
 	type: AssessmentTypes;
 	answerType: string;
 	gradingScale?: number;
+	feedback?: string;
 	explanation?: string;
 	dataset?: string;
 	context?: string;
@@ -411,6 +412,8 @@ export interface Assessment {
 	subtype?: QuestionSubtypes;
 	options?: Option[];
 	rubric?: Rubric[];
+	saved?: boolean;
+	slideName?: string;
 }
 
 export interface AssessmentInfo extends Assessment {

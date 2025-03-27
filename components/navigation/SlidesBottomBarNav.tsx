@@ -25,6 +25,8 @@ type BottomBarNavProps = {
 	onCloseBottomSheet: () => void;
 };
 
+const WITHOUT_SOUND = ["Open Ended"]
+
 
 const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCloseBottomSheet }: BottomBarNavProps) => {
 
@@ -56,10 +58,12 @@ const BottomBarNav = ({ onShowTopSheet, onShowBottomSheet, showBottomSheet, onCl
 	const handleCheck = useCallback(() => {
 		if (currentSlide?.type === "Assessment") {
 			if (currentSlide.submittable) {
-				if (currentSlide.isCorrect) {
-					playSound("success", 0.5);
-				} else {
-					playSound("failVariant", 0.5);
+				if (!WITHOUT_SOUND.includes(currentSlide.assessment_info?.type || "")) {
+					if (currentSlide.isCorrect) {
+						playSound("success", 0.5);
+					} else {
+						playSound("failVariant", 0.5);
+					}
 				}
 				submitAnswer();
 			} else {

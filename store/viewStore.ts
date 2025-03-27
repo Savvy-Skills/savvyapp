@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { getViewByID, getViewSubmissions, postViewProgress, postViewSubmission, restartView } from "@/services/coursesApi";
-import { Answer, OpenEndedEvaluation, view } from "@/types";
+import { Answer, OpenEndedEvaluation, SubRating, view } from "@/types";
 import { ViewStore } from "@/types";
 import { createSubmission, getCorrectAnswers } from "@/utils/utilfunctions";
-
+import { useAudioStore } from "./audioStore";
 
 export const useViewStore = create<ViewStore>((set, get) => ({
 	viewId: null,
@@ -170,9 +170,9 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 
 		// Function to get correct answers, based on the slide type
 		const correctAnswers = getCorrectAnswers(currentSlide);
-		if (currentSlide.type === "Assessment" && currentSlide.assessment_id ) {
-			get().completeSlide(currentSlideIndex);
+		if (currentSlide.type === "Assessment" && currentSlide.assessment_id) {
 			currentSlide.revealed = true;
+			get().completeSlide(currentSlideIndex);
 			currentSlide.submittable = false;
 			currentSlide.submitted = true;
 			currentSlide.isCorrect = true;
@@ -202,13 +202,13 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		const { currentSlideIndex, slides, view, viewId, completeSlide, evaluateOpenEndedAnswer } = get();
 		const currentSlide = slides[currentSlideIndex];
 		const quizMode = view?.quiz || false;
-
+		
 		if (!viewId) return;
 		if (currentSlide.type === "Assessment" && currentSlide.assessment_id) {
 			if (currentSlide.submittable) {
 				// Check if this is an open-ended question
 				const isOpenEnded = currentSlide.assessment_info?.type === "Open Ended";
-				
+
 				if (isOpenEnded) {
 					// Set evaluating state to true
 					set((state) => ({
@@ -238,7 +238,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 				// Evaluate open-ended answers
 				let evaluation: OpenEndedEvaluation | null = null;
 				let evaluationError: string | null = null;
-				
+
 				if (isOpenEnded && currentSlide.answer && currentSlide.answer.length > 0) {
 					const questionText = currentSlide.assessment_info?.text || "";
 					const answerText = currentSlide.answer[0]?.text || "";
@@ -246,10 +246,10 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 					try {
 						// Evaluate the open-ended answer
 						evaluation = await evaluateOpenEndedAnswer(questionText, answerText);
-					} catch (error:any) {
+					} catch (error: any) {
 						// Handle evaluation errors
 						console.error("Evaluation error:", error);
-						
+
 						if (error.response) {
 							// The request was made and the server responded with an error status
 							const errorData = error.response.data;
@@ -261,7 +261,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 							// Something happened in setting up the request
 							evaluationError = "An unexpected error occurred during evaluation.";
 						}
-						
+
 						// Update slide with error state
 						set((state) => ({
 							slides: state.slides.map((slide, index) =>
@@ -272,24 +272,37 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 								} : slide
 							)
 						}));
-						
+
 						// Don't proceed with the rest of the submission process if there was an error
 						return;
 					}
-					
+
 					// Update with evaluation results - use functional update to access latest state
+					const subRating: SubRating = {
+						rating: evaluation?.rating || 0,
+						feedback: evaluation?.feedback || "",
+						rubrics: evaluation?.rubrics || [],
+						max_score: evaluation?.max_score || 0
+					}
+					if (evaluation?.is_correct) {
+						// Use the store directly to play sound
+						useAudioStore.getState().playSound("success", 0.5);
+					} else {
+						// Use the store directly to play sound
+						useAudioStore.getState().playSound("failVariant", 0.5);
+					}
+
 					set((state) => ({
 						slides: state.slides.map((slide, index) =>
 							index === state.currentSlideIndex ? {
 								...slide,
 								isEvaluating: false, // Reset evaluating state
 								isCorrect: evaluation?.is_correct || false,
-								subRating: {
-									rating: evaluation?.rating || 0,
-									feedback: evaluation?.feedback || "",
-									rubrics: evaluation?.rubrics || [],
-									max_score: evaluation?.max_score || 0
-								}
+								answer: [{
+									...slide.answer?.[0],
+									text: slide.answer?.[0]?.text || "", // Ensure text is always defined
+									subRating: subRating
+								}]
 							} : slide
 						)
 					}));
@@ -300,7 +313,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 
 				// Get updated current slide after evaluation
 				const updatedCurrentSlide = get().slides[currentSlideIndex];
-				
+
 				// Slide is correct or quiz saved, so we can check the slide completion
 				if (updatedCurrentSlide.isCorrect || quizMode) {
 					// Complete the slide
@@ -341,10 +354,10 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 					}
 				} catch (error) {
 					console.error("Submission error:", error);
-					
+
 					// Handle submission errors
 					const submissionError = "Failed to save your answer. Please try again.";
-					
+
 					set((state) => ({
 						slides: state.slides.map((slide, index) =>
 							index === state.currentSlideIndex ? {
@@ -393,7 +406,7 @@ export const useViewStore = create<ViewStore>((set, get) => ({
 		if (!response.ok) {
 			// Parse error response
 			const errorData = await response.json();
-			
+
 			// Throw error with details
 			throw {
 				response: {
