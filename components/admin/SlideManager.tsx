@@ -15,6 +15,7 @@ import { SlidesOrder } from '@/services/adminApi';
 import ConfirmationDialog from '@/components/modals/ConfirmationDialog';
 import styles from '@/styles/styles';
 import { Colors } from '@/constants/Colors';
+import AIAssessmentGenerator from './AIAssessmentGenerator';
 
 interface SlideManagerProps {
 	viewId: number | null;
@@ -71,6 +72,9 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	// Add state for slide removal confirmation
 	const [removeConfirmVisible, setRemoveConfirmVisible] = useState(false);
 	const [slideToRemove, setSlideToRemove] = useState<LocalSlide | null>(null);
+
+	// Add this new state variable
+	const [showAiGenerator, setShowAiGenerator] = useState(false);
 
 	// Load slides when viewId changes
 	useEffect(() => {
@@ -325,9 +329,23 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 		setAttachedAssessment(null);
 	};
 
+	// Add this handler to the component
+	const handleAssessmentsCreated = (newAssessments: AssessmentInfo[]) => {
+		console.log(`Created ${newAssessments.length} new assessments`);
+		// After assessments are created, refresh the slides
+		fetchSlides();
+		// Optionally return to slides
+		setShowAiGenerator(false);
+	};
+
+	// Modify handleBack to also handle AI generator state
 	const handleBack = () => {
+		// If AI generator is showing, hide it and go back to slides
+		if (showAiGenerator) {
+			setShowAiGenerator(false);
+		}
 		// If we are editing a slide, cancel the edit
-		if (isEditing) {
+		else if (isEditing) {
 			resetForm();
 		} else {
 			// Otherwise, go back to the slides list
@@ -566,21 +584,33 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 						style={[styles.savvyButton, localStyles.backButton]}
 						icon="arrow-left"
 					>
-						{isEditing ? 'Back to Slides' : 'Back to Views'}
+						{showAiGenerator ? 'Back to Slides' : isEditing ? 'Back to Slides' : 'Back to Views'}
 					</Button>
 					<Text variant="headlineMedium">Slide Management</Text>
 				</View>
 				<View style={localStyles.headerButtons}>
-					{!isEditing && !isReordering && (
-						<Button
-							mode="contained"
-							onPress={startAddingSlide}
-							style={[styles.savvyButton, localStyles.addButton]}
-						>
-							Add New Slide
-						</Button>
+					{!isEditing && !isReordering && !showAiGenerator && (
+						<>
+							<Button
+								mode="contained"
+								onPress={startAddingSlide}
+								style={[styles.savvyButton, localStyles.addButton]}
+							>
+								Add New Slide
+							</Button>
+                            
+							{/* Add AI Generator Button */}
+							<Button
+								mode="contained"
+								onPress={() => setShowAiGenerator(true)}
+								style={[styles.savvyButton, localStyles.aiButton]}
+								icon="robot"
+							>
+								AI Assessment Generator
+							</Button>
+						</>
 					)}
-					{!isEditing && slides.length > 1 && (
+					{!isEditing && !showAiGenerator && slides.length > 1 && (
 						<Button
 							mode={isReordering ? "contained" : "outlined"}
 							onPress={handleReorderModeToggle}
@@ -603,7 +633,13 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 				</View>
 			</View>
 
-			{isEditing ? renderSlideForm() : (
+			{/* Render different content based on state */}
+			{showAiGenerator ? (
+				<AIAssessmentGenerator 
+					viewId={viewId || 0} 
+					onAssessmentsCreated={handleAssessmentsCreated} 
+				/>
+			) : isEditing ? renderSlideForm() : (
 				isReordering ? (
 					<DraggableList
 						slides={reorderedSlides}
@@ -924,5 +960,9 @@ const localStyles = StyleSheet.create({
 	removeButton: {
 		borderColor: Colors.revealedButton,
 		color: Colors.revealedButton,
+	},
+	aiButton: {
+		marginLeft: 16,
+		backgroundColor: Colors.primary, // Use a different color to highlight AI functionality
 	},
 }); 

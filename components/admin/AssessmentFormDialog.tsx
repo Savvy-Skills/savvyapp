@@ -12,6 +12,7 @@ interface AssessmentFormDialogProps {
   onDismiss: () => void;
   onSave: (assessment: AssessmentInfo) => void;
   viewId: number | null;
+  initialData?: Assessment;
 }
 
 export default function AssessmentFormDialog({
