@@ -26,15 +26,15 @@ export default function MultipleChoice({
 
 	const currentAnswers = slide.answer || [];
 	const options = useMemo(
-		() => question.options.map((option) => option.text),
+		() => question.options?.map((option) => option.text) || [],
 		[question]
 	);
 
 	const correctAnswers = useMemo(
 		() =>
 			question.options
-				.filter((option) => option.isCorrect)
-				.map((option) => option.text),
+				?.filter((option) => option.isCorrect)
+				.map((option) => option.text) || [],
 		[question]
 	);
 

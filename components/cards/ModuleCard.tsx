@@ -86,7 +86,6 @@ const localStyles = StyleSheet.create({
 	},
 	title: {
 		fontSize: 18,
-		fontFamily: "Poppins",
 		fontWeight: "bold",
 		marginBottom: 4,
 	},

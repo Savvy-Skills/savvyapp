@@ -35,7 +35,7 @@ export default function DragAndDrop({
 
 
 	const correctIems = useMemo(() =>
-		question?.options.map((option) => ({
+		question?.options?.map((option) => ({
 			text: option.text,
 			match: option.match,
 		})),
@@ -95,7 +95,7 @@ export default function DragAndDrop({
 					{firstHalf.map((zone) => (
 						<DropZone
 							key={zone}
-							zone={zone}
+							zone={zone || ""}
 							onDrop={handleDrop}
 							isCorrect={isCorrect}
 							isSubmitted={isSubmitted}
@@ -141,7 +141,7 @@ export default function DragAndDrop({
 					{secondHalf.map((zone) => (
 						<DropZone
 							key={zone}
-							zone={zone}
+							zone={zone || ""}
 							onDrop={handleDrop}
 							isCorrect={isCorrect}
 							isSubmitted={isSubmitted}

@@ -1,4 +1,3 @@
-import { useFonts } from "expo-font";
 import {
 	Stack,
 	useLocalSearchParams,
@@ -8,7 +7,6 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
-import * as Network from 'expo-network';
 
 import { PaperProvider, Text } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -19,7 +17,7 @@ import { useThemeManager } from "@/hooks/useThemeManager";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider } from "@/components/providers/SnackBarProvider";
 import { Platform, View } from "react-native";
-
+import "@/styles/styles.css";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -35,14 +33,13 @@ const queryClient = new QueryClient({
 const excluded = ["auth", "debug", "login"];
 
 export default function RootLayout() {
-	const [fontsLoaded] = useFonts({
-		SpaceMono: require("../assets/fonts/SpaceMonoRegular.ttf"),
-		Poppins: require("../assets/fonts/PoppinsRegular.ttf"),
-		PoppinsBold: require("../assets/fonts/PoppinsBold.ttf"),
-		PoppinsItalic: require("../assets/fonts/PoppinsItalic.ttf"),
-		PoppinsBlack: require("../assets/fonts/PoppinsBlack.ttf"),
-		PoppinsExtraBold: require("../assets/fonts/PoppinsExtraBold.ttf"),
-	});
+	// const [fontsLoaded] = useFonts({
+	// 	Montserrat_400Regular,
+	// 	Montserrat_600SemiBold,
+	// 	Montserrat_700Bold,
+	// 	Montserrat_800ExtraBold,
+	// 	Montserrat_900Black,
+	// });
 
 	const loadSounds = useAudioStore((state) => state.loadSounds);
 	const soundsLoaded = useAudioStore((state) => state.soundsLoaded);
@@ -59,11 +56,11 @@ export default function RootLayout() {
 	}, []);
 
 	useEffect(() => {
-		if (fontsLoaded && soundsLoaded) {
+		if (soundsLoaded) {
 			SplashScreen.hideAsync();
 			setAppIsReady(true);
 		}
-	}, [fontsLoaded, soundsLoaded]);
+	}, [soundsLoaded]);
 
 	useEffect(() => {
 		if (isInitialized && appIsReady) {
@@ -100,7 +97,6 @@ export default function RootLayout() {
 	if (!isInitialized || !appIsReady) {
 		return null;
 	}
-
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>

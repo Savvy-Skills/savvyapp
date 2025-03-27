@@ -12,6 +12,7 @@ export default function Root({ children }: PropsWithChildren) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
         {/*
           Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
@@ -34,7 +35,6 @@ height: 100%;
 }
 body {
   background-color: #fff;
-  font-family: 'Poppins', sans-serif;
   height: 100%;
 }
 

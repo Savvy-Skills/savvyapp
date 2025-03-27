@@ -161,7 +161,6 @@ const localStyles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontFamily: "PoppinsBold",
     marginBottom: 16,
     color: Colors.text,
     borderBottomWidth: 2,
