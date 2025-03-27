@@ -2,11 +2,7 @@ import styles from "@/styles/styles";
 import { LocalSlide, AssessmentInfo } from "@/types";
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Text } from "react-native-paper";
-import { useCourseStore } from "@/store/courseStore";
 import ThemedTitle from "../themed/ThemedTitle";
-import { useThemeStore } from "@/store/themeStore";
-import { Colors } from "@/constants/Colors";
 import RichText from "./RichTextComponent";
 
 interface AssessmentWrapperProps {
@@ -25,7 +21,6 @@ export default function AssessmentWrapper({
 }: AssessmentWrapperProps) {
 
 	const showExplanationComponent = slide.showExplanation;
-	const { backgroundAssessment } = useThemeStore();
 
 	return (
 		<View
@@ -33,18 +28,13 @@ export default function AssessmentWrapper({
 				styles.slideWidth,
 				styles.centeredMaxWidth,
 				styles.assessmentWrapper,
-				{ backgroundColor: backgroundAssessment ? Colors.assessmentBackground : "transparent" }
+				{ backgroundColor: "transparent" }
 			]}
 		>
 			{/* Show title except for untitled assessments */}
 			{!untitledAssessments.includes(question.type) && (
 				<ThemedTitle
-					style={{
-						fontSize: 24,
-						lineHeight: 27,
-						fontWeight: 600,
-						textAlign: "center",
-					}}
+					style={styles.assessmentTitle}
 				>
 					{question.text}
 				</ThemedTitle>

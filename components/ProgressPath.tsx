@@ -98,7 +98,6 @@ const ProgressPath = ({
 								<Icon source="abacus" size={circleRadius} color={textColor} />
 							</ForeignObject>
 							<Text
-								fontFamily="Poppins"
 								x={cx}
 								y={cy + circleRadius * 1.3}
 								textAnchor="middle"

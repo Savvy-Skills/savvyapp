@@ -96,7 +96,6 @@ export default StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 28,
-    fontFamily: "PoppinsBold",
     marginBottom: 16,
   },
   innerSection: {
@@ -224,7 +223,6 @@ export default StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 16,
     alignSelf: "flex-start",
-    fontFamily: "PoppinsBold",
   },
   networkContainer: {
     flex: 1,
@@ -234,7 +232,6 @@ export default StyleSheet.create({
   tag: {
     fontSize: 12,
     color: Colors.primary,
-    fontFamily: "PoppinsBold",
   },
   // Add more styles as needed
   layerContainer: {
@@ -536,6 +533,12 @@ export default StyleSheet.create({
     backgroundColor: generateColors(Colors.assessmentBackground, 0.4).muted,
     borderRadius: 10,
     padding: 10,
+  },
+  assessmentTitle:{
+	fontSize: 24,
+	lineHeight: 27,
+	fontWeight: 600,
+	textAlign: "center",
   },
   navButton: {
     margin: 0,

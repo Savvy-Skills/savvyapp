@@ -7,7 +7,7 @@ import {
 import { create } from "zustand";
 
 const fontConfig = {
-	fontFamily: "Poppins",
+	fontFamily: "Montserrat",
 };
 
 const createCustomTheme = (baseTheme: MD3Theme) => ({

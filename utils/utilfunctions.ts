@@ -140,7 +140,7 @@ export const getMultipleOptionStyles = ({
 		}
 	}
 
-	if (quizMode && !isCorrect) {
+	if (quizMode && !isCorrect && isSubmitted) {
 		if (correctAnswers.includes(option)) {
 			return [...baseStyles, styles.correctOption];
 		}

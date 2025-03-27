@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import styles from "@/styles/styles";
 import { Icon } from "react-native-paper";
-import { useThemeStore } from "@/store/themeStore";
 
 interface CustomMenuProps {
 	visible: boolean;
@@ -21,7 +20,6 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
 }) => {
 	if (!visible) return null;
 
-	const { backgroundAssessment, setBackgroundAssessment } = useThemeStore();
 
 	return (
 		<View style={styles.menuContainer}>
@@ -54,15 +52,6 @@ const CustomNavMenu: React.FC<CustomMenuProps> = ({
 			>
 				<Icon source="send" size={24} color="white" />
 				<Text style={styles.menuText}>Message us</Text>
-			</TouchableOpacity>
-			<TouchableOpacity
-				style={styles.centeredItems}
-				onPress={() => {
-					setBackgroundAssessment(!backgroundAssessment);
-				}}
-			>
-				<Icon source="theme-light-dark" size={24} color="white" />
-				<Text style={styles.menuText}>{backgroundAssessment ? "No Background" : "Put Background"}</Text>
 			</TouchableOpacity>
 		</View>
 	);

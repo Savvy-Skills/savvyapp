@@ -3,11 +3,9 @@ import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 
 export const useThemeManager = () => {
-  const colorScheme = useColorScheme();
   const { theme, isDarkMode, setIsDarkMode } = useThemeStore();
 
   const initialize = () => {
-	// setIsDarkMode(colorScheme === "dark");
 	setIsDarkMode(false)
   };
 

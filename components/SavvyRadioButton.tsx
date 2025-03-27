@@ -1,5 +1,4 @@
 import { Colors } from "@/constants/Colors";
-import { useThemeStore } from "@/store/themeStore";
 import styles from "@/styles/styles";
 import React from "react";
 import { View, StyleSheet } from "react-native";
