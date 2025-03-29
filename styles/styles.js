@@ -97,6 +97,7 @@ export default StyleSheet.create({
   sectionTitle: {
     fontSize: 28,
     marginBottom: 16,
+	fontWeight: "bold",
   },
   innerSection: {
     paddingHorizontal: 8,
