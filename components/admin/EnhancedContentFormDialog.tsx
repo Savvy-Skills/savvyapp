@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput, SegmentedButtons, Divider, Menu } from 'react-native-paper';
 import { ContentInfo, ContentTypes } from '@/types/index';
 import { createContent, updateContent } from '@/services/adminApi';
-import ContentEditor from '@/components/content/ContentEditor';
+import ContentEditor from '@/components/admin/content/ContentEditor';
 import Dropdown from '../common/Dropdown';
 
 interface EnhancedContentFormDialogProps {

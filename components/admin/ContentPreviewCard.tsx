@@ -154,7 +154,7 @@ export default function ContentPreviewCard({ content, index, onRemove, onEdit }:
 				<Text style={styles.previewLabel}>Type:</Text>
 				<Text style={styles.previewValue}>{content.type}</Text>
 				<Text style={styles.previewLabel}>Preview:</Text>
-				{content.type === 'Rich Text' && (
+				{['Rich Text', 'Tokenization', 'Auto Tokenization'].includes(content.type || '') && (
 					<RichText text={content.state || ''} />
 				)}
 
@@ -204,6 +204,7 @@ export default function ContentPreviewCard({ content, index, onRemove, onEdit }:
 				{content.type === 'Neuron' && renderNeuronPreview()}
 				
 				{content.type === 'Word2Vec' && renderWord2VecPreview()}
+
 
 				{['Neural Network', 'Activity'].includes(content.type || '') && (
 					<Text style={styles.previewValue}>

@@ -402,7 +402,6 @@ export interface Assessment {
 	title: string;
 	text: string;
 	type: AssessmentTypes;
-	answerType: string;
 	gradingScale?: number;
 	feedback?: string;
 	explanation?: string;

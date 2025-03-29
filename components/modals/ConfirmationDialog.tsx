@@ -11,7 +11,8 @@ interface ConfirmationDialogProps {
 	onConfirm: (skip: boolean) => void;
 	skip?: boolean;
 	title: string;
-	content: string;
+	content?: string;
+	children?: React.ReactNode;
 }
 
 const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
@@ -21,6 +22,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 	skip,
 	title,
 	content,
+	children
 }) => {
 	const { width } = useWindowDimensions();
 	const { skipAssessments } = useCourseStore();
@@ -37,7 +39,8 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 					<View style={{ alignItems: "center" }}>
 						<Image source={require("@/assets/images/svgs/warning.svg")} style={{ width: 120, height: 120 }} />
 					</View>
-					<Text style={[styles.subtitle, { textAlign: "center" }]}>{content}</Text>
+					{!children && <Text style={[styles.subtitle, { textAlign: "center" }]}>{content}</Text>}
+					{children && children}
 					{/* TODO: if skip is true, show toggle with skipAssessments state */}
 					{skip && (
 						<Pressable style={{ flexDirection: "row", alignItems: "center", alignSelf: "flex-start" }} onPress={() => setLocalSkipAssessments(!localSkipAssessments)}>
