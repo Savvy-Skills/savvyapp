@@ -16,6 +16,7 @@ export default function FillInTheBlankEditor({
   // Initialize the component with the current question text
   useEffect(() => {
     setFillBlankText(questionText);
+	setDistractorOptions(options);
     processTextForBlanks(questionText);
   }, []);
   
