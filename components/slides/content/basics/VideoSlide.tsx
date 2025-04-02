@@ -1,4 +1,4 @@
-import VideoComponent from "../../VideoComponent";
+import VideoComponent from "../advanced/VideoComponent";
 
 export interface VideoSlideProps {
   url: string;

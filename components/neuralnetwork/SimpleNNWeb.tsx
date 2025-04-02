@@ -3,7 +3,7 @@ import { useTFStore } from "@/store/tensorStore";
 import React, { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Surface, Button, ActivityIndicator } from "react-native-paper";
-import LoadingIndicator from "../LoadingIndicator";
+import LoadingIndicator from "../common/LoadingIndicator";
 import NNTabs from "./NNTabs";
 import styles from "@/styles/styles";
 import LayerDetails from "./LayerDetails";

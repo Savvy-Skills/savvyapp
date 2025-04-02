@@ -1,6 +1,6 @@
 import React from 'react'
 import { useDrop } from 'react-dnd'
-import StatusIcon from "@/components/StatusIcon"
+import StatusIcon from "@/components/common/StatusIcon"
 
 interface DropZoneProps {
   zone: string

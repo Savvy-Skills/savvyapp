@@ -1,4 +1,4 @@
-import StatusIcon from "@/components/StatusIcon";
+import StatusIcon from "@/components/common/StatusIcon";
 
 type RenderStatusIconProps = {
 	option: string;

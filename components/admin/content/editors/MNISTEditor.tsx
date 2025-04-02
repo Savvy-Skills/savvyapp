@@ -1,6 +1,6 @@
 import React from 'react';
 import { ContentInfo } from '@/types/index';
-import MNISTComponent from '@/components/MNISTComponent';
+import MNISTComponent from '@/components/slides/content/advanced/MNISTComponent';
 
 interface MNISTEditorProps {
   content?: ContentInfo;

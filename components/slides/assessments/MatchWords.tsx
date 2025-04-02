@@ -3,7 +3,7 @@ import { StyleSheet, View, TouchableOpacity, Animated } from "react-native";
 import { Text, IconButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { AssessmentProps } from "./SingleChoice";
-import StatusIcon from "@/components/StatusIcon";
+import StatusIcon from "@/components/common/StatusIcon";
 import { Colors } from "@/constants/Colors";
 import { useViewStore } from "@/store/viewStore";
 
@@ -46,23 +46,23 @@ export default function MatchWordsAssessment({
 	}, []);
 
 	const initializeCards = () => {
-		const options = question.options.map((opt, idx) => ({
+		const options = question.options?.map((opt, idx) => ({
 			id: `option-${idx}`,
 			text: opt.text,
 			type: "option" as const,
 			isMatched: false,
 			showFeedback: false,
 			isCorrect: false,
-		}));
+		})) || [];
 
-		const matches = question.options.map((opt, idx) => ({
+		const matches = question.options?.map((opt, idx) => ({
 			id: `match-${idx}`,
-			text: opt.match,
+			text: opt.match || "",
 			type: "match" as const,
 			isMatched: false,
 			showFeedback: false,
 			isCorrect: false,
-		}));
+		})) || [];
 
 		const allCards = [...options, ...matches];
 
@@ -150,11 +150,11 @@ export default function MatchWordsAssessment({
 		const cardIndex = cards.findIndex((c) => c.id === card.id);
 		const selectedCardIndex = cards.findIndex((c) => c.id === selectedCard.id);
 
-		const isMatchCorrect = question.options.some(
+		const isMatchCorrect = question.options?.some(
 			(opt) =>
 				(selectedCard.text === opt.text && card.text === opt.match) ||
 				(card.text === opt.text && selectedCard.text === opt.match)
-		);
+		) || false;
 
 		let newCards = cards.map((c) => {
 			if (c.id === card.id || c.id === selectedCard.id) {
@@ -201,7 +201,7 @@ export default function MatchWordsAssessment({
 				match: newCards.find(matchCard => 
 					matchCard.type === 'match' && 
 					matchCard.isMatched && 
-					question.options.some(opt => 
+					question.options?.some(opt => 
 						opt.text === optionCard.text && 
 						opt.match === matchCard.text
 					)
@@ -209,7 +209,7 @@ export default function MatchWordsAssessment({
 			}));
 
 
-		const allMatched = matchedPairs.length === question.options.length;
+		const allMatched = matchedPairs.length === question.options?.length || false;
 		setAnswer(matchedPairs, allMatched, !allMatched);
 		if (allMatched) {
 			setAllMatched(true);

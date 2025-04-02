@@ -2,21 +2,21 @@ import React, { useEffect, useRef } from "react";
 import { Platform, ScrollView, View } from "react-native";
 import AssessmentSlide from "./AssessmentSlide";
 import { ContentInfo, DatasetInfo, LocalSlide, NeuronConfig } from "../../types";
-import ImageSlide from "./content/ImageSlide";
-import RichTextSlide from "./content/RichTextSlide";
+import ImageSlide from "./content/basics/ImageSlide";
+import RichTextSlide from "./content/basics/RichTextSlide";
 import DataTableContainer from "../data/DataTableContainer";
 import styles from "@/styles/styles";
-import VideoComponent from "../VideoComponent";
+import VideoComponent from "./content/advanced/VideoComponent";
 import NeuralNetworkVisualizer from "../neuralnetwork/SimpleNN";
 import NeuralNetworkVisualizerWeb from "../neuralnetwork/SimpleNNWeb";
 
 import { NNState } from "@/types/neuralnetwork";
 import { useViewStore } from "@/store/viewStore";
-import NeuronVisualization from "../NeuronVisualization";
-import WordToVec from "../WordToVec";
-import MNISTComponent from "../MNISTComponent";
+import NeuronVisualization from "./content/advanced/NeuronVisualization";
+import WordToVec from "./content/advanced/WordToVec";
+import MNISTComponent from "./content/advanced/MNISTComponent";
 import Tokenizer from "../Tokenizer";
-import TokenizeComponent from "../TokenizeComponent";
+import TokenizeComponent from "./content/advanced/TokenizeComponent";
 
 export interface SlideProps {
 	slide: LocalSlide;

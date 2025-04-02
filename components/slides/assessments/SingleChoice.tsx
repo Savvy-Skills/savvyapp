@@ -5,8 +5,8 @@ import AssessmentWrapper from "../AssessmentWrapper";
 import { LocalSlide, AssessmentInfo } from "@/types";
 import styles from "@/styles/styles";
 import { useViewStore } from "@/store/viewStore";
-import ImageOption from "./ImageOption";
-import TextOption from "./TextOption";
+import ImageOption from "../../common/ImageOption";
+import TextOption from "../../common/TextOption";
 
 export type AssessmentProps = {
 	slide: LocalSlide;

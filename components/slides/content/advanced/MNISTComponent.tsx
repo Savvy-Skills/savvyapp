@@ -1,11 +1,11 @@
 import { View } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
-import DrawingBoxWeb, { DrawingBoxHandle } from './react/DrawingBoxWeb'
+import DrawingBoxWeb, { DrawingBoxHandle } from '../../../react/DrawingBoxWeb'
 import { Button, IconButton, Text } from 'react-native-paper';
 import { Image } from 'expo-image';
 import { useTFStore } from '@/store/tensorStore';
-import LoadingIndicator from './LoadingIndicator';
-import ProbabilityVisualizer from './ProbabilityVisualizer';
+import LoadingIndicator from '../../../common/LoadingIndicator';
+import ProbabilityVisualizer from '../../../common/ProbabilityVisualizer';
 import { mnistStyles } from '@/styles/styles';
 
 const MESSAGE_TYPE_IMAGE_PREDICT = "image_predict";

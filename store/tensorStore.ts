@@ -74,7 +74,6 @@ export const useTFStore = create<TFStore>((set, get) => ({
 			tfInstance.on('error', (error: any) => set({ error }));
 			tfInstance.on('train_update', (data: any) => {
 				const { transcurredEpochs, loss, accuracy, modelHistory, testData } = data;
-				console.log("Training update", testData);
 				const modelId = get().currentModelId;
 				if (modelId) {
 					set({
@@ -89,8 +88,10 @@ export const useTFStore = create<TFStore>((set, get) => ({
 									modelHistory,
 								},
 								data: {
-									testData: testData.data,
-									columns: testData.columns,
+									...(testData && testData.data && testData.data.length > 0 ? {
+										testData: testData.data,
+										columns: testData.columns,
+									} : get().currentState[modelId]?.data || { testData: [], columns: [] })
 								}
 							}
 						}
@@ -99,6 +100,7 @@ export const useTFStore = create<TFStore>((set, get) => ({
 			});
 			tfInstance.on('train_end', (data: any) => {
 				const modelId = get().currentModelId;
+				const { transcurredEpochs, loss, accuracy, modelHistory } = data;
 				if (modelId) {
 					set({
 						currentState: {
@@ -109,6 +111,12 @@ export const useTFStore = create<TFStore>((set, get) => ({
 									...get().currentState[modelId]?.model,
 									training: false,
 									completed: true,
+								},
+								training: {
+									transcurredEpochs,
+									loss,
+									accuracy,
+									modelHistory,
 								}
 							}
 						}
@@ -187,8 +195,11 @@ export const useTFStore = create<TFStore>((set, get) => ({
 												modelHistory,
 											},
 											data: {
-												testData: testData.data,
-												columns: testData.columns,
+												...get().currentState[modelId]?.data,
+												...(testData && testData.data && testData.data.length > 0 ? {
+													testData: testData.data,
+													columns: testData.columns,
+												} : {})
 											}
 										}
 									}
@@ -204,6 +215,12 @@ export const useTFStore = create<TFStore>((set, get) => ({
 												...get().currentState[message.modelId]?.model,
 												training: false,
 												completed: true,
+											},
+											training: {
+												transcurredEpochs: message.data.transcurredEpochs,
+												loss: message.data.loss,
+												accuracy: message.data.accuracy,
+												modelHistory: message.data.modelHistory,
 											}
 										}
 									}

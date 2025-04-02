@@ -5,6 +5,7 @@ interface EvaluationResult {
   rating: number;
   feedback: string;
   reasoning: string;
+  max_score: number;
 }
 
 interface UseAnswerEvaluationReturn {

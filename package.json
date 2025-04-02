@@ -55,6 +55,7 @@
     "expo-splash-screen": "~0.29.22",
     "expo-status-bar": "~2.0.1",
     "expo-system-ui": "~4.0.8",
+    "expo-three": "^8.0.0",
     "expo-updates": "~0.27.4",
     "expo-video": "~2.0.6",
     "expo-web-browser": "~14.0.2",
@@ -81,6 +82,7 @@
     "react-plotly.js": "^2.6.0",
     "reanimated-color-picker": "^4.0.0",
     "rn-vertical-slider": "^4.4.0",
+    "three": "^0.175.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {

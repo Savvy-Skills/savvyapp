@@ -226,9 +226,8 @@ export default StyleSheet.create({
     alignSelf: "flex-start",
   },
   networkContainer: {
-    flex: 1,
     flexDirection: "row",
-	maxHeight: 400,
+	maxHeight: 300,
   },
   tag: {
     fontSize: 12,
@@ -236,7 +235,7 @@ export default StyleSheet.create({
   },
   // Add more styles as needed
   layerContainer: {
-    padding: 8,
+    padding: 16,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
@@ -277,10 +276,10 @@ export default StyleSheet.create({
     gap: 16,
   },
   inputNode: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     borderRadius: 20,
-    backgroundColor: "#2196f3",
+    backgroundColor: Colors.blue,
     justifyContent: "center",
     alignSelf: "center",
     alignItems: "center",
@@ -311,7 +310,7 @@ export default StyleSheet.create({
   },
   layerInfo: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 8,
     fontWeight: "bold",
   },
   outputBox: {

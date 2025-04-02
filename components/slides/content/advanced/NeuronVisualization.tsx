@@ -5,7 +5,7 @@ import Slider from '@react-native-community/slider';
 import { Colors } from '@/constants/Colors';
 import { Config, Layout } from 'plotly.js';
 import { generateColors } from '@/utils/utilfunctions';
-import GradientSlider from '@/components/GradientSlider';
+import GradientSlider from '@/components/common/GradientSlider';
 import VerticalSlider from 'rn-vertical-slider';
 import { NeuronVisualizationProps } from '@/types';
 import { ActivationFunction, calculateNeuronOutput, generateExpectedClassTrace, generateHeatmapData, generateScatterTrace, getIndicatorContainerWidth, getWeightIndicatorStyle } from '@/utils/neuron';

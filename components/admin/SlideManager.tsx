@@ -7,9 +7,7 @@ import { AssessmentInfo, ContentInfo, LocalSlide } from '@/types/index';
 import SlideList from './SlideList';
 import ImportDialog from './ImportDialog';
 import ConfirmDialog from './ConfirmDialog';
-import AssessmentFormDialog from './AssessmentFormDialog';
 import EnhancedContentFormDialog from './EnhancedContentFormDialog';
-import ContentPreviewCard from './ContentPreviewCard';
 import DraggableList from './DraggableList';
 import { SlidesOrder } from '@/services/adminApi';
 import ConfirmationDialog from '@/components/modals/ConfirmationDialog';
@@ -255,7 +253,7 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 	// Content handling functions
 	const showContentAttachOptions = () => {
 		setContentAttachOptionsVisible(true);
-	};
+	}
 
 	const handleImportContent = (contentId: number) => {
 		const selectedContent = contentList.find(c => c.id === contentId);
@@ -264,16 +262,16 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 		}
 		setImportContentDialogVisible(false);
 		setContentAttachOptionsVisible(false);
-	};
+	}
 
 	const handleContentSelected = (content: ContentInfo) => {
 		setAttachedContents(prev => [...prev, content]);
-	};
+	}
 
 	const handleContentCreated = (content: ContentInfo) => {
 		setAttachedContents(prev => [...prev, content]);
 		fetchContentList();
-	};
+	}
 
 	// Remove a specific content
 	const handleRemoveContent = (contentIndex: number) => {
@@ -669,14 +667,6 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 					<Dialog.Content>
 						<View style={localStyles.dialogHeader}>
 							<Text>Choose an option:</Text>
-							{/* <Button 
-								icon="refresh" 
-								mode="text" 
-								onPress={fetchAssessmentList}
-								compact
-							>
-								Refresh List
-							</Button> */}
 						</View>
 						<Button
 							mode="outlined"
@@ -737,7 +727,6 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 				onDismiss={() => setCreateContentDialogVisible(false)}
 				onSave={handleContentCreated}
 				viewId={viewId}
-				isEditing={false}
 			/>
 
 			{/* Edit Content Dialog */}
@@ -751,14 +740,6 @@ export default function SlideManager({ viewId, onBack }: SlideManagerProps) {
 				editingContent={editingContent}
 				viewId={viewId}
 				isEditing={true}
-			/>
-
-			{/* Create Assessment Dialog */}
-			<AssessmentFormDialog
-				visible={createAssessmentDialogVisible}
-				onDismiss={() => setCreateAssessmentDialogVisible(false)}
-				onSave={handleAssessmentCreated}
-				viewId={viewId}
 			/>
 
 			{/* Delete Confirmation Dialog */}

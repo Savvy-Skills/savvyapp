@@ -5,10 +5,10 @@ import { Answer, LocalSlide, AssessmentInfo } from "@/types";
 import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
 import StatusIcon from "@/components/StatusIcon";
 import styles from "@/styles/styles";
-import CustomCheckbox from "@/components/SavvyCheckbox";
+import CustomCheckbox from "@/components/common/SavvyCheckbox";
 import { useViewStore } from "@/store/viewStore";
-import ImageOptionMultiple from "./ImageOptionMultiple";
-import TextOptionMultiple from "./TextOptionMultiple";
+import ImageOptionMultiple from "../../common/ImageOptionMultiple";
+import TextOptionMultiple from "../../common/TextOptionMultiple";
 
 export type AssessmentProps = {
 	slide: LocalSlide;

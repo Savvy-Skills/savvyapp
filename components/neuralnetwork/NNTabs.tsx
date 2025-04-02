@@ -1,16 +1,17 @@
 import styles from "@/styles/styles";
 import { Pressable } from "react-native";
-
 import { IconButton, Text } from "react-native-paper";
 import { View } from "react-native";
 import { Image } from "expo-image";
 import { dtypeMap, LayerType } from "@/types/neuralnetwork";
 import { Column } from "@/hooks/useDataFetch";
 
-
-interface NNTabsProps {
+interface TabsBaseProps {
 	selectedLayer?: LayerType | null;
 	setSelectedLayer: (layer: LayerType) => void;
+}
+
+export interface NNTabsProps extends TabsBaseProps {
 	inputColumns: Column[];
 	outputColumn: string;
 	problemType: string;
@@ -29,8 +30,6 @@ export default function NNTabs({ selectedLayer, setSelectedLayer, inputColumns, 
 					? [styles.selectedLayer, styles.inputLayerSelected]
 					: styles.unselectedLayer,
 			]} onPress={() => setSelectedLayer("input")}>
-
-
 				<Text style={styles.layerTitle}>Input layer</Text>
 				<View style={styles.inputNodesContainer}>
 					{inputColumns.map((column, index) => (
@@ -74,11 +73,8 @@ export default function NNTabs({ selectedLayer, setSelectedLayer, inputColumns, 
 						: styles.unselectedLayer,
 				]}
 				onPress={() => setSelectedLayer("output")}>
-
 				<Text style={styles.layerTitle}>Output layer</Text>
 				<View style={styles.outputBox}>
-					{/* IF problemType is classification, show nn-classification.svg */}
-					{/* ELSE show nn-regression.svg */}
 					<Image
 						source={imageSource}
 						style={{ width: 60, height: 60 }}

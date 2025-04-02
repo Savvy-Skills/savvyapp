@@ -6,7 +6,7 @@ import ConfirmationDialog from "../modals/ConfirmationDialog";
 import { useCourseStore } from "@/store/courseStore";
 import { View } from "react-native";
 import { AnimationObject } from "lottie-react-native";
-import { LottieComponentAutoplay } from "../LottieComponentAutoplay";
+import { LottieComponentAutoplay } from "../common/LottieComponentAutoplay";
 import { useAudioStore } from "@/store/audioStore";
 import { generateColors } from "@/utils/utilfunctions";
 import { Colors } from "@/constants/Colors";

@@ -4,7 +4,7 @@ import { Button, Icon, Surface, Text, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { AssessmentInfo, LocalSlide } from "@/types";
 import { AssessmentAnswer, useCourseStore } from "@/store/courseStore";
-import StatusIcon from "@/components/StatusIcon";
+import StatusIcon from "@/components/common/StatusIcon";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { Colors } from "@/constants/Colors";
 import { generateColors } from "@/utils/utilfunctions";
@@ -24,7 +24,7 @@ export default function TrueFalseQuestion({
 }: TrueFalseQuestionProps) {
 	const { setAnswer } = useViewStore();
 	const currentValue = slide.answer?.[0]?.text || "";
-	const correctAnswer = question.options.find(option => option.isCorrect)?.text || "";
+	const correctAnswer = question.options?.find(option => option.isCorrect)?.text || "";
 
 	const isCorrect = slide.isCorrect || false;
 	const isRevealed = slide.revealed || false;
@@ -44,7 +44,7 @@ export default function TrueFalseQuestion({
 			question={question}
 		>
 			<View style={localStyles.container}>
-				{question.options.map((option, index) => (
+				{question.options?.map((option, index) => (
 					<React.Fragment key={option.text}>
 						<Surface style={localStyles.buttonContainer}>
 							<Button
