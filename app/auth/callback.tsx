@@ -3,7 +3,7 @@ import React, { useEffect,  } from "react";
 import { useAuthStore } from "@/store/authStore";
 import {  useLocalSearchParams } from "expo-router";
 import { googleContinue } from "@/services/authapi";
-import LoadingIndicator from "@/components/LoadingIndicator";
+import LoadingIndicator from "@/components/common/LoadingIndicator";
 
 // WebBrowser.maybeCompleteAuthSession();
 const authChannel = Platform.OS === "web" ? new BroadcastChannel("auth_channel") : null;

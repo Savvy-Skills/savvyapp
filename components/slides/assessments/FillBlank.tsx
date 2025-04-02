@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { Button, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { AssessmentProps } from "./SingleChoice";
-import StatusIcon from "@/components/StatusIcon";
+import StatusIcon from "@/components/common/StatusIcon";
 import styles from "@/styles/styles";
 import { useViewStore } from "@/store/viewStore";
 import { Answer, LocalSlide, AssessmentInfo, Slide } from "@/types";
@@ -65,7 +65,7 @@ export default function FillBlankAssessment({
 	}, [question.text]);
 
 	const questionOptions = useMemo(
-		() => question.options.map(option => option.text),
+		() => question.options?.map(option => option.text) || [],
 		[question]
 	);
 

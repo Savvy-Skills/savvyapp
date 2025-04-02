@@ -1,6 +1,6 @@
 import React from "react";
 import { ActivityIndicator } from "react-native-paper";
-import RichText from "../RichTextComponent";
+import RichText from "../../RichTextComponent";
 import { View } from "react-native";
 import styles from "@/styles/styles";
 

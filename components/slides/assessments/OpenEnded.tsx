@@ -11,7 +11,7 @@ export default function OpenEnded({ slide, question, quizMode = false }: Assessm
   const { setAnswer, evaluateOpenEndedAnswer } = useViewStore();
   const [showRubrics, setShowRubrics] = useState(false);
 
-  const maxScore = slide.assessment_info?.options?.[0]?.subRating?.max_score || 100;
+  const maxScore = slide.answer?.[0]?.subRating?.max_score || 100;
   const error = slide.error;
   
   // Get current answer from slide state

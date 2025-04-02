@@ -1,5 +1,4 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
 import FilledIcon from "./FilledIcon";
 import { Colors } from "@/constants/Colors";
 

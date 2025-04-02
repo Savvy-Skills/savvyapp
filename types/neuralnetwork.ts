@@ -111,7 +111,7 @@ export interface Trace {
 
 export interface NNConfig {
 	modelConfig: ModelConfig;
-	trainingConfig: TrainingConfig;
+	trainingConfig: TrainConfig;
 	initialTraces: Trace[];
 	predictionTraces: Trace[];
 }

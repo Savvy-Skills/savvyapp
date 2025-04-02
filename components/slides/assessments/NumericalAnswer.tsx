@@ -3,9 +3,9 @@ import { View, StyleSheet } from "react-native";
 import { TextInput, Text } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { AssessmentProps } from "./SingleChoice";
-import StatusIcon from "@/components/StatusIcon";
+import StatusIcon from "@/components/common/StatusIcon";
 import styles from "@/styles/styles";
-import OperatorRenderer from "@/components/OperatorRenderer";
+import OperatorRenderer from "@/components/common/OperatorRenderer";
 import { useViewStore } from "@/store/viewStore";
 
 function checkCorrectness(operator: string, answer: number, currentValue: number) {
@@ -42,7 +42,7 @@ export default function NumericalAnswerAssessment({
 }: AssessmentProps) {
 	const { setAnswer } = useViewStore();
 	
-	const answer = parseFloat(question.options[0].text);
+	const answer = parseFloat(question.options?.[0]?.text || "0");
 	const currentValue = slide.answer?.[0]?.text || "";
 	const isRevealed = slide.revealed || false;
 	const isSubmitted = slide.submitted || false;

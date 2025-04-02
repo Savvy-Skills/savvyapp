@@ -5,7 +5,7 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { Platform, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
 
-import { VideoSlideProps } from "./slides/content/VideoSlide";
+import { VideoSlideProps } from "../basics/VideoSlide";
 import { useViewStore } from "@/store/viewStore";
 
 const VideoComponent: React.FC<VideoSlideProps> = ({ url, index, canComplete }) => {
@@ -57,7 +57,7 @@ const VideoComponent: React.FC<VideoSlideProps> = ({ url, index, canComplete }) 
 	useEffect(() => {
 		const progress = (currentTime / duration) * 100;
 		if (canComplete && progress > 80 && !slides[currentSlideIndex].completed) {
-			completeSlide();
+			completeSlide(currentSlideIndex);
 		}
 	}, [currentTime]);
 

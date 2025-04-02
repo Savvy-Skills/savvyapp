@@ -1,4 +1,4 @@
-import CustomCheckbox from "@/components/SavvyCheckbox";
+import CustomCheckbox from "@/components/common/SavvyCheckbox";
 import styles from "@/styles/styles";
 import { AssessmentInfo } from "@/types";
 import { View } from "react-native";

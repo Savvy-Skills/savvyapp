@@ -10,6 +10,7 @@ interface EvaluationResult {
   rating: number;
   feedback: string;
   reasoning: string;
+  max_score: number;
 }
 
 export default function AnswerReviewer() {
@@ -118,7 +119,7 @@ function EvaluationCard({ result }: { result: EvaluationResult }) {
           <Text style={localStyles.cardSectionTitle}>Rating</Text>
           <View style={localStyles.ratingContainer}>
             <Text style={[localStyles.ratingValue, { color: getScoreColor() }]}>
-              {result.rating}/100
+              {result.rating}/{result.max_score}
             </Text>
             <View style={localStyles.ratingBarBg}>
               <View 

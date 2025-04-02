@@ -1,4 +1,4 @@
-import CustomRadioButton from "@/components/SavvyRadioButton";
+import CustomRadioButton from "@/components/common/SavvyRadioButton";
 import styles from "@/styles/styles";
 import { getOptionStyles, OptionProps } from "@/utils/utilfunctions";
 import { View } from "react-native";

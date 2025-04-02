@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { List, IconButton } from "react-native-paper";
 import AssessmentWrapper from "../AssessmentWrapper";
 import { AssessmentProps } from "./SingleChoice";
-import StatusIcon from "@/components/StatusIcon";
+import StatusIcon from "@/components/common/StatusIcon";
 import styles from "@/styles/styles";
 import { useViewStore } from "@/store/viewStore";
 
@@ -19,8 +19,8 @@ export default function ReorderAssessment({
 	
 	const correctOrder = useMemo(
 		() => question.options
-			.sort((a, b) => a.correctOrder - b.correctOrder)
-			.map(option => option.text),
+			?.sort((a, b) => a.correctOrder - b.correctOrder)
+			.map(option => option.text) || [],
 		[question]
 	);
 
@@ -47,8 +47,8 @@ export default function ReorderAssessment({
 	useEffect(() => {
 		if (!slide.answer?.length) {
 			const shuffled = question.options
-				.map(option => option.text)
-				.sort(() => Math.random() - 0.5);
+				?.map(option => option.text)
+				.sort(() => Math.random() - 0.5) || [];
 			setCurrentOrder(shuffled);
 			
 			const isCorrect = shuffled.every((text, index) => text === correctOrder[index]);
