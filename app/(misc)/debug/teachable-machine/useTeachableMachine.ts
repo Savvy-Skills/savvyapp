@@ -193,7 +193,6 @@ export function useTeachableMachine(modelId: string) {
 				completed: false,
 				paused: false,
 				prediction: null,
-				trainedClasses: [...classes]
 			},
 			training: {
 				transcurredEpochs: 0,
