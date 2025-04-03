@@ -174,7 +174,7 @@ export default function ImageEncoding() {
 								mode="contained"
 								onPress={loadImageFromUrl}
 								disabled={processing || !imageUrl}
-								style={[localStyles.button, styles.savvyButton, styles.primaryButton]}
+								style={[localStyles.button, styles.savvyButton, styles.primaryButton, { alignSelf: 'flex-end' }]}
 							>
 								Load URL
 							</Button>
@@ -321,10 +321,10 @@ export default function ImageEncoding() {
 						value={activeTab}
 						onValueChange={(value) => setActiveTab(value as "grid" | "image")}
 						buttons={[
-							{ value: 'grid', label: 'Grayscale Grid', style: { ...styles.toggleButton } },
-							{ value: 'image', label: 'Reconstructed Image', style: { ...styles.toggleButton } }
+							{ value: 'grid', label: '⊞ Grid', style: { ...styles.toggleButton } },
+							{ value: 'image', label: '🖼️ Image', style: { ...styles.toggleButton } }
 						]}
-						style={localStyles.tabButtons}
+						style={[localStyles.tabButtons, { position: 'sticky', bottom: 0, zIndex: 10 }]}
 						theme={{ roundness: 0, colors: { secondaryContainer: `${Colors.primary}20` } }}
 					/>
 
@@ -467,6 +467,7 @@ const localStyles = StyleSheet.create({
 	},
 	inputRow: {
 		flexDirection: "row",
+		flexWrap: "wrap",
 		alignItems: "center",
 		gap: 10,
 	},
