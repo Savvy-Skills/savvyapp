@@ -3,12 +3,14 @@ import { View, StyleSheet, Pressable, Platform } from 'react-native';
 import { Text, Surface, IconButton } from 'react-native-paper';
 import { Colors } from '@/constants/Colors';
 
-interface ExpandableFunFactProps {
+interface ExpandableProps {
   title?: string;
+  emoji?: string;
+  color?: string;
   children: React.ReactNode;
 }
 
-export default function ExpandableFunFact({ title = "Fun Fact", children }: ExpandableFunFactProps) {
+export default function Expandable({ title = "Fun Fact", emoji = "✨", color = Colors.orange, children }: ExpandableProps) {
   const [expanded, setExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -16,11 +18,11 @@ export default function ExpandableFunFact({ title = "Fun Fact", children }: Expa
   };
 
   return (
-    <Surface style={styles.container}>
+    <Surface style={[styles.container, { borderColor: `${color}40`, backgroundColor: `${color}10` }]}>
       <Pressable onPress={toggleExpand} style={styles.header}>
         <View style={styles.titleContainer}>
-          <Text style={styles.star}>✨</Text>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.star, { color }]}>{emoji}</Text>
+          <Text style={[styles.title, { color }]}>{title}</Text>
         </View>
         <IconButton
           icon={expanded ? "chevron-up" : "chevron-down"}
@@ -73,6 +75,5 @@ const styles = StyleSheet.create({
   content: {
     padding: 12,
     paddingTop: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
 }); 

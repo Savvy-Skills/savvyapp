@@ -1,15 +1,94 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, StyleSheet, ScrollView, Image, TextInput, Platform } from "react-native";
-import { Surface, Text, Button, SegmentedButtons, IconButton, ActivityIndicator, Tooltip } from "react-native-paper";
+import { View, StyleSheet, ScrollView, TextInput, Platform } from "react-native";
+import { Surface, Text, Button, SegmentedButtons, IconButton, ActivityIndicator, Tooltip, Chip } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
+import { Image } from 'expo-image';
 import styles from "@/styles/styles";
 import { Colors } from "@/constants/Colors";
 import ImagePixelExtractor from "@/components/react/ImagePixelExtractor";
-import ExpandableFunFact from "@/components/ui/ExpandableFunFact";
+import Expandable from "@/components/ui/Expandable";
+import PixelGridCanvas from "@/components/react/PixelGridCanvas";
 
-export default function ImageEncoding() {
+// Define an interface for component props
+interface ImageEncodingProps {
+	// Control which resolutions are available (defaults to all)
+	availableResolutions?: Array<30 | 50 | 100 | 224>;
+	// Default resolution (must be one of availableResolutions)
+	defaultResolution?: 30 | 50 | 100 | 224;
+	// Whether to show sample images
+	showSampleImages?: boolean;
+	// Whether to allow uploading images
+	allowImageUpload?: boolean;
+	// Custom sample images (optional)
+	customSampleImages?: Array<{
+		uri: any;
+		title: string;
+		description?: string;
+	}>;
+}
+
+const DEFAULT_LOCAL_IMAGES = [
+	{
+		uri: require("@/assets/images/pngs/ai.png"),
+		title: "AI Simple",
+		description: "This is the first image",
+	},
+	{
+		uri: require("@/assets/images/pngs/robot.png"),
+		title: "Robot",
+		description: "This is the second image",
+	},
+	{
+		uri: require("@/assets/images/pngs/icon.png"),
+		title: "Savvy Logo",
+		description: "This is the third image",
+	},
+	{
+		uri: require("@/assets/images/pngs/headphones.png"),
+		title: "Headphones",
+		description: "This is the fourth image",
+	},
+];
+
+// Default resolution options
+const DEFAULT_RESOLUTION_OPTIONS = [
+	{ label: '30×30', value: 30 },
+	{ label: '50×50', value: 50 },
+	{ label: '100×100', value: 100 },
+	{ label: '224×224', value: 224 },
+];
+
+const convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+	const reader = new FileReader();
+	reader.onerror = reject;
+	reader.onload = () => {
+		resolve(reader.result);
+	};
+	reader.readAsDataURL(blob);
+});
+
+export default function ImageEncoding({
+	availableResolutions = [30, 50, 100, 224],
+	defaultResolution = 30,
+	showSampleImages = true,
+	allowImageUpload = true,
+	customSampleImages
+}: ImageEncodingProps) {
+	// Use the custom sample images if provided, otherwise use defaults
+	const LOCAL_IMAGES = customSampleImages || DEFAULT_LOCAL_IMAGES;
+
+	// Filter resolution options based on availableResolutions prop
+	const RESOLUTION_OPTIONS = DEFAULT_RESOLUTION_OPTIONS.filter(option =>
+		availableResolutions.includes(option.value as 30 | 50 | 100 | 224)
+	);
+
+	// Ensure defaultResolution is in availableResolutions
+	const initialResolution = availableResolutions.includes(defaultResolution)
+		? defaultResolution
+		: availableResolutions[0] || 30;
+
 	const [imageUri, setImageUri] = useState<string | null>(null);
 	const [imageUrl, setImageUrl] = useState<string>("");
 	const [processing, setProcessing] = useState(false);
@@ -17,6 +96,7 @@ export default function ImageEncoding() {
 	const [grayscaleValues, setGrayscaleValues] = useState<number[]>([]);
 	const [activeTab, setActiveTab] = useState<"grid" | "image">("grid");
 	const pixelExtractorRef = useRef(null);
+	const [selectedResolution, setSelectedResolution] = useState<number>(initialResolution);
 
 	// Separate hover states for RGB and grayscale grids
 	const [hoveredRgbPixel, setHoveredRgbPixel] = useState<{
@@ -28,6 +108,9 @@ export default function ImageEncoding() {
 		index: number;
 		grayscale: number;
 	} | null>(null);
+
+	// Add a new state to track the selected image index
+	const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
 	// Pick an image from the device
 	const pickImage = async () => {
@@ -48,32 +131,31 @@ export default function ImageEncoding() {
 		}
 	};
 
-	// Load an image from URL
-	const loadImageFromUrl = async () => {
-		if (!imageUrl) {
+	// Select a local image
+	const selectLocalImage = async (index: number) => {
+		// Skip if already processing or this image is already selected
+		if (processing || index === selectedImageIndex) {
 			return;
 		}
-
+		
 		try {
 			setProcessing(true);
-
-			// For web, we can use the URL directly
+			// For local images, we need to create a URI that can be processed
+			const asset = LOCAL_IMAGES[index].uri;
+			// In web we need the base64 of the image
 			if (Platform.OS === 'web') {
-				await processImage(imageUrl);
-				return;
-			}
-
-			// For native, we need to download the image first
-			const fileUri = FileSystem.cacheDirectory + "temp_image.jpg";
-			const download = await FileSystem.downloadAsync(imageUrl, fileUri);
-
-			if (download.status === 200) {
-				await processImage(fileUri);
+				const response = await fetch(asset.uri);
+				const blob = await response.blob();
+				const base64 = await convertBlobToBase64(blob) as string;
+				await processImage(base64);
 			} else {
-				throw new Error("Failed to download image");
+				await processImage(asset);
 			}
+			
+			// Set the selected image index after successful processing
+			setSelectedImageIndex(index);
 		} catch (error) {
-			console.error("Error loading image from URL:", error);
+			console.error("Error selecting local image:", error);
 			setProcessing(false);
 		}
 	};
@@ -81,10 +163,10 @@ export default function ImageEncoding() {
 	// Process the image to extract pixel data
 	const processImage = async (uri: string) => {
 		try {
-			// Resize image to 30x30
+			// Resize image to selected resolution
 			const resizedImage = await ImageManipulator.manipulateAsync(
 				uri,
-				[{ resize: { width: 30, height: 30 } }],
+				[{ resize: { width: selectedResolution, height: selectedResolution } }],
 				{ format: ImageManipulator.SaveFormat.PNG }
 			);
 
@@ -140,13 +222,30 @@ export default function ImageEncoding() {
 		setHoveredGrayscalePixel(null);
 	};
 
+	// When resolution changes, we need to reprocess the image if one is loaded
+	useEffect(() => {
+		if (imageUri) {
+			setProcessing(true);
+			processImage(imageUri);
+		}
+	}, [selectedResolution]);
+
+	// For higher resolutions, use smaller gaps
+	const getGapSize = (resolution: number) => {
+		if (resolution <= 30) return 1;
+		if (resolution <= 50) return 0.8;
+		if (resolution <= 100) return 0.5;
+		return 0.3; // For very high resolutions like 224x224
+	};
+
 	return (
-		<Surface style={styles.detailsContainer}>
+		<View style={styles.detailsContainer}>
 			<Text style={styles.title}>Image Encoding</Text>
 
 			<Text style={localStyles.introText}>
 				Let's explore how computers "see" images! This fun activity shows how pictures transform into numbers that computers can understand and learn from.
 			</Text>
+
 
 			<Surface style={[localStyles.stepSection, { backgroundColor: 'transparent' }]}>
 				<Text style={localStyles.stepTitle}>
@@ -156,43 +255,100 @@ export default function ImageEncoding() {
 					Choose any image you'd like to explore! While we see pictures, computers need to learn how to "see" them in their own special way.
 				</Text>
 
-				<Text style={localStyles.stepDescription}>
-					Did you know? Computers are actually "number machines" - they can't really see your picture! Instead, they turn every dot (pixel) in your image into numbers they can understand.
-				</Text>
-
 				<View style={localStyles.inputGroup}>
-					<View style={localStyles.inputSection}>
-						<Text style={localStyles.sectionTitle}>Option 1: Enter Image URL</Text>
-						<View style={localStyles.inputRow}>
-							<TextInput
-								style={localStyles.textInput}
-								placeholder="Paste image URL here"
-								value={imageUrl}
-								onChangeText={setImageUrl}
-							/>
+					{/* Resolution Selector - Only show if we have more than one resolution */}
+					{RESOLUTION_OPTIONS.length > 1 && (
+						<View style={localStyles.resolutionSection}>
+							<Text style={localStyles.sectionTitle}>Select Resolution</Text>
+							<View style={localStyles.resolutionChips}>
+								{RESOLUTION_OPTIONS.map((option) => (
+									<Chip
+										key={option.value}
+										selected={selectedResolution === option.value}
+										onPress={() => setSelectedResolution(option.value)}
+										style={[
+											localStyles.resolutionChip,
+											selectedResolution === option.value && localStyles.selectedResolutionChip
+										]}
+										textStyle={selectedResolution === option.value ? { color: Colors.whiteText } : null}
+									>
+										{option.label}
+									</Chip>
+								))}
+							</View>
+						</View>
+					)}
+
+					{/* Local Images Section - Only show if enabled */}
+					{showSampleImages && LOCAL_IMAGES.length > 0 && (
+						<View style={localStyles.inputSection}>
+							<Text style={localStyles.sectionTitle}>
+								{allowImageUpload ? "Option 1: Sample Images" : "Sample Images"}
+							</Text>
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								style={localStyles.localImagesScroll}
+								contentContainerStyle={localStyles.localImagesContainer}
+							>
+								{LOCAL_IMAGES.map((img, index) => (
+									<Surface key={index} style={[
+										localStyles.localImageCard,
+										selectedImageIndex === index && localStyles.selectedImageCard
+									]}>
+										<Image
+											source={img.uri}
+											style={localStyles.localImageThumbnail}
+											contentFit="cover"
+										/>
+										<Text style={localStyles.localImageTitle}>{img.title}</Text>
+										<Button
+											mode="outlined"
+											onPress={() => selectLocalImage(index)}
+											disabled={processing || selectedImageIndex === index}
+											style={[
+												styles.savvyButton,
+												styles.savvyOutlinedButton,
+												localStyles.selectButton,
+												selectedImageIndex === index && localStyles.selectedButton
+											]}
+											contentStyle={[styles.savvyButton, localStyles.selectButton]}
+											labelStyle={[
+												styles.savvyOutlinedButtonText,
+												localStyles.selectButtonLabel, 
+												selectedImageIndex === index && localStyles.selectedButtonLabel
+											]}
+										>
+											{selectedImageIndex === index ? "Selected" : "Select"}
+										</Button>
+									</Surface>
+								))}
+							</ScrollView>
+						</View>
+					)}
+
+					{/* Upload Option - Only show if enabled */}
+					{allowImageUpload && (
+						<View style={localStyles.inputSection}>
+							<Text style={localStyles.sectionTitle}>
+								{showSampleImages ? "Option 2: Upload Image" : "Upload Image"}
+							</Text>
 							<Button
 								mode="contained"
-								onPress={loadImageFromUrl}
-								disabled={processing || !imageUrl}
-								style={[localStyles.button, styles.savvyButton, styles.primaryButton, { alignSelf: 'flex-end' }]}
+								icon="image"
+								onPress={pickImage}
+								disabled={processing}
+								style={[localStyles.button, styles.savvyButton, styles.primaryButton]}
 							>
-								Load URL
+								Pick Image
 							</Button>
 						</View>
-					</View>
-
-					<View style={localStyles.inputSection}>
-						<Text style={localStyles.sectionTitle}>Option 2: Select Image</Text>
-						<Button
-							mode="contained"
-							icon="image"
-							onPress={pickImage}
-							disabled={processing}
-							style={[localStyles.button, styles.savvyButton, styles.primaryButton]}
-						>
-							Pick Image
-						</Button>
-					</View>
+					)}
+					<Expandable title="Savvy Fact: Image Encoding" emoji="🖼️" color={Colors.blue}>
+						<Text style={localStyles.funFactText}>
+							Did you know? Computers are actually "number machines" - they can't really see your picture! Instead, they turn every dot (pixel) in your image into numbers they can understand.
+						</Text>
+					</Expandable>
 				</View>
 			</Surface>
 
@@ -209,21 +365,21 @@ export default function ImageEncoding() {
 						<Text style={localStyles.stepNumber}>Step 2</Text> Resizing and Standardization
 					</Text>
 					<Text style={localStyles.stepDescription}>
-						Imagine if you tried to compare a tiny postcard with a giant poster - that would be hard! Computers feel the same way, so we make all pictures the exact same size. For our activity, we're using a 30×30 grid (like a tiny checkerboard with 900 squares).
+						Imagine if you tried to compare a tiny postcard with a giant poster - that would be hard! Computers feel the same way, so we make all pictures the exact same size. For our activity, we're using a {selectedResolution}×{selectedResolution} grid (like a tiny checkerboard with {selectedResolution * selectedResolution} squares).
 					</Text>
 
 					<View style={localStyles.imageContainer}>
 						<Image
 							source={{ uri: imageUri }}
 							style={localStyles.originalImage}
-							resizeMode="contain"
+							contentFit="contain"
 						/>
 					</View>
-					<ExpandableFunFact title="Fun Fact: AI Image Sizes">
+					<Expandable title="Savvy Fact: AI Image Sizes" emoji="🖼️" color={Colors.blue}>
 						<Text style={localStyles.funFactText}>
 							Different AI models use different sized grids! A handwriting recognition system (MNIST) uses 28×28 squares, while an object-spotting AI (MobileNet) uses much bigger 224×224 grids - that's over 50,000 squares! Bigger pictures can show more details but need more computing power.
 						</Text>
-					</ExpandableFunFact>
+					</Expandable>
 				</Surface>
 			)}
 
@@ -233,7 +389,7 @@ export default function ImageEncoding() {
 						<Text style={localStyles.stepNumber}>Step 3</Text> RGB Value Extraction
 					</Text>
 					<Text style={localStyles.stepDescription}>
-						Each tiny square in your image is like a recipe with three ingredients: Red, Green, and Blue (RGB). Mix different amounts of each (from 0 to 255) to create any color! The spicy red of a strawberry might be (255, 0, 0), while ocean blue could be (0, 0, 255). The grid below shows all 900 colorful squares from your image!
+						Each tiny square in your image is like a recipe with three ingredients: Red, Green, and Blue (RGB). Mix different amounts of each (from 0 to 255) to create any color! The spicy red of a strawberry might be (255, 0, 0), while ocean blue could be (0, 0, 255). The grid below shows all {selectedResolution * selectedResolution} colorful squares from your image!
 					</Text>
 
 					<View style={localStyles.hoverInstructionContainer}>
@@ -243,25 +399,17 @@ export default function ImageEncoding() {
 						</Text>
 					</View>
 
-					<View style={localStyles.gridContainer}>
-						<ScrollView horizontal style={localStyles.gridScrollView}>
-							<View style={localStyles.grid}>
-								{rgbValues.map((rgb, index) => (
-									<Tooltip title={`R: ${rgb[0]}, G: ${rgb[1]}, B: ${rgb[2]}`} enterTouchDelay={0} leaveTouchDelay={0}>
-										<View
-											key={`rgb-${index}`}
-											style={[
-												localStyles.pixel,
-												{ backgroundColor: `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})` }
-											]}
-											onPointerEnter={() => handleRgbPixelHover(index)}
-											onPointerLeave={handleRgbPixelLeave}
-										/>
-									</Tooltip>
-								))}
-							</View>
-
-						</ScrollView>
+					<View style={[localStyles.gridContainer]}>
+						<PixelGridCanvas
+							rgbValues={rgbValues}
+							resolution={selectedResolution}
+							width={320}
+							height={320}
+							mode="rgb"
+							gap={getGapSize(selectedResolution)}
+							onPixelHover={handleRgbPixelHover}
+							onPixelLeave={handleRgbPixelLeave}
+						/>
 					</View>
 
 					{/* RGB grid pixel info container */}
@@ -298,11 +446,11 @@ export default function ImageEncoding() {
 							</Text>
 						</View>
 					</View>
-					<ExpandableFunFact title="Fun Fact: RGB Colors">
+					<Expandable title="Savvy Fact: RGB Colors" emoji="🎨" color={Colors.orange}>
 						<Text style={localStyles.funFactText}>
 							Did you know that with just these three colors (RGB), we can create over 16 million different colors? That's because each color has 256 possible values (0-255), which gives us 256 × 256 × 256 = 16,777,216 possible combinations!
 						</Text>
-					</ExpandableFunFact>
+					</Expandable>
 				</Surface>
 			)}
 
@@ -314,8 +462,6 @@ export default function ImageEncoding() {
 					<Text style={localStyles.stepDescription}>
 						Think about old black and white TV shows - they didn't need color to tell a story! Similarly, we can simplify our image by averaging the three color values into one brightness number between 0 (black) and 1 (white). This creates a grayscale image that's much simpler for computers to process, while still showing the important shapes and patterns.
 					</Text>
-
-
 
 					<SegmentedButtons
 						value={activeTab}
@@ -337,28 +483,18 @@ export default function ImageEncoding() {
 								</Text>
 							</View>
 							<View style={localStyles.gridContainer}>
-								<ScrollView horizontal style={localStyles.gridScrollView}>
-									<View style={localStyles.grid}>
-										{grayscaleValues.map((gray, index) => {
-											const grayValue = Math.round(gray * 255);
-											return (
-												<Tooltip title={gray.toFixed(2)} enterTouchDelay={0} leaveTouchDelay={0}>
-
-													<View
-														key={`gray-${index}`}
-														style={[
-															localStyles.pixel,
-															{ backgroundColor: `rgb(${grayValue}, ${grayValue}, ${grayValue})` }
-														]}
-														onPointerEnter={() => handleGrayscalePixelHover(index)}
-														onPointerLeave={handleGrayscalePixelLeave}
-													/>
-												</Tooltip>
-
-											);
-										})}
-									</View>
-								</ScrollView>
+								<View style={{ width: 320, height: 320 }}>
+									<PixelGridCanvas
+										grayscaleValues={grayscaleValues}
+										resolution={selectedResolution}
+										width={320}
+										height={320}
+										mode="grayscale"
+										gap={getGapSize(selectedResolution)}
+										onPixelHover={handleGrayscalePixelHover}
+										onPixelLeave={handleGrayscalePixelLeave}
+									/>
+								</View>
 							</View>
 						</>
 					)}
@@ -381,41 +517,35 @@ export default function ImageEncoding() {
 
 					{activeTab === "image" && (
 						<View style={localStyles.reconstructedContainer}>
-							<View style={localStyles.reconstructedImage}>
-								<View style={localStyles.pixelatedGrid}>
-									{grayscaleValues.map((gray, index) => {
-										const grayValue = Math.round(gray * 255);
-										return (
-											<View
-												key={`recon-${index}`}
-												style={[
-													localStyles.reconPixel,
-													{ backgroundColor: `rgb(${grayValue}, ${grayValue}, ${grayValue})` }
-												]}
-											/>
-										);
-									})}
-								</View>
+							<View style={{ width: 320, height: 320 }}>
+								<PixelGridCanvas
+									grayscaleValues={grayscaleValues}
+									resolution={selectedResolution}
+									width={320}
+									height={320}
+									mode="grayscale"
+									isReconstruction={true}
+								/>
 							</View>
 						</View>
 					)}
-					<ExpandableFunFact title="Fun Fact: Grayscale Images">
+					<Expandable title="Savvy Fact: Grayscale Images" emoji="🎨" color={Colors.blue}>
 						<Text style={localStyles.funFactText}>
 							The first digital photos were grayscale! Even today, many AI systems work with grayscale images because they focus on shapes and patterns rather than colors. This makes processing faster and often works just as well for many tasks.
 						</Text>
-					</ExpandableFunFact>
+					</Expandable>
 				</Surface>
 			)}
 
 			<ImagePixelExtractor
 				ref={pixelExtractorRef}
 				imageUri={imageUri}
-				width={30}
-				height={30}
+				width={selectedResolution}
+				height={selectedResolution}
 				onPixelDataExtracted={handlePixelDataExtracted}
 				onError={handleExtractionError}
 			/>
-		</Surface>
+		</View>
 	);
 }
 
@@ -498,8 +628,8 @@ const localStyles = StyleSheet.create({
 		borderRadius: 4,
 	},
 	gridContainer: {
-		alignItems: "center",
-		width: "100%",
+		display: 'flex',
+		alignItems: 'center',
 	},
 	gridScrollView: {
 		maxHeight: 300,
@@ -520,7 +650,9 @@ const localStyles = StyleSheet.create({
 		marginBottom: 15,
 	},
 	reconstructedContainer: {
-		alignItems: "center",
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
 		marginTop: 15,
 	},
 	reconstructedImage: {
@@ -595,5 +727,76 @@ const localStyles = StyleSheet.create({
 	hoverIcon: {
 		margin: 0,
 		padding: 0,
+	},
+	// Updated styles for sample images
+	localImagesScroll: {
+		maxHeight: 200,
+	},
+	localImagesContainer: {
+		paddingVertical: 8,
+		paddingHorizontal: 4,
+	},
+	localImageCard: {
+		width: 130,
+		marginRight: 16,
+		alignItems: 'center',
+		backgroundColor: Colors.revealedBackground,
+		borderRadius: 4,
+		padding: 16,
+	},
+	localImageThumbnail: {
+		width: 60,
+		height: 60,
+		borderRadius: 4,
+	},
+	localImageTitle: {
+		marginTop: 10,
+		marginBottom: 8,
+		fontWeight: '600',
+		textAlign: 'center',
+		fontSize: 14,
+		color: Colors.blue,
+	},
+	selectButton: {
+		justifyContent: 'center',
+		height: 30,
+		borderColor: Colors.blue,
+	},
+	selectButtonLabel: {
+		fontSize: 12,
+		marginVertical: 0,
+		color: Colors.blue,
+	},
+	// Resolution selector styles
+	resolutionSection: {
+		backgroundColor: Colors.revealedBackground,
+		padding: 16,
+		borderRadius: 4,
+	},
+	resolutionChips: {
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		gap: 8,
+	},
+	resolutionChip: {
+		backgroundColor: Colors.revealedBackground,
+		borderWidth: 1,
+		borderColor: Colors.blue,
+	},
+	selectedResolutionChip: {
+		backgroundColor: Colors.blue,
+	},
+	// Added styles for selected image
+	selectedImageCard: {
+		borderWidth: 2,
+		borderColor: Colors.blue,
+		backgroundColor: `${Colors.blue}10`,
+	},
+	selectedButton: {
+		backgroundColor: Colors.blue,
+		borderColor: Colors.blue,
+	},
+	selectedButtonLabel: {
+		color: Colors.whiteText,
 	},
 }); 
