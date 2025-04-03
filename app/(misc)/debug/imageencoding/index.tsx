@@ -448,7 +448,7 @@ const localStyles = StyleSheet.create({
 	},
 	stepDescription: {
 		marginBottom: 20,
-		color: "#555",
+		color: Colors.revealedText,
 		fontSize: 14,
 	},
 	inputGroup: {
@@ -458,7 +458,7 @@ const localStyles = StyleSheet.create({
 	inputSection: {
 		backgroundColor: Colors.revealedBackground,
 		padding: 16,
-		borderRadius: 8,
+		borderRadius: 4,
 	},
 	sectionTitle: {
 		fontWeight: "bold",
@@ -476,13 +476,13 @@ const localStyles = StyleSheet.create({
 		padding: 10,
 		borderWidth: 1,
 		borderColor: Colors.revealed,
-		borderRadius: 8,
+		borderRadius: 4,
 		fontSize: 16,
 		backgroundColor: "white",
 		color: Colors.revealedText,
 	},
 	button: {
-		borderRadius: 8,
+		borderRadius: 4,
 	},
 	loadingContainer: {
 		alignItems: "center",
@@ -495,7 +495,7 @@ const localStyles = StyleSheet.create({
 	originalImage: {
 		width: 250,
 		height: 250,
-		borderRadius: 8,
+		borderRadius: 4,
 	},
 	gridContainer: {
 		alignItems: "center",
@@ -526,7 +526,7 @@ const localStyles = StyleSheet.create({
 	reconstructedImage: {
 		width: 300,
 		height: 300,
-		borderRadius: 8,
+		borderRadius: 4,
 		overflow: "hidden",
 	},
 	pixelatedGrid: {
@@ -545,7 +545,7 @@ const localStyles = StyleSheet.create({
 		marginTop: 10,
 		padding: 10,
 		backgroundColor: Colors.revealedBackground,
-		borderRadius: 8,
+		borderRadius: 4,
 		borderWidth: 1,
 		borderColor: Colors.revealed,
 		minHeight: 44,

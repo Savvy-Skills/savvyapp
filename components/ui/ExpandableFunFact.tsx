@@ -42,7 +42,7 @@ export default function ExpandableFunFact({ title = "Fun Fact", children }: Expa
 const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
-    borderRadius: 8,
+    borderRadius: 4,
     borderColor: `${Colors.orange}40`,
     borderWidth: 1,
     overflow: 'hidden',
