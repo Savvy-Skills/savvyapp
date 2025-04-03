@@ -6,10 +6,10 @@ import TeachableMachine from "./teachable-machine";
 import ImageEncoding from "./imageencoding";
 
 export default function DebugScreen() {
-	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine" | "image-encoding">("teachable-machine");
+	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine" | "image-encoding" | "image-encoding-simple">("teachable-machine");
 
 	const handleValueChange = (value: string) => {
-		setSelectedIndex(value as "teachable-machine" | "image-encoding");
+		setSelectedIndex(value as "teachable-machine" | "image-encoding" | "image-encoding-simple");
 	};
 
 	return (
@@ -26,16 +26,24 @@ export default function DebugScreen() {
 						style: { borderRadius: 4 },
 					},
 					{
+						label: "Image Encoding (Simple)",
+						value: "image-encoding-simple",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
+					{
 						label: "Image Encoding",
 						value: "image-encoding",
 						icon: "image",
 						style: { borderRadius: 4 },
 					},
+
 				]}
 				theme={{ roundness: 0 }}
 			/>
 			<ScrollView contentContainerStyle={{ flexGrow: 1, maxWidth: 600, alignSelf: "center", width: "100%" }}>
 				{selectedIndex === "teachable-machine" && <TeachableMachine />}
+				{selectedIndex === "image-encoding-simple" && <ImageEncoding allowImageUpload={false} availableResolutions={[30, 50]} />}
 				{selectedIndex === "image-encoding" && <ImageEncoding />}
 			</ScrollView>
 		</ScreenWrapper>
