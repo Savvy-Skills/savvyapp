@@ -13,7 +13,6 @@ const workerFunction = function () {
   const MESSAGE_TYPE_IMAGE_PREDICT = "image_predict";
   const MESSAGE_TYPE_CREATE_TRAIN_CLASSIFIER = "create_train_classifier";
   const MESSAGE_LOAD_MOBILENET_MODEL = "load_mobilenet_model";
-  const MESSAGE_TYPE_CLASSIFIER_PREDICT = "classifier_predict";
 
   const MNIST_MODEL_URL =
     "https://api.savvyskills.io/vault/JS-TssR_/NEO6tP40wf5PSQQQwCVgdxX8KHo/LTfPsw../modelfile.json";
@@ -638,7 +637,7 @@ const workerFunction = function () {
               },
             },
           });
-		  if(trainFeatures){
+          if (trainFeatures) {
             trainFeatures.dispose();
           }
           if (trainTarget) {
@@ -737,55 +736,6 @@ const workerFunction = function () {
     } catch (error) {
       console.error("Error decoding JPEG:", error);
       throw error;
-    }
-  }
-
-  // Update your predictImage function to use the custom decoder
-  async function predictImage(image, type = "mnist") {
-    try {
-      let tensorImage = null;
-
-      // Check if image is already a tensor
-      if (image instanceof tf.Tensor) {
-        tensorImage = image;
-      } else {
-        // Decode the image
-        tensorImage = await decodeJpeg(image);
-
-        // Process based on model type
-        if (type === "mnist") {
-          tensorImage = preprocessMnistImage(tensorImage, 28, 28);
-        } else if (type === "classifier") {
-          tensorImage = transformImageToMobileNetTensor(tensorImage);
-        }
-      }
-
-      // Make prediction
-      const prediction = currentModel.predict(tensorImage);
-      const probabilities = prediction.dataSync();
-      const predictedClass = prediction.argMax(1).dataSync()[0];
-      const confidence = probabilities[predictedClass];
-
-      // Send results back to main thread
-      self.postMessage({
-        from: "worker",
-        type: MESSAGE_TYPE_IMAGE_PREDICTION_RESULT,
-        modelId: currentModelId,
-        data: { predictionResult: predictedClass, confidence, probabilities },
-      });
-
-      // Clean up if not already part of tidy
-      if (!(image instanceof tf.Tensor)) {
-        tensorImage.dispose();
-      }
-      prediction.dispose();
-    } catch (error) {
-      console.error("Image prediction error:", error);
-      self.postMessage({
-        from: "worker",
-        type: MESSAGE_TYPE_ERROR,
-        error: `Image prediction failed: ${error.message}`,
-      });
     }
   }
 
@@ -891,28 +841,37 @@ const workerFunction = function () {
 
     return { loss, accuracy: totalAccuracy };
   }
-  //   function transformImageToMobileNetTensor(image) {
-  //     if (!mobilenetModel) return;
-  //     return tf.tidy(() => {
-  //       let frame = tf.browser.fromPixels(image);
-  //       let resized = tf.image.resizeBilinear(frame, [MOBILENET_WIDTH, MOBILENET_HEIGHT], true);
-  //       let normalized = resized.div(255);
-  //       return mobilenetModel.predict(normalized.expandDims()).squeeze();
-  //     });
-  //   }
-  // TODO: Implement this function but instead of receiving an image, receives an image tensor, we should resize, normalize and return the tensor
-  function transformImageToMobileNetTensor(imageTensor) {
-    if (!mobilenetModel) return;
+
+  function preprocessImage(imageTensor, width, height, type = "mnist", prediction = false) {
+    if(type === "classifier" && !mobilenetModel) {
+      throw new Error("Mobilenet model not loaded");
+    }
     return tf.tidy(() => {
-      let resized = tf.image.resizeBilinear(
-        imageTensor,
-        [MOBILENET_WIDTH, MOBILENET_HEIGHT],
-        true
-      );
-      let normalized = resized.div(255);
-      return mobilenetModel.predict(normalized.expandDims()).squeeze();
+      let resized = tf.image.resizeBilinear(imageTensor, [width, height], true);
+      let normalized = null;
+      let result = null;
+      if (type === "mnist") {
+        resized = resized.mul([0.299, 0.587, 0.114]).sum(-1).expandDims(-1);
+        normalized = tf.scalar(1).sub(resized.div(tf.scalar(255)));
+        const batched = normalized.expandDims(0);
+        return batched;
+      } else if (type === "classifier") {
+        normalized = resized.div(255);
+        // Always add batch dimension for MobileNet
+        normalized = normalized.expandDims(0);
+        normalized = mobilenetModel.predict(normalized);
+        if (!prediction) {
+          // For training features, we don't need batch dimension
+          result = normalized.squeeze();
+        } else {
+          // For prediction, keep the batch dimension
+          result = normalized;
+        }
+      }
+      return result;
     });
   }
+
   async function getTrainingData(inputs) {
     const trainingData = [];
     for (let i = 0; i < inputs.length; i++) {
@@ -922,8 +881,7 @@ const workerFunction = function () {
       for (const data of fieldData) {
         // Data is a base64 string, transform it to an image
         let image = await decodeJpeg(data);
-
-        const imageFeatures = transformImageToMobileNetTensor(image);
+        const imageFeatures = preprocessImage(image, MOBILENET_WIDTH, MOBILENET_HEIGHT, "classifier", false);
         trainingData.push({
           imageFeatures,
           classId: i,
@@ -932,6 +890,7 @@ const workerFunction = function () {
     }
     return trainingData;
   }
+
   async function createTrainClassifierModel(data) {
     const { inputs, modelConfig } = data;
     const model = createBaseClassifierModel(inputs.length);
@@ -944,26 +903,25 @@ const workerFunction = function () {
     );
   }
 
-  async function predictClassifierModel(model, mobilenetModel, image) {
+  // TODO: Make a general predict with image and model
+  async function predictImage(image, type = "classifier") {
     // Image is base64 string
-    const imageTensor = await decodeJpeg(image);
-    const imageTensorMobileNet = transformImageToMobileNetTensor(imageTensor);
-    
-    // Reshape the tensor to match the expected input shape (add batch dimension)
-    const reshapedTensor = tf.expandDims(imageTensorMobileNet, 0);
-    
-    const prediction = model.predict(reshapedTensor);
-    const probabilities = prediction.dataSync();
-    const predictedClass = prediction.argMax(1).dataSync()[0];
-    const confidence = probabilities[predictedClass];
-    
-    // Clean up tensors
-    imageTensor.dispose();
-    imageTensorMobileNet.dispose();
-    reshapedTensor.dispose();
-    prediction.dispose();
-    
-    return { predictedClass, confidence, probabilities };
+    let imageTensor = await decodeJpeg(image);
+    let model = currentModel;
+    return tf.tidy(() => {
+      if (type === "classifier") {
+        imageTensor = preprocessImage(imageTensor, MOBILENET_WIDTH, MOBILENET_HEIGHT, type, true);
+      } else if (type === "mnist") {
+        imageTensor = preprocessImage(imageTensor, 28, 28, type, true);
+      }
+
+      const prediction = model.predict(imageTensor);
+      const probabilities = prediction.dataSync();
+      const predictedClass = prediction.argMax(1).dataSync()[0];
+      const confidence = probabilities[predictedClass];
+
+      return { predictedClass, confidence, probabilities };
+    });
   }
 
   async function createTrain(data, columns, modelConfig, trainConfig) {
@@ -1022,8 +980,6 @@ const workerFunction = function () {
             await createTrain(data, columns, modelConfig, trainConfig);
             break;
           case MESSAGE_TYPE_CREATE_TRAIN_CLASSIFIER:
-            const { inputs, modelConfig: classifierModelConfig } =
-              event.data.data;
             currentModelId = event.data.modelId;
             currentModelMetrics = [];
             currentTotalLoss = 0;
@@ -1060,28 +1016,19 @@ const workerFunction = function () {
             await loadRemoteModel(type);
             break;
           case MESSAGE_TYPE_IMAGE_PREDICT:
-            const { tensorData, predictionType } = event.data.data;
-            // tensorData is already decoded in main thread
-            const tensorImage = tf.tensor(
-              tensorData.values,
-              tensorData.shape,
-              tensorData.dtype
-            );
-            // Use tensorImage for prediction
-            await predictImage(tensorImage, predictionType);
-            break;
-          case MESSAGE_TYPE_CLASSIFIER_PREDICT:
-            const { image } = event.data.data;
-            const { predictedClass, confidence, probabilities } = await predictClassifierModel(currentModel, mobilenetModel, image);
+            const { image, type: predictionType } = event.data.data;
+            const { predictedClass, confidence, probabilities } = await predictImage(image, predictionType);
             self.postMessage({
               from: "worker",
-              type: MESSAGE_TYPE_PREDICTION_RESULT,
+              type: MESSAGE_TYPE_IMAGE_PREDICTION_RESULT,
               modelId: currentModelId,
-              data: { predictionResult: {
-				predictedClass,
-				confidence,
-				probabilities
-			  }},
+              data: {
+                predictionResult: {
+                  predictedClass,
+                  confidence,
+                  probabilities,
+                },
+              },
             });
             break;
           default:
