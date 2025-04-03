@@ -4,7 +4,6 @@ import { useTFStore } from "@/store/tensorStore";
 import {
 	ImageClass,
 	MESSAGE_TYPE_CREATE_TRAIN_CLASSIFIER,
-	MESSAGE_TYPE_CLASSIFIER_PREDICT
 } from "./types";
 
 export function useTeachableMachine(modelId: string) {
@@ -192,7 +191,11 @@ export function useTeachableMachine(modelId: string) {
 				training: true,
 				completed: false,
 				paused: false,
-				prediction: null,
+				prediction: {
+					predictedClass: -1,
+					confidence: 0,
+					probabilities: [],
+				},
 			},
 			training: {
 				transcurredEpochs: 0,

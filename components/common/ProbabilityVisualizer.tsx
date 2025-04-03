@@ -6,7 +6,7 @@ import Animated from 'react-native-reanimated';
 import { probabilityVisualizerStyles } from '@/styles/styles';
 
 interface ProbabilityVisualizerProps {
-  probabilities: Record<string, number>;
+  probabilities: number[];
   prediction: number;
   isEmpty?: boolean;
 }
@@ -19,8 +19,8 @@ const ProbabilityVisualizer = ({ probabilities, prediction, isEmpty = false }: P
     <Surface style={probabilityVisualizerStyles.container}>
       {digits.map((digit) => {
         // If canvas is empty, all probabilities are 0
-        const probability = isEmpty ? 0 : (probabilities?.[digit] || 0);
-        const isPredicted = !isEmpty && parseInt(digit) === prediction;
+        const probability = isEmpty ? 0 : (probabilities?.[Number(digit)] || 0);
+        const isPredicted = !isEmpty && Number(digit) === prediction;
         
         return (
           <View key={digit} style={probabilityVisualizerStyles.digitContainer}>

@@ -14,8 +14,7 @@ export interface TeachableMachineProps {
 }
 
 export const MESSAGE_TYPE_CREATE_TRAIN_CLASSIFIER = "create_train_classifier";
-export const MESSAGE_TYPE_CLASSIFIER_PREDICT = "classifier_predict";
-
+export const MESSAGE_TYPE_IMAGE_PREDICT = "image_predict";
 export interface ClassesListProps {
   classes: ImageClass[];
   activeClassId: string | null;

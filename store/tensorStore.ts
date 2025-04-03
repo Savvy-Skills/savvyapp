@@ -29,8 +29,11 @@ interface TFStore {
 				training: boolean;
 				completed: boolean;
 				paused: boolean;
-				prediction: string | null;
-				probabilities?: any[] | null;
+				prediction: {
+					predictedClass: number;
+					confidence: number;
+					probabilities: number[];
+				};
 			}
 			training: {
 				transcurredEpochs: number;
@@ -174,7 +177,6 @@ export const useTFStore = create<TFStore>((set, get) => ({
 											model: {
 												...get().currentState[message.modelId]?.model,
 												prediction: message.data.predictionResult,
-												probabilities: message.data.probabilities,
 											}
 										}
 									}

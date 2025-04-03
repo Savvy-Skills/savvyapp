@@ -11,26 +11,6 @@ import { mnistStyles } from '@/styles/styles';
 const MESSAGE_TYPE_IMAGE_PREDICT = "image_predict";
 const MESSAGE_TYPE_LOAD_REMOTE_MODEL = "load_remote_model";
 
-// CurrentState:
-// {
-// 	"mnist": {
-// 	  "model": {
-// 		"prediction": 2,
-// 		"probabilities": {
-// 		  "0": 0.012882346287369728,
-// 		  "1": 0.025706561282277107,
-// 		  "2": 0.599070131778717,
-// 		  "3": 0.007910500280559063,
-// 		  "4": 0.006109512876719236,
-// 		  "5": 0.039087433367967606,
-// 		  "6": 0.10860644280910492,
-// 		  "7": 0.0005255664582364261,
-// 		  "8": 0.19542789459228516,
-// 		  "9": 0.004673598799854517
-// 		}
-// 	  }
-// 	}
-//   }
 
 const MNISTComponent = () => {
 
@@ -66,7 +46,7 @@ const MNISTComponent = () => {
 		tfWorker?.postMessage({
 			from: "main",
 			type: MESSAGE_TYPE_IMAGE_PREDICT,
-			data: { image: imageData },
+			data: { image: imageData, type: "mnist" },
 		});
 	};
 
@@ -78,11 +58,11 @@ const MNISTComponent = () => {
 	};
 
 	const getProbabilities = () => {
-		return currentState?.mnist?.model?.probabilities || {};
+		return currentState?.mnist?.model?.prediction?.probabilities || {};
 	};
 
 	const getPrediction = () => {
-		return Number(currentState?.mnist?.model?.prediction || -1);
+		return Number(currentState?.mnist?.model?.prediction?.predictedClass || -1);
 	};
 
 	if (!workerReady) {
@@ -109,7 +89,7 @@ const MNISTComponent = () => {
 							: `Prediction: ${getPrediction() !== -1 ? getPrediction() : 'Processing...'}`}
 					</Text>
 					<ProbabilityVisualizer
-						probabilities={isCanvasEmpty ? {} : getProbabilities()}
+						probabilities={isCanvasEmpty ? [] : getProbabilities()}
 						prediction={getPrediction()}
 						isEmpty={isCanvasEmpty}
 					/>

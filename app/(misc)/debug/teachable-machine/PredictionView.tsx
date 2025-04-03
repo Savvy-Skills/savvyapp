@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import styles from "@/styles/styles";
 import { useTFStore } from "@/store/tensorStore";
-import { PredictionViewProps, MESSAGE_TYPE_CLASSIFIER_PREDICT, ImageClass } from "./types";
+import { PredictionViewProps, ImageClass, MESSAGE_TYPE_IMAGE_PREDICT } from "./types";
 import { generateColors } from "@/utils/utilfunctions";
 
 export function PredictionView({
@@ -100,11 +100,11 @@ export function PredictionView({
 
 					tfWorker?.postMessage({
 						from: "main",
-						type: MESSAGE_TYPE_CLASSIFIER_PREDICT,
+						type: MESSAGE_TYPE_IMAGE_PREDICT,
 						modelId,
 						data: {
 							image: imageData,
-							predictionType: "classifier"
+							type: "classifier"
 						},
 					});
 				} catch (error) {
