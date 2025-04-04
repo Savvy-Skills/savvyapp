@@ -7,7 +7,7 @@ interface ImagePixelExtractorProps {
   width?: number;
   height?: number;
   onPixelDataExtracted?: (
-    rgbValues: Array<[number, number, number]>,
+    rgbValues: Array<[number, number, number, number]>,
     grayscaleValues: number[]
   ) => void;
   onError?: (error: string) => void;
@@ -53,7 +53,7 @@ const ImagePixelExtractor = forwardRef<ImagePixelExtractorHandle, ImagePixelExtr
             const imageData = ctx.getImageData(0, 0, width, height);
             const data = imageData.data;
             
-            const rgbArray: Array<[number, number, number]> = [];
+            const rgbaArray: Array<[number, number, number, number]> = [];
             const grayscaleArray: number[] = [];
             
             // Process pixel data (RGBA format)
@@ -61,17 +61,19 @@ const ImagePixelExtractor = forwardRef<ImagePixelExtractorHandle, ImagePixelExtr
               const r = data[i];
               const g = data[i + 1];
               const b = data[i + 2];
+              const a = data[i + 3]; // Include alpha channel
               
-              rgbArray.push([r, g, b]);
+              rgbaArray.push([r, g, b, a]);
               
               // Calculate grayscale value (average of RGB, normalized to 0-1)
-              const gray = (r + g + b) / (3 * 255);
+              // For transparent pixels, use the background color's brightness
+              const gray = a < 128 ? 1.0 : (r + g + b) / (3 * 255);
               grayscaleArray.push(gray);
             }
             
             // Pass data back through callback
             if (onPixelDataExtracted) {
-              onPixelDataExtracted(rgbArray, grayscaleArray);
+              onPixelDataExtracted(rgbaArray, grayscaleArray);
             }
           } catch (error) {
             if (onError) onError(`Error extracting pixel data: ${error}`);

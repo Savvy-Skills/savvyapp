@@ -50,6 +50,32 @@ const DEFAULT_LOCAL_IMAGES = [
 		title: "Headphones",
 		description: "This is the fourth image",
 	},
+	{
+		uri: require("@/assets/images/pngs/savvyrobot.png"),
+		title: "Savvy Robot",
+		description: "This is the fifth image",
+	},
+	{
+		uri: require("@/assets/images/pngs/savvyvision.png"),
+		title: "Savvy Vision",
+		description: "This is the sixth image",
+	},
+	{
+		uri: require("@/assets/images/pngs/savvybrain.png"),
+		title: "Savvy Think",
+		description: "This is the seventh image",
+	},
+	{
+		uri: require("@/assets/images/pngs/savvymouth.png"),
+		title: "Savvy Taste",
+		description: "This is the eighth image",
+	},	
+	{
+		uri: require("@/assets/images/pngs/savvytouch.png"),
+		title: "Savvy Touch",
+		description: "This is the ninth image",
+	},	
+	
 ];
 
 // Default resolution options
@@ -92,7 +118,7 @@ export default function ImageEncoding({
 	const [imageUri, setImageUri] = useState<string | null>(null);
 	const [imageUrl, setImageUrl] = useState<string>("");
 	const [processing, setProcessing] = useState(false);
-	const [rgbValues, setRgbValues] = useState<Array<[number, number, number]>>([]);
+	const [rgbValues, setRgbValues] = useState<Array<[number, number, number, number]>>([]);
 	const [grayscaleValues, setGrayscaleValues] = useState<number[]>([]);
 	const [activeTab, setActiveTab] = useState<"grid" | "image">("grid");
 	const pixelExtractorRef = useRef(null);
@@ -101,7 +127,7 @@ export default function ImageEncoding({
 	// Separate hover states for RGB and grayscale grids
 	const [hoveredRgbPixel, setHoveredRgbPixel] = useState<{
 		index: number;
-		rgb: [number, number, number];
+		rgb: [number, number, number, number];
 	} | null>(null);
 
 	const [hoveredGrayscalePixel, setHoveredGrayscalePixel] = useState<{
@@ -182,10 +208,10 @@ export default function ImageEncoding({
 
 	// Handle the pixel data received from the extractor
 	const handlePixelDataExtracted = (
-		rgbArray: Array<[number, number, number]>,
+		rgbaArray: Array<[number, number, number, number]>,
 		grayscaleArray: number[]
 	) => {
-		setRgbValues(rgbArray);
+		setRgbValues(rgbaArray);
 		setGrayscaleValues(grayscaleArray);
 	};
 
