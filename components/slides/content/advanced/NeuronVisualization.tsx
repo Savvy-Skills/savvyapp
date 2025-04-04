@@ -77,20 +77,21 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 		isCSV: dataset_info?.extension?.toLowerCase() === "csv"
 	});
 
-	// Data is already in correct format with correct columns
-	const dataPoints = data.map((row: any) => ({
+	// Memoize dataPoints to prevent recreating this array on every render
+	const dataPoints = useMemo(() => data.map((row: any) => ({
 		x: row["x"],
 		y: row["y"],
 		result: row["result"]
-	}));
-	console.log({dataPoints});
+	})), [data]);
 
-	// Extract values for easier use
-	const X_AXIS_NAME = mergedConfig.axes.x.name;
-	const Y_AXIS_NAME = mergedConfig.axes.y.name;
-	const CLASS2_NAME = mergedConfig.classes.negative.value;
-	const CLASS0_NAME = mergedConfig.classes.neutral.value;
-	const CLASS1_NAME = mergedConfig.classes.positive.value;
+	// Extract values for easier use - move to useMemo to prevent recreation on each render
+	const configValues = useMemo(() => ({
+		X_AXIS_NAME: mergedConfig.axes.x.name,
+		Y_AXIS_NAME: mergedConfig.axes.y.name,
+		CLASS2_NAME: mergedConfig.classes.negative.value,
+		CLASS0_NAME: mergedConfig.classes.neutral.value,
+		CLASS1_NAME: mergedConfig.classes.positive.value
+	}), [mergedConfig]);
 
 	// Set state from configuration
 	const [weight1, setWeight1] = useState(mergedConfig.initialValues.weight1);
@@ -145,16 +146,24 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 
 	// Generate scatter trace
 	const scatterTrace = useMemo(() => {
-		return generateScatterTrace(dataPoints, weight1, weight2, bias, activationFn, X_AXIS_NAME, Y_AXIS_NAME, mergedConfig);
-	}, [dataPoints, weight1, weight2, bias, activationFn, X_AXIS_NAME, Y_AXIS_NAME, mergedConfig]);
+		return generateScatterTrace(
+			dataPoints, 
+			weight1, 
+			weight2, 
+			bias, 
+			activationFn, 
+			configValues.X_AXIS_NAME, 
+			configValues.Y_AXIS_NAME, 
+			mergedConfig
+		);
+	}, [dataPoints, weight1, weight2, bias, activationFn, configValues, mergedConfig]);
 
 	// Generate expected class trace
 	const expectedClassTrace = useMemo(() => {
 		return generateExpectedClassTrace(dataPoints, mergedConfig);
 	}, [dataPoints, mergedConfig]);
 
-	// Create array of traces
-	// First heatmap, then expected classes (larger circles), then predictions (smaller circles)
+	// Create array of traces - only recreate when individual traces change
 	const traces = useMemo(() =>
 		[heatmapTrace, expectedClassTrace, scatterTrace],
 		[heatmapTrace, expectedClassTrace, scatterTrace]
@@ -222,7 +231,7 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 		...baseLayout,
 		xaxis: {
 			...baseLayout.xaxis,
-			title: X_AXIS_NAME,
+			title: configValues.X_AXIS_NAME,
 			tickvals: useXTickText ? mergedConfig.axes.x.tickValues : undefined,
 			ticktext: useXTickText ? mergedConfig.axes.x.tickText : undefined,
 			range: [mergedConfig.axes.x.min, mergedConfig.axes.x.max],
@@ -231,14 +240,14 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 		},
 		yaxis: {
 			...baseLayout.yaxis,
-			title: Y_AXIS_NAME,
+			title: configValues.Y_AXIS_NAME,
 			tickvals: useYTickText ? mergedConfig.axes.y.tickValues : undefined,
 			ticktext: useYTickText ? mergedConfig.axes.y.tickText : undefined,
 			range: [mergedConfig.axes.y.min, mergedConfig.axes.y.max],
 			ticksuffix: mergedConfig.axes.y.suffix,
 			tickprefix: mergedConfig.axes.y.prefix
 		}
-	}), [X_AXIS_NAME, Y_AXIS_NAME, useXTickText, useYTickText, mergedConfig]);
+	}), [configValues, useXTickText, useYTickText, mergedConfig]);
 
 	return (
 		<View style={localStyles.container}>
@@ -249,7 +258,7 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 						{mergedConfig.locked.weight1 && <View style={{ position: 'absolute', top: -5, right: -5 }}><Icon source="lock" color={Colors.revealedButton} size={24} /></View>}
 						{mergedConfig.axes.x.emoji && <Text style={localStyles.weightIcon}>{mergedConfig.axes.x.emoji}</Text>}
 						<Text style={localStyles.weightLabel}>
-							{X_AXIS_NAME} Weight (w₁): {weight1.toFixed(1)}
+							{configValues.X_AXIS_NAME} Weight (w₁): {weight1.toFixed(1)}
 						</Text>
 						<Slider
 							value={weight1}
@@ -273,7 +282,7 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 					<Surface style={[localStyles.weightControl, mergedConfig.locked.weight2 && localStyles.disabledControl]}>
 						{mergedConfig.locked.weight2 && <View style={{ position: 'absolute', top: -5, right: -5 }}><Icon source="lock" color={Colors.revealedButton} size={24} /></View>}
 						{mergedConfig.axes.y.emoji && <Text style={localStyles.weightIcon}>{mergedConfig.axes.y.emoji}</Text>}
-						<Text style={localStyles.weightLabel}>{Y_AXIS_NAME} Weight (w₂): {weight2.toFixed(1)}</Text>
+						<Text style={localStyles.weightLabel}>{configValues.Y_AXIS_NAME} Weight (w₂): {weight2.toFixed(1)}</Text>
 						<Slider
 							value={weight2}
 							onValueChange={setWeight2IfUnlocked}
@@ -308,7 +317,7 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 				{mergedConfig.useVerticalSlider && (
 					<View style={{ flexDirection: 'column', alignItems: 'center', gap: 10, marginRight: 32 }}>
 						<Text style={{ color: Colors.text, fontWeight: 'bold' }}>
-							{CLASS1_NAME} {mergedConfig.classes.positive.emoji && mergedConfig.classes.positive.emoji}
+							{configValues.CLASS1_NAME} {mergedConfig.classes.positive.emoji && mergedConfig.classes.positive.emoji}
 						</Text>
 						<VerticalSlider
 							value={-bias}
@@ -327,14 +336,14 @@ const NeuronVisualization = ({ config, dataset_info }: NeuronVisualizationProps)
 							renderIndicator={() => (
 								<View style={{ backgroundColor: mergedConfig.classes.neutral.color, width: 80, height: 30, alignItems: 'center', justifyContent: 'center', borderTopRightRadius: 5, borderBottomRightRadius: 5 }}>
 									<Text style={{ color: Colors.text, fontWeight: 'bold' }}>
-										{CLASS0_NAME} {mergedConfig.classes.neutral.emoji && mergedConfig.classes.neutral.emoji}
+										{configValues.CLASS0_NAME} {mergedConfig.classes.neutral.emoji && mergedConfig.classes.neutral.emoji}
 									</Text>
 								</View>
 							)}
 							renderIndicatorHeight={30}
 						/>
 						<Text style={{ color: Colors.text, fontWeight: 'bold' }}>
-							{CLASS2_NAME} {mergedConfig.classes.negative.emoji && mergedConfig.classes.negative.emoji}
+							{configValues.CLASS2_NAME} {mergedConfig.classes.negative.emoji && mergedConfig.classes.negative.emoji}
 						</Text>
 					</View>
 				)}

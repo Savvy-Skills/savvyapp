@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, forwardRef } from 'react';
 
 interface PixelGridCanvasProps {
-  rgbValues?: Array<[number, number, number]>;
+  rgbValues?: Array<[number, number, number, number]>;
   grayscaleValues?: Array<number>;
   resolution: number;
   width?: number;
@@ -13,6 +13,7 @@ interface PixelGridCanvasProps {
   onPixelLeave?: () => void;
   gap?: number; // Gap between pixels
   isReconstruction?: boolean; // Flag for reconstruction mode
+  backgroundColor?: string; // Background color for transparent pixels
 }
 
 const PixelGridCanvas = forwardRef<HTMLCanvasElement, PixelGridCanvasProps>(({
@@ -25,7 +26,8 @@ const PixelGridCanvas = forwardRef<HTMLCanvasElement, PixelGridCanvasProps>(({
   onPixelHover,
   onPixelLeave,
   gap = 1, // Default 1px gap
-  isReconstruction = false // Default not reconstruction mode
+  isReconstruction = false, // Default not reconstruction mode
+  backgroundColor = '#fff' // Default background color
 }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hoveredPixelRef = useRef<number | null>(null);
@@ -47,8 +49,8 @@ const PixelGridCanvas = forwardRef<HTMLCanvasElement, PixelGridCanvasProps>(({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear the canvas - use different background for reconstruction vs grid
-    ctx.fillStyle = isReconstruction ? '#000000' : '#f0f0f0';
+    // Clear the canvas - use custom background for reconstruction, light gray for grid
+    ctx.fillStyle ='#f0f0f0';
     ctx.fillRect(0, 0, width, height);
 
     const values = mode === 'rgb' ? rgbValues : grayscaleValues;
@@ -61,25 +63,50 @@ const PixelGridCanvas = forwardRef<HTMLCanvasElement, PixelGridCanvasProps>(({
       
       let color;
       if (mode === 'rgb') {
-        const [r, g, b] = rgbValues[i] || [0, 0, 0];
-        color = `rgb(${r}, ${g}, ${b})`;
+        const [r, g, b, a] = rgbValues[i] || [0, 0, 0, 255];
+        // Only use RGB values if pixel isn't transparent (a > 0)
+        if (a < 128) {
+          // For highly transparent pixels, use the background color
+          color = backgroundColor;
+        } else {
+          color = `rgb(${r}, ${g}, ${b})`;
+        }
       } else {
-        const grayValue = Math.round((grayscaleValues[i] || 0) * 255);
-        color = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+        // In grayscale mode, we've encoded transparency as value 1.0
+        const grayValue = grayscaleValues[i] || 0;
+        if (grayValue === 1.0) {
+          // This is likely a transparent pixel
+          color = backgroundColor;
+        } else {
+          const pixelValue = Math.round(grayValue * 255);
+          color = `rgb(${pixelValue}, ${pixelValue}, ${pixelValue})`;
+        }
       }
       
       ctx.fillStyle = color;
       
       // Position pixels - in reconstruction mode they touch with no gaps
-      ctx.fillRect(
-        col * cellWidth, 
-        row * cellHeight, 
-        pixelWidth, 
-        pixelHeight
-      );
+      if (isReconstruction) {
+        // For reconstruction mode, make sure we're drawing complete pixels 
+        // with no subpixel gaps by using Math.floor for positioning
+        const x = Math.floor(col * cellWidth);
+        const y = Math.floor(row * cellHeight);
+        const w = Math.ceil(pixelWidth + 0.5); // Add a tiny bit extra to prevent gaps
+        const h = Math.ceil(pixelHeight + 0.5);
+        
+        ctx.fillRect(x, y, w, h);
+      } else {
+        // Regular grid mode
+        ctx.fillRect(
+          col * cellWidth, 
+          row * cellHeight, 
+          pixelWidth, 
+          pixelHeight
+        );
+      }
     }
   }, [rgbValues, grayscaleValues, resolution, width, height, mode, 
-      cellWidth, cellHeight, pixelWidth, pixelHeight, effectiveGap, isReconstruction]);
+      cellWidth, cellHeight, pixelWidth, pixelHeight, effectiveGap, isReconstruction, backgroundColor]);
 
   // Only set up mouse event handlers if not in reconstruction mode
   const getPixelFromPosition = (x: number, y: number): number => {
