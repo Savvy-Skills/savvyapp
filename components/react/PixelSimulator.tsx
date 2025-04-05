@@ -1,5 +1,3 @@
-'use dom'
-
 import { useEffect, useRef, useCallback, useMemo, memo, useReducer, lazy, Suspense } from 'react';
 import './RGBPixelSimulator.css';
 import StepCard from './ui/StepCard';
@@ -229,7 +227,12 @@ export default function PixelSimulator() {
 
 	// Memoize the step cards to prevent re-renders when only colors change
 	const PixelStep = useMemo(() => (
-	  <StepCard stepNumber={1} title="What Is a Pixel?">
+	  <StepCard 
+		stepNumber={1} 
+		title="What Is a Pixel?"
+		stepNumberStyle={{ whiteSpace: 'nowrap', minWidth: '60px', flexShrink: 0 }}
+		titleStyle={{ flexGrow: 1, hyphens: 'auto', overflowWrap: 'break-word' }}
+	  >
 		<p>
 			A pixel (short for "picture element") is the smallest unit of a digital image.
 			Think of it as a tiny square that contains a single color. When many pixels are arranged in a grid,
@@ -237,30 +240,36 @@ export default function PixelSimulator() {
 		</p>
 
 		<div className="pixel-illustration">
-			<Suspense fallback={<SuspenseFallback />}>
-				<PixelGrid highlightColor={combinedColor} />
-			</Suspense>
-			<div className="pixel-zoom">
-				<div className="zoomed-pixel" style={{ backgroundColor: combinedColor }}>
-					<span>1 Pixel</span>
-				</div>
+		  <Suspense fallback={<SuspenseFallback />}>
+			<PixelGrid highlightColor={combinedColor} />
+		  </Suspense>
+		  <div className="pixel-zoom">
+			<div className="zoomed-pixel" style={{ backgroundColor: combinedColor }}>
+			  <span>1 Pixel</span>
 			</div>
+		  </div>
 		</div>
 
 		<ExpandableFact
-			title="Savvy Fact: Screen Resolution"
-			emoji="🖥️"
-			color="#0ea5e9"
+		  title="Savvy Fact: Screen Resolution"
+		  emoji="🖥️"
+		  color="#0ea5e9"
 		>
-			<p>
-				Modern screens have millions of pixels! A 4K screen has over 8 million pixels.
-			</p>
+		  <p>
+			Modern screens have millions of pixels! A 4K screen has over 8 million pixels.
+		  </p>
 		</ExpandableFact>
 	  </StepCard>
 	), [combinedColor]);
 
 	const ColorStep = useMemo(() => (
-	  <StepCard stepNumber={2} title="Pixel Color Fundamentals" color="#0ea5e9">
+	  <StepCard 
+		stepNumber={2} 
+		title="Pixel Color Fundamentals" 
+		color="#0ea5e9"
+		stepNumberStyle={{ whiteSpace: 'nowrap', minWidth: '60px', flexShrink: 0 }}
+		titleStyle={{ flexGrow: 1, hyphens: 'auto', overflowWrap: 'break-word' }}
+	  >
 		<p>
 			Each pixel on your screen can display a single color at a time. The color is created by
 			mixing three primary colors of light: <span style={{ color: 'var(--red)' }}>Red</span>,
@@ -269,24 +278,32 @@ export default function PixelSimulator() {
 		</p>
 
 		<div className="color-section">
-			<div className="color-boxes">
-				<ColorBox color={redBoxColor} label="Red" />
-				<ColorBox color={greenBoxColor} label="Green" />
-				<ColorBox color={blueBoxColor} label="Blue" />
-			</div>
+		  <div className="color-boxes">
+			<ColorBox color={redBoxColor} label="Red" />
+			<ColorBox color={greenBoxColor} label="Green" />
+			<ColorBox color={blueBoxColor} label="Blue" />
+		  </div>
 
-			<CombinedColorBox color={combinedColor} />
+		  <CombinedColorBox color={combinedColor} />
 		</div>
 
 		<div className="info-box">
-			<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="none" viewBox="0 0 24 24">
-				<path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16.872 9.687 20 6.56 17.44 4 4 17.44 6.56 20 16.873 9.687Zm0 0-2.56-2.56M6 7v2m0 0v2m0-2H4m2 0h2m7 7v2m0 0v2m0-2h-2m2 0h2M8 4h.01v.01H8V4Zm2 2h.01v.01H10V6Zm2-2h.01v.01H12V4Zm8 8h.01v.01H20V12Zm-2 2h.01v.01H18V14Zm2 2h.01v.01H20V16Z" />
-			</svg>
+		  <svg 
+			aria-hidden="true" 
+			xmlns="http://www.w3.org/2000/svg" 
+			width="24" 
+			height="24" 
+			fill="none" 
+			viewBox="0 0 24 24"
+			className="info-icon"
+		  >
+			<path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16.872 9.687 20 6.56 17.44 4 4 17.44 6.56 20 16.873 9.687Zm0 0-2.56-2.56M6 7v2m0 0v2m0-2H4m2 0h2m7 7v2m0 0v2m0-2h-2m2 0h2M8 4h.01v.01H8V4Zm2 2h.01v.01H10V6Zm2-2h.01v.01H12V4Zm8 8h.01v.01H20V12Zm-2 2h.01v.01H18V14Zm2 2h.01v.01H20V16Z" />
+		  </svg>
 
-			<span>
-				Try moving the sliders below to see how different combinations of Red, Green, and Blue
-				create different colors. This is exactly how pixels on your screen work!
-			</span>
+		  <span>
+			Try moving the sliders below to see how different combinations of Red, Green, and Blue
+			create different colors. This is exactly how pixels on your screen work!
+		  </span>
 		</div>
 
 		{/* Extract sliders into a separate component to minimize re-renders */}
@@ -300,56 +317,64 @@ export default function PixelSimulator() {
 		/>
 
 		<ExpandableFact
-			title="RGB Colors"
-			emoji="🎨"
-			color="#f97316"
+		  title="RGB Colors"
+		  emoji="🎨"
+		  color="#f97316"
 		>
-			<p>
-				Did you know that with just these three colors (RGB), we can create
-				over 16 million different colors? That's because each color has 256
-				possible values (0-255), which gives us 256 × 256 × 256 = 16,777,216
-				possible combinations!
-			</p>
+		  <p>
+			Did you know that with just these three colors (RGB), we can create
+			over 16 million different colors? That's because each color has 256
+			possible values (0-255), which gives us 256 × 256 × 256 = 16,777,216
+			possible combinations!
+		  </p>
 		</ExpandableFact>
 	  </StepCard>
 	), [combinedColor, redBoxColor, greenBoxColor, blueBoxColor, red, green, blue, setRed, setGreen, setBlue]);
 
 	const GrayscaleStep = useMemo(() => (
-	  <StepCard stepNumber={3} title="Grayscale Conversion">
+	  <StepCard 
+		stepNumber={3} 
+		title="Grayscale Conversion"
+		stepNumberStyle={{ whiteSpace: 'nowrap', minWidth: '60px', flexShrink: 0 }}
+		titleStyle={{ flexGrow: 1, hyphens: 'auto', overflowWrap: 'break-word' }}
+	  >
 		<p>
 			Grayscale is created by averaging the three color values into one brightness number between 0 (black) and 1 (white).
 		</p>
 
 		<div className="grayscale-comparison">
-			<div className="color-pixel" style={{ backgroundColor: combinedColor }}>
-				<span>Color</span>
-			</div>
-			<div className="grayscale-pixel" style={{ backgroundColor: grayscaleColor }}>
-				<span>Grayscale</span>
-			</div>
+		  <div className="color-pixel" style={{ backgroundColor: combinedColor }}>
+			<span>Color</span>
+		  </div>
+		  <div className="grayscale-pixel" style={{ backgroundColor: grayscaleColor }}>
+			<span>Grayscale</span>
+		  </div>
 		</div>
 		<div className="value-display">
-			<p className="value-label">Value: {normalizedValue}</p>
+		  <p className="value-label">Value: {normalizedValue}</p>
 		</div>
 
 		<ExpandableFact
-			title="Grayscale Formula"
-			emoji="🔢"
-			color="#64748b"
+		  title="Grayscale Formula"
+		  emoji="🔢"
+		  color="#64748b"
 		>
-			<p>Grayscale Formula: (<span style={{ color: 'var(--red)' }}>Red</span> + <span style={{ color: 'var(--green)' }}>Green</span> + <span style={{ color: 'var(--blue)' }}>Blue</span>) ÷ 3</p>
-			<p>({red} + {green} + {blue}) ÷ 3 = {grayscale}</p>
-			<p>Normalized Value (0-1): {normalizedValue}</p>
+		  <p>Grayscale Formula: (<span style={{ color: 'var(--red)' }}>Red</span> + <span style={{ color: 'var(--green)' }}>Green</span> + <span style={{ color: 'var(--blue)' }}>Blue</span>) ÷ 3</p>
+		  <p>({red} + {green} + {blue}) ÷ 3 = {grayscale}</p>
+		  <p>Normalized Value (0-1): {normalizedValue}</p>
 		</ExpandableFact>
 	  </StepCard>
 	), [combinedColor, grayscaleColor, normalizedValue, red, green, blue, grayscale]);
 
 	return (
 		<div className="lesson-container">
-			<h1 className="lesson-title">Understanding Pixels</h1>
+			<h1 className="lesson-title">Understanding Digital Images</h1>
 			{PixelStep}
 			{ColorStep}
 			{GrayscaleStep}
+			<div className="navigation-buttons">
+				<button className="nav-button">Continue to Next Step</button>
+			</div>
 		</div>
 	);
 }
