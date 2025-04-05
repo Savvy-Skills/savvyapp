@@ -350,9 +350,6 @@ export default function PixelSimulator() {
 			{PixelStep}
 			{ColorStep}
 			{GrayscaleStep}
-			<div className="navigation-buttons">
-				<button className="nav-button">Continue to Next Step</button>
-			</div>
 		</div>
 	);
 }
