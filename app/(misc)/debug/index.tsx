@@ -4,12 +4,13 @@ import { SegmentedButtons } from "react-native-paper";
 import { ScrollView } from "react-native";
 import TeachableMachine from "./teachable-machine";
 import ImageEncoding from "./imageencoding";
-
+import PixelSimulator from "@/components/react/PixelSimulator";
+import AudioVisualizer from "@/components/react/AudioVisualizer";
 export default function DebugScreen() {
-	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine" | "image-encoding" | "image-encoding-simple">("teachable-machine");
+	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine" | "image-encoding" | "image-encoding-simple" | "pixel-simulator" | "audio-visualizer">("teachable-machine");
 
 	const handleValueChange = (value: string) => {
-		setSelectedIndex(value as "teachable-machine" | "image-encoding" | "image-encoding-simple");
+		setSelectedIndex(value as "teachable-machine" | "image-encoding" | "image-encoding-simple" | "pixel-simulator" | "audio-visualizer");
 	};
 
 	return (
@@ -37,6 +38,18 @@ export default function DebugScreen() {
 						icon: "image",
 						style: { borderRadius: 4 },
 					},
+					{
+						label: "Pixel Simulator",
+						value: "pixel-simulator",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
+					{
+						label: "Audio Visualizer",
+						value: "audio-visualizer",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
 
 				]}
 				theme={{ roundness: 0 }}
@@ -45,6 +58,8 @@ export default function DebugScreen() {
 				{selectedIndex === "teachable-machine" && <TeachableMachine />}
 				{selectedIndex === "image-encoding-simple" && <ImageEncoding allowImageUpload={false} availableResolutions={[30, 50]} />}
 				{selectedIndex === "image-encoding" && <ImageEncoding />}
+				{selectedIndex === "pixel-simulator" && <PixelSimulator />}
+				{selectedIndex === "audio-visualizer" && <AudioVisualizer />}
 			</ScrollView>
 		</ScreenWrapper>
 	);

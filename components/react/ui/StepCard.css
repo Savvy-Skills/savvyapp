@@ -1,0 +1,80 @@
+.step-card {
+  position: relative;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 600px;
+  border-left: 5px solid #0ea5e9;
+  padding: 16px;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 15px;
+}
+
+.step-number {
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.step-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #f97316;
+}
+
+.step-content {
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.info-box {
+  background-color: #f0f9ff;
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.info-box svg {
+  color: #0ea5e9;
+  margin-right: 10px;
+}
+
+.tab-buttons {
+  display: flex;
+  margin: 20px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab-button {
+  padding: 10px 25px;
+  border: 1px solid #e5e7eb;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab-button.active {
+  background-color: white;
+  border-bottom: 1px solid white;
+  margin-bottom: -1px;
+}
+
+.tab-button svg {
+  width: 18px;
+  height: 18px;
+} 
