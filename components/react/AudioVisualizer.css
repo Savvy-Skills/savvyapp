@@ -1,87 +1,110 @@
 .audio-visualizer {
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  margin-bottom: 20px;
+	padding: 20px;
+	background-color: #f5f5f5;
+	border-radius: 8px;
+	margin-bottom: 20px;
 }
 
 .upload-container {
-  margin-bottom: 20px;
+	margin-bottom: 20px;
 }
 
 .file-input {
-  margin-bottom: 10px;
+	margin-bottom: 10px;
 }
 
 .file-info {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+	display: flex;
+	align-items: center;
+	gap: 20px;
 }
 
 .play-button {
-  padding: 8px 16px;
-  background-color: #4285f4;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+	padding: 8px 16px;
+	background-color: #4285f4;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
 }
 
 .play-button:hover {
-  background-color: #3367d6;
+	background-color: #3367d6;
 }
 
 .visualization-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
 }
 
 .visualization-section {
-  background-color: white;
-  padding: 15px;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+	background-color: white;
+	padding: 15px;
+	border-radius: 6px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
-.waveform-canvas, .spectrogram-canvas {
-  background-color: #000;
-  border-radius: 4px;
+.waveform-canvas,
+.spectrogram-canvas {
+	background-color: #000;
+	border-radius: 4px;
 }
 
 .visualization-section h3 {
-  align-self: flex-start;
-  margin-top: 0;
-  margin-bottom: 10px;
+	align-self: flex-start;
+	margin-top: 0;
+	margin-bottom: 10px;
 }
 
 .spectrogram-controls {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
+	display: flex;
+	gap: 15px;
+	margin-bottom: 10px;
+	flex-wrap: wrap;
 }
 
 .control-group {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+	display: flex;
+	align-items: center;
+	gap: 5px;
 }
 
 .control-group label {
-  font-size: 12px;
-  white-space: nowrap;
+	font-size: 12px;
+	white-space: nowrap;
 }
 
 .control-group input[type="number"] {
-  width: 80px;
-  padding: 3px;
+	width: 80px;
+	padding: 3px;
 }
 
 .control-group select {
-  padding: 3px;
-} 
+	padding: 3px;
+}
+
+.generate-button {
+	background-color: #4a00b0;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	margin-top: 8px;
+	font-weight: bold;
+	transition: background-color 0.2s;
+}
+
+.generate-button:hover:not(:disabled) {
+	background-color: #5c10d0;
+}
+
+.generate-button:disabled {
+	background-color: #666;
+	cursor: not-allowed;
+	opacity: 0.7;
+}

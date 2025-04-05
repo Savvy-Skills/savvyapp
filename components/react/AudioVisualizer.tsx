@@ -1,5 +1,3 @@
-'use dom'
-
 import React, { useRef, useState, useEffect } from 'react';
 import './AudioVisualizer.css';
 
@@ -16,10 +14,11 @@ const AudioVisualizer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioSource, setAudioSource] = useState<AudioBufferSourceNode | null>(null);
   const [spectrogramConfig, setSpectrogramConfig] = useState<SpectrogramConfig>({
-    fftSize: 1024,
+    fftSize: 2048,
     minFreq: 0,
-    maxFreq: 24000
+    maxFreq: 22000
   });
+  const [lastAppliedConfig, setLastAppliedConfig] = useState<SpectrogramConfig | null>(null);
   
   const waveformCanvasRef = useRef<HTMLCanvasElement>(null);
   const spectrogramCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,6 +43,7 @@ const AudioVisualizer: React.FC = () => {
     if (audioBuffer) {
       drawWaveform();
       drawSpectrogram();
+      setLastAppliedConfig({...spectrogramConfig});
     }
   }, [audioBuffer]);
   
@@ -192,40 +192,22 @@ const AudioVisualizer: React.FC = () => {
     const maxBin = Math.min(bufferLength - 1, Math.ceil(maxFreq / binSize));
     const visibleBins = maxBin - minBin;
     
-    // Draw frequency labels directly on canvas
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'left';
-    
-    // Draw frequency markers and labels
-    const labelCount = 5;
-    for (let i = 0; i <= labelCount; i++) {
-      const freq = minFreq + (maxFreq - minFreq) * (1 - i / labelCount);
-      let label;
-      
-      if (freq >= 1000) {
-        label = `${Math.round(freq / 100) / 10} kHz`;
-      } else {
-        label = `${Math.round(freq)} Hz`;
-      }
-      
-      const y = (i / labelCount) * canvas.height;
-      
-      // Draw horizontal guides
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
-      ctx.stroke();
-      
-      // Draw frequency label
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.fillText(label, 5, y + 12);
-    }
+    // Store frequency information for drawing labels later
+    const freqInfo = {
+      minFreq,
+      maxFreq
+    };
     
     // Process one column at a time with updated frequency range
+    let completedColumns = 0;
+    const totalColumns = canvas.width;
+    
     const processColumn = (columnIndex: number, timeOffset: number) => {
-      if (columnIndex >= canvas.width) return;
+      if (columnIndex >= canvas.width) {
+        // All columns are complete, now draw the frequency labels
+        drawFrequencyLabels(ctx, canvas, freqInfo.minFreq, freqInfo.maxFreq);
+        return;
+      }
       
       // Create a new source node for each segment
       const tempOfflineCtx = new OfflineAudioContext(1, analyser.fftSize, audioBuffer!.sampleRate);
@@ -276,6 +258,12 @@ const AudioVisualizer: React.FC = () => {
           ctx.fillRect(columnIndex, y - height, 1, height);
         }
         
+        completedColumns++;
+        if (completedColumns === totalColumns) {
+          // Draw frequency labels after all columns are complete
+          drawFrequencyLabels(ctx, canvas, freqInfo.minFreq, freqInfo.maxFreq);
+        }
+        
         // Process next column
         const timeStep = audioBuffer!.duration / canvas.width;
         processColumn(columnIndex + 1, timeOffset + timeStep);
@@ -286,6 +274,47 @@ const AudioVisualizer: React.FC = () => {
     
     // Start processing from the beginning
     processColumn(0, 0);
+    
+    // Update the last applied config
+    setLastAppliedConfig({...spectrogramConfig});
+  };
+  
+  // New helper function to draw frequency labels
+  const drawFrequencyLabels = (
+    ctx: CanvasRenderingContext2D, 
+    canvas: HTMLCanvasElement, 
+    minFreq: number, 
+    maxFreq: number
+  ) => {
+    // Draw frequency labels directly on canvas
+    ctx.fillStyle = 'rgb(255, 255, 255)';
+    ctx.font = '8px Montserrat';
+    ctx.textAlign = 'left';
+    
+    // Draw frequency markers and labels
+    const labelCount = 5;
+    for (let i = 0; i <= labelCount; i++) {
+      const freq = minFreq + (maxFreq - minFreq) * (1 - i / labelCount);
+      let label;
+      
+      if (freq >= 1000) {
+        label = `${Math.round(freq / 100) / 10} kHz`;
+      } else {
+        label = `${Math.round(freq)} Hz`;
+      }
+      
+      const y = (i / labelCount) * canvas.height;
+      
+      // Draw horizontal guides
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+      
+      // Draw frequency label
+      ctx.fillText(label, 5, y + 12);
+    }
   };
   
   const playAudio = () => {
@@ -330,6 +359,26 @@ const AudioVisualizer: React.FC = () => {
     setSpectrogramConfig(prev => ({...prev, maxFreq}));
   };
   
+  // Modify the function to handle regenerating the spectrogram
+  const handleRegenerateSpectrogram = () => {
+    if (audioBuffer) {
+      drawSpectrogram();
+      // Update the last applied config after regeneration
+      setLastAppliedConfig({...spectrogramConfig});
+    }
+  };
+  
+  // Function to check if config has changed
+  const hasConfigChanged = (): boolean => {
+    if (!lastAppliedConfig) return true;
+    
+    return (
+      lastAppliedConfig.fftSize !== spectrogramConfig.fftSize ||
+      lastAppliedConfig.minFreq !== spectrogramConfig.minFreq ||
+      lastAppliedConfig.maxFreq !== spectrogramConfig.maxFreq
+    );
+  };
+  
   return (
     <div className="audio-visualizer">
       <h2>Audio Visualizer</h2>
@@ -359,9 +408,7 @@ const AudioVisualizer: React.FC = () => {
           <h3>Waveform</h3>
           <canvas 
             ref={waveformCanvasRef} 
-			style={{
-				width: "100%",
-			}}
+            style={{width: '100%'}}
             height={100} 
             className="waveform-canvas"
           />
@@ -400,13 +447,20 @@ const AudioVisualizer: React.FC = () => {
                 onChange={handleMaxFreqChange}
               />
             </div>
+            <div className="control-group">
+              <button
+                onClick={handleRegenerateSpectrogram}
+                className="generate-button"
+                disabled={!audioBuffer || !hasConfigChanged()}
+              >
+                Generate Spectrogram
+              </button>
+            </div>
           </div>
           <canvas 
-            ref={spectrogramCanvasRef}
-			style={{
-				width: "100%",
-			}}
-            height={100} 
+            ref={spectrogramCanvasRef} 
+            style={{width: '100%'}}
+            height={100}
             className="spectrogram-canvas"
           />
         </div>
