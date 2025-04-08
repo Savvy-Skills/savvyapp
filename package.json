@@ -32,6 +32,7 @@
     "@tensorflow/tfjs": "4.1.0",
     "@tensorflow/tfjs-backend-wasm": "^4.1.0",
     "@tensorflow/tfjs-react-native": "^1.0.0",
+    "@wavesurfer/react": "^1.0.10",
     "add": "^2.0.6",
     "axios": "^1.8.2",
     "d3": "^7.9.0",
@@ -84,6 +85,7 @@
     "reanimated-color-picker": "^4.0.0",
     "rn-vertical-slider": "^4.4.0",
     "three": "^0.175.0",
+    "wavesurfer.js": "^7.9.4",
     "zustand": "^5.0.0"
   },
   "devDependencies": {

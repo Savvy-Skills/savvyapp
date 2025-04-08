@@ -6,11 +6,12 @@ import TeachableMachine from "./teachable-machine";
 import ImageEncoding from "./imageencoding";
 import PixelSimulator from "@/components/react/PixelSimulator";
 import AudioVisualizer from "@/components/react/AudioVisualizer";
+import AudioEncodingLesson from "@/components/react/audioencoding/lessons/AudioEncodingLesson";
 export default function DebugScreen() {
-	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine" | "image-encoding" | "image-encoding-simple" | "pixel-simulator" | "audio-visualizer">("teachable-machine");
+	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine" | "image-encoding" | "image-encoding-simple" | "pixel-simulator" | "audio-visualizer" | "audio-encoding">("teachable-machine");
 
 	const handleValueChange = (value: string) => {
-		setSelectedIndex(value as "teachable-machine" | "image-encoding" | "image-encoding-simple" | "pixel-simulator" | "audio-visualizer");
+		setSelectedIndex(value as "teachable-machine" | "image-encoding" | "image-encoding-simple" | "pixel-simulator" | "audio-visualizer" | "audio-encoding");
 	};
 
 	return (
@@ -50,6 +51,12 @@ export default function DebugScreen() {
 						icon: "image",
 						style: { borderRadius: 4 },
 					},
+					{
+						label: "Audio Encoding",
+						value: "audio-encoding",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
 
 				]}
 				theme={{ roundness: 0 }}
@@ -60,6 +67,7 @@ export default function DebugScreen() {
 				{selectedIndex === "image-encoding" && <ImageEncoding />}
 				{selectedIndex === "pixel-simulator" && <PixelSimulator />}
 				{selectedIndex === "audio-visualizer" && <AudioVisualizer />}
+				{selectedIndex === "audio-encoding" && <AudioEncodingLesson />}
 			</ScrollView>
 		</ScreenWrapper>
 	);

@@ -56,6 +56,9 @@ importers:
       '@tensorflow/tfjs-react-native':
         specifier: ^1.0.0
         version: 1.0.0(99c464d372a623316b533c8517b28d0c)
+      '@wavesurfer/react':
+        specifier: ^1.0.10
+        version: 1.0.10(react@18.3.1)(wavesurfer.js@7.9.4)
       add:
         specifier: ^2.0.6
         version: 2.0.6
@@ -212,6 +215,9 @@ importers:
       three:
         specifier: ^0.175.0
         version: 0.175.0
+      wavesurfer.js:
+        specifier: ^7.9.4
+        version: 7.9.4
       zustand:
         specifier: ^5.0.0
         version: 5.0.3(@types/react@18.3.19)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
@@ -1835,6 +1841,12 @@ packages:
     resolution: {integrity: sha512-EEmtFu8JTuwsInqMakhLq+U3qN8ZMd5V3pX44q0EqD2imqTDsa8ikZqJ1schVrN8HljOdN+C08cwZ1/r5uIgLw==}
     peerDependencies:
       '@urql/core': ^5.0.0
+
+  '@wavesurfer/react@1.0.10':
+    resolution: {integrity: sha512-N8rYAKrLFCa+CdniF7qz7mmjr+Y1RFHfPWWwA2GdBL7yTZDKqZ7CibhCTmjM1i1ugF+t+E+orNdxfUiVQmdc/g==}
+    peerDependencies:
+      react: ^18.2.0 || ^19.0.0
+      wavesurfer.js: '>=7.7.14'
 
   '@webassemblyjs/ast@1.14.1':
     resolution: {integrity: sha512-nuBEDgQfm1ccRp/8bCQrx1frohyufl4JlbMMZ4P1wpeOfDhF6FQkxZJ1b/e+PLwr6X1Nhw6OLme5usuBWYBvuQ==}
@@ -6224,6 +6236,9 @@ packages:
     resolution: {integrity: sha512-TnbFSbcOCcDgjZ4piURLCbJ3nJhznVh9kw6F6iokjiFPl8ONxe9A6nMDVXDiNbrSfLILs6vB07F7wLBrwPYzJw==}
     engines: {node: '>=10.13.0'}
 
+  wavesurfer.js@7.9.4:
+    resolution: {integrity: sha512-ahOMvrOKo5jULNnXq8Ske8v/ZStoNNTDjYohvgLNerUFuh+6fJSt7wlxFesEXmnlcTnjMy5/tIzhn9KusjO6bg==}
+
   wcwidth@1.0.1:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
 
@@ -8750,6 +8765,11 @@ snapshots:
     dependencies:
       '@urql/core': 5.1.1
       wonka: 6.3.5
+
+  '@wavesurfer/react@1.0.10(react@18.3.1)(wavesurfer.js@7.9.4)':
+    dependencies:
+      react: 18.3.1
+      wavesurfer.js: 7.9.4
 
   '@webassemblyjs/ast@1.14.1':
     dependencies:
@@ -13875,6 +13895,8 @@ snapshots:
     dependencies:
       glob-to-regexp: 0.4.1
       graceful-fs: 4.2.11
+
+  wavesurfer.js@7.9.4: {}
 
   wcwidth@1.0.1:
     dependencies:
