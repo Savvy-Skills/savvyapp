@@ -1,0 +1,84 @@
+.spectrogram-visualizer {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+  }
+  
+  .spectrogram-display-container {
+	width: 100%;
+	background-color: white;
+	border-radius: 4px;
+	overflow: hidden;
+  }
+  
+  .spectrogram-display {
+	background: var(--revealed-background);
+	border-radius: 4px;
+  }
+  
+  .spectrogram-config {
+	background-color: var(--revealed-background);
+	border-radius: 4px;
+  }
+  
+  .spectrogram-config h4 {
+	margin-top: 0;
+	font-weight: 600;
+  }
+  
+  .config-inputs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+  }
+  
+  .config-input {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	min-width: 180px;
+  }
+  
+  .config-input label {
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--revealed-text);
+  }
+  
+  .config-input select {
+	padding: 0.625rem;
+	border: 1px solid var(--revealed-color);
+	border-radius: 4px;
+	font-size: 0.875rem;
+	color: var(--revealed-text);
+	background-color: white;
+	transition: border-color 0.2s;
+  }
+  
+  .config-input select:focus {
+	border-color: var(--primary-color);
+	outline: none;
+	/* box-shadow: 0 0 0 2px var(--primary-color); */
+  }
+  
+  .apply-button {
+	background-color: var(--primary-color);
+	color: white;
+	border: none;
+	padding: 0.75rem 1.5rem;
+	border-radius: 4px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.2s;
+  }
+  
+  .apply-button:hover:not(:disabled) {
+	background-color: var(--primary-color-light);
+  }
+  
+  .apply-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+  }
+  

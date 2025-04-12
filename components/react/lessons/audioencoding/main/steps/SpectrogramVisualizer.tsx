@@ -1,7 +1,6 @@
-'use dom'
-
 import React from "react";
-import InfoPanel from "../../../ui/InfoPanel";
+import InfoPanel from "../../../../ui/InfoPanel";
+import "./SpectrogramVisualizer.css";
 
 // Define options for configuration dropdowns
 const frequencyMinOptions = [0, 50, 100, 200, 500];
@@ -23,8 +22,6 @@ interface SpectrogramVisualizerProps {
 }
 
 export default function SpectrogramVisualizer({
-  audioFile,
-  audioUrl,
   spectrogramRef,
   config,
   onConfigChange,

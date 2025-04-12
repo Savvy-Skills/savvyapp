@@ -1,0 +1,175 @@
+.speech-to-text-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.input-with-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.speech-input {
+  flex: 1;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px 0 0 4px;
+  outline: none;
+}
+
+.record-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.record-button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.record-button.recording {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+.record-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading-model {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+}
+
+/* Speech To Text specific styles that extend the NextWordGame.css styles */
+
+.speech-input-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.recording {
+  background-color: var(--danger-color, #ef4444) !important;
+}
+
+.nextword-button.recording:hover {
+  background-color: var(--danger-dark, #dc2626) !important;
+}
+
+.nextword-button svg {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+.nextword-loading {
+  color: var(--text-muted, #6b7280);
+  text-align: center;
+  padding: 1rem;
+  font-style: italic;
+}
+
+/* Animation for recording state */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.nextword-button.recording {
+  animation: pulse 2s infinite;
+}
+
+.nextword-input-container {
+  margin-bottom: 1.5rem;
+}
+
+.nextword-textarea-container {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.nextword-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  overflow-x: hidden;
+  font-size: 1rem;
+  line-height: 1.5;
+  vertical-align: top;
+}
+
+.nextword-textarea-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.nextword-partial-result-container {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--primary-light, #f3e8ff);
+  border-left: 3px solid var(--primary-color, #8b5cf6);
+}
+
+.nextword-partial-result-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-color, #8b5cf6);
+  margin-bottom: 0.25rem;
+}
+
+.nextword-partial-result {
+  font-style: italic;
+  color: var(--text-color, #374151);
+  word-break: break-word;
+}
+
+.nextword-button svg {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.nextword-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary-color, #8b5cf6);
+  color: white;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  min-height: 2.75rem;
+} 

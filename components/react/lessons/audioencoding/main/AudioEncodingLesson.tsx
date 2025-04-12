@@ -1,12 +1,21 @@
 'use dom'
 
 import React, { useEffect, useRef, useState } from "react";
-import StepCard from "../../ui/StepCard";
+import StepCard from "../../../ui/StepCard";
 import AudioSamplingVisualizer from "./steps/AudioSamplingVisualizer";
-import ExpandableFact from "../../ui/ExpandableFact";
-import SpectrogramVisualizer from "./steps/SpectrogramVisualizer";
+import ExpandableFact from "../../../ui/ExpandableFact";
 import { useAudioVisualizer } from "../hooks/useAudioVisualizer";
+import SpectrogramVisualizer from "./steps/SpectrogramVisualizer";
+import { useWavesurfer } from '@wavesurfer/react'
+import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
+import "../../../index.css";
 import "./AudioEncodingLesson.css";
+
+const defaultConfig = {
+	frequencyMin: 0,
+	frequencyMax: 10000,
+	fftSamples: 1024
+};
 
 const DEFAULT_LOCAL_SOUNDS = [
 	{
@@ -35,11 +44,6 @@ const DEFAULT_LOCAL_SOUNDS = [
 	},
 ];
 
-const defaultConfig = {
-	frequencyMin: 0,
-	frequencyMax: 10000,
-	fftSamples: 1024
-};
 
 export default function AudioEncodingLesson() {
 	const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -48,10 +52,15 @@ export default function AudioEncodingLesson() {
 	const [localPlaying, setLocalPlaying] = useState(false);
 	const [config, setConfig] = useState(defaultConfig);
 	const [hasChanges, setHasChanges] = useState(false);
-	const [configKey, setConfigKey] = useState(0);
-
+	const [_, setConfigKey] = useState(0);
+	const [recordPlugin, setRecordPlugin] = useState<RecordPlugin | null>(null);
+	const [isRecording, setIsRecording] = useState(false);
+	const [recordResult, setRecordResult] = useState<string | null>(null);
 	const waveformRef = useRef<HTMLDivElement>(null);
+	const micRef = useRef<HTMLDivElement>(null);
 	const spectrogramRef = useRef<HTMLDivElement>(null);
+	const [recordDuration, setRecordDuration] = useState(0);
+	const [recordingTimer, setRecordingTimer] = useState<NodeJS.Timeout | null>(null);
 
 	// Check if current config differs from active config
 	useEffect(() => {
@@ -79,18 +88,8 @@ export default function AudioEncodingLesson() {
 		setConfigKey(prev => prev + 1);
 	};
 
-	// Get audio source name for display
-	const getAudioSourceName = () => {
-		if (audioFile) return audioFile.name;
-		if (audioUrl) {
-			// Extract filename from URL or use a default name
-			const urlParts = audioUrl.split('/');
-			return urlParts[urlParts.length - 1] || 'Audio Track';
-		}
-		return '';
-	};
 
-	const { isPlaying, togglePlayPause, audioBuffer, peaks } = useAudioVisualizer({
+	const { togglePlayPause, audioBuffer, peaks, resolvedAudioUrl } = useAudioVisualizer({
 		audioFile,
 		audioUrl,
 		waveformRef,
@@ -123,7 +122,68 @@ export default function AudioEncodingLesson() {
 		setAudioUrl(url);
 	};
 
-	const hasAudioSource = !!audioFile || !!audioUrl;
+	const { wavesurfer } = useWavesurfer({
+		container: micRef,
+		waveColor: "rgb(200, 0, 200)",
+		progressColor: "rgb(100, 0, 100)",
+	})
+
+	useEffect(() => {
+		if (wavesurfer) {
+			const recordPlugin = RecordPlugin.create({
+				scrollingWaveform: false,
+				continuousWaveform: true,
+				continuousWaveformDuration: 30,
+			});
+			wavesurfer.registerPlugin(recordPlugin);
+			recordPlugin.on('record-end', (blob) => {
+				const url = URL.createObjectURL(blob);
+				setAudioUrl(url);
+				setRecordResult(url);
+
+				// Clear the timer when recording stops
+				if (recordingTimer) {
+					clearInterval(recordingTimer);
+					setRecordingTimer(null);
+				}
+				setRecordDuration(0);
+			});
+			setRecordPlugin(recordPlugin);
+		}
+	}, [wavesurfer]);
+
+	const handleRecordAudio = () => {
+		if (recordPlugin) {
+			if (isRecording) {
+				recordPlugin.stopRecording();
+
+				// Clear the timer when recording stops
+				if (recordingTimer) {
+					clearInterval(recordingTimer);
+					setRecordingTimer(null);
+				}
+				setRecordDuration(0);
+			} else {
+				recordPlugin.startRecording();
+
+				// Start a timer to track recording duration
+				const timer = setInterval(() => {
+					setRecordDuration(prev => prev + 1);
+				}, 1000);
+				setRecordingTimer(timer);
+			}
+			setIsRecording(!isRecording);
+		}
+	};
+
+	// Function to format seconds into MM:SS
+	const formatTime = (seconds: number): string => {
+		const mins = Math.floor(seconds / 60);
+		const secs = seconds % 60;
+		return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+	};
+
+	const hasAudioSource = !!resolvedAudioUrl;
 
 	return (
 		<div className="audio-encoding-lesson">
@@ -146,47 +206,60 @@ export default function AudioEncodingLesson() {
 					</p>
 
 					<div className="audio-source-selector">
-						<div className="option-section">
-							<h3 className="option-title">Option 1: Sample Sounds</h3>
-							<div className="sound-buttons">
-								{DEFAULT_LOCAL_SOUNDS.map((sound, index) => {
-									console.log({ sound })
-									return (
-										<div
-											key={index}
-											className={`sound-button ${audioUrl === sound.url ? 'active' : ''}`}
-											onClick={() => handleAudioUrlSelect(sound.url)}
-										>
-											<img src={sound.image.uri} alt={sound.title} className="sound-image" />
-											<div className="sound-name">{sound.title}</div>
-										</div>
-									)
-								})}
+						<div className="input-section">
+							<p className="option-title">Option 1: Sample Sounds</p>
+							<div className="card-buttons">
+								{DEFAULT_LOCAL_SOUNDS.map((sound, index) => (
+									<div
+										key={index}
+										className={`card-button ${audioUrl === sound.url ? 'active' : ''}`}
+										onClick={() => handleAudioUrlSelect(sound.url)}
+									>
+										<img src={sound.image.uri} alt={sound.title} className="card-image" />
+										<div className="card-name">{sound.title}</div>
+										<button className="select-button">{audioUrl === sound.url ? 'Selected' : 'Select'}</button>
+									</div>
+								))}
 							</div>
 						</div>
 
-						<div className="option-section">
-							<h3 className="option-title">Option 2: Upload Audio</h3>
-							<input
-								type="file"
-								id="audio-upload"
-								accept="audio/*"
-								onChange={(e) => {
-									const file = e.target.files?.[0];
-									if (file) handleAudioFileSelect(file);
-								}}
-								className="file-input-hidden"
-							/>
-							<button className="upload-button primary outline" onClick={() => document.getElementById('audio-upload')?.click()}>
-								Pick Audio
-							</button>
+						<div className="input-section">
+							<p className="option-title">Option 2: Record or Upload Audio</p>
+							<div className="center-buttons">
+								<div className="card-button" onClick={() => document.getElementById('audio-upload')?.click()}>
+									<img src={require('@/assets/images/pngs/upload.png').uri} alt="Upload Audio" className="card-image" />
+									<button className="select-button" onClick={() => document.getElementById('audio-upload')?.click()}>
+										Upload Audio
+									</button>
+								</div>
+								<div className="card-button" onClick={handleRecordAudio}>
+									<img src={require('@/assets/images/pngs/mic.png').uri} alt="Upload Audio" className="card-image" />
+									<button className="select-button">
+										{isRecording ? (
+											<>
+												<span style={{ color: 'red' }}>🟥</span> Stop Recording
+											</>
+										) : (
+											'Record Audio'
+										)}
+									</button>
+									{isRecording && (
+										<div className="recording-container">
+											<div className="recording-progress">
+												<p>Recording: {formatTime(recordDuration)}</p>
+											</div>
+										</div>
+									)}
+								</div>
+							</div>
 						</div>
+
 					</div>
 
 					<ExpandableFact
 						title="Savvy Fact: Audio Encoding"
 						emoji="🔊"
-						color="#4a7dff"
+						color="var(--info-color)"
 					>
 						<p>
 							When you record sound, your microphone converts sound waves into electrical
@@ -215,7 +288,22 @@ export default function AudioEncodingLesson() {
 									onClick={togglePlayPause}
 									className="primary"
 								>
-									{localPlaying ? 'Pause' : 'Play'}
+									{localPlaying ?
+										<div className="play-button">
+											<svg className="" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+												<path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 6H8a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1Zm7 0h-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1Z" />
+											</svg>
+
+											<span className="play-button-text">Pause</span>
+										</div> :
+										<div className="play-button">
+											<svg className="" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+												<path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 18V6l8 6-8 6Z" />
+											</svg>
+
+											<span className="play-button-text">Play</span>
+										</div>
+									}
 								</button>
 							</div>
 
@@ -226,7 +314,7 @@ export default function AudioEncodingLesson() {
 							<ExpandableFact
 								title="Sound Physics"
 								emoji="🔊"
-								color="#f97316"
+								color="var(--secondary-color)"
 							>
 								<p>
 									Sound waves are longitudinal pressure waves, meaning they compress and
@@ -256,7 +344,7 @@ export default function AudioEncodingLesson() {
 							<ExpandableFact
 								title="Sampling Rate"
 								emoji="⏱️"
-								color="#14b8a6"
+								color="var(--primary-color)"
 							>
 								<p>
 									Most digital audio is sampled at 44.1kHz (44,100 times per second) or 48kHz.
@@ -303,6 +391,17 @@ export default function AudioEncodingLesson() {
 					</>
 				)}
 			</div>
+			<div className="recording-indicator" ref={micRef} style={{ display: 'none' }} />
+			<input
+				type="file"
+				id="audio-upload"
+				accept="audio/*"
+				onChange={(e) => {
+					const file = e.target.files?.[0];
+					if (file) handleAudioFileSelect(file);
+				}}
+				className="file-input-hidden"
+			/>
 		</div>
 	);
 } 
