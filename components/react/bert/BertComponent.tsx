@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, memo } from "react";
 import ExpandableFact from "../ui/ExpandableFact";
 import StepCard from "../ui/StepCard";
 import "./BertComponent.css";
+import { bertInference } from "@/services/mediaAPI";
 // Define types for our prediction results
 interface BertPrediction {
 	token_str: string;
@@ -17,12 +18,12 @@ interface SentenceExplanation {
 }
 
 // Memoized component for prediction buttons
-const PredictionButton = memo(({ 
-	prediction, 
-	onSelect 
-}: { 
-	prediction: BertPrediction, 
-	onSelect: (word: string) => void 
+const PredictionButton = memo(({
+	prediction,
+	onSelect
+}: {
+	prediction: BertPrediction,
+	onSelect: (word: string) => void
 }) => (
 	<button
 		className="primary outline hoverable"
@@ -33,17 +34,17 @@ const PredictionButton = memo(({
 ));
 
 // Memoized component for the masked sentence
-const MaskedSentence = memo(({ 
-	sentence, 
-	selectedWord, 
-	onMaskClick 
-}: { 
-	sentence: string, 
-	selectedWord: string | null, 
-	onMaskClick: () => void 
+const MaskedSentence = memo(({
+	sentence,
+	selectedWord,
+	onMaskClick
+}: {
+	sentence: string,
+	selectedWord: string | null,
+	onMaskClick: () => void
 }) => {
 	const parts = sentence.split("[MASK]");
-	
+
 	return (
 		<div className="masked-sentence">
 			{parts[0]}
@@ -104,17 +105,8 @@ export default function BertMaskedGame() {
 		setResults([]);
 
 		try {
-			const response = await fetch("https://api-inference.huggingface.co/models/bert-base-uncased", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-				},
-				body: JSON.stringify({ inputs: sentence }),
-			});
-
-			const predictions = await response.json();
-			setResults(predictions);
+			const response = await bertInference(sentence);
+			setResults(response);
 		} catch (error) {
 			console.error("Error fetching predictions:", error);
 		} finally {
@@ -145,16 +137,16 @@ export default function BertMaskedGame() {
 	// Memoize the predictions section
 	const predictionsSection = useMemo(() => {
 		if (loading || results.length === 0) return null;
-		
+
 		return (
 			<div className="predictions-section">
 				<h2 className="predictions-title">Choose the correct word:</h2>
 				<div className="predictions-list">
 					{results.map((res, idx) => (
-						<PredictionButton 
-							key={idx} 
-							prediction={res} 
-							onSelect={handleWordSelect} 
+						<PredictionButton
+							key={idx}
+							prediction={res}
+							onSelect={handleWordSelect}
 						/>
 					))}
 				</div>
@@ -165,10 +157,10 @@ export default function BertMaskedGame() {
 	// Add explanation section to the component 
 	const explanationSection = useMemo(() => {
 		if (!showExplanation) return null;
-		
+
 		const explanation = sentenceExplanations[sentenceIndex];
 		const isCorrectAnswer = selectedWord === explanation.correctAnswer;
-		
+
 		return (
 			<div className="prediction-explanation">
 				<h3>{isCorrectAnswer ? "Correct! 🎉" : "Let's understand BERT's prediction:"}</h3>
@@ -185,19 +177,19 @@ export default function BertMaskedGame() {
 	return (
 		<div className="lesson-container">
 			<h1 className="lesson-title">🔍 BERT Word Guessing Game</h1>
-			<StepCard 
-				stepNumber={1} 
+			<StepCard
+				stepNumber={1}
 				title="Fill in the Blank with BERT"
 				stepNumberStyle={{ whiteSpace: 'nowrap', minWidth: '60px', flexShrink: 0 }}
 				titleStyle={{ flexGrow: 1, hyphens: 'auto', overflowWrap: 'break-word' }}
 			>
 				<p>
-					BERT is a language model that can predict missing words in a sentence. 
+					BERT is a language model that can predict missing words in a sentence.
 					Click on the masked word to see BERT's predictions for the blank space.
 				</p>
-				
+
 				<div className="masked-sentence">
-					<MaskedSentence 
+					<MaskedSentence
 						sentence={sentence}
 						selectedWord={selectedWord}
 						onMaskClick={handleMaskClick}
@@ -231,8 +223,8 @@ export default function BertMaskedGame() {
 					color="var(--info-color)"
 				>
 					<p>
-						BERT (Bidirectional Encoder Representations from Transformers) analyzes the context on both sides 
-						of a missing word, not just the words that come before it. This bidirectional approach helps BERT 
+						BERT (Bidirectional Encoder Representations from Transformers) analyzes the context on both sides
+						of a missing word, not just the words that come before it. This bidirectional approach helps BERT
 						understand sentence meaning better than earlier models that only looked at previous words.
 					</p>
 				</ExpandableFact>

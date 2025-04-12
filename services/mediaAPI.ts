@@ -37,3 +37,30 @@ export const uploadDataset = async (formData: FormData): Promise<DatasetInfo> =>
 		throw error;
 	}
 };
+
+interface BertInferenceResponse {
+	score: number;
+	token: number;
+	token_str: string;
+	sequence: string;
+}
+
+export const bertInference = async (sentece: string): Promise<BertInferenceResponse[]> => {
+	try {
+		const response = await media_api.post("/bert", { sentence: sentece });
+		return response.data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+export const nextWordPrediction = async (text: string, maxTokens: number): Promise<string> => {
+	try {
+		const response = await media_api.post("/nextword", { text: text, maxTokens: maxTokens });
+		return response.data.generated_text;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}	
+};
