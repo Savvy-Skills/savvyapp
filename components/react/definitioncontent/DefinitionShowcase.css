@@ -1,0 +1,45 @@
+.showcase-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.theme-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.theme-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.theme-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.theme-button:hover {
+  background-color: #eee;
+}
+
+.theme-button.active {
+  background-color: #3b0764;
+  color: white;
+  border-color: #3b0764;
+}
+
+.definition-showcase {
+  display: flex;
+  justify-content: center;
+} 

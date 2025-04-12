@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import './StepCard.css';
+import '../index.css';
 
 interface StepCardProps {
   stepNumber: number;

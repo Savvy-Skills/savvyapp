@@ -145,11 +145,16 @@ const ColorBox = memo(({ color, label }: { color: string, label: string }) => (
   <div className="color-box" style={{ backgroundColor: color }}>{label}</div>
 ));
 
-const CombinedColorBox = memo(({ color }: { color: string }) => (
-  <div className="combined-color" style={{ backgroundColor: color }}>
-    <p className="combined-text">Combined Color</p>
-  </div>
-));
+const CombinedColorBox = memo(({ color }: { color: string }) => {
+	const [r, g, b] = color.replace('rgb(', '').replace(')', '').split(',').map(Number);
+	return (
+		<div className="combined-color" style={{ backgroundColor: color }}>
+			<span className="combined-text">Combined</span>
+			<span className="combined-text">Color</span>
+			<span className="combined-text">R: {r}, G: {g}, B: {b}</span>
+		</div>
+	);
+});
 
 // Reducer to handle all color state updates in one place
 type ColorState = {
@@ -253,7 +258,7 @@ export default function PixelSimulator() {
 		<ExpandableFact
 		  title="Savvy Fact: Screen Resolution"
 		  emoji="🖥️"
-		  color="#0ea5e9"
+		  color="var(--info-color)"
 		>
 		  <p>
 			Modern screens have millions of pixels! A 4K screen has over 8 million pixels.
@@ -266,22 +271,21 @@ export default function PixelSimulator() {
 	  <StepCard 
 		stepNumber={2} 
 		title="Pixel Color Fundamentals" 
-		color="#0ea5e9"
 		stepNumberStyle={{ whiteSpace: 'nowrap', minWidth: '60px', flexShrink: 0 }}
 		titleStyle={{ flexGrow: 1, hyphens: 'auto', overflowWrap: 'break-word' }}
 	  >
 		<p>
 			Each pixel on your screen can display a single color at a time. The color is created by
 			mixing three primary colors of light: <span style={{ color: 'var(--red)' }}>Red</span>,
-			<span style={{ color: 'var(--green)' }}>Green</span>, and
-			<span style={{ color: 'var(--blue)' }}>Blue</span> (RGB).
+			<span style={{ color: 'var(--green)' }}> Green</span>, and
+			<span style={{ color: 'var(--blue)' }}> Blue</span> (RGB).
 		</p>
 
 		<div className="color-section">
 		  <div className="color-boxes">
-			<ColorBox color={redBoxColor} label="Red" />
-			<ColorBox color={greenBoxColor} label="Green" />
-			<ColorBox color={blueBoxColor} label="Blue" />
+			<ColorBox color={redBoxColor} label={`Red: ${red}`} />
+			<ColorBox color={greenBoxColor} label={`Green: ${green}`} />
+			<ColorBox color={blueBoxColor} label={`Blue: ${blue}`} />
 		  </div>
 
 		  <CombinedColorBox color={combinedColor} />
@@ -319,7 +323,7 @@ export default function PixelSimulator() {
 		<ExpandableFact
 		  title="RGB Colors"
 		  emoji="🎨"
-		  color="#f97316"
+		  color="var(--secondary-color)"
 		>
 		  <p>
 			Did you know that with just these three colors (RGB), we can create
@@ -357,7 +361,7 @@ export default function PixelSimulator() {
 		<ExpandableFact
 		  title="Grayscale Formula"
 		  emoji="🔢"
-		  color="#64748b"
+		  color="var(--primary-color)"
 		>
 		  <p>Grayscale Formula: (<span style={{ color: 'var(--red)' }}>Red</span> + <span style={{ color: 'var(--green)' }}>Green</span> + <span style={{ color: 'var(--blue)' }}>Blue</span>) ÷ 3</p>
 		  <p>({red} + {green} + {blue}) ÷ 3 = {grayscale}</p>

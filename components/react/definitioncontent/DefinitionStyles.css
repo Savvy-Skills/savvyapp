@@ -1,0 +1,196 @@
+.definition-container {
+	position: relative;
+	padding: 1.5rem;
+	color: #333;
+	font-family: Arial, sans-serif;
+	max-width: 400px;
+	box-sizing: border-box;
+	font-weight: bold;
+
+	&.theme-cards-purple {
+		background-color: #3b0764;
+	}
+
+	&.theme-cards-orange {
+		background-color: #f4bb63;
+	}
+}
+
+.rounded {
+	border-radius: 4px;
+}
+
+/* Theme styles */
+.theme-purple {
+	background-color: #3b0764;
+	color: white;
+}
+
+.theme-cream {
+	background-color: #ffefc6;
+	color: #333;
+}
+
+.theme-lavender {
+	background-color: #c4b5fd;
+	color: #333;
+}
+
+.theme-orange {
+	background-color: #f4bb63;
+	color: #333;
+}
+
+.theme-blue {
+	background-color: #3bc2f5;
+	color: white;
+}
+
+.definition-header {
+	display: flex;
+	align-items: center;
+}
+
+/* Title styling */
+.definition-title {
+	font-size: 1.8rem;
+	margin-top: 0;
+	margin-bottom: 1rem;
+	display: flex;
+	align-items: center;
+	font-weight: bold;
+
+	&.title-blue {
+		color: var(--text-light);
+	}
+}
+
+.definition-arrow {
+	color: #f4bb63;
+	margin-right: 0.5rem;
+
+	&.arrow-orange {
+		color: #67e8f9;
+	}
+}
+
+/* Content styling */
+.definition-content {
+	font-size: 1rem;
+	line-height: 1.5;
+	padding: 0.5rem 2rem;
+}
+
+/* Highlighted text for each theme */
+.highlighted-text-purple {
+	color: #f4bb63;
+}
+
+.highlighted-text-cream {
+	color: #ff7b36;
+}
+
+.highlighted-text-lavender {
+	color: white;
+}
+
+.highlighted-text-orange {
+	color: white;
+}
+
+.highlighted-text-blue {
+	color: var(--text-dark);
+}
+
+.highlighted-text-modern-purple {
+	color: #f97316;
+}
+
+.highlighted-text-modern-cream {
+	color: #f97316;
+}
+
+/* Card container styles */
+.cards-purple,
+.cards-orange {
+	background-color: #3b0764;
+	padding: 2rem;
+	position: relative;
+}
+
+.cards-orange {
+	background-color: #f4bb63;
+}
+
+/* Shadow card element */
+.card-shadow {
+	position: absolute;
+	top: calc(2rem + 4px);
+	left: calc(2rem - 8px);
+	width: calc(100% - 4rem);
+	height: calc(100% - 3rem);
+	background-color: rgba(226, 226, 226, 0.85);
+	border-radius: 12px;
+	transform: rotate(-2deg);
+	z-index: 1;
+}
+
+/* Content card */
+.theme-cards-purple .definition-content,
+.theme-cards-orange .definition-content {
+	background-color: #f5efff;
+	border-radius: 12px;
+	padding: 1.5rem;
+	position: relative;
+	z-index: 2;
+	color: var(--text-dark);
+}
+
+/* Remove the pseudo-element that was causing issues */
+.theme-cards-purple .definition-content::before,
+.theme-cards-orange .definition-content::before {
+	display: none;
+}
+
+/* Move header inside the content for card themes */
+.theme-cards-purple .definition-header,
+.theme-cards-orange .definition-header {
+	position: relative;
+	z-index: 1;
+}
+
+.theme-cards-purple .definition-title {
+	color: var(--text-dark);
+	font-size: 1.8rem;
+	font-weight: bold;
+}
+
+.theme-cards-orange .definition-title {
+	color: var(--text-dark);
+	font-size: 1.8rem;
+	font-weight: bold;
+}
+
+/* Highlighted text for cards */
+.highlighted-text-cards-purple {
+	color: #ff7b36;
+}
+
+.highlighted-text-cards-orange {
+	color: #f4bb63;
+}
+
+/* Make title text contrasting for card themes */
+.title-cards-purple {
+	color: white;
+}
+
+.title-cards-orange {
+	color: #3b0764;
+}
+
+.theme-buttons {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import './ExpandableFact.css';
 
 interface ExpandableFactProps {
@@ -19,19 +19,40 @@ const ExpandableFact: React.FC<ExpandableFactProps> = ({
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
+  
+  // Process color to handle CSS variables and regular colors
+  const styles = useMemo(() => {
+    // Check if color is a CSS variable
+    const isCssVariable = color.startsWith('var(--');
+    
+    if (isCssVariable) {
+      return {
+        backgroundColor: `rgb(from ${color} r g b / 0.1)`, // 10% opacity
+        borderColor: `rgb(from ${color} r g b / 0.3)`,     // 30% opacity
+        titleColor: color
+      };
+    }
+    
+    // Regular color handling (as before)
+    return {
+      backgroundColor: `${color}10`,
+      borderColor: `${color}30`,
+      titleColor: color
+    };
+  }, [color]);
 
   return (
     <div 
       className="expandable-fact" 
       style={{ 
-        backgroundColor: `${color}10`, // Light background based on color
-        borderColor: `${color}30`      // Border with some opacity
+        backgroundColor: styles.backgroundColor,
+        borderColor: styles.borderColor
       }}
     >
       <div className="fact-header" onClick={toggleExpand}>
         <div className="fact-title-container">
           <span className="fact-emoji">{emoji}</span>
-          <span className="fact-title" style={{ color: color }}>{title}</span>
+          <span className="fact-title" style={{ color: styles.titleColor }}>{title}</span>
         </div>
         <button className="expand-button">
           {isExpanded ? (

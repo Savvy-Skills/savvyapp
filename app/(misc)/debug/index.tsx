@@ -5,13 +5,35 @@ import { ScrollView } from "react-native";
 import TeachableMachine from "./teachable-machine";
 import ImageEncoding from "./imageencoding";
 import PixelSimulator from "@/components/react/PixelSimulator";
-import AudioVisualizer from "@/components/react/AudioVisualizer";
-import AudioEncodingLesson from "@/components/react/audioencoding/lessons/AudioEncodingLesson";
+import AudioEncodingLesson from "@/components/react/lessons/audioencoding/main/AudioEncodingLesson";
+import FaceMesh from "@/components/react/facemesh/FaceMesh";
+import DefinitionShowcase from "@/components/react/definitioncontent/DefinitionShowcase";
+import GPTNextWordGame from "@/components/react/gpt/NextWord";
+import BertMaskedGame from "@/components/react/bert/BertComponent";
+import SpeechToText from "@/components/react/stt/SpeechToText";
 export default function DebugScreen() {
-	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine" | "image-encoding" | "image-encoding-simple" | "pixel-simulator" | "audio-visualizer" | "audio-encoding">("teachable-machine");
+	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine"
+		| "image-encoding"
+		| "image-encoding-simple"
+		| "pixel-simulator"
+		| "audio-encoding"
+		| "face-mesh"
+		| "definition"
+		| "gpt-nextword"
+		| "bert-masked-game"
+		| "stt">("teachable-machine");
 
 	const handleValueChange = (value: string) => {
-		setSelectedIndex(value as "teachable-machine" | "image-encoding" | "image-encoding-simple" | "pixel-simulator" | "audio-visualizer" | "audio-encoding");
+		setSelectedIndex(value as "teachable-machine"
+			| "image-encoding"
+			| "image-encoding-simple"
+			| "pixel-simulator"
+			| "audio-encoding"
+			| "face-mesh"
+			| "definition"
+			| "gpt-nextword"
+			| "bert-masked-game"
+			| "stt");
 	};
 
 	return (
@@ -46,18 +68,41 @@ export default function DebugScreen() {
 						style: { borderRadius: 4 },
 					},
 					{
-						label: "Audio Visualizer",
-						value: "audio-visualizer",
-						icon: "image",
-						style: { borderRadius: 4 },
-					},
-					{
 						label: "Audio Encoding",
 						value: "audio-encoding",
 						icon: "image",
 						style: { borderRadius: 4 },
 					},
-
+					{
+						label: "Face Mesh",
+						value: "face-mesh",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
+					{
+						label: "Definition",
+						value: "definition",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
+					{
+						label: "Next Word",
+						value: "gpt-nextword",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
+					{
+						label: "BERT",
+						value: "bert-masked-game",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
+					{
+						label: "STT",
+						value: "stt",
+						icon: "image",
+						style: { borderRadius: 4 },
+					},
 				]}
 				theme={{ roundness: 0 }}
 			/>
@@ -66,8 +111,12 @@ export default function DebugScreen() {
 				{selectedIndex === "image-encoding-simple" && <ImageEncoding allowImageUpload={false} availableResolutions={[30, 50]} />}
 				{selectedIndex === "image-encoding" && <ImageEncoding />}
 				{selectedIndex === "pixel-simulator" && <PixelSimulator />}
-				{selectedIndex === "audio-visualizer" && <AudioVisualizer />}
 				{selectedIndex === "audio-encoding" && <AudioEncodingLesson />}
+				{selectedIndex === "face-mesh" && <FaceMesh />}
+				{selectedIndex === "definition" && <DefinitionShowcase />}
+				{selectedIndex === "gpt-nextword" && <GPTNextWordGame />}
+				{selectedIndex === "bert-masked-game" && <BertMaskedGame />}
+				{selectedIndex === "stt" && <SpeechToText />}
 			</ScrollView>
 		</ScreenWrapper>
 	);

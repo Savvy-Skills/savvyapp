@@ -1,7 +1,6 @@
-'use dom'
 import { useState } from "react";
 import AudioWaveChart from "../AudioWaveChart";
-import InfoPanel from "../../../ui/InfoPanel";
+import InfoPanel from "../../../../ui/InfoPanel";
 
 interface AudioSamplingVisualizerProps {
 	peaks: number[][];
@@ -18,19 +17,19 @@ export default function AudioSamplingVisualizer({
 		<div className="audio-sampling-visualizer">
 			<div className="audio-sampling-tabs">
 				<button 
-					className={`sampling-tab ${activeTab === 'both' ? 'active' : ''}`}
+					className={`tab-button small ${activeTab === 'both' ? 'active' : ''}`}
 					onClick={() => setActiveTab('both')}
 				>
 					Continuous & Discrete View
 				</button>
 				<button 
-					className={`sampling-tab ${activeTab === 'continuous' ? 'active' : ''}`}
+					className={`tab-button small ${activeTab === 'continuous' ? 'active' : ''}`}
 					onClick={() => setActiveTab('continuous')}
 				>
 					Continuous Only
 				</button>
 				<button 
-					className={`sampling-tab ${activeTab === 'discrete' ? 'active' : ''}`}
+					className={`tab-button small ${activeTab === 'discrete' ? 'active' : ''}`}
 					onClick={() => setActiveTab('discrete')}
 				>
 					Discrete Only
