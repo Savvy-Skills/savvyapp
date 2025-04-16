@@ -34,6 +34,7 @@
     "@tensorflow/tfjs": "4.1.0",
     "@tensorflow/tfjs-backend-wasm": "^4.1.0",
     "@tensorflow/tfjs-react-native": "^1.0.0",
+    "@types/fabric": "^5.3.10",
     "@wavesurfer/react": "^1.0.10",
     "add": "^2.0.6",
     "axios": "^1.8.2",
