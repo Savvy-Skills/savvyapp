@@ -81,32 +81,32 @@
 	padding: 0.5rem 2rem;
 }
 
-/* Highlighted text for each theme */
-.highlighted-text-purple {
+/* Important text for each theme */
+.important-text-purple {
 	color: #f4bb63;
 }
 
-.highlighted-text-cream {
+.important-text-cream {
 	color: #ff7b36;
 }
 
-.highlighted-text-lavender {
+.important-text-lavender {
 	color: white;
 }
 
-.highlighted-text-orange {
+.important-text-orange {
 	color: white;
 }
 
-.highlighted-text-blue {
+.important-text-blue {
 	color: var(--text-dark);
 }
 
-.highlighted-text-modern-purple {
+.important-text-modern-purple {
 	color: #f97316;
 }
 
-.highlighted-text-modern-cream {
+.important-text-modern-cream {
 	color: #f97316;
 }
 
@@ -172,12 +172,12 @@
 }
 
 /* Highlighted text for cards */
-.highlighted-text-cards-purple {
-	color: #ff7b36;
+.important-text-cards-purple {
+	color: var(--secondary-color);
 }
 
-.highlighted-text-cards-orange {
-	color: #f4bb63;
+.important-text-cards-orange {
+	color: var(--secondary-color);
 }
 
 /* Make title text contrasting for card themes */
@@ -186,11 +186,55 @@
 }
 
 .title-cards-orange {
-	color: #3b0764;
+	color: var(--text-dark);
 }
 
-.theme-buttons {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	gap: 0;
+/* Add this to your existing CSS file */
+.current-word-highlight {
+	background-color: #ffdd00;
+	padding: 2px 0;
+	border-radius: 3px;
+	transition: background-color 0.3s ease;
+}
+
+.current-word-highlight.upcoming {
+	background-color: rgba(255, 221, 0, 0.4);
+	border-bottom: 1px dashed #ffdd00;
+}
+
+.current-word-highlight.gap-word {
+	background-color: rgba(255, 221, 0, 0.7);
+}
+
+.highlighted-text-purple {
+	background-color: var(--primary-color-light);
+}
+
+.highlighted-text-blue {
+	background-color: var(--secondary-color-light);
+}
+
+.highlighted-text-orange {
+	background-color: var(--primary-color-light);
+}
+
+.highlighted-text-lavender {
+	background-color: var(--secondary-color-light);
+}
+
+.highlighted-text-cream {
+	background-color: var(--primary-color-light);
+}
+
+.highlighted-text-cards-purple {
+	background-color: var(--primary-color-light);
+}
+
+.highlighted-text-cards-orange {
+	background-color: var(--primary-color-light);
+}
+
+.text-part {
+	padding-right: 3px;
+	display: inline-block;
 }

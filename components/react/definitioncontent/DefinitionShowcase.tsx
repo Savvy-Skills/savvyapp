@@ -1,10 +1,36 @@
-import React, { useState } from 'react';
-import DefinitionComponent from './DefinitionComponent';
+'use dom'
+import React, { useState, useEffect } from 'react';
 import './DefinitionShowcase.css';
-import '../index.css';
+import AudioTranscriptPlayer from './AudioTranscriptPlayer';
+
+const audioUrl = "https://api.savvyskills.io/vault/JS-TssR_/BbOKIgRu5iVmO_n-b2COUMhbqoI/7bydmQ../perception.aac";
+const timestampedTranscription = "https://api.savvyskills.io/vault/JS-TssR_/-yT2Hm3_6KmiEGbsbDE17Z5Nmf0/LtKcPg../timestamped_transcription.json";
+
+const fetchTimestampedTranscription = async () => {
+	const response = await fetch(timestampedTranscription);
+	const data = await response.json();
+	return data;
+};
 
 const DefinitionShowcase: React.FC = () => {
 	const [currentTheme, setCurrentTheme] = useState('purple');
+	const [timestampedTranscription, setTimestampedTranscription] = useState<any>(null);
+
+	// Load the timestamped transcription
+	useEffect(() => {
+		// In a real app, you might fetch this from an API
+		// For this example, we're using the one imported from the provided file
+		// import('./timestamped_transcription.json')
+		// 	.then(data => {
+		// 		setTimestampedTranscription(data.default);
+		// 	})
+		// 	.catch(error => {
+		// 		console.error("Failed to load transcription:", error);
+		// 	});
+		fetchTimestampedTranscription().then(data => {
+			setTimestampedTranscription(data);
+		});
+	}, []);
 
 	const themes = [
 		{ id: 'purple', name: 'Purple' },
@@ -16,8 +42,11 @@ const DefinitionShowcase: React.FC = () => {
 		{ id: 'cards-orange', name: 'Cards Orange' },
 	];
 
-	const sampleContent = `Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem ipsum has been the industry's standard {{dummy text ever since the 1500s}}, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
-It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. {{It was popularised in the 1960s}} with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`;
+	const sampleContent = `{{Perception}} is more than just {{sensing}}. It's the process of turning raw data into meaning. Humans and machines both do this, but in very different ways. A human sees a cat's shape, fur and movement. The {{brain}} processes the shapes and colors in the visual cortex.
+Our {{brain}} uses memory and past experience to say, that's a cat. A machine sees the cat as a grid of tiny colored squares called {{pixels}}. It uses patterns it has learned from lots of other cat pictures to figure out. Based on training data, it makes a guess:
+{{That looks}} like a cat.
+Whether it's a person or a machine, perception is what turns simple signals into {{understanding}} and {{action}}.
+`;
 
 	return (
 		<div className="showcase-container">
@@ -27,7 +56,7 @@ It has survived not only five centuries, but also the leap into electronic types
 					{themes.map(theme => (
 						<button
 							key={theme.id}
-							className={`tab-button ${currentTheme === theme.id ? 'active' : ''}`}
+							className={`theme-button ${currentTheme === theme.id ? 'active' : ''}`}
 							onClick={() => setCurrentTheme(theme.id)}
 						>
 							{theme.name}
@@ -36,11 +65,14 @@ It has survived not only five centuries, but also the leap into electronic types
 				</div>
 			</div>
 
+
 			<div className="definition-showcase">
-				<DefinitionComponent
-					title="Definition"
-					content={sampleContent.concat(sampleContent)}
+				<AudioTranscriptPlayer
+					audioUrl={audioUrl}
+					timestampedTranscription={timestampedTranscription}
+					definitionText={sampleContent}
 					theme={currentTheme}
+					title="What is perception?"
 				/>
 			</div>
 		</div>

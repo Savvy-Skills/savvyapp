@@ -15,7 +15,7 @@ const workerFunction = function () {
   const MESSAGE_LOAD_MOBILENET_MODEL = "load_mobilenet_model";
 
   const MNIST_MODEL_URL =
-    "https://api.savvyskills.io/vault/JS-TssR_/NEO6tP40wf5PSQQQwCVgdxX8KHo/LTfPsw../modelfile.json";
+    "https://api.savvyskills.io/vault/JS-TssR_/Rq2zTYJqwmNe9nmcXbtyHdU8C8g/5IGPVw../modelfile.json";
   const MOBILENET_MODEL_URL =
     "https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v3_small_100_224/feature_vector/5/default/1";
 
@@ -851,8 +851,8 @@ const workerFunction = function () {
       let normalized = null;
       let result = null;
       if (type === "mnist") {
-        resized = resized.mul([0.299, 0.587, 0.114]).sum(-1).expandDims(-1);
-        normalized = tf.scalar(1).sub(resized.div(tf.scalar(255)));
+        grayscaled = resized.mul([0.299, 0.587, 0.114]).sum(-1).expandDims(-1);
+        normalized = tf.scalar(1).sub(grayscaled.div(tf.scalar(255)));
         const batched = normalized.expandDims(0);
         return batched;
       } else if (type === "classifier") {
@@ -913,6 +913,10 @@ const workerFunction = function () {
         imageTensor = preprocessImage(imageTensor, MOBILENET_WIDTH, MOBILENET_HEIGHT, type, true);
       } else if (type === "mnist") {
         imageTensor = preprocessImage(imageTensor, 28, 28, type, true);
+        
+        // Add this: Flatten the image if using MNIST model
+        // This converts from [1,28,28,1] to [1,784]
+        imageTensor = imageTensor.reshape([1, 28*28]);
       }
 
       const prediction = model.predict(imageTensor);

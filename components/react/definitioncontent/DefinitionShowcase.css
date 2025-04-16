@@ -42,4 +42,15 @@
 .definition-showcase {
   display: flex;
   justify-content: center;
+  max-width: 800px;
+}
+
+.highlight-transcript {
+	max-width: 800px;
+}
+
+.audio-container {
+  margin-bottom: 20px;
+  max-width: 600px;
+  width: 100%;
 } 

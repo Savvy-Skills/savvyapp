@@ -4,97 +4,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FACEMESH_TESSELATION, FACEMESH_RIGHT_EYE, FACEMESH_RIGHT_EYEBROW, FACEMESH_RIGHT_IRIS, FACEMESH_LEFT_EYE, FACEMESH_LEFT_EYEBROW, FACEMESH_LEFT_IRIS, FACEMESH_FACE_OVAL, FACEMESH_LIPS } from '@mediapipe/face_mesh';
 import './FaceMesh.css';
 import '../index.css';
-import  workerCode  from './facemeshworker';
-
-const DEFAULT_DRAWING_OPTIONS = {
-	color: "white",
-	fillColor: "white", // Default fill color is the same as outline color
-	lineWidth: 4,
-	radius: 6,
-	visibilityMin: 0.5
-};
-
-// Helper function to merge options with defaults
-const getDrawingOptions = (options: any = {}) => {
-	// If no fillColor is specified, use the color value
-	const fillColor = options.fillColor || options.color;
-	return {...DEFAULT_DRAWING_OPTIONS, ...options, fillColor};
-};
-
-// Helper function to handle options that can be functions or values
-const resolveOption = (option: any, params: any) => {
-	return typeof option === 'function' ? option(params) : option;
-};
-
-// Custom implementation of drawLandmarks
-const drawLandmarks = (
-	ctx: CanvasRenderingContext2D,
-	landmarks: any[],
-	options: any = {}
-) => {
-	if (!landmarks) return;
-	
-	const drawOptions = getDrawingOptions(options);
-	const canvasWidth = ctx.canvas.width;
-	const canvasHeight = ctx.canvas.height;
-	
-	ctx.save();
-	
-	let index = 0;
-	for (const landmark of landmarks) {
-		if (
-			!landmark ||
-			(landmark.visibility !== undefined && landmark.visibility < drawOptions.visibilityMin)
-		) {
-			index++;
-			continue;
-		}
-		
-		// Resolve style options for this specific landmark
-		const fillStyle = resolveOption(drawOptions.fillColor, {
-			index,
-			from: landmark
-		});
-		
-		const strokeStyle = resolveOption(drawOptions.color, {
-			index,
-			from: landmark
-		});
-		
-		const lineWidth = resolveOption(drawOptions.lineWidth, {
-			index,
-			from: landmark
-		});
-		
-		const radius = resolveOption(drawOptions.radius, {
-			index,
-			from: landmark
-		});
-		
-		// Set styles
-		ctx.fillStyle = fillStyle;
-		ctx.strokeStyle = strokeStyle;
-		ctx.lineWidth = lineWidth;
-		
-		// Draw the landmark point
-		const circle = new Path2D();
-		circle.arc(
-			landmark.x * canvasWidth,
-			landmark.y * canvasHeight,
-			radius,
-			0,
-			2 * Math.PI
-		);
-		
-		ctx.fill(circle);
-		ctx.stroke(circle);
-		
-		index++;
-	}
-	
-	ctx.restore();
-};
-
+import workerCode from './facemeshworker';
+import { TRIANGULATION } from './triangulation';
+import { 
+	drawPoints, 
+	drawPath, 
+	drawTriangles, 
+	drawOriginalFaceMesh,
+	drawFaceMesh as drawFaceMeshUtil,
+	renderStoppedCameraView as renderStoppedCameraViewUtil
+} from './drawUtils';
 
 const FaceMesh: React.FC = () => {
 	const videoRef = useRef<HTMLVideoElement>(null);
@@ -450,132 +369,9 @@ const FaceMesh: React.FC = () => {
 		setIsDebugVisible(prev => !prev);
 	};
 
-	// Update drawFaceMesh function to draw on a plain background
+	// Updated drawFaceMesh function that uses the utility functions
 	const drawFaceMesh = (faces: any[]) => {
-		if (!faceCanvasRef.current) return;
-
-		const canvas = faceCanvasRef.current;
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
-
-		// Clear the canvas and fill with a black background
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.fillStyle = '#000000';  // Black background
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-		// Draw face mesh
-		if (faces && faces.length > 0) {
-			const face = faces[0]; // Get the first face
-
-			if (face.keypoints && Array.isArray(face.keypoints)) {
-				// Calculate the face bounding box
-				let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
-				face.keypoints.forEach((point: any) => {
-					if (point.x < minX) minX = point.x;
-					if (point.y < minY) minY = point.y;
-					if (point.x > maxX) maxX = point.x;
-					if (point.y > maxY) maxY = point.y;
-				});
-
-				// Calculate the face dimensions and center
-				const faceWidth = maxX - minX;
-				const faceHeight = maxY - minY;
-				const faceCenterX = minX + faceWidth / 2;
-				const faceCenterY = minY + faceHeight / 2;
-
-				// Calculate scaling factor to maintain consistent size
-				// Adjust the targetWidth value to control how large the face appears
-				const targetWidth = canvas.width * 0.5; // Face takes 70% of canvas width
-				const scale = targetWidth / faceWidth;
-
-				// Set style for the mesh
-				ctx.strokeStyle = '#00ffd9'; // Teal/cyan color
-				ctx.lineWidth = 1;
-
-				// Transform each keypoint to maintain consistent size
-				const scaledKeypoints = face.keypoints.map((point: any) => ({
-					x: (point.x - faceCenterX) * scale + (canvas.width / 2),
-					y: (point.y - faceCenterY) * scale + (canvas.height / 2),
-					z: point.z
-				}));
-
-				// Create normalized keypoints for drawConnectors function
-				const normalizedKeypoints = scaledKeypoints.map((point: any) => ({
-					x: point.x / canvas.width,
-					y: point.y / canvas.height,
-					z: point.z
-				}));
-
-				// Draw the mesh using the normalized keypoints
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_TESSELATION,
-				// 	{ color: '#C0C0C070', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_RIGHT_EYE, { color: '#FF3030' });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_RIGHT_EYEBROW, { color: '#FF3030' });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_RIGHT_IRIS, { color: '#FF3030' });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_LEFT_EYE, { color: '#30FF30' });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_LEFT_EYEBROW, { color: '#30FF30' });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_LEFT_IRIS, { color: '#30FF30' });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_FACE_OVAL, { color: '#E0E0E0' });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_LIPS, { color: '#E0E0E0' });
-				drawLandmarks(ctx, normalizedKeypoints, { color: '#00ffd9', radius: 0.5 });
-			}
-		} else {
-			// If no faces detected but detection is active
-			ctx.font = 'bold 24px Arial';
-			ctx.fillStyle = '#00ffd9';
-			ctx.textAlign = 'center';
-			ctx.fillText(
-				'No face detected',
-				canvas.width / 2,
-				canvas.height / 2
-			);
-		}
-
-		// Draw the original mesh on the overlay canvas
-		drawOriginalFaceMesh(faces);
-	};
-
-	// Add a function to draw the unscaled face mesh on the overlay canvas
-	const drawOriginalFaceMesh = (faces: any[]) => {
-		if (!overlayCanvasRef.current) return;
-
-		const canvas = overlayCanvasRef.current;
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
-
-		// Clear the canvas to make it transparent
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-		// Draw face mesh
-		if (faces && faces.length > 0 && isDetectingRef.current) {
-			const face = faces[0]; // Get the first face
-
-			if (face.keypoints && Array.isArray(face.keypoints)) {
-				// Set style for the mesh
-				ctx.strokeStyle = '#00ffd9'; // Teal/cyan color
-				ctx.lineWidth = 1;
-
-				// Create normalized keypoints using the width and height of the canvas
-				const normalizedKeypoints = face.keypoints.map((point: any) => ({
-					x: point.x / canvas.width,
-					y: point.y / canvas.height,
-					z: point.z
-				}));
-
-				// Draw the mesh connections
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_TESSELATION,
-				// 	{ color: '#C0C0C070', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_RIGHT_EYE, { color: '#FF3030', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_RIGHT_EYEBROW, { color: '#FF3030', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_RIGHT_IRIS, { color: '#FF3030', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_LEFT_EYE, { color: '#30FF30', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_LEFT_EYEBROW, { color: '#30FF30', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_LEFT_IRIS, { color: '#30FF30', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_FACE_OVAL, { color: '#E0E0E0', lineWidth: 1 });
-				// drawConnectors(ctx, normalizedKeypoints, FACEMESH_LIPS, { color: '#E0E0E0', lineWidth: 1 });
-				drawLandmarks(ctx, normalizedKeypoints, { color: '#00ffd9', radius: 0.2 });
-			}
-		}
+		drawFaceMeshUtil(faces, faceCanvasRef, overlayCanvasRef, isDetectingRef);
 	};
 
 	// Update the stopCamera function to capture both camera and face mesh
@@ -632,90 +428,14 @@ const FaceMesh: React.FC = () => {
 		setCameraStatus('off');
 	};
 
-	// Update the renderStoppedCameraView function to make the snapshot fill the container
+	// Updated renderStoppedCameraView function
 	const renderStoppedCameraView = () => {
-		if (!lastFrameSnapshot || !cameraCanvasRef.current) return;
-
-		const canvas = cameraCanvasRef.current;
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
-
-		// Create a grayscale version of the snapshot
-		const grayscaleData = new Uint8ClampedArray(lastFrameSnapshot.data.length);
-		for (let i = 0; i < lastFrameSnapshot.data.length; i += 4) {
-			const avg = (lastFrameSnapshot.data[i] + lastFrameSnapshot.data[i + 1] + lastFrameSnapshot.data[i + 2]) / 3;
-			grayscaleData[i] = avg;     // R
-			grayscaleData[i + 1] = avg; // G
-			grayscaleData[i + 2] = avg; // B
-			grayscaleData[i + 3] = lastFrameSnapshot.data[i + 3]; // A
-		}
-
-		// Put the grayscale image on the canvas
-		const grayscaleImageData = new ImageData(grayscaleData, lastFrameSnapshot.width, lastFrameSnapshot.height);
-		ctx.putImageData(grayscaleImageData, 0, 0);
-
-		// Add overlay with text
-		ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-		ctx.font = 'bold 24px Arial';
-		ctx.fillStyle = '#ffffff';
-		ctx.textAlign = 'center';
-		ctx.fillText(
-			'Camera Off',
-			canvas.width / 2,
-			canvas.height / 2 - 15
-		);
-
-		ctx.font = '18px Arial';
-		ctx.fillText(
-			'Click "Start Camera" to resume',
-			canvas.width / 2,
-			canvas.height / 2 + 20
-		);
+		renderStoppedCameraViewUtil(lastFrameSnapshot, cameraCanvasRef);
 	};
 
-	// Add a function to render the stopped face mesh view
+	// Updated renderStoppedFaceMeshView function
 	const renderStoppedFaceMeshView = () => {
-		if (!lastFaceMeshSnapshot || !faceCanvasRef.current) return;
-
-		const canvas = faceCanvasRef.current;
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
-
-		// Create a grayscale version of the snapshot
-		const grayscaleData = new Uint8ClampedArray(lastFaceMeshSnapshot.data.length);
-		for (let i = 0; i < lastFaceMeshSnapshot.data.length; i += 4) {
-			const avg = (lastFaceMeshSnapshot.data[i] + lastFaceMeshSnapshot.data[i + 1] + lastFaceMeshSnapshot.data[i + 2]) / 3;
-			grayscaleData[i] = avg;     // R
-			grayscaleData[i + 1] = avg; // G
-			grayscaleData[i + 2] = avg; // B
-			grayscaleData[i + 3] = lastFaceMeshSnapshot.data[i + 3]; // A
-		}
-
-		// Put the grayscale image on the canvas
-		const grayscaleImageData = new ImageData(grayscaleData, lastFaceMeshSnapshot.width, lastFaceMeshSnapshot.height);
-		ctx.putImageData(grayscaleImageData, 0, 0);
-
-		// Add overlay with text
-		ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-		ctx.font = 'bold 24px Arial';
-		ctx.fillStyle = '#ffffff';
-		ctx.textAlign = 'center';
-		ctx.fillText(
-			'Camera Off',
-			canvas.width / 2,
-			canvas.height / 2 - 15
-		);
-
-		ctx.font = '18px Arial';
-		ctx.fillText(
-			'Click "Start Camera" to resume',
-			canvas.width / 2,
-			canvas.height / 2 + 20
-		);
+		renderStoppedCameraViewUtil(lastFaceMeshSnapshot, faceCanvasRef);
 	};
 
 	// Update the effect to render both snapshots
@@ -952,4 +672,3 @@ declare global {
 }
 
 export default FaceMesh;
-
