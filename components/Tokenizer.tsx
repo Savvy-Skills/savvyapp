@@ -84,7 +84,7 @@ const TokenIds = ({ tokenIds }: { tokenIds: number[] }) => (
 
 const Tokenizer = ({ content }: { content?: ContentInfo }) => {
   const [inputText, setInputText] = useState(
-    content?.state ?? ""
+    content?.state.value ?? ""
   );
 
   const encodedTokens = llama3Tokenizer.encode(inputText, { bos: false, eos: false });

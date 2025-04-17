@@ -5,8 +5,8 @@ import './DefinitionShowcase.css';
 import ExpandableFact from '../ui/ExpandableFact';
 
 interface AudioTranscriptPlayerProps {
-	audioUrl: string;
-	definitionText: string;
+	audioUrl?: string;
+	definitionText?: string;
 	timestampedTranscription?: any;
 	title?: string;
 	theme?: string;

@@ -9,11 +9,11 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ content, onContentChange }: RichTextEditorProps) {
-  const [text, setText] = React.useState(content?.state || '');
+  const [text, setText] = React.useState(content?.state?.value || '');
 
   useEffect(() => {
-    if (content?.state) {
-      setText(content.state);
+    if (content?.state?.value) {
+      setText(content.state.value);
     }
   }, [content]);
 
@@ -21,7 +21,9 @@ export default function RichTextEditor({ content, onContentChange }: RichTextEdi
     setText(newText);
     onContentChange({
       type: 'Rich Text',
-      state: newText
+      state: {
+        value: newText,
+      }
     });
   };
 

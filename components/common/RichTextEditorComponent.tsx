@@ -244,7 +244,7 @@ export default function RichTextEditorComponent({
   const fontSizes = [12, 14, 16, 18, 20, 24, 28, 32, 36];
 
   return (
-    <View style={[styles.container, height ? { height } : {}]}>
+    <View style={[styles.container, height ? { height: height as number } : {}]}>
       <View style={styles.toolbar}>
         <IconButton icon="undo" onPress={undo} disabled={history.length === 0} />
         
@@ -329,7 +329,7 @@ export default function RichTextEditorComponent({
         multiline
         numberOfLines={numberOfLines}
         placeholder={placeholder}
-        style={[styles.textArea, editorHeight ? { height: editorHeight } : {}]}
+        style={[styles.textArea, editorHeight ? { height: editorHeight as number } : {}]}
       />
       
       {showPreview && (

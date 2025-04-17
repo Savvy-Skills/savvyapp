@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useMemo, memo, useReducer, lazy, Suspen
 import './RGBPixelSimulator.css';
 import StepCard from './ui/StepCard';
 import ExpandableFact from './ui/ExpandableFact';
+import { ContentInfo } from '@/types';
 // Use lazy loading for PixelGrid component
 const PixelGrid = lazy(() => import('./ui/PixelGrid'));
 
@@ -196,7 +197,7 @@ const SuspenseFallback = memo(() => (
   </div>
 ));
 
-export default function PixelSimulator() {
+export default function PixelSimulator({ content }: { content: ContentInfo }) {
 	// Use reducer instead of multiple useState calls
 	const [colorState, dispatch] = useReducer(colorReducer, {
 	  red: 128,
@@ -376,9 +377,6 @@ export default function PixelSimulator() {
 			{PixelStep}
 			{ColorStep}
 			{GrayscaleStep}
-			<div className="navigation-buttons">
-				<button className="nav-button">Continue to Next Step</button>
-			</div>
 		</div>
 	);
 }

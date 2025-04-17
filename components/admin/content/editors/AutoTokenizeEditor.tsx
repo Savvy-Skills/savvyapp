@@ -11,18 +11,20 @@ interface AutoTokenizeEditorProps {
 const defaultText = "Replace this text in the input field to see how tokenization works. Text in the input field to see how tokenization works.";
 
 export default function AutoTokenizeEditor({ content, onContentChange }: AutoTokenizeEditorProps) {
-  const [text, setText] = useState(content?.state || defaultText);
+  const [text, setText] = useState(content?.state?.value || defaultText);
 
   useEffect(() => {
-    if (content?.state !== undefined) {
-      setText(content.state);
+    if (content?.state?.value) {
+      setText(content.state.value);
     }
   }, [content]);
 
   useEffect(() => {
     if (text.length > 0) {
       onContentChange({ 
-        state: text 
+        state: {
+          value: text
+        }
       });
     }
   }, [text]);
@@ -30,7 +32,9 @@ export default function AutoTokenizeEditor({ content, onContentChange }: AutoTok
   const handleTextChange = (newText: string) => {
     setText(newText);
     onContentChange({ 
-      state: newText 
+      state: {
+        value: newText
+      }
     });
   };
 

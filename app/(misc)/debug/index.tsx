@@ -2,8 +2,6 @@ import ScreenWrapper from "@/components/screens/ScreenWrapper";
 import React, { useState } from "react";
 import { SegmentedButtons } from "react-native-paper";
 import { ScrollView } from "react-native";
-import TeachableMachine from "./teachable-machine";
-import ImageEncoding from "./imageencoding";
 import PixelSimulator from "@/components/react/PixelSimulator";
 import AudioEncodingLesson from "@/components/react/lessons/audioencoding/main/AudioEncodingLesson";
 import FaceMesh from "@/components/react/facemesh/FaceMesh";
@@ -11,6 +9,10 @@ import DefinitionShowcase from "@/components/react/definitioncontent/DefinitionS
 import GPTNextWordGame from "@/components/react/gpt/NextWord";
 import BertMaskedGame from "@/components/react/bert/BertComponent";
 import SpeechToText from "@/components/react/stt/SpeechToText";
+import { ContentInfo } from "@/types";
+import TeachableMachine from "@/components/teachable-machine";
+import ImageEncoding from "@/components/imageencoding";
+
 export default function DebugScreen() {
 	const [selectedIndex, setSelectedIndex] = useState<"teachable-machine"
 		| "image-encoding"
@@ -35,6 +37,8 @@ export default function DebugScreen() {
 			| "bert-masked-game"
 			| "stt");
 	};
+
+	
 
 	return (
 		<ScreenWrapper style={{ overflow: "hidden" }}>
@@ -107,10 +111,10 @@ export default function DebugScreen() {
 				theme={{ roundness: 0 }}
 			/>
 			<ScrollView contentContainerStyle={{ flexGrow: 1, maxWidth: 600, alignSelf: "center", width: "100%" }}>
-				{selectedIndex === "teachable-machine" && <TeachableMachine />}
-				{selectedIndex === "image-encoding-simple" && <ImageEncoding allowImageUpload={false} availableResolutions={[30, 50]} />}
-				{selectedIndex === "image-encoding" && <ImageEncoding />}
-				{selectedIndex === "pixel-simulator" && <PixelSimulator />}
+				{selectedIndex === "teachable-machine" && <TeachableMachine content={{} as ContentInfo} />}
+				{selectedIndex === "image-encoding-simple" && <ImageEncoding content={{state: {imageEncodingMode: "simple"}} as ContentInfo} />}
+				{selectedIndex === "image-encoding" && <ImageEncoding content={{state: {imageEncodingMode: "advanced"}} as ContentInfo} />}
+				{selectedIndex === "pixel-simulator" && <PixelSimulator content={{} as ContentInfo} />}
 				{selectedIndex === "audio-encoding" && <AudioEncodingLesson />}
 				{selectedIndex === "face-mesh" && <FaceMesh />}
 				{selectedIndex === "definition" && <DefinitionShowcase />}

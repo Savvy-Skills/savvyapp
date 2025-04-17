@@ -10,6 +10,7 @@ import { useWavesurfer } from '@wavesurfer/react'
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
 import "../../../index.css";
 import "./AudioEncodingLesson.css";
+import { ContentInfo } from "@/types";
 
 const defaultConfig = {
 	frequencyMin: 0,
@@ -45,7 +46,7 @@ const DEFAULT_LOCAL_SOUNDS = [
 ];
 
 
-export default function AudioEncodingLesson() {
+export default function AudioEncodingLesson({ content }: { content?: ContentInfo }) {
 	const [audioFile, setAudioFile] = useState<File | null>(null);
 	const [audioUrl, setAudioUrl] = useState<string | null>(null);
 	const [activeConfig, setActiveConfig] = useState(defaultConfig);
@@ -207,7 +208,7 @@ export default function AudioEncodingLesson() {
 
 					<div className="audio-source-selector">
 						<div className="input-section">
-							<p className="option-title">Option 1: Sample Sounds</p>
+							<p className="option-title">{content?.state.lessonMode === "advanced" ? "Option 1: Sample Sounds" : "Sample Sounds"}</p>
 							<div className="card-buttons">
 								{DEFAULT_LOCAL_SOUNDS.map((sound, index) => (
 									<div
@@ -222,37 +223,38 @@ export default function AudioEncodingLesson() {
 								))}
 							</div>
 						</div>
-
-						<div className="input-section">
-							<p className="option-title">Option 2: Record or Upload Audio</p>
-							<div className="center-buttons">
-								<div className="card-button" onClick={() => document.getElementById('audio-upload')?.click()}>
-									<img src={require('@/assets/images/pngs/upload.png').uri} alt="Upload Audio" className="card-image" />
-									<button className="select-button" onClick={() => document.getElementById('audio-upload')?.click()}>
-										Upload Audio
-									</button>
-								</div>
-								<div className="card-button" onClick={handleRecordAudio}>
-									<img src={require('@/assets/images/pngs/mic.png').uri} alt="Upload Audio" className="card-image" />
-									<button className="select-button">
-										{isRecording ? (
-											<>
-												<span style={{ color: 'red' }}>🟥</span> Stop Recording
-											</>
-										) : (
-											'Record Audio'
-										)}
-									</button>
-									{isRecording && (
-										<div className="recording-container">
-											<div className="recording-progress">
-												<p>Recording: {formatTime(recordDuration)}</p>
+						{content?.state.lessonMode === "advanced" && (
+							<div className="input-section">
+								<p className="option-title">Option 2: Record or Upload Audio</p>
+								<div className="center-buttons">
+									<div className="card-button" onClick={() => document.getElementById('audio-upload')?.click()}>
+										<img src={require('@/assets/images/pngs/upload.png').uri} alt="Upload Audio" className="card-image" />
+										<button className="select-button" onClick={() => document.getElementById('audio-upload')?.click()}>
+											Upload Audio
+										</button>
+									</div>
+									<div className="card-button" onClick={handleRecordAudio}>
+										<img src={require('@/assets/images/pngs/mic.png').uri} alt="Upload Audio" className="card-image" />
+										<button className="select-button">
+											{isRecording ? (
+												<>
+													<span style={{ color: 'red' }}>🟥</span> Stop Recording
+												</>
+											) : (
+												'Record Audio'
+											)}
+										</button>
+										{isRecording && (
+											<div className="recording-container">
+												<div className="recording-progress">
+													<p>Recording: {formatTime(recordDuration)}</p>
+												</div>
 											</div>
-										</div>
-									)}
+										)}
+									</div>
 								</div>
 							</div>
-						</div>
+						)}
 
 					</div>
 

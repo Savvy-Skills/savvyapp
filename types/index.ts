@@ -205,6 +205,42 @@ export interface VideoResponse {
 	video: VideoType;
 }
 
+export interface AudioResponse {
+	url: string;
+	audio: AudioType;
+}
+
+export interface AudioType {
+	access: string,
+	path: string,
+	name: string,
+	type: string,
+	size: number,
+	mime: string,
+	meta: {
+		duration: number,
+		audio: {
+			codec: string,
+			freq: number,
+			bitrate: number
+		}
+	}
+}
+
+export interface FileResponse {
+	url: string;
+	file: FileType;
+}
+
+export interface FileType {
+	access: string;
+	path: string;
+	name: string;
+	type: string;
+	size: number;
+	mime: string;
+}
+
 export type SlideTypes = "Assessment" | "Content" | "Activity" | "Custom";
 
 export interface BaseSlide extends BareSlide {
@@ -346,14 +382,41 @@ export interface ViewProgress {
 	timestamp: number;
 }
 
-export type ContentTypes = "Video" | "Image" | "Rich Text" | "Dataset" | "Neural Network" | "Activity" | "Neuron" | "Word2Vec" | "MNIST" | "Tokenization" | "Auto Tokenization";
+export type ContentTypes = "Video" 
+| "Image" 
+| "Rich Text" 
+| "Definition" 
+| "Dataset" 
+| "Neural Network" 
+| "Activity" 
+| "Neuron" 
+| "Word2Vec" 
+| "MNIST" 
+| "Tokenization" 
+| "Auto Tokenization" 
+| "Teachable Machine" 
+| "Pixel Simulator" 
+| "Image Encoding" 
+| "Audio Encoding" 
+| "Face Detection"
+| "Next Word"
+| "BERT"
+| "Speech to Text"
+
 
 export interface ContentInfo {
 	readonly created_at: number;
 	readonly id: string;
 	type: ContentTypes;
 	url: string;
-	state: string;
+	state: {
+		value?: string;
+		title?: string;
+		lessonMode?: "simple" | "advanced";
+		audioUrl?: string;
+		timestampedTranscription?: string;
+		theme?: "purple" | "cream" | "lavender" | "orange" | "blue" | "cards-purple" | "cards-orange";
+	};
 	title: string;
 	image: Image;
 	dataset_id?: string;
