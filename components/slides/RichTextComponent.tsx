@@ -47,6 +47,7 @@ const parseText = (text: string): (JSX.Element | string)[] => {
 };
 
 const RichText: React.FC<StyleTagProps> = ({ text }) => {
+	if (!text) return null;
   // Split the text by newlines
   const lines = text.split('\\n');
   // Parse each line and wrap it in a <Text> element
