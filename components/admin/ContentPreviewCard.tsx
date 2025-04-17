@@ -155,7 +155,7 @@ export default function ContentPreviewCard({ content, index, onRemove, onEdit }:
 				<Text style={styles.previewValue}>{content.type}</Text>
 				<Text style={styles.previewLabel}>Preview:</Text>
 				{['Rich Text', 'Tokenization', 'Auto Tokenization'].includes(content.type || '') && (
-					<RichText text={content.state || ''} />
+					<RichText text={content.state?.value || ''} />
 				)}
 
 				{content.type === 'Image' && (
