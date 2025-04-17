@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, StyleSheet, ScrollView, TextInput, Platform } from "react-native";
-import { Surface, Text, Button, SegmentedButtons, IconButton, ActivityIndicator, Tooltip, Chip } from "react-native-paper";
+import { View, StyleSheet, ScrollView, Platform } from "react-native";
+import { Surface, Text, Button, SegmentedButtons, IconButton, ActivityIndicator, Chip } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
 import { Image } from 'expo-image';
 import styles from "@/styles/styles";
 import { Colors } from "@/constants/Colors";
@@ -14,7 +13,7 @@ import PixelGridCanvas from "@/components/react/PixelGridCanvas";
 // Define an interface for component props
 interface ImageEncodingProps {
 	// Control which resolutions are available (defaults to all)
-	availableResolutions?: Array<30 | 50 | 100 | 224>;
+	availableResolutions?: Array<30 | 50 | 100 | 224>;	
 	// Default resolution (must be one of availableResolutions)
 	defaultResolution?: 30 | 50 | 100 | 224;
 	// Whether to show sample images
@@ -95,7 +94,7 @@ const convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
 	reader.readAsDataURL(blob);
 });
 
-export default function ImageEncoding({
+export default function ImageEncodingComponent({
 	availableResolutions = [30, 50, 100, 224],
 	defaultResolution = 30,
 	showSampleImages = true,
@@ -496,7 +495,7 @@ export default function ImageEncoding({
 							{ value: 'grid', label: '⊞ Grid', style: { ...styles.toggleButton } },
 							{ value: 'image', label: '🖼️ Image', style: { ...styles.toggleButton } }
 						]}
-						style={[localStyles.tabButtons, { position: 'sticky', bottom: 0, zIndex: 10 }]}
+						style={[localStyles.tabButtons]}
 						theme={{ roundness: 0, colors: { secondaryContainer: `${Colors.primary}20` } }}
 					/>
 

@@ -10,7 +10,7 @@ import { useTeachableMachine } from "./useTeachableMachine";
 import { TeachableMachineProps } from "./types";
 import { LayerType } from "@/types/neuralnetwork";
 
-export default function TeachableMachine({ modelId = "teachable-default" }: TeachableMachineProps) {
+export default function TeachableMachine({ modelId = "teachable-default", content }: TeachableMachineProps) {
   const [selectedLayer, setSelectedLayer] = useState<LayerType>("input");
   // Track camera states globally
   const [predictionCameraActive, setPredictionCameraActive] = useState(true);

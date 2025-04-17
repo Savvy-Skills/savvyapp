@@ -1,4 +1,4 @@
-import { DatasetInfo, ImageResponse, Metadata, VideoResponse } from "@/types";
+import { DatasetInfo, ImageResponse, Metadata, VideoResponse, AudioResponse, FileResponse } from "@/types";
 import { createAPI } from "./apiConfig";
 
 export const media_api = createAPI("media");
@@ -17,6 +17,29 @@ export const uploadImage = async (image: string): Promise<ImageResponse> => {
 export const uploadVideo = async (video: string): Promise<VideoResponse> => {
 	try {
 		const response = await media_api.post("/upload/video", { content: video });
+		return response.data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+export const uploadAudio = async (audio: string): Promise<AudioResponse> => {
+	try {
+		const response = await media_api.post("/upload/audio", { content: audio });
+		return response.data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+export const uploadFile = async (file: string, fileName: string): Promise<FileResponse> => {
+	try {
+		const response = await media_api.post("/upload/file", { 
+			content: file,
+			fileName: fileName 
+		});
 		return response.data;
 	} catch (error) {
 		console.error(error);

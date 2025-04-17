@@ -17,6 +17,15 @@ import WordToVec from "./content/advanced/WordToVec";
 import MNISTComponent from "./content/advanced/MNISTComponent";
 import Tokenizer from "../Tokenizer";
 import TokenizeComponent from "./content/advanced/TokenizeComponent";
+import TeachableMachine from "../teachable-machine";
+import PixelSimulator from "../react/PixelSimulator";
+import ImageEncoding from "../imageencoding";
+import AudioEncodingLesson from "../react/lessons/audioencoding/main/AudioEncodingLesson";
+import DefinitionShowcase from "../react/definitioncontent/DefinitionShowcase";
+import FaceMesh from "../react/facemesh/FaceMesh";
+import GPTNextWordGame from "../react/gpt/NextWord";
+import BertMaskedGame from "../react/bert/BertComponent";
+import SpeechToText from "../react/stt/SpeechToText";
 
 export interface SlideProps {
 	slide: LocalSlide;
@@ -30,7 +39,6 @@ interface ContentComponentProps {
 	canComplete: boolean;
 }
 
-
 const ContentComponent = ({ content, index, canComplete }: ContentComponentProps) => {
 	switch (content.type) {
 		case "Video":
@@ -38,7 +46,9 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 		case "Image":
 			return <ImageSlide url={content.url} index={index} />;
 		case "Rich Text":
-			return <RichTextSlide text={content.state} />;
+			return <RichTextSlide text={content.state?.value ?? ""} />;
+		case "Definition":
+			return <DefinitionShowcase content={content} />;
 		case "Dataset":
 			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.traces} index={index} />;
 		case "Neural Network":
@@ -57,10 +67,28 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 			return <TokenizeComponent content={content} />;
 		case "Auto Tokenization":
 			return <Tokenizer content={content} />;
+		case "Teachable Machine":
+			return <TeachableMachine content={content} />;
+		case "Pixel Simulator":
+			return <PixelSimulator content={content} />;
+		case "Image Encoding":
+			return <ImageEncoding content={content} />;
+		case "Audio Encoding":
+			return <AudioEncodingLesson content={content} />;
+		case "Face Detection":
+			return <FaceMesh />;
+		case "Next Word":
+			return <GPTNextWordGame />;
+		case "BERT":
+			return <BertMaskedGame />;
+		case "Speech to Text":
+			return <SpeechToText />;
 		default:
 			return <View />;
 	}
 };
+
+const EXCLUDED_CONTENT_TYPES = ["Neural Network", "Neuron", "Word2Vec", "Dataset", "Teachable Machine", "Definition", "Speech to Text", "Audio Encoding", "Image Encoding", "Pixel Simulator", "MNIST"];
 
 const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 	const sortedContents = slide.contents && slide.contents.length > 0 ? slide.contents.slice().sort((a, b) => a.order - b.order) : [];
@@ -96,7 +124,7 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 					</View>
 				));
 			} else {
-				if (["Dataset", "Neuron", "Word2Vec"].includes(sortedContents[0].type)) {
+				if (EXCLUDED_CONTENT_TYPES.includes(sortedContents[0].type)) {
 					return <View style={[styles.slideWidth, styles.centeredMaxWidth, { gap: 16 }]}>
 						<ContentComponent content={sortedContents[0]} index={index} canComplete={true} />
 					</View>
@@ -153,13 +181,13 @@ export default function SlideRenderer({
 		}
 	}, [slide.submitted]);
 
-	if ((slide.type === "Content" && currentContents.length === 1) && !["Neural Network", "Neuron", "Word2Vec", "Dataset"].includes(currentContents[0].type)) {
+	if ((slide.type === "Content" && currentContents.length === 1) && !EXCLUDED_CONTENT_TYPES.includes(currentContents[0].type)) {
 		return (
 			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 		);
 	}
 
-	const marginTop = (firstContent && ["Neural Network", "Neuron", "Word2Vec"].includes(firstContent.type)) ? 0 : "auto";
+	const marginTop = (firstContent && !["Neural Network", "Neuron", "Word2Vec"].includes(firstContent.type)) ? 0 : "auto";
 
 	return (
 		<ScrollView

@@ -3,9 +3,11 @@
 	padding: 1.5rem;
 	color: #333;
 	font-family: Arial, sans-serif;
-	max-width: 400px;
 	box-sizing: border-box;
 	font-weight: bold;
+	max-width: 500px;
+	align-self: center;
+	width: 100%;
 
 	&.theme-cards-purple {
 		background-color: #3b0764;
