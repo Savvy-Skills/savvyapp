@@ -3,10 +3,10 @@
 	background-color: white;
 	border-radius: 4px;
 	box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px;
-	margin-bottom: 20px;
 	overflow: hidden;
 	border-left: 5px solid var(--info-color);
 	padding: 16px;
+	margin: 1px 0;
 }
 
 .step-header {

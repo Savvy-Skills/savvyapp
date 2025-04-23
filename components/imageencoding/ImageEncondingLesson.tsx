@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { Surface, Text, Button, SegmentedButtons, IconButton, ActivityIndicator, Chip } from "react-native-paper";
 import * as ImagePicker from "expo-image-picker";
@@ -9,6 +9,7 @@ import { Colors } from "@/constants/Colors";
 import ImagePixelExtractor from "@/components/react/ImagePixelExtractor";
 import Expandable from "@/components/ui/Expandable";
 import PixelGridCanvas from "@/components/react/PixelGridCanvas";
+import { Step } from ".";
 
 // Define an interface for component props
 interface ImageEncodingProps {
@@ -26,7 +27,26 @@ interface ImageEncodingProps {
 		title: string;
 		description?: string;
 	}>;
+	step: Step;
 }
+
+// Extract utility functions outside of component
+const convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
+	const reader = new FileReader();
+	reader.onerror = reject;
+	reader.onload = () => {
+		resolve(reader.result);
+	};
+	reader.readAsDataURL(blob);
+});
+
+// Helper function for grid gap size
+const getGapSize = (resolution: number) => {
+	if (resolution <= 30) return 1;
+	if (resolution <= 50) return 0.8;
+	if (resolution <= 100) return 0.5;
+	return 0.3; // For very high resolutions like 224x224
+};
 
 const DEFAULT_LOCAL_IMAGES = [
 	{
@@ -85,16 +105,9 @@ const DEFAULT_RESOLUTION_OPTIONS = [
 	{ label: '224×224', value: 224 },
 ];
 
-const convertBlobToBase64 = (blob: Blob) => new Promise((resolve, reject) => {
-	const reader = new FileReader();
-	reader.onerror = reject;
-	reader.onload = () => {
-		resolve(reader.result);
-	};
-	reader.readAsDataURL(blob);
-});
 
 export default function ImageEncodingComponent({
+	step,
 	availableResolutions = [30, 50, 100, 224],
 	defaultResolution = 30,
 	showSampleImages = true,
@@ -115,7 +128,6 @@ export default function ImageEncodingComponent({
 		: availableResolutions[0] || 30;
 
 	const [imageUri, setImageUri] = useState<string | null>(null);
-	const [imageUrl, setImageUrl] = useState<string>("");
 	const [processing, setProcessing] = useState(false);
 	const [rgbValues, setRgbValues] = useState<Array<[number, number, number, number]>>([]);
 	const [grayscaleValues, setGrayscaleValues] = useState<number[]>([]);
@@ -137,8 +149,28 @@ export default function ImageEncodingComponent({
 	// Add a new state to track the selected image index
 	const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
-	// Pick an image from the device
-	const pickImage = async () => {
+	// Process the image to extract pixel data - wrapped in useCallback
+	const processImage = useCallback(async (uri: string) => {
+		try {
+			// Resize image to selected resolution
+			const resizedImage = await ImageManipulator.manipulateAsync(
+				uri,
+				[{ resize: { width: selectedResolution, height: selectedResolution } }],
+				{ format: ImageManipulator.SaveFormat.PNG }
+			);
+
+			setImageUri(resizedImage.uri);
+
+			// The pixel extraction will be handled by the ImagePixelExtractor component
+			setProcessing(false);
+		} catch (error) {
+			console.error("Error processing image:", error);
+			setProcessing(false);
+		}
+	}, [selectedResolution]);
+
+	// Pick an image from the device - wrapped in useCallback
+	const pickImage = useCallback(async () => {
 		try {
 			const result = await ImagePicker.launchImageLibraryAsync({
 				mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -154,10 +186,10 @@ export default function ImageEncodingComponent({
 		} catch (error) {
 			console.error("Error picking image:", error);
 		}
-	};
+	}, [processImage]);
 
-	// Select a local image
-	const selectLocalImage = async (index: number) => {
+	// Select a local image - wrapped in useCallback
+	const selectLocalImage = useCallback(async (index: number) => {
 		// Skip if already processing or this image is already selected
 		if (processing || index === selectedImageIndex) {
 			return;
@@ -183,69 +215,49 @@ export default function ImageEncodingComponent({
 			console.error("Error selecting local image:", error);
 			setProcessing(false);
 		}
-	};
+	}, [LOCAL_IMAGES, processing, selectedImageIndex, processImage]);
 
-	// Process the image to extract pixel data
-	const processImage = async (uri: string) => {
-		try {
-			// Resize image to selected resolution
-			const resizedImage = await ImageManipulator.manipulateAsync(
-				uri,
-				[{ resize: { width: selectedResolution, height: selectedResolution } }],
-				{ format: ImageManipulator.SaveFormat.PNG }
-			);
-
-			setImageUri(resizedImage.uri);
-
-			// The pixel extraction will be handled by the ImagePixelExtractor component
-			setProcessing(false);
-		} catch (error) {
-			console.error("Error processing image:", error);
-			setProcessing(false);
-		}
-	};
-
-	// Handle the pixel data received from the extractor
-	const handlePixelDataExtracted = (
+	// Handle the pixel data received from the extractor - wrapped in useCallback
+	const handlePixelDataExtracted = useCallback((
 		rgbaArray: Array<[number, number, number, number]>,
 		grayscaleArray: number[]
 	) => {
 		setRgbValues(rgbaArray);
 		setGrayscaleValues(grayscaleArray);
-	};
+	}, []);
 
-	// Handle extraction errors
-	const handleExtractionError = (error: string) => {
+	// Handle extraction errors - wrapped in useCallback
+	const handleExtractionError = useCallback((error: string) => {
 		console.error("Image pixel extraction error:", error);
 		// You might want to show an error message to the user
-	};
+	}, []);
 
-	// Updated hover handlers for separate states
-	const handleRgbPixelHover = (index: number) => {
+	// Updated hover handlers for separate states - wrapped in useCallback
+	const handleRgbPixelHover = useCallback((index: number) => {
 		if (rgbValues[index]) {
 			setHoveredRgbPixel({
 				index,
 				rgb: rgbValues[index]
 			});
 		}
-	};
+	}, [rgbValues]);
 
-	const handleGrayscalePixelHover = (index: number) => {
+	const handleGrayscalePixelHover = useCallback((index: number) => {
 		if (grayscaleValues[index]) {
 			setHoveredGrayscalePixel({
 				index,
 				grayscale: grayscaleValues[index]
 			});
 		}
-	};
+	}, [grayscaleValues]);
 
-	const handleRgbPixelLeave = () => {
+	const handleRgbPixelLeave = useCallback(() => {
 		setHoveredRgbPixel(null);
-	};
+	}, []);
 
-	const handleGrayscalePixelLeave = () => {
+	const handleGrayscalePixelLeave = useCallback(() => {
 		setHoveredGrayscalePixel(null);
-	};
+	}, []);
 
 	// When resolution changes, we need to reprocess the image if one is loaded
 	useEffect(() => {
@@ -253,15 +265,15 @@ export default function ImageEncodingComponent({
 			setProcessing(true);
 			processImage(imageUri);
 		}
-	}, [selectedResolution]);
+	}, [selectedResolution, processImage]); // Remove imageUri and processing dependencies
 
-	// For higher resolutions, use smaller gaps
-	const getGapSize = (resolution: number) => {
-		if (resolution <= 30) return 1;
-		if (resolution <= 50) return 0.8;
-		if (resolution <= 100) return 0.5;
-		return 0.3; // For very high resolutions like 224x224
-	};
+	useEffect(() => {
+		// If the imageUri is not set, set it to the first image in the LOCAL_IMAGES array
+		if (!imageUri) {
+			selectLocalImage(0);
+		}
+	}, [imageUri, selectLocalImage]);
+
 
 	return (
 		<View style={styles.detailsContainer}>
@@ -384,7 +396,7 @@ export default function ImageEncodingComponent({
 				</View>
 			)}
 
-			{imageUri && (
+			{imageUri && step === "resizing" && (
 				<Surface style={[localStyles.stepSection, { backgroundColor: 'transparent' }]}>
 					<Text style={localStyles.stepTitle}>
 						<Text style={localStyles.stepNumber}>Step 2</Text> Resizing and Standardization
@@ -408,10 +420,10 @@ export default function ImageEncodingComponent({
 				</Surface>
 			)}
 
-			{rgbValues.length > 0 && (
+			{rgbValues.length > 0 && step === "RGB" && (
 				<Surface style={[localStyles.stepSection, { backgroundColor: 'transparent' }]}>
 					<Text style={localStyles.stepTitle}>
-						<Text style={localStyles.stepNumber}>Step 3</Text> RGB Value Extraction
+						<Text style={localStyles.stepNumber}>Step 2</Text> RGB Value Extraction
 					</Text>
 					<Text style={localStyles.stepDescription}>
 						Each tiny square in your image is like a recipe with three ingredients: Red, Green, and Blue (RGB). Mix different amounts of each (from 0 to 255) to create any color! The spicy red of a strawberry might be (255, 0, 0), while ocean blue could be (0, 0, 255). The grid below shows all {selectedResolution * selectedResolution} colorful squares from your image!
@@ -479,10 +491,10 @@ export default function ImageEncodingComponent({
 				</Surface>
 			)}
 
-			{grayscaleValues.length > 0 && (
+			{grayscaleValues.length > 0 && step === "grayscale" && (
 				<Surface style={[localStyles.stepSection, { backgroundColor: 'transparent' }]}>
 					<Text style={localStyles.stepTitle}>
-						<Text style={localStyles.stepNumber}>Step 4</Text> Grayscale Conversion
+						<Text style={localStyles.stepNumber}>Step 2</Text> Grayscale Conversion
 					</Text>
 					<Text style={localStyles.stepDescription}>
 						Think about old black and white TV shows - they didn't need color to tell a story! Similarly, we can simplify our image by averaging the three color values into one brightness number between 0 (black) and 1 (white). This creates a grayscale image that's much simpler for computers to process, while still showing the important shapes and patterns.

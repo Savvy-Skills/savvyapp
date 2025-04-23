@@ -26,15 +26,13 @@ const DefinitionShowcase: React.FC<{ content: ContentInfo }> = ({ content }) => 
 
 
 	return (
-		<div className="definition-container">
-			<AudioTranscriptPlayer
-				audioUrl={content.state.audioUrl}
-				timestampedTranscription={timestampedTranscription}
-				definitionText={content.state.value}
-				theme={currentTheme}
-				title={content.state.title}
-			/>
-		</div>
+		<AudioTranscriptPlayer
+			audioUrl={content.state.audioUrl}
+			timestampedTranscription={timestampedTranscription}
+			definitionText={content.state.value}
+			theme={currentTheme}
+			title={content.state.title}
+		/>
 	);
 };
 

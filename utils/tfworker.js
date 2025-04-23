@@ -57,7 +57,7 @@ const workerFunction = function () {
     try {
       currentModel = await tf.loadLayersModel(url);
       currentModelId = type;
-      await warmUpModel(mnist);
+      await warmUpModel("mnist");
     } catch (err) {
       console.error("Error loading remote model:", err);
     }
@@ -67,7 +67,10 @@ const workerFunction = function () {
     // TODO: Implement model warming up
     const dummyInput = tf.tidy(() => {
       if (type === "mnist") {
-        return tf.zeros([1, 28, 28, 1]);
+        // Create zeros with shape [1, 28, 28, 1]
+        const input = tf.zeros([1, 28, 28, 1]);
+        // Reshape to [1, 784] for MNIST model
+        return input.reshape([1, 28*28]);
       } else if (type === "classifier") {
         return tf.zeros([1, MOBILENET_WIDTH, MOBILENET_HEIGHT, 3]);
       }

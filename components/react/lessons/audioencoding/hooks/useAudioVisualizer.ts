@@ -296,6 +296,37 @@ export function useAudioVisualizer({
 		}
 	};
 
+	// Add a cleanup effect for the entire hook
+	useEffect(() => {
+		return () => {
+			// Clean up everything when the component unmounts
+			if (wavesurfer) {
+				try {
+					if (wavesurfer.isPlaying()) {
+						wavesurfer.pause();
+					}
+					
+					wavesurfer.unAll();
+					wavesurfer.destroy();
+				} catch (error) {
+					console.error("Error destroying wavesurfer during unmount:", error);
+				}
+			}
+			
+			// Clean up any resolved audio URLs that were created from files
+			if (resolvedAudioUrl && audioFile && resolvedAudioUrl.startsWith('blob:')) {
+				URL.revokeObjectURL(resolvedAudioUrl);
+			}
+			
+			// Clean up DOM elements
+			if (waveformRef.current) {
+				waveformRef.current.innerHTML = '';
+			}
+			if (spectrogramRef.current) {
+				spectrogramRef.current.innerHTML = '';
+			}
+		};
+	}, []);
 
 	return {
 		isPlaying,

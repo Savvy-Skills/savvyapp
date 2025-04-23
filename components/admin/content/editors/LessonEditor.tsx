@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, SegmentedButtons } from 'react-native-paper';
-import { ContentInfo } from '@/types/index';
+import { ContentInfo, ContentModes } from '@/types/index';
 
 interface LessonEditorProps {
 	content?: ContentInfo;
@@ -11,22 +11,20 @@ interface LessonEditorProps {
 type LessonMode = "simple" | "advanced";
 
 export default function LessonEditor({ content, onContentChange }: LessonEditorProps) {
-	const [lessonMode, setLessonMode] = useState<LessonMode>(content?.state?.lessonMode || 'simple');
+	const [lessonMode, setLessonMode] = useState<ContentModes>(content?.mode || 'simple');
 
 	useEffect(() => {
-		if (content?.state?.lessonMode) {
-			setLessonMode(content.state.lessonMode);
+		if (content?.mode) {
+			setLessonMode(content.mode);
 		}
 	}, [content]);
 
 
 
-	const handleModeChange = (mode: LessonMode) => {
+	const handleModeChange = (mode: ContentModes) => {
 		setLessonMode(mode);
 		onContentChange({
-			state: {
-				lessonMode: mode,
-			},
+			mode: mode,
 		});
 	};
 
@@ -34,10 +32,12 @@ export default function LessonEditor({ content, onContentChange }: LessonEditorP
 		<View style={styles.container}>
 			<SegmentedButtons
 				value={lessonMode}
-				onValueChange={(value) => handleModeChange(value as LessonMode)}
+				onValueChange={(value) => handleModeChange(value as ContentModes)}
 				buttons={[
 					{ value: 'simple', label: 'Simple' },
+					// { value: 'normal', label: 'Normal' },
 					{ value: 'advanced', label: 'Advanced' },
+					// { value: 'custom', label: 'Custom' },
 				]}
 				style={styles.segmentedButtons}
 			/>

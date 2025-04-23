@@ -50,7 +50,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
   const [loading, setLoading] = useState(false);
   const [selectedDatasetId, setSelectedDatasetId] = useState(content?.dataset_id || '');
   const [searchQuery, setSearchQuery] = useState('');
-  const [traces, setTraces] = useState<TraceConfig[]>(convertTraces(content?.traces));
+  const [traces, setTraces] = useState<TraceConfig[]>(convertTraces(content?.state.traces));
   const [showTraceBuilder, setShowTraceBuilder] = useState(false);
   const [editingTraceIndex, setEditingTraceIndex] = useState<number | null>(null);
   const [currentTrace, setCurrentTrace] = useState<TraceConfig>({
@@ -70,8 +70,8 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
     if (content?.dataset_id) {
       setSelectedDatasetId(content.dataset_id);
     }
-    if (content?.traces) {
-      setTraces(convertTraces(content.traces));
+    if (content?.state.traces) {
+      setTraces(convertTraces(content.state.traces));
     }
   }, [content]);
 
@@ -95,7 +95,9 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
       type: 'Dataset',
       dataset_id: datasetId,
       dataset_info: datasetInfo,
-      traces: []
+      state: {
+        traces: []
+      }
     });
   };
 
@@ -153,7 +155,9 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
 
   const updateContent = (updatedTraces: TraceConfig[]) => {
     onContentChange({
-      traces: convertTracesToPlotly(updatedTraces)
+      state: {
+        traces: convertTracesToPlotly(updatedTraces)
+      }
     });
   };
 

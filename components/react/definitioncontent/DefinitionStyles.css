@@ -8,6 +8,7 @@
 	max-width: 500px;
 	align-self: center;
 	width: 100%;
+	flex:1;
 
 	&.theme-cards-purple {
 		background-color: #3b0764;
