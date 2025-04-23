@@ -15,7 +15,7 @@ export default function ContentPreviewCard({ content, index, onRemove, onEdit }:
 
 	// Helper function to render neuron preview
 	const renderNeuronPreview = () => {
-		const neuronConfig = content.neuronConfig;
+		const neuronConfig = content.state?.neuronConfig;
 		if (!neuronConfig) return <Text style={styles.previewValue}>[No neuron configuration]</Text>;
 
 		return (

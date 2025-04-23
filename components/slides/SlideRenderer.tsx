@@ -50,45 +50,53 @@ const ContentComponent = ({ content, index, canComplete }: ContentComponentProps
 		case "Definition":
 			return <DefinitionShowcase content={content} />;
 		case "Dataset":
-			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.traces} index={index} />;
-		case "Neural Network":
-			if (Platform.OS === "web") {
-				return <NeuralNetworkVisualizerWeb initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
-			} else {
-				return <NeuralNetworkVisualizer initialNNState={content.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+			return <DataTableContainer datasetInfo={content.dataset_info ?? {} as DatasetInfo} traces={content.state.traces} index={index} />;
+		case "Tool":
+			switch (content.subtype) {
+				case "Neural Network":
+					if (Platform.OS === "web") {
+						return <NeuralNetworkVisualizerWeb initialNNState={content.state.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+					} else {
+						return <NeuralNetworkVisualizer initialNNState={content.state.nnState ?? {} as NNState} dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+					}
+				case "Neuron":
+					return <NeuronVisualization config={content.state.neuronConfig ?? {} as NeuronConfig} dataset_info={content.dataset_info ?? {} as DatasetInfo} />;
+				case "Word2Vec":
+					return <WordToVec dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
+				case "MNIST":
+					return <MNISTComponent />;
+				case "Tokenization":
+					return <TokenizeComponent content={content} />;
+				case "Auto Tokenization":
+					return <Tokenizer content={content} />;
+				case "Teachable Machine":
+					return <TeachableMachine content={content} />;
+				case "Face Detection":
+					return <FaceMesh />;
+				case "Next Word":
+					return <GPTNextWordGame />;
+				case "BERT":
+					return <BertMaskedGame />;
+				case "Speech to Text":
+					return <SpeechToText />;
+				default:
+					return <View />;
 			}
-		case "Neuron":
-				return <NeuronVisualization config={content.neuronConfig ?? {} as NeuronConfig } dataset_info={content.dataset_info ?? {} as DatasetInfo} />;
-		case "Word2Vec":
-			return <WordToVec dataset_info={content.dataset_info ?? {} as DatasetInfo} index={index} />;
-		case "MNIST":
-			return <MNISTComponent />;
-		case "Tokenization":
-			return <TokenizeComponent content={content} />;
-		case "Auto Tokenization":
-			return <Tokenizer content={content} />;
-		case "Teachable Machine":
-			return <TeachableMachine content={content} />;
-		case "Pixel Simulator":
-			return <PixelSimulator content={content} />;
-		case "Image Encoding":
-			return <ImageEncoding content={content} />;
-		case "Audio Encoding":
-			return <AudioEncodingLesson content={content} />;
-		case "Face Detection":
-			return <FaceMesh />;
-		case "Next Word":
-			return <GPTNextWordGame />;
-		case "BERT":
-			return <BertMaskedGame />;
-		case "Speech to Text":
-			return <SpeechToText />;
+		case "Educational":
+			switch (content.subtype) {
+				case "Pixel Simulator":
+					return <PixelSimulator content={content} />;
+				case "Image Encoding":
+					return <ImageEncoding content={content} />;
+				case "Audio Encoding":
+					return <AudioEncodingLesson content={content} />;
+			}
 		default:
 			return <View />;
 	}
 };
 
-const EXCLUDED_CONTENT_TYPES = ["Neural Network", "Neuron", "Word2Vec", "Dataset", "Teachable Machine", "Definition", "Speech to Text", "Audio Encoding", "Image Encoding", "Pixel Simulator", "MNIST"];
+const EXCLUDED_CONTENT_TYPES = ["Neural Network", "Neuron", "Word2Vec", "Dataset", "Teachable Machine", "Speech to Text", "Audio Encoding", "Image Encoding", "Pixel Simulator", "MNIST", "Educational"];
 
 const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 	const sortedContents = slide.contents && slide.contents.length > 0 ? slide.contents.slice().sort((a, b) => a.order - b.order) : [];
@@ -114,22 +122,31 @@ const SlideComponent = ({ slide, index, quizMode }: SlideProps) => {
 		// return <ActivitySlide slide={slide} index={index} />;
 		case "Content":
 			if (sortedContents.length > 1) {
-				return sortedContents.map((content, contentIndex) => (
-					<View key={`${contentIndex}-${content.type}`} style={[[styles.slideWidth, styles.centeredMaxWidth], { gap: 16, paddingHorizontal: 8, flex: 1 }]}>
-						<ContentComponent
-							content={content}
-							index={index}
-							canComplete={contentIndex === sortedContents.length - 1}
-						/>
-					</View>
-				));
+				return sortedContents.map((content, contentIndex) => {
+					const flex = content.type === "Educational" ? undefined : 1;
+					return (
+						<View key={`${contentIndex}-${content.type}`} style={[[styles.slideWidth, styles.centeredMaxWidth], {flex: flex, gap: 16 }]}>
+							<ContentComponent
+								content={content}
+								index={index}
+								canComplete={contentIndex === sortedContents.length - 1}
+							/>
+						</View>
+					)
+				}
+				);
 			} else {
-				if (EXCLUDED_CONTENT_TYPES.includes(sortedContents[0].type)) {
+				if (EXCLUDED_CONTENT_TYPES.includes(sortedContents[0].type) || EXCLUDED_CONTENT_TYPES.includes(sortedContents[0].subtype || "")) {
 					return <View style={[styles.slideWidth, styles.centeredMaxWidth, { gap: 16 }]}>
 						<ContentComponent content={sortedContents[0]} index={index} canComplete={true} />
 					</View>
+				} else if (sortedContents[0].type === "Definition") {
+					return <View style={[styles.slideWidth, styles.centeredMaxWidth, { flex: 1 }]}>
+						<DefinitionShowcase content={sortedContents[0]} />
+					</View>
+				} else {
+					return <ContentComponent content={sortedContents[0]} index={index} canComplete={true} />;
 				}
-				return <ContentComponent content={sortedContents[0]} index={index} canComplete={true} />;
 			}
 		case "Custom":
 			return <View />;
@@ -181,13 +198,15 @@ export default function SlideRenderer({
 		}
 	}, [slide.submitted]);
 
-	if ((slide.type === "Content" && currentContents.length === 1) && !EXCLUDED_CONTENT_TYPES.includes(currentContents[0].type)) {
+	if ((slide.type === "Content" && currentContents.length === 1) && !EXCLUDED_CONTENT_TYPES.includes(currentContents[0].type) && !currentContents[0].subtype && currentContents[0].type !== "Definition") {
 		return (
 			<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 		);
 	}
 
 	const marginTop = (firstContent && !["Neural Network", "Neuron", "Word2Vec"].includes(firstContent.type)) ? 0 : "auto";
+	const flex = firstContent && firstContent.type === "Definition" ? 1 : undefined;
+
 
 	return (
 		<ScrollView
@@ -198,7 +217,7 @@ export default function SlideRenderer({
 			}}
 			ref={scrollRef}
 		>
-			<View style={{ marginBottom: "auto", marginTop: marginTop, gap: 16 }}>
+			<View style={{ marginBottom: "auto", marginTop: marginTop, gap: 16, flex: flex }}>
 				<SlideComponent slide={slide} index={index} quizMode={quizMode} />
 			</View>
 		</ScrollView>

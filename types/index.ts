@@ -195,7 +195,7 @@ interface VideoType {
 		};
 	}
 }
-export interface ImageResponse { 
+export interface ImageResponse {
 	url: string;
 	image: ImageType;
 }
@@ -382,27 +382,31 @@ export interface ViewProgress {
 	timestamp: number;
 }
 
-export type ContentTypes = "Video" 
-| "Image" 
-| "Rich Text" 
-| "Definition" 
-| "Dataset" 
-| "Neural Network" 
-| "Activity" 
-| "Neuron" 
-| "Word2Vec" 
-| "MNIST" 
-| "Tokenization" 
-| "Auto Tokenization" 
-| "Teachable Machine" 
-| "Pixel Simulator" 
-| "Image Encoding" 
-| "Audio Encoding" 
+export type ContentTypes = "Video"
+	| "Image"
+	| "Rich Text"
+	| "Definition"
+	| "Dataset"
+	| "Tool"
+	| "Educational"
+
+type ContentSubtypes = "Neural Network"
+| "Activity"
+| "Neuron"
+| "Word2Vec"
+| "MNIST"
+| "Tokenization"
+| "Auto Tokenization"
+| "Teachable Machine"
+| "Pixel Simulator"
+| "Image Encoding"
+| "Audio Encoding"
 | "Face Detection"
 | "Next Word"
 | "BERT"
 | "Speech to Text"
 
+export type ContentModes = "simple" | "normal" | "advanced" | "custom";
 
 export interface ContentInfo {
 	readonly created_at: number;
@@ -412,18 +416,20 @@ export interface ContentInfo {
 	state: {
 		value?: string;
 		title?: string;
-		lessonMode?: "simple" | "advanced";
 		audioUrl?: string;
 		timestampedTranscription?: string;
 		theme?: "purple" | "cream" | "lavender" | "orange" | "blue" | "cards-purple" | "cards-orange";
+		traces?: TraceConfig[];
+		nnState?: NNState;
+		neuronConfig?: NeuronConfig;
+		step?: string;
 	};
 	title: string;
 	image: Image;
 	dataset_id?: string;
 	dataset_info?: DatasetInfo;
-	traces?: TraceConfig[];
-	nnState?: NNState;
-	neuronConfig?: NeuronConfig;
+	subtype?: ContentSubtypes;
+	mode?: ContentModes;
 }
 
 export type AssessmentTypes =

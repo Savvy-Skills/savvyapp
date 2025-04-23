@@ -32,59 +32,59 @@ const AudioTranscriptPlayer: React.FC<AudioTranscriptPlayerProps> = ({
 	useEffect(() => {
 		const audio = new Audio(audioUrl);
 		audioRef.current = audio;
-		
+
 		// Set up event listeners
 		audio.addEventListener('loadedmetadata', () => {
 			setIsLoading(false);
 			setDuration(audio.duration);
 		});
-		
+
 		audio.addEventListener('timeupdate', () => {
 			setCurrentAudioTime(audio.currentTime);
 		});
-		
+
 		audio.addEventListener('ended', () => {
 			setIsPlaying(false);
 		});
-		
+
 		audio.addEventListener('error', (e) => {
-			const errorDetails = audio.error ? 
-				`Code: ${audio.error.code}, Message: ${audio.error.message}` : 
+			const errorDetails = audio.error ?
+				`Code: ${audio.error.code}, Message: ${audio.error.message}` :
 				'Unknown error';
 			console.error("Audio error:", errorDetails);
 			setError(`Failed to load or play audio: ${errorDetails}`);
 			setIsLoading(false);
 		});
-		
+
 		audio.addEventListener('canplay', () => {
 			setIsLoading(false);
 		});
-		
+
 		// If metadata is already available (cached audio)
 		if (audio.readyState >= 1) {
 			setIsLoading(false);
 			setDuration(audio.duration);
 		}
-		
+
 		// Cleanup on unmount
 		return () => {
 			audio.pause();
 			setIsPlaying(false);
 			// Remove all event listeners
-			audio.removeEventListener('loadedmetadata', () => {});
-			audio.removeEventListener('timeupdate', () => {});
-			audio.removeEventListener('ended', () => {});
-			audio.removeEventListener('error', () => {});
-			audio.removeEventListener('canplay', () => {});
+			audio.removeEventListener('loadedmetadata', () => { });
+			audio.removeEventListener('timeupdate', () => { });
+			audio.removeEventListener('ended', () => { });
+			audio.removeEventListener('error', () => { });
+			audio.removeEventListener('canplay', () => { });
 		};
 	}, [audioUrl]);
 
 	// Audio control functions
 	const togglePlayPause = () => {
 		if (!audioRef.current) return;
-		
+
 		const audio = audioRef.current;
-		
+
 		if (isPlaying) {
 			audio.pause();
 			setIsPlaying(false);
@@ -95,7 +95,7 @@ const AudioTranscriptPlayer: React.FC<AudioTranscriptPlayerProps> = ({
 				if (Math.abs(audio.currentTime - currentAudioTime) > 0.5) {
 					audio.currentTime = currentAudioTime;
 				}
-				
+
 				// Use an IIFE to handle async play
 				(async () => {
 					try {
@@ -117,7 +117,7 @@ const AudioTranscriptPlayer: React.FC<AudioTranscriptPlayerProps> = ({
 
 	const handleSeek = (newTime: number) => {
 		if (!audioRef.current) return;
-		
+
 		try {
 			audioRef.current.currentTime = newTime;
 			setCurrentAudioTime(newTime);
@@ -127,16 +127,14 @@ const AudioTranscriptPlayer: React.FC<AudioTranscriptPlayerProps> = ({
 	};
 
 	return (
-		<div className="audio-transcript-container">
-			<div className="highlight-transcript">
-				<DefinitionComponent
-					definitionText={definitionText}
-					timestampedTranscription={timestampedTranscription}
-					title={title}
-					theme={theme}
-					currentAudioTime={currentAudioTime}
-				/>
-			</div>
+		<>
+			<DefinitionComponent
+				definitionText={definitionText}
+				timestampedTranscription={timestampedTranscription}
+				title={title}
+				theme={theme}
+				currentAudioTime={currentAudioTime}
+			/>
 			{audioUrl && (
 				<ExpandableFact
 					title='Audio Transcript'
@@ -154,7 +152,7 @@ const AudioTranscriptPlayer: React.FC<AudioTranscriptPlayerProps> = ({
 					/>
 				</ExpandableFact>
 			)}
-		</div>
+		</>
 	);
 };
 

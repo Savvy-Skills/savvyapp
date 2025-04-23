@@ -7,15 +7,11 @@
 }
 
 .lesson-container {
-	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
 	/* Add containment for better performance */
 	contain: content;
 	max-width: 600px;
-	margin: 0 auto;
 	padding: 0 1px;
 }
 
@@ -231,57 +227,90 @@
 	gap: 16px;
 }
 
+.pixel-simulator-container {
+	display: flex;
+	gap: 32px;
+	align-items: flex-start;
+	/* Make container wrap on small screens */
+	flex-wrap: wrap;
+}
+
 .pixel-grid {
 	display: grid;
-	grid-template-columns: repeat(8, 30px);
-	grid-template-rows: repeat(8, 30px);
-	gap: 2px;
-	background-color: #f5f5f5;
-	padding: 10px;
-	border-radius: 4px;
-	/* Add hardware acceleration */
-	transform: translateZ(0);
-	will-change: transform;
-	/* Add containment for better performance */
-	contain: layout style;
+	grid-template-columns: repeat(8, 1fr);
+	gap: 1px;
+	background-color: #ddd;
+	border: 1px solid #ccc;
+	width: 240px;
+	height: 240px;
+	/* Center the grid when it's full width */
+	margin: 0 auto;
 }
 
 .single-pixel {
-	width: 30px;
-	height: 30px;
-	background-color: #f0f0f0;
-	/* Add hardware acceleration */
-	transform: translateZ(0);
-	will-change: background-color;
-	/* Add containment for better performance */
-	contain: paint style;
+	aspect-ratio: 1/1;
+	cursor: pointer;
+	transition: transform 0.1s ease;
+}
+
+.single-pixel:hover {
+	transform: scale(1.05);
+}
+
+.selected-pixel {
+	position: relative;
+	z-index: 2;
 }
 
 .pixel-zoom {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	/* Add containment for better performance */
-	contain: layout style;
-	min-width: 120px;
+	gap: 10px;
+	/* Make it take full width on small screens */
+	/* Center content when it wraps */
 }
 
 .zoomed-pixel {
-	width: 120px;
-	height: 120px;
-	border: 2px solid #e5e7eb;
+	width: 100px;
+	height: 100px;
+	background-color: var(--highlight-color);
+	border-radius: 4px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pixel-info {
 	display: flex;
+	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	font-size: 0.875rem;
-	color: white;
-	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-	/* Add hardware acceleration */
-	transform: translateZ(0);
-	will-change: background-color;
-	/* Add containment for better performance */
-	contain: layout paint style;
-	min-height: 80px;
+	margin-top: 8px;
+}
+
+.pixel-label {
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.rgb-values {
+	font-size: 12px;
+	color: #333;
+	margin-top: 4px;
+}
+
+.color-picker-container {
+	margin-top: 12px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 5px;
+}
+
+.pixel-color-picker {
+	width: 60px;
+	height: 30px;
+	cursor: pointer;
+	border: none;
+	background: none;
 }
 
 .grayscale-comparison {
@@ -311,7 +340,6 @@
 	will-change: background-color;
 	/* Add containment for better performance */
 	contain: layout paint style;
-	min-width: 120px;
 	flex: 1;
 }
 
@@ -394,3 +422,67 @@
 	min-width: 24px;
 	min-height: 24px;
 }
+
+
+
+/* Also optimize the pixel illustration container for small screens */
+.pixel-illustration {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	/* Add containment for better performance */
+	contain: layout style;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+/* Add this new container style */
+.pixel-zoom-container {
+	display: flex;
+	padding: 16px;
+	flex-direction: column; /* Default to column layout for wider screens */
+	align-items: center; /* Center items in column */
+	gap: 15px;
+	margin-top: 10px;
+}
+
+/* Update color picker container for column layout */
+.color-picker-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 5px;
+	justify-content: center;
+}
+
+/* For screens smaller than 600px, switch to row layout */
+@media (max-width: 600px) {
+	.pixel-zoom-container {
+		flex-direction: row; /* Switch to row layout on smaller screens */
+		align-items: flex-start;
+		justify-content: center;
+		margin: 0 auto;
+		width: 100%;
+	}
+	
+}
+
+
+/* Make the color picker more visible */
+.pixel-color-picker {
+	width: 60px;
+	height: 30px;
+	cursor: pointer;
+	border: none;
+	background: none;
+}
+
+/* Add styles for the grayscale color picker */
+.color-pixel-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+}
+
+
