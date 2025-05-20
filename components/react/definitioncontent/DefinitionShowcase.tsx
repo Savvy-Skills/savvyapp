@@ -16,8 +16,8 @@ const DefinitionShowcase: React.FC<{ content: ContentInfo }> = ({ content }) => 
 	const [timestampedTranscription, setTimestampedTranscription] = useState<any>(null);
 
 	useEffect(() => {
-		if (content.state.timestampedTranscription) {
-			fetchTimestampedTranscription(content.state.timestampedTranscription).then(data => {
+		if (content.state?.timestampedTranscription) {
+			fetchTimestampedTranscription(content.state?.timestampedTranscription).then(data => {
 				setTimestampedTranscription(data);
 			});
 		}
@@ -25,13 +25,13 @@ const DefinitionShowcase: React.FC<{ content: ContentInfo }> = ({ content }) => 
 
 
 
-	return (
+		return (
 		<AudioTranscriptPlayer
-			audioUrl={content.state.audioUrl}
+			audioUrl={content.state?.audioUrl}
 			timestampedTranscription={timestampedTranscription}
-			definitionText={content.state.value}
+			definitionText={content.state?.value}
 			theme={currentTheme}
-			title={content.state.title}
+			title={content.state?.title}
 		/>
 	);
 };

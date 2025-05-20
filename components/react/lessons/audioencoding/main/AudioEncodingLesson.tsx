@@ -222,7 +222,7 @@ export default function AudioEncodingLesson({ content }: { content?: ContentInfo
 
 	const hasAudioSource = !!resolvedAudioUrl;
 
-	const step = content?.state.step || "waveform";
+	const step = content?.state?.step || "waveform";
 
 	// Clean up record timer on unmount
 	useEffect(() => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Button, Dialog, Portal, Text, TextInput, SegmentedButtons, Divider, Menu } from 'react-native-paper';
-import { ContentInfo, ContentTypes } from '@/types/index';
+import { ContentInfo, ContentSubtypes, ContentTypes } from '@/types/index';
 import { createContent, updateContent } from '@/services/adminApi';
 import ContentEditor from '@/components/admin/content/ContentEditor';
 import Dropdown from '../common/Dropdown';
@@ -15,17 +15,32 @@ interface EnhancedContentFormDialogProps {
 	isEditing?: boolean;
 }
 
-const contentTypeOptions = [
+const contentTypeOptions: { label: string, value: ContentTypes }[] = [
 	{ label: 'Rich Text', value: 'Rich Text' },
 	{ label: 'Image', value: 'Image' },
 	{ label: 'Video', value: 'Video' },
 	{ label: 'Dataset', value: 'Dataset' },
+	{ label: 'Definition', value: 'Definition' },
+	{ label: 'Tool', value: 'Tool' },
+	{ label: 'Educational', value: 'Educational' },
+];
+
+const contentSubtypeOptions: { label: string, value: ContentSubtypes, educational?: boolean }[] = [
 	{ label: 'Neural Network', value: 'Neural Network' },
 	{ label: 'Neuron', value: 'Neuron' },
 	{ label: 'Word2Vec', value: 'Word2Vec' },
 	{ label: 'MNIST', value: 'MNIST' },
 	{ label: 'Tokenization', value: 'Tokenization' },
 	{ label: 'Auto Tokenization', value: 'Auto Tokenization' },
+	{ label: 'Teachable Machine', value: 'Teachable Machine' },
+	{ label: 'Speech to Text', value: 'Speech to Text' },
+	{ label: 'Face Detection', value: 'Face Detection' },
+	{ label: 'Next Word', value: 'Next Word' },
+	{ label: 'BERT', value: 'BERT' },
+	{ label: 'Audio Encoding', value: 'Audio Encoding', educational: true },
+	{ label: 'Image Encoding', value: 'Image Encoding', educational: true },
+	{ label: 'Pixel Simulator', value: 'Pixel Simulator', educational: true },
+
 ];
 
 export default function EnhancedContentFormDialog({
@@ -37,6 +52,7 @@ export default function EnhancedContentFormDialog({
 	isEditing = false
 }: EnhancedContentFormDialogProps) {
 	const [contentType, setContentType] = useState<ContentTypes>('Rich Text');
+	const [contentSubtype, setContentSubtype] = useState<ContentSubtypes | null>(null);
 	const [contentTitle, setContentTitle] = useState(isEditing ? '' : 'New Content');
 	const [contentData, setContentData] = useState<Partial<ContentInfo>>({});
 	const [loading, setLoading] = useState(false);
@@ -45,6 +61,7 @@ export default function EnhancedContentFormDialog({
 	useEffect(() => {
 		if (editingContent && visible) {
 			setContentType(editingContent.type || 'Rich Text');
+			setContentSubtype(editingContent.subtype || null);
 			setContentTitle(editingContent.title || '');
 			setContentData({
 				...editingContent
@@ -84,15 +101,28 @@ export default function EnhancedContentFormDialog({
 				return !!contentData.url;
 			case 'Dataset':
 				return !!contentData.dataset_id;
-			case 'Neuron':
-				return !!contentData.dataset_id;
-			case 'Word2Vec':
-				return !!contentData.dataset_id && !!contentData.dataset_info?.word_vec;
-			case 'Tokenization':
-			case 'Auto Tokenization':
-				return !!contentData.state;
-			case 'MNIST':
-				return true;
+			case 'Tool':
+				switch (contentSubtype) {
+					case 'Neuron':
+						return !!contentData.dataset_id;
+					case 'Word2Vec':
+						return !!contentData.dataset_id && !!contentData.dataset_info?.word_vec;
+					case 'Tokenization':
+					case 'Auto Tokenization':
+						return !!contentData.state;
+					case 'Teachable Machine':
+					case 'Speech to Text':
+					case 'Face Detection':
+					case 'Next Word':
+					case 'BERT':
+					case 'Audio Encoding':
+					case 'Image Encoding':
+					case 'Pixel Simulator':
+					case 'MNIST':
+						return true;
+					default:
+						return false;
+				}
 			default:
 				return false;
 		}
@@ -153,10 +183,28 @@ export default function EnhancedContentFormDialog({
 							onChange={(value: string) => setContentType(value as ContentTypes)}
 						/>
 
+						{contentType === 'Tool' && (
+							<Dropdown
+								label="Content Subtype"
+								value={contentSubtype || ''}
+								options={contentSubtypeOptions.filter(option => option.educational === false || option.educational === undefined)}
+								onChange={(value: string) => setContentSubtype(value as ContentSubtypes)}
+							/>
+						)}
+						{contentType === 'Educational' && (
+							<Dropdown
+								label="Content Subtype"
+								value={contentSubtype || ''}
+								options={contentSubtypeOptions.filter(option => option.educational === true)}
+								onChange={(value: string) => setContentSubtype(value as ContentSubtypes)}
+							/>
+						)}
+
 						<Divider style={styles.divider} />
 
 						<ContentEditor
 							contentType={contentType}
+							contentSubtype={contentSubtype || null}
 							content={contentData as ContentInfo}
 							onContentChange={handleContentChange}
 						/>

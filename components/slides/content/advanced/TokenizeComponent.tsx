@@ -25,7 +25,7 @@ interface TokenSegment {
 
 const TokenizeComponent = ({ content }: { content?: ContentInfo }) => {
 	const [text] = useState(
-		content?.state.value ?? ""
+		content?.state?.value ?? ""
 	);
 	const [tokenizingState, setTokenizingState] = useState<"tokenizing" | "stop" | "end" | "initial">("initial");
 	const [selectionStart, setSelectionStart] = useState(0);

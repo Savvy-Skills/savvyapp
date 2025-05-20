@@ -201,14 +201,14 @@ export default function ContentPreviewCard({ content, index, onRemove, onEdit }:
 					</>
 				)}
 
-				{content.type === 'Neuron' && renderNeuronPreview()}
+				{content.subtype === 'Neuron' && renderNeuronPreview()}
 				
-				{content.type === 'Word2Vec' && renderWord2VecPreview()}
+				{content.subtype === 'Word2Vec' && renderWord2VecPreview()}
 
 
-				{['Neural Network', 'Activity'].includes(content.type || '') && (
+				{['Neural Network', 'Activity'].includes(content.subtype || '') && (
 					<Text style={styles.previewValue}>
-						[Preview not available for {content.type} type]
+						[Preview not available for {content.subtype} type]
 					</Text>
 				)}
 			</Card.Content>
