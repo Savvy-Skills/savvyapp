@@ -316,7 +316,7 @@ export default function LayerDetails({
 								
 								{currentState[modelId]?.model.completed && (
 									<>
-										<View style={{ flexDirection: "row", gap: 8 }}>
+										<View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
 											{inputColumns.map((column, index) => (
 												<View key={column.accessor} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
 													<Text style={styles.subtitle}>{column.accessor}:</Text>
@@ -332,10 +332,10 @@ export default function LayerDetails({
 											</Button>
 										)}
 										
-										{currentState[modelId]?.model.prediction && (
+										{currentState[modelId]?.model.prediction && currentState[modelId]?.model.prediction.predictedClass !== null && (
 											<>
 												<Text style={styles.subtitle}>Predicted Value:</Text>
-												<Text>{currentState[modelId]?.model.prediction}</Text>
+												<Text>{currentState[modelId]?.model.prediction.predictedClass}</Text>
 											</>
 										)}
 									</>

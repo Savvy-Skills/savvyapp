@@ -128,6 +128,7 @@ export const useTFStore = create<TFStore>((set, get) => ({
 			});
 			tfInstance.on('prediction_result', (data: any) => {
 				const modelId = get().currentModelId;
+				console.log({data})
 				if (modelId) {
 					set({
 						currentState: {
@@ -136,7 +137,11 @@ export const useTFStore = create<TFStore>((set, get) => ({
 								...get().currentState[modelId],
 								model: {
 									...get().currentState[modelId]?.model,
-									prediction: data.predictionResult,
+									prediction: {
+										predictedClass: data.prediction.predictedClass,
+										confidence: data.prediction.confidence,
+										probabilities: data.prediction.probabilities,
+									},
 								},
 							}
 						}
@@ -237,7 +242,7 @@ export const useTFStore = create<TFStore>((set, get) => ({
 											...get().currentState[message.modelId],
 											model: {
 												...get().currentState[message.modelId]?.model,
-												prediction: message.data.predictionResult,
+												prediction: message.data.prediction,
 											},
 										}
 									}

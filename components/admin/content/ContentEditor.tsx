@@ -14,12 +14,14 @@ import AutoTokenizeEditor from './editors/AutoTokenizeEditor';
 import BlankEditor from './editors/BlankEditor';
 import LessonEditor from './editors/LessonEditor';
 import DefinitionEditor from './editors/DefinitionEditor';
+import DatasetsManager from '../DatasetsManager';
 
 interface ContentEditorProps {
 	content?: ContentInfo;
 	onContentChange: (updatedContent: Partial<ContentInfo>) => void;
 	contentType: ContentTypes;
 	contentSubtype: ContentSubtypes | null;
+	onDatasetSelect: (datasetId: string) => void;
 }
 
 export default function ContentEditor({
@@ -27,6 +29,7 @@ export default function ContentEditor({
 	onContentChange,
 	contentType,
 	contentSubtype,
+	onDatasetSelect,
 }: ContentEditorProps) {
 
 	// Render the appropriate editor based on content type
@@ -44,7 +47,10 @@ export default function ContentEditor({
 		case 'Tool':
 			switch (contentSubtype) {
 				case 'Neural Network':
-					return <NeuralNetworkEditor content={content} onContentChange={onContentChange} />;
+					return <>
+						<DatasetsManager onDatasetSelect={onDatasetSelect} />
+						<NeuralNetworkEditor content={content} onContentChange={onContentChange} />
+					</>
 				case 'Activity':
 					return <ActivityEditor content={content} onContentChange={onContentChange} />;
 				case 'Neuron':

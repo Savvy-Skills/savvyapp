@@ -1,5 +1,5 @@
 import styles from "@/styles/styles";
-import { Pressable } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { View } from "react-native";
 import { Image } from "expo-image";
@@ -31,7 +31,7 @@ export default function NNTabs({ selectedLayer, setSelectedLayer, inputColumns, 
 					: styles.unselectedLayer,
 			]} onPress={() => setSelectedLayer("input")}>
 				<Text style={styles.layerTitle}>Input layer</Text>
-				<View style={styles.inputNodesContainer}>
+				<ScrollView style={styles.inputNodesContainer}>
 					{inputColumns.map((column, index) => (
 						<View key={index} style={{ gap: 4 }}>
 							<Text style={styles.inputLabel}>[{column.accessor}]</Text>
@@ -40,7 +40,7 @@ export default function NNTabs({ selectedLayer, setSelectedLayer, inputColumns, 
 							</View>
 						</View>
 					))}
-				</View>
+				</ScrollView>
 			</Pressable>
 
 			<Pressable

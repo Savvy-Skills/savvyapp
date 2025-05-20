@@ -5,12 +5,19 @@ import { DatasetInfo } from '@/types/index';
 import { getDatasets } from '@/services/adminApi';
 import DatasetList from '@/components/common/DatasetList';
 
-export default function DatasetsManager() {
+interface DatasetsManagerProps {
+	onDatasetSelect?: (datasetId: string, datasetInfo: DatasetInfo) => void;
+}
+
+export default function DatasetsManager({ onDatasetSelect }: DatasetsManagerProps) {
 	const [selectedDataset, setSelectedDataset] = useState<DatasetInfo | null>(null);
 	const [loading, setLoading] = useState(false);
 
 	const handleDatasetSelect = (datasetId: string, datasetInfo: DatasetInfo) => {
 		setSelectedDataset(datasetInfo);
+		if (onDatasetSelect) {
+			onDatasetSelect(datasetId, datasetInfo);
+		}
 	};
 
 	const clearSelectedDataset = () => {

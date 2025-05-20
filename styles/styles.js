@@ -515,7 +515,6 @@ export default StyleSheet.create({
     color: "black",
     borderWidth: 1,
     borderColor: "grey",
-	flex: 1,
   },
   centerText: {
     textAlign: "center",
