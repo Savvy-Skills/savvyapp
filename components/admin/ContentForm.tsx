@@ -53,6 +53,7 @@ export default function ContentForm({
 	const [contentType, setContentType] = useState<ContentTypes>('Rich Text');
 	const [contentSubtype, setContentSubtype] = useState<ContentSubtypes | null>(null);
 	const [contentTitle, setContentTitle] = useState(isEditing ? '' : 'New Content');
+	const [contentDatasetId, setContentDatasetId] = useState<string | null>(null);
 	const [contentData, setContentData] = useState<Partial<ContentInfo>>({});
 	const [loading, setLoading] = useState(false);
 
@@ -62,6 +63,7 @@ export default function ContentForm({
 			setContentType(editingContent.type || 'Rich Text');
 			setContentSubtype(editingContent.subtype || null);
 			setContentTitle(editingContent.title || '');
+			setContentDatasetId(editingContent.dataset_id || null);
 			setContentData({
 				...editingContent
 			});
@@ -74,6 +76,14 @@ export default function ContentForm({
 		setContentData(prevData => ({
 			...prevData,
 			...updatedContent
+		}));
+	};
+
+	const handleDatasetSelect = (datasetId: string) => {
+		setContentDatasetId(datasetId);
+		setContentData(prevData => ({
+			...prevData,
+			dataset_id: datasetId
 		}));
 	};
 
@@ -93,6 +103,7 @@ export default function ContentForm({
 			case 'Tool':
 				switch (contentSubtype) {
 					case 'Neuron':
+					case 'Neural Network':
 						return !!contentData.dataset_id;
 					case 'Word2Vec':
 						return !!contentData.dataset_id && !!contentData.dataset_info?.word_vec;
@@ -190,6 +201,7 @@ export default function ContentForm({
 					contentSubtype={contentSubtype || null}
 					content={contentData as ContentInfo}
 					onContentChange={handleContentChange}
+					onDatasetSelect={handleDatasetSelect}
 				/>
 
 				<View style={localStyles.formActions}>

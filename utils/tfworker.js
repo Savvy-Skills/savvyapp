@@ -178,7 +178,7 @@ const workerFunction = function () {
           .tensor(columnData.map((value) => encoder.encode(value)))
           .expandDims(1);
       }
-    } else if (encoder.type === "oneHot") {
+    } else if (encoder.type.toLowerCase() === "onehot") {
       // From encoder, we have a map of value to index, so we can create a one-hot encoded column for each value
       // Create array with index values
       const labelEncoded = columnData.map((value) => encoder.encode(value));
@@ -484,14 +484,23 @@ const workerFunction = function () {
     );
 
     if (scaledColumns.length > 0) {
-      const scaledData = scaledColumns.map((column) => {
+      // Create an array of scaled values
+      const scaledFeatures = [];
+      
+      scaledColumns.forEach((column) => {
         const scaler = scalers.find((scaler) => scaler.field === column.field);
-        return scaleColumn([Number(features[0][column.field])], scaler);
+        const scaledValue = scaleColumn([Number(features[0][column.field])], scaler);
+        // Extract the value from the tensor and add to our array
+        scaledFeatures.push(scaledValue.dataSync()[0]);
       });
-      processedData =
-        processedData.length > 0
-          ? tf.concat([...processedData, ...scaledData], 1)
-          : scaledData[0];
+      
+      // Create a tensor from the scaled features
+      const scaledTensor = tf.tensor2d([scaledFeatures]);
+      
+      // Concatenate with existing processed data if needed
+      processedData = processedData.length > 0
+        ? tf.concat([processedData, scaledTensor], 1)
+        : scaledTensor;
     }
 
     // 3. Process encoded categorical columns
@@ -512,9 +521,11 @@ const workerFunction = function () {
           : encodedData;
     }
 
+
     // Make prediction using processed input tensor
     const predictions = currentModel.predict(processedData);
     let predictionResult = null;
+	let confidence = 0;
 
     // Process prediction based on problem type
     if (currentModelConfig.problemType === "classification") {
@@ -523,16 +534,24 @@ const workerFunction = function () {
         const predictionsToBinary = predictions
           .arraySync()
           .map((prediction) => (prediction > 0.5 ? 1 : 0));
+		// Get the confidence of the prediction by getting the value of the prediction
+		confidence = predictionsToBinary[0];
         predictionResult = targetEncoder.decode(predictionsToBinary[0]);
       } else {
         // Multi-class classification: take argmax of predictions
         const predictionsToIndex = predictions.argMax(1).arraySync();
+		// Get the confidence of the prediction by getting the value of the prediction
+		const predictionProbabilities = predictions.arraySync();
+		confidence = predictionProbabilities[0][predictionsToIndex[0]];
+
         predictionResult = targetEncoder.decode(predictionsToIndex[0]);
       }
     } else if (currentModelConfig.problemType === "regression") {
       // Reverse scaling if target was scaled during preprocessing
       if (targetScaler) {
         const predictionsArray = predictions.arraySync();
+		// Get the confidence of the prediction by getting the value of the prediction
+		confidence = predictionsArray[0];
         predictionResult = targetScaler.decode(predictionsArray[0]);
       } else {
         predictionResult = predictions.arraySync()[0];
@@ -544,7 +563,7 @@ const workerFunction = function () {
       from: "worker",
       type: MESSAGE_TYPE_PREDICTION_RESULT,
       modelId: currentModelId,
-      data: { predictionResult },
+      data: { prediction: { predictedClass: predictionResult, confidence, probabilities: predictions.arraySync()[0] } },
     });
 
     // Dispose of tensors to free memory

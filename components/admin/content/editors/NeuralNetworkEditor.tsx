@@ -74,7 +74,7 @@ interface NeuralNetworkEditorProps {
 export default function NeuralNetworkEditor({ content, onContentChange }: NeuralNetworkEditorProps) {
 	// Initialize state with content or default values
 	const [config, setConfig] = useState<NNState>(
-		(content?.nnState as NNState) || DEFAULT_NN_CONFIG
+		(content?.state?.nnState as NNState) || DEFAULT_NN_CONFIG
 	);
 	const [activeTab, setActiveTab] = useState<'model' | 'training' | 'data' | 'visualization'>('model');
 
@@ -82,8 +82,9 @@ export default function NeuralNetworkEditor({ content, onContentChange }: Neural
 	const updateConfig = (newConfig: NNState) => {
 		setConfig(newConfig);
 		onContentChange({
-			type: 'Neural Network',
-			nnState: newConfig
+			type: 'Tool',
+			subtype: 'Neural Network',
+			state: { nnState: newConfig }
 		});
 	};
 

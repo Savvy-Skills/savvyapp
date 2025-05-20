@@ -24,9 +24,10 @@ interface TraceConfig extends Omit<PlotlyTraceConfig, 'type'> {
 interface DatasetEditorProps {
   content?: ContentInfo;
   onContentChange: (updatedContent: Partial<ContentInfo>) => void;
+  showTraces?: boolean;
 }
 
-export default function DatasetEditor({ content, onContentChange }: DatasetEditorProps) {
+export default function DatasetEditor({ content, onContentChange, showTraces = false }: DatasetEditorProps) {
   // Define the conversion function at the top before using it
   const convertTraces = (traces: PlotlyTraceConfig[] | undefined): TraceConfig[] => {
     if (!traces) return [];
@@ -51,7 +52,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
   const [selectedDatasetId, setSelectedDatasetId] = useState(content?.dataset_id || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [traces, setTraces] = useState<TraceConfig[]>(convertTraces(content?.state?.traces || []));
-  const [showTraceBuilder, setShowTraceBuilder] = useState(false);
+  const [showTraceBuilder, setShowTraceBuilder] = useState(showTraces || false);
   const [editingTraceIndex, setEditingTraceIndex] = useState<number | null>(null);
   const [currentTrace, setCurrentTrace] = useState<TraceConfig>({
     id: '',
@@ -449,7 +450,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
         </Card>
       )}
       
-      {selectedDataset && !selectedDataset.word_vec && (
+      {selectedDataset && !selectedDataset.word_vec && showTraces && (
         <>
           <View style={styles.sectionHeader}>
             <Text variant="titleMedium" style={styles.sectionTitle}>Visualization Traces</Text>
@@ -475,7 +476,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
         />
       )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({

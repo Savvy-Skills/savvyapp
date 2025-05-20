@@ -79,7 +79,11 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 				training: true,
 				completed: false,
 				paused: false,
-				prediction: null,
+				prediction: {
+					predictedClass: 0,
+					confidence: 0,
+					probabilities: [],
+				},
 			},
 			training: {
 				transcurredEpochs: 0,
@@ -153,7 +157,11 @@ export default function NeuralNetworkVisualizer({ initialNNState, dataset_info, 
 									training: false,
 									completed: true,
 									paused: false,
-									prediction: null,
+									prediction: {
+										predictedClass: 0,
+										confidence: 0,
+										probabilities: [],
+									},
 								},
 							})
 						} else {
