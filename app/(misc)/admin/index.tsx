@@ -9,8 +9,9 @@ import SlideManager from '@/components/admin/SlideManager';
 import ScreenWrapper from '@/components/screens/ScreenWrapper';
 import { useAuthStore } from '@/store/authStore';
 import { router, useLocalSearchParams } from 'expo-router';
+import DatasetsManager from '@/components/admin/DatasetsManager';
 
-export type AdminSection = 'courses' | 'modules' | 'views' | 'slides';
+export type AdminSection = 'courses' | 'modules' | 'views' | 'slides' | 'datasets';
 
 export default function AdminDashboard() {
 	const { user } = useAuthStore();
@@ -41,9 +42,12 @@ export default function AdminDashboard() {
 		courseId?: number | null;
 		moduleId?: number | null;
 		viewId?: number | null;
-	}) => {
+		datasetId?: number | null;
+	},
+	resetParams: boolean = false
+) => {
 		// Build new URL parameters
-		const urlParams: Record<string, string> = {};
+		let urlParams: Record<string, string> = {};
 		
 		// Keep existing parameters unless explicitly changed
 		if (newParams.section) urlParams.section = newParams.section;
@@ -65,6 +69,14 @@ export default function AdminDashboard() {
 			if (newParams.viewId !== null) urlParams.viewId = newParams.viewId.toString();
 		} else if (viewId !== null) {
 			urlParams.viewId = viewId.toString();
+		}
+
+		// If resetParams is true, keep only the section and the parameters that are not null
+		if (resetParams) {
+			urlParams = {
+				section: newParams.section || section,
+				...Object.fromEntries(Object.entries(newParams).filter(([_, value]) => value !== null))
+			};
 		}
 		
 		// Update the URL using Expo Router
@@ -98,8 +110,8 @@ export default function AdminDashboard() {
 		});
 	};
 
-	const handleSectionChange = (newSection: AdminSection) => {
-		updateUrlParams({ section: newSection });
+	const handleSectionChange = (newSection: AdminSection, resetParams?: boolean) => {
+		updateUrlParams({ section: newSection }, false);
 	};
 
 	// Handle back button actions
@@ -145,6 +157,11 @@ export default function AdminDashboard() {
 					<SlideManager 
 						viewId={viewId} 
 						onBack={() => updateUrlParams({ section: 'views' })}
+					/>
+				);
+			case 'datasets':
+				return (
+					<DatasetsManager
 					/>
 				);
 			default:

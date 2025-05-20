@@ -390,7 +390,7 @@ export type ContentTypes = "Video"
 	| "Tool"
 	| "Educational"
 
-type ContentSubtypes = "Neural Network"
+export type ContentSubtypes = "Neural Network"
 | "Activity"
 | "Neuron"
 | "Word2Vec"

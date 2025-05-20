@@ -418,7 +418,7 @@ export default function PixelSimulator({ content }: { content: ContentInfo }) {
 		</StepCard>
 	), [grayscaleCustomColor, customGrayscaleValues, handleGrayscaleColorChange]);
 
-	const step = content?.state.step || "pixel";
+	const step = content?.state?.step || "pixel";
 
 	return (
 		<div>

@@ -4,8 +4,8 @@ import { TextInput, Text, Button, Card, Chip, IconButton, Menu, Divider, Segment
 import { ContentInfo, DatasetInfo } from '@/types/index';
 import { getDatasets } from '@/services/adminApi';
 import { TraceConfig as PlotlyTraceConfig } from '@/components/data/DataVisualizerPlotly';
-import DatasetUploader from '@/components/common/DatasetUploader';
 import Dropdown from '@/components/common/Dropdown';
+import DatasetList from '@/components/common/DatasetList';
 
 interface TraceConfig extends Omit<PlotlyTraceConfig, 'type'> {
   id: string;
@@ -50,7 +50,7 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
   const [loading, setLoading] = useState(false);
   const [selectedDatasetId, setSelectedDatasetId] = useState(content?.dataset_id || '');
   const [searchQuery, setSearchQuery] = useState('');
-  const [traces, setTraces] = useState<TraceConfig[]>(convertTraces(content?.state.traces));
+  const [traces, setTraces] = useState<TraceConfig[]>(convertTraces(content?.state?.traces || []));
   const [showTraceBuilder, setShowTraceBuilder] = useState(false);
   const [editingTraceIndex, setEditingTraceIndex] = useState<number | null>(null);
   const [currentTrace, setCurrentTrace] = useState<TraceConfig>({
@@ -60,17 +60,16 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
     name: '',
     type: 'bar'
   });
-  const [showUploader, setShowUploader] = useState(false);
 
   useEffect(() => {
     loadDatasets();
-  }, []);
+  }, [datasets]);
 
   useEffect(() => {
     if (content?.dataset_id) {
       setSelectedDatasetId(content.dataset_id);
     }
-    if (content?.state.traces) {
+    if (content?.state?.traces) {
       setTraces(convertTraces(content.state.traces));
     }
   }, [content]);
@@ -400,17 +399,17 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
     return description;
   };
 
-  // Add this function to handle the newly uploaded dataset
-  const handleDatasetUploaded = (dataset: DatasetInfo) => {
-    // Add the new dataset to the list
-    setDatasets(prev => [dataset, ...prev]);
+//   // Add this function to handle the newly uploaded dataset
+//   const handleDatasetUploaded = (dataset: DatasetInfo) => {
+//     // Add the new dataset to the list
+//     setDatasets(prev => [dataset, ...prev]);
     
-    // Optionally select the newly uploaded dataset
-    handleDatasetSelect(dataset.id, dataset);
+//     // Optionally select the newly uploaded dataset
+//     handleDatasetSelect(dataset.id, dataset);
     
-    // Hide the uploader
-    setShowUploader(false);
-  };
+//     // Hide the uploader
+//     setShowUploader(false);
+//   };
 
   return (
     <View style={styles.container}>
@@ -467,80 +466,14 @@ export default function DatasetEditor({ content, onContentChange }: DatasetEdito
           {showTraceBuilder ? renderTraceBuilder() : renderTraceList()}
         </>
       )}
-	  {!selectedDataset && (
-		<>
-			<View style={styles.sectionHeader}>
-				<Text variant="titleMedium" style={styles.sectionTitle}>Available Datasets</Text>
-				<Button 
-					mode="outlined" 
-					icon="plus" 
-					onPress={() => setShowUploader(true)}
-				>
-					Upload New
-				</Button>
-			</View>
-			
-			{showUploader && (
-				<DatasetUploader onDatasetUploaded={handleDatasetUploaded} />
-			)}
-			
-			{loading ? (
-				<Text>Loading datasets...</Text>
-			) : (
-				<View style={styles.searchContainer}>
-					<TextInput
-						label="Search Datasets"
-						value={searchQuery}
-						onChangeText={setSearchQuery}
-						style={styles.searchInput}
-						right={<TextInput.Icon icon="magnify" />}
-					/>
-					<ScrollView style={styles.datasetList}>
-						{filteredDatasets.length > 0 ? (
-							filteredDatasets.map((dataset) => (
-								<Card 
-									key={dataset.id} 
-									style={[
-										styles.datasetCard,
-										selectedDatasetId === dataset.id && styles.selectedCard,
-										dataset.word_vec && styles.word2vecCard
-									]}
-									onPress={() => handleDatasetSelect(dataset.id, dataset)}
-								>
-									<Card.Title 
-										title={dataset.name} 
-										subtitle={`${dataset.metadata.rows} rows × ${dataset.metadata.columns} columns`}
-										right={() => dataset.word_vec ? (
-											<Chip icon="vector-point" style={[styles.miniChip, styles.word2vecChip]}>Word2Vec</Chip>
-										) : null}
-									/>
-									{dataset.metadata.description && (
-										<Card.Content>
-											<Text variant="bodyMedium" numberOfLines={2} ellipsizeMode="tail">
-												{dataset.metadata.description}
-											</Text>
-										</Card.Content>
-									)}
-								</Card>
-							))
-						) : (
-							<Text style={styles.noResults}>No datasets found matching your search criteria.</Text>
-						)}
-					</ScrollView>
-				</View>
-			)}
-
-			<Button 
-				mode="outlined" 
-				icon="refresh" 
-				onPress={loadDatasets} 
-				style={styles.refreshButton}
-				loading={loading}
-			>
-				Refresh List
-			</Button>
-		</>
-	  )}
+      
+      {!selectedDataset && (
+        <DatasetList
+          selectedDatasetId={selectedDatasetId}
+          onDatasetSelect={handleDatasetSelect}
+          showWordVecDatasets={true}
+        />
+      )}
     </View>
   );
 }
