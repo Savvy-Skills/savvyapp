@@ -1,0 +1,43 @@
+/* GameLoadingScreenStyles.css */
+
+.loading-screen {
+	width: 1280px;
+	height: 720px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+	color: white;
+	padding: 2rem;
+  }
+  
+  .logo {
+	margin-bottom: 2.5rem;
+	img{
+		width: 100px;
+		height: 100px;
+	}
+  }
+  
+  .progress-container {
+	width: 75%;
+	max-width: 36rem;
+	max-height: 1.5rem;
+	background-color: #374151;
+	border-radius: 9999px;
+	overflow: hidden;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .progress-bar {
+	background-color: var(--primary-color-light);
+	transition: width 0.3s ease-in-out;
+  }
+  
+  .progress-text {
+	margin-top: 2rem;
+	font-size: 0.875rem;
+	color: var(--text-color);
+  }
+  
