@@ -1,21 +1,55 @@
 'use dom'
-import { useEffect, useState } from "react";
+import GameLoadingScreen from "@/app/(misc)/debug/LoadingScreen";
+import { useEffect, useState, useCallback } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
 
 
-function SavvyAgentGame() {
-	const { unityProvider, requestFullscreen } = useUnityContext({
-		loaderUrl: ("unity/SavvyAgent.loader.js"),
-		dataUrl: ("unity/SavvyAgent.data"),
-		frameworkUrl: ("unity/SavvyAgent.framework.js"),
-		codeUrl: ("unity/SavvyAgent.wasm"),
+interface SavvyAgentGameProps {	
+	gameKey: string;
+	urls: {
+		loaderUrl: string;
+		dataUrl: string;
+		frameworkUrl: string;
+		codeUrl: string;
+	};
+}
+
+function capitalize(str: string) {
+	return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function SavvyAgentGame({ gameKey, urls }: SavvyAgentGameProps) {
+
+
+	const { unityProvider, requestFullscreen, loadingProgression, isLoaded, unload  } = useUnityContext({
+		loaderUrl: urls.loaderUrl,
+		dataUrl: urls.dataUrl,
+		frameworkUrl: urls.frameworkUrl,
+		codeUrl: urls.codeUrl,
 	});
 	// We'll use a state to store the device pixel ratio.
 	const [devicePixelRatio, setDevicePixelRatio] = useState(
 		window.devicePixelRatio
 	);
-	
 
+	const unloadGame = useCallback(async () => {
+		try {
+			await unload();
+		} catch (error) {
+			console.warn("Error unloading Unity game:", error);
+		}
+	}, [unload]);
+
+	// Cleanup effect - runs when component unmounts or gameKey changes
+	useEffect(() => {
+		return () => {
+			if (isLoaded) {
+				unloadGame();
+			}
+		};
+	}, [unloadGame, isLoaded]);
+	
+	// Effect for device pixel ratio handling
 	useEffect(
 		function () {
 			// A function which will update the device pixel ratio of the Unity
@@ -45,9 +79,12 @@ function SavvyAgentGame() {
 
 	return (
 		<div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+			{!isLoaded && (
+				<GameLoadingScreen progress={loadingProgression * 100} />
+			)}
 			<Unity
 				unityProvider={unityProvider}
-				style={{ width: 1280, height: 720 }}
+				style={{ width: 1280, height: 720, visibility: isLoaded ? 'visible' : 'hidden' }}
 				devicePixelRatio={devicePixelRatio}
 			/>
 			<div id="buttons">
@@ -55,8 +92,6 @@ function SavvyAgentGame() {
 			</div>
 		</div>
 	);
-
-
 }
 
 export default SavvyAgentGame;
