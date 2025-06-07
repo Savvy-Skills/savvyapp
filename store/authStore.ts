@@ -91,8 +91,8 @@ export const useAuthStore = create<AuthStore>()(
 					// setTokenInterceptors(courses_api, data.auth_token, datasource);
 					// setTokenInterceptors(openai_api, data.auth_token, datasource);
 					// setTokenInterceptors(datasets_api, data.auth_token, datasource);
-					setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api, media_api], data.auth_token, datasource);
-					set({ token: data.auth_token });
+					setAuthorizedInterceptors([authAPI, courses_api, openai_api, datasets_api, admin_api, media_api], data.access_token, datasource);
+					set({ token: data.access_token });
 					await get().getUser();
 				} catch (error) {
 					console.error("Login error:", error);

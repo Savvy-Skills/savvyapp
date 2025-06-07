@@ -528,7 +528,7 @@ export interface Image {
 }
 
 export interface LoginResponse {
-	auth_token: string;
+	access_token: string;
 }
 
 interface Role {
